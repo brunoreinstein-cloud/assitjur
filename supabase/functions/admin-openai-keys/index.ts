@@ -87,18 +87,34 @@ async function requireAdmin(supabase: any, userId: string) {
 }
 
 serve(async (req) => {
+  console.log('=== Edge Function Starting ===');
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('CORS preflight request');
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
     console.log('=== Admin OpenAI Keys Function Called ===');
     console.log('Method:', req.method);
-    console.log('Headers:', Object.fromEntries(req.headers.entries()));
+    console.log('URL:', req.url);
     
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    // Test environment variables first
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const encKey = Deno.env.get('OPENAI_KEY_ENC_KEY');
+    
+    console.log('Environment check:', {
+      supabaseUrl: supabaseUrl ? 'present' : 'missing',
+      serviceKey: serviceKey ? 'present' : 'missing',
+      encKey: encKey ? 'present' : 'missing'
+    });
+    
+    if (!supabaseUrl || !serviceKey) {
+      throw new Error('Missing required environment variables');
+    }
+    
     const supabase = createClient(supabaseUrl, serviceKey);
 
     // Get user from JWT
@@ -127,11 +143,21 @@ serve(async (req) => {
     console.log('User authenticated:', user.id);
 
     // Check admin permissions
+    console.log('Checking admin permissions...');
     const profile = await requireAdmin(supabase, user.id);
     console.log('Profile validated:', { role: profile.role, org_id: profile.organization_id });
 
-    const body = await req.json();
-    console.log('Request body:', body);
+    let body;
+    try {
+      body = await req.json();
+      console.log('Request body:', body);
+    } catch (err) {
+      console.error('Failed to parse JSON body:', err);
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     const { action, alias, key: apiKey, notes, keyId } = body;
 
