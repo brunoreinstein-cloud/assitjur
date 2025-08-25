@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const ImportBase = () => {
   const [currentStep, setCurrentStep] = useState<'upload' | 'validation' | 'preview' | 'publish'>('upload');
@@ -46,44 +47,49 @@ const ImportBase = () => {
     setIsProcessing(true);
     setUploadProgress(0);
     
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsProcessing(false);
-          setCurrentStep('validation');
-          simulateValidation();
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 200);
+    // Call the actual Supabase function
+    processFileUpload(file, 'validate');
   };
 
-  const simulateValidation = () => {
-    setTimeout(() => {
-      setValidationResults({
-        status: 'success',
-        totalRows: 15420,
-        validRows: 15380,
-        errors: 40,
-        warnings: 125,
-        issues: [
-          { type: 'error', count: 25, description: 'CNJ malformado' },
-          { type: 'error', count: 15, description: 'Data inválida' },
-          { type: 'warning', count: 80, description: 'CPF não normalizado' },
-          { type: 'warning', count: 45, description: 'Campos vazios opcionais' }
-        ]
+  const processFileUpload = async (file: File, action: 'validate' | 'publish') => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('action', action);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('process-base-upload', {
+        body: formData,
       });
-      setCurrentStep('preview');
-    }, 2000);
+
+      if (error) throw error;
+
+      if (action === 'validate') {
+        setValidationResults(data.validation);
+        setCurrentStep('preview');
+      } else if (action === 'publish') {
+        toast({
+          title: "Base publicada com sucesso",
+          description: `Versão v${data.version.hash} está agora ativa com ${data.version.rowsImported} registros`,
+        });
+        setCurrentStep('upload');
+        setUploadedFile(null);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erro no processamento",
+        description: error.message || "Falha ao processar arquivo",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+      setUploadProgress(100);
+    }
   };
 
   const handlePublish = () => {
-    toast({
-      title: "Base publicada com sucesso",
-      description: "Versão v1.2.4 está agora ativa",
-    });
+    if (uploadedFile) {
+      processFileUpload(uploadedFile, 'publish');
+    }
   };
 
   const renderUploadStep = () => (
@@ -160,34 +166,60 @@ const ImportBase = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-4 bg-muted rounded-lg">
-                <div className="text-2xl font-bold">{validationResults.totalRows.toLocaleString()}</div>
+                <div className="text-2xl font-bold">{validationResults.totalRows?.toLocaleString()}</div>
                 <div className="text-sm text-muted-foreground">Total de linhas</div>
               </div>
               <div className="text-center p-4 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">{validationResults.validRows.toLocaleString()}</div>
+                <div className="text-2xl font-bold text-green-600">{validationResults.validRows?.toLocaleString()}</div>
                 <div className="text-sm text-muted-foreground">Linhas válidas</div>
               </div>
               <div className="text-center p-4 bg-red-50 rounded-lg">
-                <div className="text-2xl font-bold text-red-600">{validationResults.errors}</div>
+                <div className="text-2xl font-bold text-red-600">{validationResults.errors?.length || 0}</div>
                 <div className="text-sm text-muted-foreground">Erros</div>
               </div>
               <div className="text-center p-4 bg-orange-50 rounded-lg">
-                <div className="text-2xl font-bold text-orange-600">{validationResults.warnings}</div>
+                <div className="text-2xl font-bold text-orange-600">{validationResults.warnings?.length || 0}</div>
                 <div className="text-sm text-muted-foreground">Avisos</div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <h4 className="font-medium">Problemas Encontrados:</h4>
-              {validationResults.issues.map((issue: any, index: number) => (
-                <Alert key={index} variant={issue.type === 'error' ? 'destructive' : 'default'}>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    <strong>{issue.count}</strong> registros: {issue.description}
-                  </AlertDescription>
-                </Alert>
-              ))}
-            </div>
+            {validationResults.errors?.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-medium">Erros Encontrados:</h4>
+                {validationResults.errors.slice(0, 5).map((error: any, index: number) => (
+                  <Alert key={index} variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      <strong>Linha {error.row}:</strong> {error.message} ({error.column})
+                    </AlertDescription>
+                  </Alert>
+                ))}
+                {validationResults.errors.length > 5 && (
+                  <p className="text-sm text-muted-foreground">
+                    ... e mais {validationResults.errors.length - 5} erros
+                  </p>
+                )}
+              </div>
+            )}
+
+            {validationResults.warnings?.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-medium">Avisos:</h4>
+                {validationResults.warnings.slice(0, 3).map((warning: any, index: number) => (
+                  <Alert key={index}>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      <strong>Linha {warning.row}:</strong> {warning.message} ({warning.column})
+                    </AlertDescription>
+                  </Alert>
+                ))}
+                {validationResults.warnings.length > 3 && (
+                  <p className="text-sm text-muted-foreground">
+                    ... e mais {validationResults.warnings.length - 3} avisos
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="flex gap-2">
               <Button variant="outline" className="flex items-center gap-2">
