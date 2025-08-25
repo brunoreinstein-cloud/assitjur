@@ -109,15 +109,39 @@ serve(async (req) => {
           console.log('✅ Found active OpenAI keys');
         }
 
-        // Update openai_enabled setting
+        // Update openai_enabled setting - ensure all required fields are present
+        const { data: existingSettings } = await supabase
+          .from('org_settings')
+          .select('*')
+          .eq('org_id', orgId)
+          .single();
+
+        const settingsData = existingSettings ? {
+          ...existingSettings,
+          openai_enabled: enabled,
+          updated_by: userId,
+          updated_at: new Date().toISOString()
+        } : {
+          org_id: orgId,
+          openai_enabled: enabled,
+          model: 'gpt-5-2025-08-07',
+          temperature: 0.7,
+          top_p: 0.9,
+          max_output_tokens: 2000,
+          streaming: false,
+          rate_per_min: 60,
+          budget_month_cents: 10000,
+          schema_json: {},
+          ab_weights: {},
+          fallback: [],
+          updated_by: userId,
+          updated_at: new Date().toISOString(),
+          created_at: new Date().toISOString()
+        };
+
         const { data, error } = await supabase
           .from('org_settings')
-          .upsert({
-            org_id: orgId,
-            openai_enabled: enabled,
-            updated_by: userId,
-            updated_at: new Date().toISOString()
-          })
+          .upsert(settingsData)
           .select()
           .single();
 
@@ -158,22 +182,47 @@ serve(async (req) => {
         throw new Error('Max output tokens must be between 1 and 8000');
       }
 
+      // Full settings update - ensure all required fields are present
+      const { data: existingSettings } = await supabase
+        .from('org_settings')
+        .select('*')
+        .eq('org_id', orgId)
+        .single();
+
+      const settingsData = existingSettings ? {
+        ...existingSettings,
+        openai_enabled: openai_enabled ?? existingSettings.openai_enabled,
+        model: model || existingSettings.model,
+        temperature: temperature ?? existingSettings.temperature,
+        top_p: top_p ?? existingSettings.top_p,
+        max_output_tokens: max_output_tokens ?? existingSettings.max_output_tokens,
+        streaming: streaming ?? existingSettings.streaming,
+        rate_per_min: rate_per_min ?? existingSettings.rate_per_min,
+        budget_month_cents: budget_month_cents ?? existingSettings.budget_month_cents,
+        updated_by: userId,
+        updated_at: new Date().toISOString()
+      } : {
+        org_id: orgId,
+        openai_enabled: openai_enabled ?? false,
+        model: model || 'gpt-5-2025-08-07',
+        temperature: temperature ?? 0.7,
+        top_p: top_p ?? 0.9,
+        max_output_tokens: max_output_tokens ?? 2000,
+        streaming: streaming ?? false,
+        rate_per_min: rate_per_min ?? 60,
+        budget_month_cents: budget_month_cents ?? 10000,
+        schema_json: {},
+        ab_weights: {},
+        fallback: [],
+        updated_by: userId,
+        updated_at: new Date().toISOString(),
+        created_at: new Date().toISOString()
+      };
+
       // Update settings
       const { data, error } = await supabase
         .from('org_settings')
-        .upsert({
-          org_id: orgId,
-          openai_enabled: openai_enabled ?? false,
-          model: model || 'gpt-5-2025-08-07',
-          temperature: temperature ?? 0.7,
-          top_p: top_p ?? 0.9,
-          max_output_tokens: max_output_tokens ?? 2000,
-          streaming: streaming ?? false,
-          rate_per_min: rate_per_min ?? 60,
-          budget_month_cents: budget_month_cents ?? 10000,
-          updated_by: userId,
-          updated_at: new Date().toISOString()
-        })
+        .upsert(settingsData)
         .select()
         .single();
 
