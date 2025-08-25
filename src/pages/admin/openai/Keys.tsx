@@ -264,7 +264,27 @@ const OpenAIKeys = () => {
                 Cancelar
               </Button>
               <Button 
-                onClick={() => addKeyMutation.mutate(newKey)}
+                onClick={() => {
+                  console.log('=== Submit button clicked ===');
+                  console.log('newKey state:', {
+                    alias: newKey.alias,
+                    key: newKey.key ? 'present' : 'missing',
+                    notes: newKey.notes
+                  });
+                  console.log('Form validation:', {
+                    aliasValid: !!newKey.alias,
+                    keyValid: !!newKey.key,
+                    isPending: addKeyMutation.isPending
+                  });
+                  
+                  if (!newKey.alias || !newKey.key) {
+                    console.error('Form validation failed');
+                    return;
+                  }
+                  
+                  console.log('Calling addKeyMutation.mutate');
+                  addKeyMutation.mutate(newKey);
+                }}
                 disabled={!newKey.alias || !newKey.key || addKeyMutation.isPending}
               >
                 {addKeyMutation.isPending ? "Salvando..." : "Salvar Chave"}
