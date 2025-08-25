@@ -45,6 +45,7 @@ const App = () => (
             />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Dashboard />} />
+              <Route path="analytics" element={<Analytics />} />
               <Route path="ia" element={<OpenAI />} />
               <Route path="ia/chaves" element={<OpenAIKeys />} />
               <Route path="ia/modelos" element={<OpenAIModels />} />

@@ -9,7 +9,8 @@ import {
   Settings, 
   FileText, 
   CheckCircle, 
-  LogOut 
+  LogOut,
+  BarChart3
 } from 'lucide-react';
 import {
   Sidebar,
@@ -31,6 +32,11 @@ const adminMenuItems = [
     title: 'Dashboard Admin',
     url: '/admin',
     icon: LayoutDashboard,
+  },
+  {
+    title: 'Analytics Avançado',
+    url: '/admin/analytics',
+    icon: BarChart3,
   },
   {
     title: 'Integração OpenAI',
