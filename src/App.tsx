@@ -24,6 +24,7 @@ import PromptStudio from "./pages/admin/openai/PromptStudio";
 import OpenAIPlayground from "./pages/admin/openai/Playground";
 import Logs from "./pages/admin/Logs";
 
+// Analytics component import and routes
 const queryClient = new QueryClient();
 
 const App = () => (
