@@ -47,7 +47,8 @@ const OpenAIKeys = () => {
   // Add new key
   const addKeyMutation = useMutation({
     mutationFn: async (keyData: typeof newKey) => {
-      console.log('=== STARTING MUTATION ===');
+      console.log('=== STARTING MUTATION WITH ULTRA DEBUG ===');
+      console.log('Supabase client:', !!supabase);
       console.log('Calling admin-openai-keys function with:', {
         action: 'create',
         alias: keyData.alias,
@@ -56,6 +57,7 @@ const OpenAIKeys = () => {
       });
       
       try {
+        console.log('About to invoke function...');
         const result = await supabase.functions.invoke('admin-openai-keys', {
           body: { 
             action: 'create',
@@ -69,10 +71,17 @@ const OpenAIKeys = () => {
         console.log('Full result:', result);
         console.log('Data:', result.data);
         console.log('Error:', result.error);
+        console.log('Result data type:', typeof result.data);
+        console.log('Result error type:', typeof result.error);
         
         if (result.error) {
           console.error('Function returned error:', result.error);
           throw result.error;
+        }
+        
+        if (!result.data) {
+          console.error('No data returned from function');
+          throw new Error('No data returned from function');
         }
         
         return result.data;
@@ -81,6 +90,8 @@ const OpenAIKeys = () => {
         console.error('Error details:', error);
         console.error('Error type:', typeof error);
         console.error('Error constructor:', error.constructor?.name);
+        console.error('Error message:', error?.message);
+        console.error('Error stack:', error?.stack);
         throw error;
       }
     },
