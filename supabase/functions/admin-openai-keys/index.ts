@@ -71,8 +71,16 @@ async function requireAdmin(supabase: any, userId: string) {
     .eq('user_id', userId)
     .single();
 
-  if (error || !profile || profile.role !== 'ADMIN') {
+  if (error || !profile) {
+    throw new Error('User profile not found');
+  }
+
+  if (profile.role !== 'ADMIN') {
     throw new Error('Admin access required');
+  }
+
+  if (!profile.organization_id) {
+    throw new Error('User not associated with organization');
   }
 
   return profile;
