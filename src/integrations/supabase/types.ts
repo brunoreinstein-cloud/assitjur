@@ -795,7 +795,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_access_sensitive_data: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
+      mask_cpf: {
+        Args: { cpf_value: string }
+        Returns: string
+      }
+      mask_name: {
+        Args: { name_value: string }
+        Returns: string
+      }
     }
     Enums: {
       data_access_level: "FULL" | "MASKED" | "NONE"
