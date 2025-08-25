@@ -8,14 +8,31 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  console.log('🔑 OpenAI Keys Management Function Started');
+  console.log('🔑 OpenAI Keys Management Function Started - DETAILED DEBUG');
   console.log('Method:', req.method);
+  console.log('URL:', req.url);
+  console.log('Headers:', Object.fromEntries(req.headers.entries()));
 
   if (req.method === 'OPTIONS') {
+    console.log('✅ CORS preflight handled');
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
+    console.log('📝 Reading request body...');
+    const bodyText = await req.text();
+    console.log('📝 Raw body:', bodyText);
+    
+    let body;
+    try {
+      body = JSON.parse(bodyText);
+      console.log('📝 Parsed body:', body);
+    } catch (parseError) {
+      console.error('❌ JSON parse error:', parseError);
+      throw new Error('Invalid JSON in request body');
+    }
+
+    console.log('🔐 Creating Supabase client...');
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -26,12 +43,15 @@ serve(async (req) => {
       }
     );
 
-    // Get user profile
+    console.log('👤 Getting user...');
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
+      console.error('❌ No user found');
       throw new Error('Unauthorized');
     }
+    console.log('✅ User found:', user.id);
 
+    console.log('🏢 Getting profile...');
     const { data: profile } = await supabaseClient
       .from('profiles')
       .select('organization_id, role')
@@ -39,11 +59,14 @@ serve(async (req) => {
       .single();
 
     if (!profile || profile.role !== 'ADMIN') {
+      console.error('❌ Not admin or no profile:', profile);
       throw new Error('Admin access required');
     }
+    console.log('✅ Profile found:', profile);
 
     const url = new URL(req.url);
     const action = url.searchParams.get('action');
+    console.log('🎯 Action from URL:', action);
 
     if (req.method === 'GET') {
       // Get all keys for organization
@@ -67,22 +90,27 @@ serve(async (req) => {
     }
 
     if (req.method === 'POST') {
-      const body = await req.json();
       const actionFromBody = body.action || action; // Accept action from body or query
-      console.log('Key action:', actionFromBody, { alias: body.alias });
+      console.log('🎯 Action from body:', actionFromBody);
+      console.log('📋 Full body data:', { alias: body.alias, hasKey: !!body.key, action: body.action });
 
       if (actionFromBody === 'create' || actionFromBody === 'add') {
+        console.log('➕ Processing ADD/CREATE action');
         // Add new OpenAI key
         const { key: apiKey, alias } = body;
+        console.log('🔑 Extracted data:', { alias, hasApiKey: !!apiKey, keyStart: apiKey?.substring(0, 10) });
 
         if (!apiKey || !alias) {
+          console.error('❌ Missing required fields:', { hasApiKey: !!apiKey, hasAlias: !!alias });
           throw new Error('API key and alias are required');
         }
 
         if (!apiKey.startsWith('sk-')) {
+          console.error('❌ Invalid key format:', apiKey.substring(0, 10));
           throw new Error('Invalid OpenAI API key format');
         }
 
+        console.log('🧪 Testing API key with OpenAI...');
         // Test the key first
         const testResponse = await fetch('https://api.openai.com/v1/models', {
           headers: {
@@ -90,10 +118,13 @@ serve(async (req) => {
           },
         });
 
+        console.log('🧪 OpenAI test result:', testResponse.status, testResponse.statusText);
         if (!testResponse.ok) {
+          console.error('❌ OpenAI validation failed:', testResponse.status);
           throw new Error('Invalid API key - failed OpenAI validation');
         }
 
+        console.log('💾 Saving to database...');
         // Store the key (in production, use proper encryption)
         const lastFour = apiKey.slice(-4);
         const { data, error } = await supabaseClient
@@ -110,10 +141,11 @@ serve(async (req) => {
           .single();
 
         if (error) {
-          console.error('Database error:', error);
+          console.error('💥 Database error:', error);
           throw new Error('Failed to save API key');
         }
 
+        console.log('✅ Key saved successfully:', data);
         return new Response(JSON.stringify({
           success: true,
           message: 'API key added successfully',
