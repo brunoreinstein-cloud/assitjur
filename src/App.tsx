@@ -16,6 +16,11 @@ import Versions from "./pages/admin/Versions";
 import Organization from "./pages/admin/Organization";
 import DataExplorer from "./pages/admin/DataExplorer";
 import SystemConfig from "./pages/admin/SystemConfig";
+import OpenAI from "./pages/admin/OpenAI";
+import OpenAIKeys from "./pages/admin/openai/Keys";
+import OpenAIModels from "./pages/admin/openai/Models";
+import PromptStudio from "./pages/admin/openai/PromptStudio";
+import OpenAIPlayground from "./pages/admin/openai/Playground";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +44,11 @@ const App = () => (
             />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Dashboard />} />
+              <Route path="ia" element={<OpenAI />} />
+              <Route path="ia/chaves" element={<OpenAIKeys />} />
+              <Route path="ia/modelos" element={<OpenAIModels />} />
+              <Route path="ia/prompt-studio" element={<PromptStudio />} />
+              <Route path="ia/testes" element={<OpenAIPlayground />} />
               <Route path="base" element={<ImportBase />} />
               <Route path="versoes" element={<Versions />} />
               <Route path="org" element={<Organization />} />

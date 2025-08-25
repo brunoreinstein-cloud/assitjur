@@ -33,6 +33,11 @@ const adminMenuItems = [
     icon: LayoutDashboard,
   },
   {
+    title: 'Integração OpenAI',
+    url: '/admin/ia',
+    icon: Settings,
+  },
+  {
     title: 'Importar & Publicar Base',
     url: '/admin/base',
     icon: Upload,

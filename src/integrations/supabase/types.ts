@@ -253,6 +253,195 @@ export type Database = {
           },
         ]
       }
+      openai_keys: {
+        Row: {
+          alias: string
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean
+          last_four: string
+          last_used_at: string | null
+          org_id: string
+          updated_at: string
+        }
+        Insert: {
+          alias: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean
+          last_four: string
+          last_used_at?: string | null
+          org_id: string
+          updated_at?: string
+        }
+        Update: {
+          alias?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean
+          last_four?: string
+          last_used_at?: string | null
+          org_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      openai_logs: {
+        Row: {
+          cost_cents: number
+          created_at: string
+          duration_ms: number
+          error_code: string | null
+          hash_base: string | null
+          id: string
+          model: string
+          org_id: string
+          prompt_id: string | null
+          prompt_version: number | null
+          request_type: string
+          status_code: number
+          streaming: boolean
+          tokens_in: number
+          tokens_out: number
+          user_id: string
+        }
+        Insert: {
+          cost_cents?: number
+          created_at?: string
+          duration_ms?: number
+          error_code?: string | null
+          hash_base?: string | null
+          id?: string
+          model: string
+          org_id: string
+          prompt_id?: string | null
+          prompt_version?: number | null
+          request_type?: string
+          status_code?: number
+          streaming?: boolean
+          tokens_in?: number
+          tokens_out?: number
+          user_id: string
+        }
+        Update: {
+          cost_cents?: number
+          created_at?: string
+          duration_ms?: number
+          error_code?: string | null
+          hash_base?: string | null
+          id?: string
+          model?: string
+          org_id?: string
+          prompt_id?: string | null
+          prompt_version?: number | null
+          request_type?: string
+          status_code?: number
+          streaming?: boolean
+          tokens_in?: number
+          tokens_out?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      openai_test_cases: {
+        Row: {
+          created_at: string
+          created_by: string
+          expected_output: Json | null
+          id: string
+          input_data: Json
+          last_result: Json | null
+          name: string
+          org_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expected_output?: Json | null
+          id?: string
+          input_data: Json
+          last_result?: Json | null
+          name: string
+          org_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expected_output?: Json | null
+          id?: string
+          input_data?: Json
+          last_result?: Json | null
+          name?: string
+          org_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      org_settings: {
+        Row: {
+          ab_weights: Json | null
+          budget_month_cents: number
+          created_at: string
+          fallback: string[] | null
+          id: string
+          max_output_tokens: number
+          model: string
+          openai_enabled: boolean
+          org_id: string
+          prompt_active_id: string | null
+          rate_per_min: number
+          schema_json: Json
+          streaming: boolean
+          temperature: number
+          top_p: number
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          ab_weights?: Json | null
+          budget_month_cents?: number
+          created_at?: string
+          fallback?: string[] | null
+          id?: string
+          max_output_tokens?: number
+          model?: string
+          openai_enabled?: boolean
+          org_id: string
+          prompt_active_id?: string | null
+          rate_per_min?: number
+          schema_json?: Json
+          streaming?: boolean
+          temperature?: number
+          top_p?: number
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          ab_weights?: Json | null
+          budget_month_cents?: number
+          created_at?: string
+          fallback?: string[] | null
+          id?: string
+          max_output_tokens?: number
+          model?: string
+          openai_enabled?: boolean
+          org_id?: string
+          prompt_active_id?: string | null
+          rate_per_min?: number
+          schema_json?: Json
+          streaming?: boolean
+          temperature?: number
+          top_p?: number
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: []
+      }
       organizations: {
         Row: {
           code: string
@@ -484,6 +673,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      prompts: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean
+          label: string
+          org_id: string
+          template_type: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean
+          label: string
+          org_id: string
+          template_type?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          org_id?: string
+          template_type?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
       }
       rate_limits: {
         Row: {
