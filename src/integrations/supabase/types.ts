@@ -636,6 +636,9 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          data_access_level:
+            | Database["public"]["Enums"]["data_access_level"]
+            | null
           email: string
           id: string
           is_active: boolean
@@ -647,6 +650,9 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          data_access_level?:
+            | Database["public"]["Enums"]["data_access_level"]
+            | null
           email: string
           id?: string
           is_active?: boolean
@@ -658,6 +664,9 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          data_access_level?:
+            | Database["public"]["Enums"]["data_access_level"]
+            | null
           email?: string
           id?: string
           is_active?: boolean
@@ -789,6 +798,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      data_access_level: "FULL" | "MASKED" | "NONE"
       user_role: "ADMIN" | "ANALYST" | "VIEWER"
     }
     CompositeTypes: {
@@ -917,6 +927,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      data_access_level: ["FULL", "MASKED", "NONE"],
       user_role: ["ADMIN", "ANALYST", "VIEWER"],
     },
   },
