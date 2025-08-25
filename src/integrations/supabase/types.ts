@@ -67,6 +67,33 @@ export type Database = {
           },
         ]
       }
+      conversations: {
+        Row: {
+          created_at: string | null
+          id: string
+          org_id: string
+          title: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          org_id: string
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          org_id?: string
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       dataset_files: {
         Row: {
           file_size: number | null
@@ -249,6 +276,41 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          role: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          role: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
         ]
@@ -792,7 +854,155 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      pessoas_masked: {
+        Row: {
+          apelidos: string[] | null
+          cpf_mask: string | null
+          created_at: string | null
+          id: string | null
+          nome_civil: string | null
+          org_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          apelidos?: string[] | null
+          cpf_mask?: never
+          created_at?: string | null
+          id?: string | null
+          nome_civil?: never
+          org_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          apelidos?: string[] | null
+          cpf_mask?: never
+          created_at?: string | null
+          id?: string | null
+          nome_civil?: never
+          org_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pessoas_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      processos_masked: {
+        Row: {
+          advogados_ativo: string[] | null
+          advogados_passivo: string[] | null
+          classificacao_final: string | null
+          cnj: string | null
+          cnj_normalizado: string | null
+          comarca: string | null
+          created_at: string | null
+          data_audiencia: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          fase: string | null
+          id: string | null
+          observacoes: string | null
+          org_id: string | null
+          prova_emprestada: boolean | null
+          reclamante_cpf_mask: string | null
+          reclamante_foi_testemunha: boolean | null
+          reclamante_nome: string | null
+          reu_nome: string | null
+          score_risco: number | null
+          status: string | null
+          testemunhas_ativo: string[] | null
+          testemunhas_passivo: string[] | null
+          triangulacao_confirmada: boolean | null
+          tribunal: string | null
+          troca_direta: boolean | null
+          updated_at: string | null
+          vara: string | null
+          version_id: string | null
+        }
+        Insert: {
+          advogados_ativo?: string[] | null
+          advogados_passivo?: string[] | null
+          classificacao_final?: string | null
+          cnj?: string | null
+          cnj_normalizado?: string | null
+          comarca?: string | null
+          created_at?: string | null
+          data_audiencia?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          fase?: string | null
+          id?: string | null
+          observacoes?: string | null
+          org_id?: string | null
+          prova_emprestada?: boolean | null
+          reclamante_cpf_mask?: never
+          reclamante_foi_testemunha?: boolean | null
+          reclamante_nome?: never
+          reu_nome?: never
+          score_risco?: number | null
+          status?: string | null
+          testemunhas_ativo?: string[] | null
+          testemunhas_passivo?: string[] | null
+          triangulacao_confirmada?: boolean | null
+          tribunal?: string | null
+          troca_direta?: boolean | null
+          updated_at?: string | null
+          vara?: string | null
+          version_id?: string | null
+        }
+        Update: {
+          advogados_ativo?: string[] | null
+          advogados_passivo?: string[] | null
+          classificacao_final?: string | null
+          cnj?: string | null
+          cnj_normalizado?: string | null
+          comarca?: string | null
+          created_at?: string | null
+          data_audiencia?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          fase?: string | null
+          id?: string | null
+          observacoes?: string | null
+          org_id?: string | null
+          prova_emprestada?: boolean | null
+          reclamante_cpf_mask?: never
+          reclamante_foi_testemunha?: boolean | null
+          reclamante_nome?: never
+          reu_nome?: never
+          score_risco?: number | null
+          status?: string | null
+          testemunhas_ativo?: string[] | null
+          testemunhas_passivo?: string[] | null
+          triangulacao_confirmada?: boolean | null
+          tribunal?: string | null
+          troca_direta?: boolean | null
+          updated_at?: string | null
+          vara?: string | null
+          version_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "processos_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "processos_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "dataset_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       can_access_sensitive_data: {

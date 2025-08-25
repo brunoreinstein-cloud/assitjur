@@ -1,10 +1,13 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Send, FileText, User, TrendingUp, Upload } from "lucide-react"
+import { Send, FileText, User, TrendingUp, Upload, Loader2 } from "lucide-react"
 import { RiskBadge } from "./RiskBadge"
+import { useToast } from "@/components/ui/use-toast"
+import { supabase } from "@/integrations/supabase/client"
+import { useAuth } from "@/hooks/useAuth"
 
 interface Message {
   id: string
@@ -21,86 +24,171 @@ interface ChatInterfaceProps {
 export function ChatInterface({ onUploadClick, hasData }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
+  const { toast } = useToast()
+  const { user, profile } = useAuth()
 
   const queryTypes = [
     {
-      id: "cnj",
-      label: "Por Processo (CNJ)",
+      id: "process_search",
+      label: "Busca por Processo (CNJ)",
       icon: FileText,
       description: "Ex: 0000000-00.0000.0.00.0000",
       color: "bg-primary/10 text-primary border-primary/20"
     },
     {
-      id: "witness", 
-      label: "Por Testemunha (Nome)",
+      id: "risk_analysis", 
+      label: "Análise de Riscos",
       icon: User,
-      description: "Ex: João Silva ou João Silva (SP, 2023)",
+      description: "Análise de testemunhas e padrões suspeitos",
       color: "bg-success/10 text-success border-success/20"
     },
     {
-      id: "patterns",
-      label: "Padrões Gerais",
+      id: "pattern_analysis",
+      label: "Análise de Padrões",
       icon: TrendingUp,
       description: "Triangulações, trocas diretas, análises globais",
       color: "bg-warning/10 text-warning border-warning/20"
     }
   ]
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim()) return
+  // Load conversation history on mount
+  useEffect(() => {
+    if (user && profile) {
+      loadRecentConversation()
+    }
+  }, [user, profile])
 
-    // Add user message
+  const loadRecentConversation = async () => {
+    try {
+      // Get most recent conversation
+      const { data: conversation } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('user_id', user?.id)
+        .eq('org_id', profile?.organization_id)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (conversation) {
+        setCurrentConversationId(conversation.id)
+        
+        // Load messages from conversation
+        const { data: messageHistory } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('conversation_id', conversation.id)
+          .order('created_at', { ascending: true })
+
+        if (messageHistory) {
+          const formattedMessages: Message[] = messageHistory.map(msg => ({
+            id: msg.id,
+            type: msg.role as 'user' | 'assistant',
+            content: msg.content,
+            timestamp: new Date(msg.created_at)
+          }))
+          setMessages(formattedMessages)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading conversation:', error)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!input.trim() || isLoading) return
+
+    setIsLoading(true)
+    const userInput = input
+    setInput("")
+
+    // Add user message immediately
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
-      content: input,
+      content: userInput,
       timestamp: new Date()
     }
-
     setMessages(prev => [...prev, userMessage])
-    
-    // Simulate assistant response
-    setTimeout(() => {
+
+    try {
+      // Determine query type based on input
+      let queryType = 'general'
+      if (userInput.match(/\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}/)) {
+        queryType = 'process_search'
+      } else if (userInput.toLowerCase().includes('risco') || userInput.toLowerCase().includes('triangula')) {
+        queryType = 'risk_analysis'
+      } else if (userInput.toLowerCase().includes('padrão') || userInput.toLowerCase().includes('padrões')) {
+        queryType = 'pattern_analysis'
+      }
+
+      // Call the chat API
+      const { data, error } = await supabase.functions.invoke('chat-legal', {
+        body: {
+          message: userInput,
+          conversationId: currentConversationId,
+          queryType: queryType
+        }
+      })
+
+      if (error) {
+        throw error
+      }
+
+      // Update conversation ID if it's a new conversation
+      if (!currentConversationId && data.conversationId) {
+        setCurrentConversationId(data.conversationId)
+      }
+
+      // Add assistant response
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: generateMockResponse(input),
+        content: data.message,
         timestamp: new Date()
       }
       setMessages(prev => [...prev, assistantMessage])
-    }, 1000)
 
-    setInput("")
+    } catch (error) {
+      console.error('Error sending message:', error)
+      toast({
+        title: "Erro na consulta",
+        description: error.message || "Ocorreu um erro ao processar sua mensagem. Tente novamente.",
+        variant: "destructive",
+      })
+
+      // Add error message
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: "Desculpe, ocorreu um erro ao processar sua consulta. Verifique se o OpenAI está configurado corretamente ou tente novamente.",
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, errorMessage])
+    }
+
+    setIsLoading(false)
   }
 
-  const generateMockResponse = (query: string) => {
-    return `**📊 RESUMO EXECUTIVO**
-Consulta processada para "${query}". Dados localizados na base com indicadores de risco identificados.
-
-**🔍 ANÁLISE DETALHADA**  
-Processo CNJ: 0000000-00.0000.0.00.0000
-Reclamante: João Silva (CPF: ***.456.789-**)
-Testemunhas: Maria Santos, Pedro Costa
-Score de Risco: 75 pontos
-
-**⚠️ ALERTAS IDENTIFICADOS**
-• Triangulação confirmada entre 3 testemunhas
-• Prova emprestada detectada em observações
-• Alta recorrência de advogado (+3 casos)
-
-**💡 RECOMENDAÇÕES**
-• Impugnar testemunhas por suspeição  
-• Solicitar esclarecimentos sobre vínculos
-• Monitorar padrões futuros
-
-**📋 PRÓXIMOS PASSOS**
-• Prazo para contradita: 10 dias úteis
-• Validar informações nos autos originais
-• Preparar documentação comprobatória
-
-*Informações baseadas na planilha carregada. Recomenda-se validação nos autos antes de qualquer medida processual.*`
+  const handleQueryTypeClick = (queryType: any) => {
+    let sampleQuery = ""
+    switch (queryType.id) {
+      case 'process_search':
+        sampleQuery = "Buscar informações sobre processo CNJ"
+        break
+      case 'risk_analysis':
+        sampleQuery = "Analisar riscos de triangulação e testemunhas suspeitas"
+        break
+      case 'pattern_analysis':
+        sampleQuery = "Identificar padrões gerais de fraude e trocas diretas"
+        break
+    }
+    setInput(sampleQuery)
   }
+
 
   if (!hasData) {
     return (
@@ -148,7 +236,7 @@ Score de Risco: 75 pontos
                 <Card 
                   key={type.id} 
                   className={`cursor-pointer hover:shadow-md transition-all duration-300 border ${type.color}`}
-                  onClick={() => setInput(type.description.split(': ')[1] || '')}
+                  onClick={() => handleQueryTypeClick(type)}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
@@ -203,8 +291,12 @@ Score de Risco: 75 pontos
             placeholder="Digite CNJ do processo, nome da testemunha ou 'padrões gerais'..."
             className="flex-1 bg-background"
           />
-          <Button type="submit" variant="professional" disabled={!input.trim()}>
-            <Send className="w-4 h-4" />
+          <Button type="submit" variant="professional" disabled={!input.trim() || isLoading}>
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
           </Button>
         </form>
       </div>

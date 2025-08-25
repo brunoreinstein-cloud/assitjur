@@ -1,16 +1,58 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ChatInterface } from '@/components/ChatInterface';
 import { UploadWizard } from '@/components/UploadWizard';
-import { LogOut, Database, Shield, User, Upload, Settings } from 'lucide-react';
+import { LogOut, Database, Shield, User, Upload, Settings, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 const ChatApp = () => {
-  const { user, profile, signOut, isAdmin } = useAuth();
+  const { user, profile, signOut, hasRole } = useAuth();
+  const { toast } = useToast();
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [hasData, setHasData] = useState(false);
+  const [dataStats, setDataStats] = useState({ processos: 0, pessoas: 0 });
+  const [loading, setLoading] = useState(true);
+
+  const isAdmin = hasRole('ADMIN');
+
+  useEffect(() => {
+    if (user && profile) {
+      checkDataAvailability();
+    }
+  }, [user, profile]);
+
+  const checkDataAvailability = async () => {
+    try {
+      // Check for processes data
+      const { count: processosCount } = await supabase
+        .from('processos')
+        .select('*', { count: 'exact', head: true })
+        .eq('org_id', profile?.organization_id);
+
+      // Check for people data  
+      const { count: pessoasCount } = await supabase
+        .from('pessoas')
+        .select('*', { count: 'exact', head: true })
+        .eq('org_id', profile?.organization_id);
+
+      const totalCount = (processosCount || 0) + (pessoasCount || 0);
+      setHasData(totalCount > 0);
+      setDataStats({ 
+        processos: processosCount || 0, 
+        pessoas: pessoasCount || 0 
+      });
+    } catch (error) {
+      console.error('Error checking data availability:', error);
+      setHasData(false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -66,11 +108,33 @@ const ChatApp = () => {
                 <span className="text-xl font-bold">Hubjuria</span>
               </div>
               
-              {/* Base Status - TODO: Replace with actual base info */}
-              <Badge variant="outline" className="hidden sm:inline-flex">
-                <Database className="h-3 w-3 mr-1" />
-                Base v2025.08.25 • 1,234 linhas
-              </Badge>
+              {/* Base Status */}
+              <div className="flex items-center gap-2">
+                <Database className="w-4 h-4" />
+                {loading ? (
+                  <span className="text-sm text-muted-foreground">Verificando base...</span>
+                ) : hasData ? (
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-success" />
+                    <Badge variant="outline" className="bg-success/10 text-success border-success/20">
+                      Base Ativa
+                    </Badge>
+                    <span className="text-sm text-muted-foreground hidden sm:inline">
+                      {dataStats.processos} processos • {dataStats.pessoas} pessoas
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-warning" />
+                    <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">
+                      Sem Dados
+                    </Badge>
+                    <span className="text-sm text-muted-foreground hidden sm:inline">
+                      Base vazia - faça upload dos dados
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center space-x-4">
@@ -93,13 +157,13 @@ const ChatApp = () => {
                   className="flex items-center gap-2"
                 >
                   <Settings className="h-4 w-4" />
-                  Painel Admin
+                  <span className="hidden sm:inline">Painel Admin</span>
                 </Button>
               )}
 
               {/* Admin Upload Button */}
               {isAdmin && (
-                <Dialog>
+                <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
                   <DialogTrigger asChild>
                     <Button variant="professional" size="sm">
                       <Upload className="h-4 w-4 mr-2" />
@@ -115,12 +179,14 @@ const ChatApp = () => {
                     </DialogHeader>
                     <UploadWizard 
                       onComplete={() => {
+                        setIsUploadOpen(false);
+                        checkDataAvailability(); // Refresh data stats
                         toast({
-                          title: "Base atualizada",
-                          description: "A base de dados foi atualizada com sucesso."
+                          title: "Upload concluído",
+                          description: "Os dados foram carregados com sucesso na base.",
                         });
                       }}
-                      onCancel={() => {}}
+                      onCancel={() => setIsUploadOpen(false)}
                     />
                   </DialogContent>
                 </Dialog>
@@ -186,9 +252,11 @@ const ChatApp = () => {
                 title: "Acesso restrito",
                 description: "Recurso disponível somente para administradores."
               });
+            } else {
+              setIsUploadOpen(true);
             }
           }}
-          hasData={true} // TODO: Replace with actual data check
+          hasData={hasData}
         />
       </main>
     </div>
