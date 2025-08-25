@@ -93,6 +93,10 @@ serve(async (req) => {
   }
 
   try {
+    console.log('=== Admin OpenAI Keys Function Called ===');
+    console.log('Method:', req.method);
+    console.log('Headers:', Object.fromEntries(req.headers.entries()));
+    
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, serviceKey);
@@ -100,6 +104,7 @@ serve(async (req) => {
     // Get user from JWT
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
+      console.error('Missing authorization header');
       return new Response(
         JSON.stringify({ error: 'Authorization header missing' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -107,19 +112,28 @@ serve(async (req) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
+    console.log('Token received:', token.substring(0, 20) + '...');
+    
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
     if (authError || !user) {
+      console.error('Auth error:', authError);
       return new Response(
         JSON.stringify({ error: 'Invalid authentication' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    console.log('User authenticated:', user.id);
+
     // Check admin permissions
     const profile = await requireAdmin(supabase, user.id);
+    console.log('Profile validated:', { role: profile.role, org_id: profile.organization_id });
 
-    const { action, alias, key: apiKey, notes, keyId } = await req.json();
+    const body = await req.json();
+    console.log('Request body:', body);
+    
+    const { action, alias, key: apiKey, notes, keyId } = body;
 
     switch (action) {
       case 'create': {
