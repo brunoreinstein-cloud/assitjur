@@ -1,18 +1,19 @@
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { ChatInterface } from "@/components/ChatInterface"
-import { UploadWizard } from "@/components/UploadWizard"
-import { Scale, Upload, Shield, FileText } from "lucide-react"
-import heroImage from "@/assets/hero-legal-tech.jpg"
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { Scale, Upload, Shield, FileText, ArrowRight } from "lucide-react";
+import heroImage from "@/assets/hero-legal-tech.jpg";
 
 const Index = () => {
-  const [showUpload, setShowUpload] = useState(false)
-  const [hasData, setHasData] = useState(false)
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const handleUploadComplete = () => {
-    setHasData(true)
-    setShowUpload(false)
-  }
+  useEffect(() => {
+    if (user) {
+      navigate('/app/chat');
+    }
+  }, [user, navigate]);
 
   const features = [
     {
@@ -65,21 +66,20 @@ const Index = () => {
           </div>
           
           {!hasData && (
-            <Button 
-              variant="professional" 
-              onClick={() => setShowUpload(true)}
-              className="hidden sm:flex"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Importar Dados
-            </Button>
+          <Button 
+            variant="professional" 
+            onClick={() => navigate('/login')}
+            className="hidden sm:flex"
+          >
+            <ArrowRight className="w-4 h-4 mr-2" />
+            Entrar
+          </Button>
           )}
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {!hasData ? (
-          <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto">
             {/* Hero Section */}
             <div className="text-center mb-12 relative">
               <div className="absolute inset-0 bg-gradient-subtle rounded-lg opacity-50"></div>
@@ -102,11 +102,11 @@ const Index = () => {
                   <Button 
                     variant="premium" 
                     size="lg"
-                    onClick={() => setShowUpload(true)}
+                    onClick={() => navigate('/login')}
                     className="mb-8 bg-white text-primary hover:bg-white/90 shadow-premium"
                   >
-                    <Upload className="w-5 h-5 mr-2" />
-                    Começar Análise
+                    <ArrowRight className="w-5 h-5 mr-2" />
+                    Acessar Sistema
                   </Button>
                 </div>
               </div>
@@ -151,14 +151,7 @@ const Index = () => {
                   Informações baseadas na planilha carregada. Recomenda-se validação nos autos...
                 </div>
               </div>
-            </div>
-          </div>
-        ) : (
-          <ChatInterface 
-            onUploadClick={() => setShowUpload(true)}
-            hasData={hasData}
-          />
-        )}
+        </div>
       </main>
     </div>
   )
