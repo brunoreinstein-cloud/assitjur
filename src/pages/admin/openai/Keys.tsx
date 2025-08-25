@@ -47,26 +47,58 @@ const OpenAIKeys = () => {
   // Add new key
   const addKeyMutation = useMutation({
     mutationFn: async (keyData: typeof newKey) => {
-      console.log('=== STARTING DIRECT FETCH APPROACH ===');
+      console.log('=== ULTRA DEBUG MODE ===');
+      console.log('Starting at:', new Date().toISOString());
       console.log('Key data:', {
         alias: keyData.alias,
         hasKey: !!keyData.key,
-        keyStart: keyData.key?.substring(0, 10)
+        keyLength: keyData.key?.length
       });
       
       try {
-        // Get current user session
-        const { data: { session } } = await supabase.auth.getSession();
+        // Test 1: Check session
+        console.log('🔍 TEST 1: Checking session...');
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+          console.error('❌ Session error:', sessionError);
+          throw new Error('Session error: ' + sessionError.message);
+        }
         if (!session) {
+          console.error('❌ No session');
           throw new Error('No active session');
         }
-        console.log('✅ Session found:', !!session.access_token);
+        console.log('✅ Session OK, token length:', session.access_token?.length);
 
-        // Direct fetch to the edge function
+        // Test 2: Try supabase.functions.invoke first
+        console.log('🔍 TEST 2: Trying supabase.functions.invoke...');
+        try {
+          const invokeResult = await supabase.functions.invoke('admin-openai-keys', {
+            body: { 
+              action: 'create',
+              alias: keyData.alias,
+              key: keyData.key,
+              test: true
+            }
+          });
+          console.log('✅ supabase.functions.invoke result:', invokeResult);
+          if (invokeResult.data && invokeResult.data.success) {
+            return invokeResult.data;
+          }
+          if (invokeResult.error) {
+            console.error('❌ Invoke error:', invokeResult.error);
+            throw invokeResult.error;
+          }
+        } catch (invokeError) {
+          console.error('❌ supabase.functions.invoke failed:', invokeError);
+          console.log('🔄 Fallback to direct fetch...');
+        }
+
+        // Test 3: Direct fetch fallback
+        console.log('🔍 TEST 3: Direct fetch...');
         const functionUrl = `https://fgjypmlszuzkgvhuszxn.supabase.co/functions/v1/admin-openai-keys`;
-        console.log('🌐 Calling function directly:', functionUrl);
+        console.log('🌐 URL:', functionUrl);
         
-        const response = await fetch(functionUrl, {
+        const fetchResponse = await fetch(functionUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -77,29 +109,33 @@ const OpenAIKeys = () => {
             action: 'create',
             alias: keyData.alias,
             key: keyData.key,
-            notes: keyData.notes,
+            test: true
           })
         });
 
-        console.log('📡 Response status:', response.status);
-        console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+        console.log('📡 Fetch response status:', fetchResponse.status);
+        console.log('📡 Fetch response ok:', fetchResponse.ok);
+        console.log('📡 Fetch response headers:', Object.fromEntries(fetchResponse.headers.entries()));
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ Response error:', errorText);
-          throw new Error(`HTTP ${response.status}: ${errorText}`);
+        if (!fetchResponse.ok) {
+          const errorText = await fetchResponse.text();
+          console.error('❌ Fetch error response:', errorText);
+          throw new Error(`HTTP ${fetchResponse.status}: ${errorText}`);
         }
 
-        const result = await response.json();
-        console.log('✅ Success result:', result);
-
+        const result = await fetchResponse.json();
+        console.log('✅ Final success result:', result);
         return result;
+
       } catch (error) {
-        console.error('=== DIRECT FETCH ERROR ===');
-        console.error('Error details:', error);
-        console.error('Error type:', typeof error);
-        console.error('Error message:', error?.message);
-        throw error;
+        console.error('=== FINAL ERROR ===');
+        console.error('Error type:', error.constructor?.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        console.error('Full error object:', error);
+        
+        // Re-throw with more context
+        throw new Error(`Falha ao salvar chave: ${error.message}`);
       }
     },
     onSuccess: () => {
