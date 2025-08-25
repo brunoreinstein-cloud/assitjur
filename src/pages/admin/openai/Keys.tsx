@@ -47,94 +47,71 @@ const OpenAIKeys = () => {
   // Add new key
   const addKeyMutation = useMutation({
     mutationFn: async (keyData: typeof newKey) => {
-      console.log('=== ULTRA DEBUG MODE ===');
+      console.log('=== FIXED AUTH APPROACH ===');
       console.log('Starting at:', new Date().toISOString());
-      console.log('Key data:', {
-        alias: keyData.alias,
-        hasKey: !!keyData.key,
-        keyLength: keyData.key?.length
-      });
       
       try {
-        // Test 1: Check session
-        console.log('🔍 TEST 1: Checking session...');
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        // Get fresh session with explicit refresh
+        console.log('🔄 Getting fresh session...');
+        const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
+        
         if (sessionError) {
           console.error('❌ Session error:', sessionError);
-          throw new Error('Session error: ' + sessionError.message);
+          throw new Error('Falha na autenticação: ' + sessionError.message);
         }
-        if (!session) {
-          console.error('❌ No session');
-          throw new Error('No active session');
-        }
-        console.log('✅ Session OK, token length:', session.access_token?.length);
-
-        // Test 2: Try supabase.functions.invoke first
-        console.log('🔍 TEST 2: Trying supabase.functions.invoke...');
-        try {
-          const invokeResult = await supabase.functions.invoke('admin-openai-keys', {
-            body: { 
-              action: 'create',
-              alias: keyData.alias,
-              key: keyData.key,
-              test: true
-            }
-          });
-          console.log('✅ supabase.functions.invoke result:', invokeResult);
-          if (invokeResult.data && invokeResult.data.success) {
-            return invokeResult.data;
-          }
-          if (invokeResult.error) {
-            console.error('❌ Invoke error:', invokeResult.error);
-            throw invokeResult.error;
-          }
-        } catch (invokeError) {
-          console.error('❌ supabase.functions.invoke failed:', invokeError);
-          console.log('🔄 Fallback to direct fetch...');
-        }
-
-        // Test 3: Direct fetch fallback
-        console.log('🔍 TEST 3: Direct fetch...');
-        const functionUrl = `https://fgjypmlszuzkgvhuszxn.supabase.co/functions/v1/admin-openai-keys`;
-        console.log('🌐 URL:', functionUrl);
         
-        const fetchResponse = await fetch(functionUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnanlwbWxzenV6a2d2aHVzenhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE4MjQsImV4cCI6MjA3MTYwNzgyNH0.lN-Anhn1e-2SCDIAe6megYRHdhofe1VO71D6-Zk70XU'
-          },
-          body: JSON.stringify({
+        let session = initialSession;
+        
+        if (!session || !session.access_token) {
+          console.error('❌ No valid session or access token');
+          // Try to refresh the session
+          const { data: { session: refreshedSession } } = await supabase.auth.refreshSession();
+          if (!refreshedSession) {
+            throw new Error('Sessão expirada. Faça login novamente.');
+          }
+          console.log('✅ Session refreshed');
+          session = refreshedSession;
+        }
+        
+        console.log('✅ Valid session found, token length:', session.access_token.length);
+        console.log('✅ Token expires at:', new Date(session.expires_at * 1000).toISOString());
+
+        // Use supabase.functions.invoke with fresh session
+        console.log('🚀 Calling function with supabase.functions.invoke...');
+        const result = await supabase.functions.invoke('admin-openai-keys', {
+          body: { 
             action: 'create',
             alias: keyData.alias,
             key: keyData.key,
-            test: true
-          })
+            notes: keyData.notes,
+          },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          }
         });
-
-        console.log('📡 Fetch response status:', fetchResponse.status);
-        console.log('📡 Fetch response ok:', fetchResponse.ok);
-        console.log('📡 Fetch response headers:', Object.fromEntries(fetchResponse.headers.entries()));
-
-        if (!fetchResponse.ok) {
-          const errorText = await fetchResponse.text();
-          console.error('❌ Fetch error response:', errorText);
-          throw new Error(`HTTP ${fetchResponse.status}: ${errorText}`);
+        
+        console.log('📡 Function result:', result);
+        console.log('📡 Result data:', result.data);
+        console.log('📡 Result error:', result.error);
+        
+        if (result.error) {
+          console.error('❌ Function returned error:', result.error);
+          throw new Error(`Erro na função: ${result.error.message || result.error}`);
         }
-
-        const result = await fetchResponse.json();
-        console.log('✅ Final success result:', result);
-        return result;
+        
+        if (!result.data) {
+          console.error('❌ No data returned');
+          throw new Error('Nenhum dado retornado da função');
+        }
+        
+        console.log('✅ Success:', result.data);
+        return result.data;
 
       } catch (error) {
         console.error('=== FINAL ERROR ===');
         console.error('Error type:', error.constructor?.name);
         console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-        console.error('Full error object:', error);
-        
-        // Re-throw with more context
+        console.error('Full error:', error);
         throw new Error(`Falha ao salvar chave: ${error.message}`);
       }
     },
