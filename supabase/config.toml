@@ -1,1 +1,4 @@
 project_id = "fgjypmlszuzkgvhuszxn"
+
+[functions.admin-openai-keys]
+verify_jwt = true
