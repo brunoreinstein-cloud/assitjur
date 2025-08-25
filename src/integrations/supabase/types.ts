@@ -67,32 +67,379 @@ export type Database = {
           },
         ]
       }
+      dataset_files: {
+        Row: {
+          file_size: number | null
+          id: string
+          original_filename: string
+          rows_count: number | null
+          storage_path: string
+          uploaded_at: string | null
+          uploaded_by: string
+          validation_report: Json | null
+          version_id: string
+        }
+        Insert: {
+          file_size?: number | null
+          id?: string
+          original_filename: string
+          rows_count?: number | null
+          storage_path: string
+          uploaded_at?: string | null
+          uploaded_by: string
+          validation_report?: Json | null
+          version_id: string
+        }
+        Update: {
+          file_size?: number | null
+          id?: string
+          original_filename?: string
+          rows_count?: number | null
+          storage_path?: string
+          uploaded_at?: string | null
+          uploaded_by?: string
+          validation_report?: Json | null
+          version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dataset_files_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "dataset_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dataset_versions: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          description: string | null
+          hash: string
+          id: string
+          is_active: boolean | null
+          org_id: string
+          published_at: string | null
+          status: string
+          version_number: number
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          hash: string
+          id?: string
+          is_active?: boolean | null
+          org_id: string
+          published_at?: string | null
+          status?: string
+          version_number?: number
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          hash?: string
+          id?: string
+          is_active?: boolean | null
+          org_id?: string
+          published_at?: string | null
+          status?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dataset_versions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_errors: {
+        Row: {
+          column_name: string | null
+          created_at: string | null
+          error_message: string
+          error_type: string
+          id: string
+          job_id: string
+          raw_value: string | null
+          row_number: number | null
+        }
+        Insert: {
+          column_name?: string | null
+          created_at?: string | null
+          error_message: string
+          error_type: string
+          id?: string
+          job_id: string
+          raw_value?: string | null
+          row_number?: number | null
+        }
+        Update: {
+          column_name?: string | null
+          created_at?: string | null
+          error_message?: string
+          error_type?: string
+          id?: string
+          job_id?: string
+          raw_value?: string | null
+          row_number?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_errors_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          created_by: string
+          error_message: string | null
+          file_id: string
+          id: string
+          org_id: string
+          progress: number | null
+          started_at: string | null
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_by: string
+          error_message?: string | null
+          file_id: string
+          id?: string
+          org_id: string
+          progress?: number | null
+          started_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string
+          error_message?: string | null
+          file_id?: string
+          id?: string
+          org_id?: string
+          progress?: number | null
+          started_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_jobs_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "dataset_files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_jobs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           code: string
           created_at: string
+          domain: string | null
+          export_limit: string | null
           id: string
           is_active: boolean
           name: string
+          require_2fa: boolean | null
+          retention_months: number | null
           updated_at: string
         }
         Insert: {
           code: string
           created_at?: string
+          domain?: string | null
+          export_limit?: string | null
           id?: string
           is_active?: boolean
           name: string
+          require_2fa?: boolean | null
+          retention_months?: number | null
           updated_at?: string
         }
         Update: {
           code?: string
           created_at?: string
+          domain?: string | null
+          export_limit?: string | null
           id?: string
           is_active?: boolean
           name?: string
+          require_2fa?: boolean | null
+          retention_months?: number | null
           updated_at?: string
         }
         Relationships: []
+      }
+      pessoas: {
+        Row: {
+          apelidos: string[] | null
+          cpf_mask: string | null
+          created_at: string | null
+          id: string
+          nome_civil: string
+          org_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          apelidos?: string[] | null
+          cpf_mask?: string | null
+          created_at?: string | null
+          id?: string
+          nome_civil: string
+          org_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          apelidos?: string[] | null
+          cpf_mask?: string | null
+          created_at?: string | null
+          id?: string
+          nome_civil?: string
+          org_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pessoas_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      processos: {
+        Row: {
+          advogados_ativo: string[] | null
+          advogados_passivo: string[] | null
+          classificacao_final: string | null
+          cnj: string
+          cnj_normalizado: string
+          comarca: string | null
+          created_at: string | null
+          data_audiencia: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          fase: string | null
+          id: string
+          observacoes: string | null
+          org_id: string
+          prova_emprestada: boolean | null
+          reclamante_cpf_mask: string | null
+          reclamante_foi_testemunha: boolean | null
+          reclamante_nome: string | null
+          reu_nome: string | null
+          score_risco: number | null
+          status: string | null
+          testemunhas_ativo: string[] | null
+          testemunhas_passivo: string[] | null
+          triangulacao_confirmada: boolean | null
+          tribunal: string | null
+          troca_direta: boolean | null
+          updated_at: string | null
+          vara: string | null
+          version_id: string | null
+        }
+        Insert: {
+          advogados_ativo?: string[] | null
+          advogados_passivo?: string[] | null
+          classificacao_final?: string | null
+          cnj: string
+          cnj_normalizado: string
+          comarca?: string | null
+          created_at?: string | null
+          data_audiencia?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          fase?: string | null
+          id?: string
+          observacoes?: string | null
+          org_id: string
+          prova_emprestada?: boolean | null
+          reclamante_cpf_mask?: string | null
+          reclamante_foi_testemunha?: boolean | null
+          reclamante_nome?: string | null
+          reu_nome?: string | null
+          score_risco?: number | null
+          status?: string | null
+          testemunhas_ativo?: string[] | null
+          testemunhas_passivo?: string[] | null
+          triangulacao_confirmada?: boolean | null
+          tribunal?: string | null
+          troca_direta?: boolean | null
+          updated_at?: string | null
+          vara?: string | null
+          version_id?: string | null
+        }
+        Update: {
+          advogados_ativo?: string[] | null
+          advogados_passivo?: string[] | null
+          classificacao_final?: string | null
+          cnj?: string
+          cnj_normalizado?: string
+          comarca?: string | null
+          created_at?: string | null
+          data_audiencia?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          fase?: string | null
+          id?: string
+          observacoes?: string | null
+          org_id?: string
+          prova_emprestada?: boolean | null
+          reclamante_cpf_mask?: string | null
+          reclamante_foi_testemunha?: boolean | null
+          reclamante_nome?: string | null
+          reu_nome?: string | null
+          score_risco?: number | null
+          status?: string | null
+          testemunhas_ativo?: string[] | null
+          testemunhas_passivo?: string[] | null
+          triangulacao_confirmada?: boolean | null
+          tribunal?: string | null
+          troca_direta?: boolean | null
+          updated_at?: string | null
+          vara?: string | null
+          version_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "processos_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "processos_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "dataset_versions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -164,6 +511,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      system_parameters: {
+        Row: {
+          description: string | null
+          id: string
+          org_id: string
+          parameter_key: string
+          parameter_value: Json
+          updated_at: string | null
+          updated_by: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          org_id: string
+          parameter_key: string
+          parameter_value: Json
+          updated_at?: string | null
+          updated_by: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          org_id?: string
+          parameter_key?: string
+          parameter_value?: Json
+          updated_at?: string | null
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_parameters_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
