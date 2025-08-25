@@ -59,14 +59,14 @@ const OpenAIOverview = () => {
   // Toggle OpenAI integration
   const toggleMutation = useMutation({
     mutationFn: async (enabled: boolean) => {
-      const { error } = await supabase.functions.invoke('admin-openai-settings', {
+      const { data, error } = await supabase.functions.invoke('admin-openai-settings', {
         body: { 
           action: 'toggle',
-          enabled,
-          org_id: profile?.organization_id 
+          enabled
         }
       });
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['org-settings'] });
@@ -75,10 +75,10 @@ const OpenAIOverview = () => {
         description: "Integração OpenAI foi alterada com sucesso.",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: "Erro",
-        description: "Falha ao alterar configuração: " + error.message,
+        description: error.message || "Falha ao alterar configuração",
         variant: "destructive",
       });
     },
