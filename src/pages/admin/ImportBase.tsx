@@ -17,6 +17,7 @@ import {
 import { useDropzone } from 'react-dropzone';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import TemplateDownload from '@/components/TemplateDownload';
 
 const ImportBase = () => {
   const [currentStep, setCurrentStep] = useState<'upload' | 'validation' | 'preview' | 'publish'>('upload');
@@ -426,25 +427,40 @@ const ImportBase = () => {
         </p>
       </div>
 
-      <div className="flex items-center gap-4 mb-6">
-        {(['upload', 'validation', 'preview', 'publish'] as const).map((step, index) => (
-          <div key={step} className="flex items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-              currentStep === step ? 'bg-primary text-primary-foreground' :
-              index < (['upload', 'validation', 'preview', 'publish'] as const).indexOf(currentStep) ? 'bg-green-500 text-white' :
-              'bg-muted text-muted-foreground'
-            }`}>
-              {index + 1}
-            </div>
-            {index < 3 && <div className="w-8 h-0.5 bg-muted mx-2" />}
+      <Tabs defaultValue="upload" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="upload">Importar Dados</TabsTrigger>
+          <TabsTrigger value="template">Template de Exemplo</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="template" className="mt-6">
+          <div className="flex justify-center">
+            <TemplateDownload />
           </div>
-        ))}
-      </div>
+        </TabsContent>
+        
+        <TabsContent value="upload" className="mt-6">
+          <div className="flex items-center gap-4 mb-6">
+            {(['upload', 'validation', 'preview', 'publish'] as const).map((step, index) => (
+              <div key={step} className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                  currentStep === step ? 'bg-primary text-primary-foreground' :
+                  index < (['upload', 'validation', 'preview', 'publish'] as const).indexOf(currentStep) ? 'bg-green-500 text-white' :
+                  'bg-muted text-muted-foreground'
+                }`}>
+                  {index + 1}
+                </div>
+                {index < 3 && <div className="w-8 h-0.5 bg-muted mx-2" />}
+              </div>
+            ))}
+          </div>
 
-      {currentStep === 'upload' && renderUploadStep()}
-      {currentStep === 'validation' && renderValidationStep()}
-      {currentStep === 'preview' && renderPreviewStep()}
-      {currentStep === 'publish' && renderPublishStep()}
+          {currentStep === 'upload' && renderUploadStep()}
+          {currentStep === 'validation' && renderValidationStep()}
+          {currentStep === 'preview' && renderPreviewStep()}
+          {currentStep === 'publish' && renderPublishStep()}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
