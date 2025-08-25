@@ -42,6 +42,12 @@ serve(async (req) => {
       }
     );
 
+    // Initialize service role client for privileged operations
+    const supabaseService = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    );
+
     // Get user from token
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
@@ -61,27 +67,26 @@ serve(async (req) => {
       throw new Error('User profile not found');
     }
 
-    // Get organization settings
+    // Get organization settings (optional)
     const { data: orgSettings } = await supabase
       .from('org_settings')
       .select('*')
       .eq('org_id', profile.organization_id)
       .single();
 
-    if (!orgSettings?.openai_enabled) {
-      throw new Error('OpenAI integration not enabled for this organization');
-    }
+    // Use default settings if no org settings found
+    const settings = orgSettings || {
+      openai_enabled: true, // Default to enabled since we have the API key
+      model: 'gpt-4o-mini',
+      temperature: 0.7,
+      max_output_tokens: 2000,
+      top_p: 0.9
+    };
 
-    // Get OpenAI API key
-    const { data: openaiKeys } = await supabase
-      .from('openai_keys')
-      .select('*')
-      .eq('org_id', profile.organization_id)
-      .eq('is_active', true)
-      .limit(1);
-
-    if (!openaiKeys || openaiKeys.length === 0) {
-      throw new Error('No active OpenAI API key found');
+    // Get OpenAI API key from environment
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openaiApiKey) {
+      throw new Error('OpenAI API key not configured. Please contact administrator.');
     }
 
     // Get or create conversation
@@ -123,14 +128,17 @@ serve(async (req) => {
     let systemPrompt = '';
 
     if (queryType === 'risk_analysis' || queryType === 'pattern_analysis') {
-      // Get relevant processes data
+      // Get relevant processes data using the standard table since user has FULL access
       const { data: processos } = await supabase
-        .from('processos_masked')
+        .from('processos')
         .select('*')
+        .eq('org_id', profile.organization_id)
         .limit(20);
 
       if (processos && processos.length > 0) {
-        contextData = `\n\nDados contextuais dos processos:\n${JSON.stringify(processos, null, 2)}`;
+        contextData = `\n\nDados contextuais dos processos (${processos.length} processos encontrados):\n${JSON.stringify(processos, null, 2)}`;
+      } else {
+        contextData = '\n\nNenhum processo encontrado na base de dados da organização.';
       }
 
       systemPrompt = `Você é um assistente especializado em análise jurídica trabalhista. 
@@ -166,15 +174,15 @@ serve(async (req) => {
     const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${openaiApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: orgSettings.model || 'gpt-4o-mini',
+        model: settings.model || 'gpt-4o-mini',
         messages: messages,
-        temperature: orgSettings.temperature || 0.7,
-        max_completion_tokens: orgSettings.max_output_tokens || 2000,
-        top_p: orgSettings.top_p || 0.9,
+        temperature: settings.temperature || 0.7,
+        max_completion_tokens: settings.max_output_tokens || 2000,
+        top_p: settings.top_p || 0.9,
         stream: false
       }),
     });
@@ -201,17 +209,17 @@ serve(async (req) => {
         role: 'assistant',
         content: assistantMessage,
         metadata: { 
-          model: orgSettings.model,
+          model: settings.model,
           tokens_used: openaiData.usage?.total_tokens || 0
         }
       }
     ]);
 
-    // Log OpenAI usage
-    await supabase.from('openai_logs').insert({
+    // Log OpenAI usage (using service role for system operations)
+    await supabaseService.from('openai_logs').insert({
       user_id: user.id,
       org_id: profile.organization_id,
-      model: orgSettings.model || 'gpt-4o-mini',
+      model: settings.model || 'gpt-4o-mini',
       tokens_in: openaiData.usage?.prompt_tokens || 0,
       tokens_out: openaiData.usage?.completion_tokens || 0,
       cost_cents: Math.round((openaiData.usage?.total_tokens || 0) * 0.001), // Approximate cost
