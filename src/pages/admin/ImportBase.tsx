@@ -47,6 +47,17 @@ const ImportBase = () => {
     setIsProcessing(true);
     setUploadProgress(0);
     
+    // Simulate upload progress
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 95) {
+          clearInterval(progressInterval);
+          return 95; // Stop at 95% until server responds
+        }
+        return prev + Math.random() * 15;
+      });
+    }, 200);
+    
     // Call the actual Supabase function
     processFileUpload(file, 'validate');
   };
@@ -65,7 +76,7 @@ const ImportBase = () => {
 
       if (action === 'validate') {
         setValidationResults(data.validation);
-        setCurrentStep('preview');
+        setCurrentStep('validation');
       } else if (action === 'publish') {
         toast({
           title: "Base publicada com sucesso",
@@ -75,11 +86,14 @@ const ImportBase = () => {
         setUploadedFile(null);
       }
     } catch (error: any) {
+      console.error('Upload error:', error);
       toast({
         title: "Erro no processamento",
         description: error.message || "Falha ao processar arquivo",
         variant: "destructive"
       });
+      setCurrentStep('upload');
+      setValidationResults(null);
     } finally {
       setIsProcessing(false);
       setUploadProgress(100);
@@ -88,6 +102,20 @@ const ImportBase = () => {
 
   const handlePublish = () => {
     if (uploadedFile) {
+      setIsProcessing(true);
+      setUploadProgress(0);
+      
+      // Simulate publish progress for large files
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90; // Stop at 90% until server responds
+          }
+          return prev + Math.random() * 10;
+        });
+      }, 300);
+      
       processFileUpload(uploadedFile, 'publish');
     }
   };
@@ -129,11 +157,19 @@ const ImportBase = () => {
             <p className="text-sm text-muted-foreground">
               {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
             </p>
+            {uploadedFile.size > 10 * 1024 * 1024 && (
+              <Alert className="mt-2">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Arquivo muito grande. Tamanho máximo: 10MB
+                </AlertDescription>
+              </Alert>
+            )}
             {isProcessing && (
               <div className="mt-3">
                 <Progress value={uploadProgress} className="w-full" />
                 <p className="text-sm text-muted-foreground mt-1">
-                  Enviando... {uploadProgress}%
+                  {uploadProgress < 95 ? `Enviando... ${Math.round(uploadProgress)}%` : 'Validando dados...'}
                 </p>
               </div>
             )}
@@ -160,6 +196,9 @@ const ImportBase = () => {
             <div className="text-center">
               <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
               <p>Validando arquivo...</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Processando amostra dos dados para validação
+              </p>
             </div>
           </div>
         ) : (
@@ -167,7 +206,7 @@ const ImportBase = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-4 bg-muted rounded-lg">
                 <div className="text-2xl font-bold">{validationResults.totalRows?.toLocaleString()}</div>
-                <div className="text-sm text-muted-foreground">Total de linhas</div>
+                <div className="text-sm text-muted-foreground">Linhas analisadas</div>
               </div>
               <div className="text-center p-4 bg-green-50 rounded-lg">
                 <div className="text-2xl font-bold text-green-600">{validationResults.validRows?.toLocaleString()}</div>
@@ -221,14 +260,26 @@ const ImportBase = () => {
               </div>
             )}
 
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex items-center gap-2">
-                <Download className="h-4 w-4" />
-                Baixar Relatório
+            <div className="flex gap-2 justify-between">
+              <Button variant="outline" onClick={() => {
+                setCurrentStep('upload');
+                setUploadedFile(null);
+                setValidationResults(null);
+              }}>
+                Voltar
               </Button>
-              <Button onClick={() => setCurrentStep('preview')}>
-                Continuar para Prévia
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex items-center gap-2" disabled>
+                  <Download className="h-4 w-4" />
+                  Relatório
+                </Button>
+                <Button 
+                  onClick={() => setCurrentStep('preview')}
+                  disabled={validationResults.validRows === 0}
+                >
+                  Continuar para Prévia
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -310,21 +361,57 @@ const ImportBase = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Esta ação irá substituir a base ativa atual. Todas as consultas passarão a usar a nova versão.
-            </AlertDescription>
-          </Alert>
+          {!isProcessing ? (
+            <>
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Esta ação irá substituir a base ativa atual. Todas as consultas passarão a usar a nova versão.
+                </AlertDescription>
+              </Alert>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" onClick={() => setCurrentStep('upload')}>
-              Cancelar
-            </Button>
-            <Button onClick={handlePublish}>
-              Confirmar Publicação
-            </Button>
-          </div>
+              <div className="bg-muted p-4 rounded-lg">
+                <h4 className="font-medium mb-2">Resumo da Importação:</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <strong>Arquivo:</strong> {uploadedFile?.name}
+                  </div>
+                  <div>
+                    <strong>Tamanho:</strong> {uploadedFile ? (uploadedFile.size / 1024 / 1024).toFixed(2) : 0} MB
+                  </div>
+                  <div>
+                    <strong>Linhas válidas:</strong> {validationResults?.validRows?.toLocaleString() || 0}
+                  </div>
+                  <div>
+                    <strong>Erros:</strong> {validationResults?.errors?.length || 0}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Button variant="outline" onClick={() => setCurrentStep('upload')}>
+                  Cancelar
+                </Button>
+                <Button onClick={handlePublish} disabled={!uploadedFile}>
+                  Confirmar Publicação
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-8">
+              <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="font-medium">Publicando base de dados...</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Processando e importando todos os registros. Isso pode levar alguns minutos.
+              </p>
+              <div className="mt-4">
+                <Progress value={uploadProgress} className="w-full" />
+                <p className="text-sm text-muted-foreground mt-1">
+                  {uploadProgress < 100 ? 'Processando...' : 'Finalizando...'}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
