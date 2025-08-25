@@ -68,11 +68,12 @@ serve(async (req) => {
 
     if (req.method === 'POST') {
       const body = await req.json();
-      console.log('Key action:', action, { alias: body.alias });
+      const actionFromBody = body.action || action; // Accept action from body or query
+      console.log('Key action:', actionFromBody, { alias: body.alias });
 
-      if (action === 'add') {
+      if (actionFromBody === 'create' || actionFromBody === 'add') {
         // Add new OpenAI key
-        const { apiKey, alias } = body;
+        const { key: apiKey, alias } = body;
 
         if (!apiKey || !alias) {
           throw new Error('API key and alias are required');
@@ -122,7 +123,7 @@ serve(async (req) => {
         });
       }
 
-      if (action === 'test') {
+      if (actionFromBody === 'test') {
         // Test existing key
         const { keyId } = body;
 
@@ -162,7 +163,7 @@ serve(async (req) => {
         });
       }
 
-      if (action === 'delete') {
+      if (actionFromBody === 'delete') {
         // Delete key
         const { keyId } = body;
 
