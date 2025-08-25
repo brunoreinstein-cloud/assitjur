@@ -9,6 +9,13 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import ChatApp from "./pages/ChatApp";
 import NotFound from "./pages/NotFound";
+import AdminLayout from "./pages/admin/AdminLayout";
+import Dashboard from "./pages/admin/Dashboard";
+import ImportBase from "./pages/admin/ImportBase";
+import Versions from "./pages/admin/Versions";
+import Organization from "./pages/admin/Organization";
+import DataExplorer from "./pages/admin/DataExplorer";
+import SystemConfig from "./pages/admin/SystemConfig";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +37,14 @@ const App = () => (
                 </AuthGuard>
               } 
             />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="base" element={<ImportBase />} />
+              <Route path="versoes" element={<Versions />} />
+              <Route path="org" element={<Organization />} />
+              <Route path="dados" element={<DataExplorer />} />
+              <Route path="config" element={<SystemConfig />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

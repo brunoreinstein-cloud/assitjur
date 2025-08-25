@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ChatInterface } from '@/components/ChatInterface';
 import { UploadWizard } from '@/components/UploadWizard';
-import { LogOut, Database, Shield, User, Upload } from 'lucide-react';
+import { LogOut, Database, Shield, User, Upload, Settings } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 
@@ -84,6 +84,18 @@ const ChatApp = () => {
                   {getRoleLabel(profile?.role || '')}
                 </Badge>
               </div>
+
+              {/* Admin Access Button */}
+              {isAdmin && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => window.open('/admin', '_blank')}
+                  className="flex items-center gap-2"
+                >
+                  <Settings className="h-4 w-4" />
+                  Painel Admin
+                </Button>
+              )}
 
               {/* Admin Upload Button */}
               {isAdmin && (
