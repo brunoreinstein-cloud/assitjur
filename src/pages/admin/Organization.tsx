@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,79 +36,167 @@ import {
   Mail, 
   UserCheck,
   UserX,
-  Shield
+  Shield,
+  Loader2
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+
+interface OrganizationData {
+  id: string;
+  name: string;
+  code: string;
+  domain?: string;
+  require_2fa: boolean;
+  export_limit: string;
+  retention_months: number;
+}
+
+interface UserProfile {
+  id: string;
+  user_id: string;
+  email: string;
+  role: 'ADMIN' | 'ANALYST' | 'VIEWER';
+  is_active: boolean;
+  created_at: string;
+}
 
 const Organization = () => {
+  const { profile } = useAuth();
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('VIEWER');
+  const [inviteRole, setInviteRole] = useState<'ADMIN' | 'ANALYST' | 'VIEWER'>('VIEWER');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [orgData, setOrgData] = useState<OrganizationData | null>(null);
+  const [users, setUsers] = useState<UserProfile[]>([]);
 
-  // Mock data - will be replaced with real data from Supabase
-  const orgData = {
-    name: 'Escritório Demo',
-    code: 'DEMO001',
-    domain: 'demo.com',
-    require2FA: false,
-    exportLimit: 'ROLE_BASED',
-    retentionMonths: 24
-  };
-
-  const users = [
-    {
-      id: '1',
-      email: 'admin@demo.com',
-      role: 'ADMIN',
-      status: 'active',
-      lastAccess: '2024-01-15 14:30',
-      name: 'Administrador'
-    },
-    {
-      id: '2',
-      email: 'analyst@demo.com',
-      role: 'ANALYST',
-      status: 'active',
-      lastAccess: '2024-01-14 16:20',
-      name: 'Analista'
-    },
-    {
-      id: '3',
-      email: 'viewer@demo.com',
-      role: 'VIEWER',
-      status: 'active',
-      lastAccess: '2024-01-13 09:15',
-      name: 'Visualizador'
-    },
-    {
-      id: '4',
-      email: 'pending@demo.com',
-      role: 'VIEWER',
-      status: 'pending',
-      lastAccess: null,
-      name: 'Usuário Pendente'
+  useEffect(() => {
+    if (profile?.organization_id) {
+      fetchOrganizationData();
+      fetchUsers();
     }
-  ];
+  }, [profile?.organization_id]);
 
-  const handleInviteUser = () => {
-    if (!inviteEmail) return;
-    
-    toast({
-      title: "Convite enviado",
-      description: `Convite enviado para ${inviteEmail} com perfil ${inviteRole}`,
-    });
-    
-    setIsInviteDialogOpen(false);
-    setInviteEmail('');
-    setInviteRole('VIEWER');
+  const fetchOrganizationData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('id', profile?.organization_id)
+        .single();
+
+      if (error) throw error;
+      setOrgData(data);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar dados da organização",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('organization_id', profile?.organization_id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setUsers(data || []);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar usuários",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleSaveOrganization = async () => {
+    if (!orgData || !profile?.organization_id) return;
+    
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('organizations')
+        .update({
+          name: orgData.name,
+          domain: orgData.domain,
+          require_2fa: orgData.require_2fa,
+          export_limit: orgData.export_limit,
+          retention_months: orgData.retention_months,
+        })
+        .eq('id', profile.organization_id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Dados da organização salvos com sucesso",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar os dados",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleInviteUser = async () => {
+    if (!inviteEmail || !profile?.organization_id) return;
+    
+    try {
+      // Here you would typically call an edge function to send an invite
+      // For now, just show a success message
+      toast({
+        title: "Convite enviado",
+        description: `Convite enviado para ${inviteEmail} com perfil ${inviteRole}`,
+      });
+      
+      setIsInviteDialogOpen(false);
+      setInviteEmail('');
+      setInviteRole('VIEWER');
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível enviar o convite",
+        variant: "destructive"
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!orgData) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">Não foi possível carregar dados da organização</p>
+      </div>
+    );
+  }
 
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'ADMIN':
-        return <Badge variant="default" className="bg-red-500">Admin</Badge>;
+        return <Badge className="bg-destructive text-destructive-foreground">Admin</Badge>;
       case 'ANALYST':
-        return <Badge variant="default" className="bg-blue-500">Analista</Badge>;
+        return <Badge className="bg-primary text-primary-foreground">Analista</Badge>;
       case 'VIEWER':
         return <Badge variant="secondary">Visualizador</Badge>;
       default:
@@ -116,16 +204,11 @@ const Organization = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Badge variant="default" className="bg-green-500">Ativo</Badge>;
-      case 'pending':
-        return <Badge variant="secondary">Pendente</Badge>;
-      case 'suspended':
-        return <Badge variant="destructive">Suspenso</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+  const getStatusBadge = (isActive: boolean) => {
+    if (isActive) {
+      return <Badge className="bg-success text-success-foreground">Ativo</Badge>;
+    } else {
+      return <Badge variant="secondary">Inativo</Badge>;
     }
   };
 
@@ -153,7 +236,11 @@ const Organization = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="orgName">Nome da Organização</Label>
-                <Input id="orgName" value={orgData.name} />
+                <Input 
+                  id="orgName" 
+                  value={orgData.name} 
+                  onChange={(e) => setOrgData({...orgData, name: e.target.value})}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="orgCode">Código</Label>
@@ -163,15 +250,32 @@ const Organization = () => {
             
             <div className="space-y-2">
               <Label htmlFor="domain">Domínio Permitido</Label>
-              <Input id="domain" value={orgData.domain} placeholder="exemplo.com" />
+              <Input 
+                id="domain" 
+                value={orgData.domain || ''} 
+                placeholder="exemplo.com"
+                onChange={(e) => setOrgData({...orgData, domain: e.target.value})}
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="retention">Retenção de Dados (meses)</Label>
-              <Input id="retention" type="number" value={orgData.retentionMonths} />
+              <Input 
+                id="retention" 
+                type="number" 
+                value={orgData.retention_months}
+                onChange={(e) => setOrgData({...orgData, retention_months: parseInt(e.target.value)})}
+              />
             </div>
 
-            <Button className="w-full">Salvar Alterações</Button>
+            <Button 
+              className="w-full" 
+              onClick={handleSaveOrganization}
+              disabled={saving}
+            >
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Salvar Alterações
+            </Button>
           </CardContent>
         </Card>
 
@@ -190,12 +294,18 @@ const Organization = () => {
                   Obrigatório para todos os usuários
                 </p>
               </div>
-              <Switch checked={orgData.require2FA} />
+              <Switch 
+                checked={orgData.require_2fa} 
+                onCheckedChange={(checked) => setOrgData({...orgData, require_2fa: checked})}
+              />
             </div>
 
             <div className="space-y-2">
               <Label>Limite de Export</Label>
-              <Select value={orgData.exportLimit}>
+              <Select 
+                value={orgData.export_limit}
+                onValueChange={(value) => setOrgData({...orgData, export_limit: value})}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -262,7 +372,10 @@ const Organization = () => {
                   </div>
                   <div className="space-y-2">
                     <Label>Papel Inicial</Label>
-                    <Select value={inviteRole} onValueChange={setInviteRole}>
+                     <Select 
+                      value={inviteRole} 
+                      onValueChange={(value: 'ADMIN' | 'ANALYST' | 'VIEWER') => setInviteRole(value)}
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -306,27 +419,27 @@ const Organization = () => {
               {users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">
-                    {user.name}
+                    {user.email.split('@')[0]}
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
                     {getRoleBadge(user.role)}
                   </TableCell>
                   <TableCell>
-                    {getStatusBadge(user.status)}
+                    {getStatusBadge(user.is_active)}
                   </TableCell>
                   <TableCell>
-                    {user.lastAccess || 'Nunca'}
+                    {new Date(user.created_at).toLocaleDateString('pt-BR')}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" title="Ativar usuário">
                         <UserCheck className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-orange-600">
+                      <Button variant="ghost" size="sm" className="text-warning hover:text-warning-foreground hover:bg-warning-light" title="Alterar papel">
                         <Shield className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-red-600">
+                      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive-foreground hover:bg-destructive-light" title="Desativar usuário">
                         <UserX className="h-4 w-4" />
                       </Button>
                     </div>
