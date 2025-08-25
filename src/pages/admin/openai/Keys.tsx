@@ -47,51 +47,58 @@ const OpenAIKeys = () => {
   // Add new key
   const addKeyMutation = useMutation({
     mutationFn: async (keyData: typeof newKey) => {
-      console.log('=== STARTING MUTATION WITH ULTRA DEBUG ===');
-      console.log('Supabase client:', !!supabase);
-      console.log('Calling admin-openai-keys function with:', {
-        action: 'create',
+      console.log('=== STARTING DIRECT FETCH APPROACH ===');
+      console.log('Key data:', {
         alias: keyData.alias,
-        key: keyData.key ? keyData.key.substring(0, 10) + '...' : 'empty',
-        notes: keyData.notes,
+        hasKey: !!keyData.key,
+        keyStart: keyData.key?.substring(0, 10)
       });
       
       try {
-        console.log('About to invoke function...');
-        const result = await supabase.functions.invoke('admin-openai-keys', {
-          body: { 
+        // Get current user session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          throw new Error('No active session');
+        }
+        console.log('✅ Session found:', !!session.access_token);
+
+        // Direct fetch to the edge function
+        const functionUrl = `https://fgjypmlszuzkgvhuszxn.supabase.co/functions/v1/admin-openai-keys`;
+        console.log('🌐 Calling function directly:', functionUrl);
+        
+        const response = await fetch(functionUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnanlwbWxzenV6a2d2aHVzenhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE4MjQsImV4cCI6MjA3MTYwNzgyNH0.lN-Anhn1e-2SCDIAe6megYRHdhofe1VO71D6-Zk70XU'
+          },
+          body: JSON.stringify({
             action: 'create',
             alias: keyData.alias,
             key: keyData.key,
             notes: keyData.notes,
-          }
+          })
         });
-        
-        console.log('=== FUNCTION RESULT ===');
-        console.log('Full result:', result);
-        console.log('Data:', result.data);
-        console.log('Error:', result.error);
-        console.log('Result data type:', typeof result.data);
-        console.log('Result error type:', typeof result.error);
-        
-        if (result.error) {
-          console.error('Function returned error:', result.error);
-          throw result.error;
+
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ Response error:', errorText);
+          throw new Error(`HTTP ${response.status}: ${errorText}`);
         }
-        
-        if (!result.data) {
-          console.error('No data returned from function');
-          throw new Error('No data returned from function');
-        }
-        
-        return result.data;
+
+        const result = await response.json();
+        console.log('✅ Success result:', result);
+
+        return result;
       } catch (error) {
-        console.error('=== MUTATION ERROR ===');
+        console.error('=== DIRECT FETCH ERROR ===');
         console.error('Error details:', error);
         console.error('Error type:', typeof error);
-        console.error('Error constructor:', error.constructor?.name);
         console.error('Error message:', error?.message);
-        console.error('Error stack:', error?.stack);
         throw error;
       }
     },
