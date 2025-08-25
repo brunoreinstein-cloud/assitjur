@@ -47,7 +47,14 @@ const OpenAIKeys = () => {
   // Add new key
   const addKeyMutation = useMutation({
     mutationFn: async (keyData: typeof newKey) => {
-      const { error } = await supabase.functions.invoke('admin-openai-keys', {
+      console.log('Calling admin-openai-keys function with:', {
+        action: 'create',
+        alias: keyData.alias,
+        key: keyData.key ? keyData.key.substring(0, 10) + '...' : 'empty',
+        notes: keyData.notes,
+      });
+      
+      const { data, error } = await supabase.functions.invoke('admin-openai-keys', {
         body: { 
           action: 'create',
           alias: keyData.alias,
@@ -55,7 +62,15 @@ const OpenAIKeys = () => {
           notes: keyData.notes,
         }
       });
-      if (error) throw error;
+      
+      console.log('Function response:', { data, error });
+      
+      if (error) {
+        console.error('Function error:', error);
+        throw error;
+      }
+      
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['openai-keys'] });
