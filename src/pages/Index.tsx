@@ -33,23 +33,6 @@ const Index = () => {
     }
   ]
 
-  if (showUpload) {
-    return (
-      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-4">
-        <div className="w-full max-w-2xl">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Assistente de Testemunhas</h1>
-            <p className="text-muted-foreground">Importe seus dados para começar a análise</p>
-          </div>
-          <UploadWizard 
-            onComplete={handleUploadComplete}
-            onCancel={() => setShowUpload(false)}
-          />
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen bg-gradient-subtle">
       {/* Header */}
@@ -65,7 +48,6 @@ const Index = () => {
             </div>
           </div>
           
-          {!hasData && (
           <Button 
             variant="professional" 
             onClick={() => navigate('/login')}
@@ -74,7 +56,6 @@ const Index = () => {
             <ArrowRight className="w-4 h-4 mr-2" />
             Entrar
           </Button>
-          )}
         </div>
       </header>
 
@@ -151,6 +132,7 @@ const Index = () => {
                   Informações baseadas na planilha carregada. Recomenda-se validação nos autos...
                 </div>
               </div>
+            </div>
         </div>
       </main>
     </div>
