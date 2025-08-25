@@ -21,6 +21,7 @@ import OpenAIKeys from "./pages/admin/openai/Keys";
 import OpenAIModels from "./pages/admin/openai/Models";
 import PromptStudio from "./pages/admin/openai/PromptStudio";
 import OpenAIPlayground from "./pages/admin/openai/Playground";
+import Logs from "./pages/admin/Logs";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ const App = () => (
               <Route path="versoes" element={<Versions />} />
               <Route path="org" element={<Organization />} />
               <Route path="dados" element={<DataExplorer />} />
+              <Route path="logs" element={<Logs />} />
               <Route path="config" element={<SystemConfig />} />
             </Route>
             <Route path="*" element={<NotFound />} />
