@@ -50,8 +50,9 @@ const OpenAIKeys = () => {
       const { error } = await supabase.functions.invoke('admin-openai-keys', {
         body: { 
           action: 'create',
-          ...keyData,
-          org_id: profile?.organization_id 
+          alias: keyData.alias,
+          key: keyData.key,
+          notes: keyData.notes,
         }
       });
       if (error) throw error;
@@ -81,7 +82,6 @@ const OpenAIKeys = () => {
         body: { 
           action: 'test',
           keyId,
-          org_id: profile?.organization_id 
         }
       });
       if (error) throw error;
@@ -114,7 +114,6 @@ const OpenAIKeys = () => {
         body: { 
           action: 'rotate',
           keyId,
-          org_id: profile?.organization_id 
         }
       });
       if (error) throw error;
@@ -142,7 +141,6 @@ const OpenAIKeys = () => {
         body: { 
           action: 'delete',
           keyId,
-          org_id: profile?.organization_id 
         }
       });
       if (error) throw error;

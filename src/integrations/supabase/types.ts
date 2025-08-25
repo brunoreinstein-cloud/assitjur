@@ -258,6 +258,7 @@ export type Database = {
           alias: string
           created_at: string
           created_by: string
+          encrypted_key: string | null
           id: string
           is_active: boolean
           last_four: string
@@ -269,6 +270,7 @@ export type Database = {
           alias: string
           created_at?: string
           created_by: string
+          encrypted_key?: string | null
           id?: string
           is_active?: boolean
           last_four: string
@@ -280,6 +282,7 @@ export type Database = {
           alias?: string
           created_at?: string
           created_by?: string
+          encrypted_key?: string | null
           id?: string
           is_active?: boolean
           last_four?: string
