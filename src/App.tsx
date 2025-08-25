@@ -11,6 +11,7 @@ import ChatApp from "./pages/ChatApp";
 import NotFound from "./pages/NotFound";
 import AdminLayout from "./pages/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
+import Analytics from "./pages/admin/Analytics";
 import ImportBase from "./pages/admin/ImportBase";
 import Versions from "./pages/admin/Versions";
 import Organization from "./pages/admin/Organization";
