@@ -65,24 +65,37 @@ async function testApiKey(apiKey: string): Promise<{ valid: boolean; model?: str
 
 // RBAC Guard - Check if user is ADMIN
 async function requireAdmin(supabase: any, userId: string) {
+  console.log('=== Checking admin permissions for user:', userId);
+  
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('role, organization_id')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
 
-  if (error || !profile) {
+  console.log('Profile query result:', { profile, error });
+
+  if (error) {
+    console.error('Profile query error:', error);
+    throw new Error('Database error while checking user profile');
+  }
+
+  if (!profile) {
+    console.error('No profile found for user:', userId);
     throw new Error('User profile not found');
   }
 
   if (profile.role !== 'ADMIN') {
+    console.error('User is not admin. Role:', profile.role);
     throw new Error('Admin access required');
   }
 
   if (!profile.organization_id) {
+    console.error('User not associated with organization');
     throw new Error('User not associated with organization');
   }
 
+  console.log('Admin check passed for user:', userId);
   return profile;
 }
 
