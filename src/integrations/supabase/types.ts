@@ -814,6 +814,42 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits_enhanced: {
+        Row: {
+          blocked_until: string | null
+          created_at: string | null
+          endpoint: string
+          id: string
+          org_id: string | null
+          request_count: number | null
+          updated_at: string | null
+          user_id: string | null
+          window_start: string | null
+        }
+        Insert: {
+          blocked_until?: string | null
+          created_at?: string | null
+          endpoint: string
+          id?: string
+          org_id?: string | null
+          request_count?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          window_start?: string | null
+        }
+        Update: {
+          blocked_until?: string | null
+          created_at?: string | null
+          endpoint?: string
+          id?: string
+          org_id?: string | null
+          request_count?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          window_start?: string | null
+        }
+        Relationships: []
+      }
       system_parameters: {
         Row: {
           description: string | null
@@ -851,6 +887,78 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_sessions: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          is_active: boolean | null
+          last_accessed: string | null
+          session_token: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          last_accessed?: string | null
+          session_token: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          last_accessed?: string | null
+          session_token?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      validation_rules: {
+        Row: {
+          column_name: string
+          created_at: string | null
+          error_message: string
+          id: string
+          is_active: boolean | null
+          rule_config: Json
+          rule_type: string
+          table_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          column_name: string
+          created_at?: string | null
+          error_message: string
+          id?: string
+          is_active?: boolean | null
+          rule_config?: Json
+          rule_type: string
+          table_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          column_name?: string
+          created_at?: string | null
+          error_message?: string
+          id?: string
+          is_active?: boolean | null
+          rule_config?: Json
+          rule_type?: string
+          table_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -1009,12 +1117,33 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: boolean
       }
+      check_rate_limit: {
+        Args: {
+          endpoint_name: string
+          max_requests?: number
+          window_minutes?: number
+        }
+        Returns: boolean
+      }
+      log_user_action: {
+        Args: {
+          action_type: string
+          metadata?: Json
+          resource_id?: string
+          resource_type?: string
+        }
+        Returns: undefined
+      }
       mask_cpf: {
         Args: { cpf_value: string }
         Returns: string
       }
       mask_name: {
         Args: { name_value: string }
+        Returns: string
+      }
+      sanitize_input: {
+        Args: { input_text: string }
         Returns: string
       }
     }
