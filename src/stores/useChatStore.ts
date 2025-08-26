@@ -73,7 +73,7 @@ export interface ChatStore {
   setModel: (model: string) => void;
   setTemperature: (temp: number) => void;
   setContext: (ctx: ChatContext) => void;
-  addMessage: (message: Omit<Message, 'id' | 'createdAt'>) => void;
+  addMessage: (message: Omit<Message, 'id' | 'createdAt'>) => string;
   updateMessage: (id: string, updates: Partial<Message>) => void;
   setStreaming: (streaming: boolean) => void;
   addAttachment: (attachment: Omit<Attachment, 'id' | 'createdAt'>) => void;
@@ -165,13 +165,17 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   setTemperature: (temperature) => set({ temperature }),
   setContext: (ctx) => set({ ctx }),
   
-  addMessage: (message) => set((state) => ({
-    messages: [...state.messages, {
+  addMessage: (message) => {
+    const newMessage = {
       ...message,
       id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date()
-    }]
-  })),
+    };
+    set((state) => ({
+      messages: [...state.messages, newMessage]
+    }));
+    return newMessage.id;
+  },
   
   updateMessage: (id, updates) => set((state) => ({
     messages: state.messages.map(msg => 

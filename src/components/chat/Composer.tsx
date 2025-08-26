@@ -189,7 +189,7 @@ export function Composer() {
     }
 
     // Mock streaming response
-    addMessage({
+    const assistantMessageId = addMessage({
       conversationId: conversationId || 'new',
       role: 'assistant',
       content: '',

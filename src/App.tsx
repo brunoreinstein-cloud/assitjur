@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import AuthGuard from "@/components/AuthGuard";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import Chat from "./pages/Chat";
 import ChatApp from "./pages/ChatApp";
 import NotFound from "./pages/NotFound";
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -50,6 +51,14 @@ const App = () => (
               element={
                 <AuthGuard>
                   <MapaTestemunhas />
+                </AuthGuard>
+              } 
+            />
+            <Route 
+              path="/chat" 
+              element={
+                <AuthGuard>
+                  <Chat />
                 </AuthGuard>
               } 
             />
