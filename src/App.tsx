@@ -26,6 +26,7 @@ import Logs from "./pages/admin/Logs";
 import ResetConfirm from "./pages/ResetConfirm";
 import Reset from "./pages/Reset";
 import VerifyOtp from "./pages/VerifyOtp";
+import MapaTestemunhas from "./pages/MapaTestemunhas";
 
 // Analytics component import and routes
 const queryClient = new QueryClient();
@@ -43,6 +44,14 @@ const App = () => (
             <Route path="/reset" element={<Reset />} />
             <Route path="/reset/confirm" element={<ResetConfirm />} />
             <Route path="/verify-otp" element={<VerifyOtp />} />
+            <Route 
+              path="/dados/mapa" 
+              element={
+                <AuthGuard>
+                  <MapaTestemunhas />
+                </AuthGuard>
+              } 
+            />
             <Route 
               path="/app/chat" 
               element={
