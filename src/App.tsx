@@ -13,7 +13,7 @@ import Login from "./pages/Login";
 import Chat from "./pages/Chat";
 import ChatApp from "./pages/ChatApp";
 import NotFound from "./pages/NotFound";
-import AdminLayout from "./pages/admin/AdminLayout";
+
 import Dashboard from "./pages/admin/Dashboard";
 import Analytics from "./pages/admin/Analytics";
 import ImportBase from "./pages/admin/ImportBase";
@@ -69,22 +69,20 @@ const App = () => (
                         <Route path="/dados/mapa" element={<MapaTestemunhas />} />
                         <Route path="/app/chat" element={<ChatApp />} />
                         
-                        {/* Admin routes */}
-                        <Route path="/admin" element={<AdminLayout />}>
-                          <Route index element={<Dashboard />} />
-                          <Route path="analytics" element={<Analytics />} />
-                          <Route path="ia" element={<OpenAI />} />
-                          <Route path="ia/chaves" element={<OpenAIKeys />} />
-                          <Route path="ia/modelos" element={<OpenAIModels />} />
-                          <Route path="ia/prompt-studio" element={<PromptStudio />} />
-                          <Route path="ia/testes" element={<OpenAIPlayground />} />
-                          <Route path="base" element={<ImportBase />} />
-                          <Route path="versoes" element={<Versions />} />
-                          <Route path="org" element={<Organization />} />
-                          <Route path="dados" element={<DataExplorer />} />
-                          <Route path="logs" element={<Logs />} />
-                          <Route path="config" element={<SystemConfig />} />
-                        </Route>
+                        {/* Admin routes - using same layout for consistency */}
+                        <Route path="/admin" element={<Dashboard />} />
+                        <Route path="/admin/analytics" element={<Analytics />} />
+                        <Route path="/admin/ia" element={<OpenAI />} />
+                        <Route path="/admin/ia/chaves" element={<OpenAIKeys />} />
+                        <Route path="/admin/ia/modelos" element={<OpenAIModels />} />
+                        <Route path="/admin/ia/prompt-studio" element={<PromptStudio />} />
+                        <Route path="/admin/ia/testes" element={<OpenAIPlayground />} />
+                        <Route path="/admin/base" element={<ImportBase />} />
+                        <Route path="/admin/versoes" element={<Versions />} />
+                        <Route path="/admin/org" element={<Organization />} />
+                        <Route path="/admin/dados" element={<DataExplorer />} />
+                        <Route path="/admin/logs" element={<Logs />} />
+                        <Route path="/admin/config" element={<SystemConfig />} />
                         
                         <Route path="*" element={<NotFound />} />
                       </Routes>

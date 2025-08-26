@@ -12,7 +12,9 @@ import {
   Home,
   LogOut,
   User,
-  ChevronRight
+  ChevronRight,
+  Upload,
+  History
 } from 'lucide-react';
 import {
   Sidebar,
@@ -38,7 +40,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const mainNavItems = [
   {
@@ -63,10 +65,16 @@ const mainNavItems = [
 
 const adminNavItems = [
   {
-    title: 'Painel Admin',
+    title: 'Dashboard Admin',
     url: '/admin',
     icon: BarChart3,
-    description: 'Dashboard administrativo'
+    description: 'Painel administrativo'
+  },
+  {
+    title: 'Analytics Avançado',
+    url: '/admin/analytics',
+    icon: BarChart3,
+    description: 'Relatórios detalhados'
   },
   {
     title: 'Inteligência Artificial',
@@ -77,20 +85,38 @@ const adminNavItems = [
   {
     title: 'Base de Dados',
     url: '/admin/base',
+    icon: Upload,
+    description: 'Importar e gerir dados'
+  },
+  {
+    title: 'Versões',
+    url: '/admin/versoes',
+    icon: History,
+    description: 'Histórico e rollback'
+  },
+  {
+    title: 'Explorar Dados',
+    url: '/admin/dados',
     icon: Database,
-    description: 'Gestão de dados'
+    description: 'Visualizar dados'
   },
   {
     title: 'Organização',
     url: '/admin/org',
     icon: Users,
-    description: 'Configurações da org'
+    description: 'Usuários e acessos'
   },
   {
-    title: 'Sistema',
+    title: 'Logs',
+    url: '/admin/logs',
+    icon: FileText,
+    description: 'Auditoria do sistema'
+  },
+  {
+    title: 'Configurações',
     url: '/admin/config',
     icon: Settings,
-    description: 'Configurações gerais'
+    description: 'Parâmetros do sistema'
   }
 ];
 
