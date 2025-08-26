@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import AuthGuard from "@/components/AuthGuard";
 import { AppLayout } from "@/components/navigation/AppLayout";
+import { ErrorBoundary } from "@/components/core/ErrorBoundary";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Chat from "./pages/Chat";
@@ -32,59 +33,71 @@ import VerifyOtp from "./pages/VerifyOtp";
 import MapaTestemunhas from "./pages/MapaTestemunhas";
 
 // Analytics component import and routes
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes without layout */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/reset" element={<Reset />} />
-            <Route path="/reset/confirm" element={<ResetConfirm />} />
-            <Route path="/verify-otp" element={<VerifyOtp />} />
-            
-            {/* Protected routes with app layout */}
-            <Route path="/*" element={
-              <AuthGuard>
-                <AppLayout>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/chat" element={<Chat />} />
-                    <Route path="/dados/mapa" element={<MapaTestemunhas />} />
-                    <Route path="/app/chat" element={<ChatApp />} />
-                    
-                    {/* Admin routes */}
-                    <Route path="/admin" element={<AdminLayout />}>
-                      <Route index element={<Dashboard />} />
-                      <Route path="analytics" element={<Analytics />} />
-                      <Route path="ia" element={<OpenAI />} />
-                      <Route path="ia/chaves" element={<OpenAIKeys />} />
-                      <Route path="ia/modelos" element={<OpenAIModels />} />
-                      <Route path="ia/prompt-studio" element={<PromptStudio />} />
-                      <Route path="ia/testes" element={<OpenAIPlayground />} />
-                      <Route path="base" element={<ImportBase />} />
-                      <Route path="versoes" element={<Versions />} />
-                      <Route path="org" element={<Organization />} />
-                      <Route path="dados" element={<DataExplorer />} />
-                      <Route path="logs" element={<Logs />} />
-                      <Route path="config" element={<SystemConfig />} />
-                    </Route>
-                    
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </AppLayout>
-              </AuthGuard>
-            } />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public routes without layout */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/reset" element={<Reset />} />
+              <Route path="/reset/confirm" element={<ResetConfirm />} />
+              <Route path="/verify-otp" element={<VerifyOtp />} />
+              
+              {/* Protected routes with app layout */}
+              <Route path="/*" element={
+                <AuthGuard>
+                  <AppLayout>
+                    <ErrorBoundary>
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/chat" element={<Chat />} />
+                        <Route path="/dados/mapa" element={<MapaTestemunhas />} />
+                        <Route path="/app/chat" element={<ChatApp />} />
+                        
+                        {/* Admin routes */}
+                        <Route path="/admin" element={<AdminLayout />}>
+                          <Route index element={<Dashboard />} />
+                          <Route path="analytics" element={<Analytics />} />
+                          <Route path="ia" element={<OpenAI />} />
+                          <Route path="ia/chaves" element={<OpenAIKeys />} />
+                          <Route path="ia/modelos" element={<OpenAIModels />} />
+                          <Route path="ia/prompt-studio" element={<PromptStudio />} />
+                          <Route path="ia/testes" element={<OpenAIPlayground />} />
+                          <Route path="base" element={<ImportBase />} />
+                          <Route path="versoes" element={<Versions />} />
+                          <Route path="org" element={<Organization />} />
+                          <Route path="dados" element={<DataExplorer />} />
+                          <Route path="logs" element={<Logs />} />
+                          <Route path="config" element={<SystemConfig />} />
+                        </Route>
+                        
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </ErrorBoundary>
+                  </AppLayout>
+                </AuthGuard>
+              } />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

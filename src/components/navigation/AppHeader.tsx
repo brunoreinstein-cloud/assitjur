@@ -12,6 +12,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { NotificationCenter } from '@/components/core/NotificationCenter';
 import { 
   ChevronRight,
   MessageSquare,
@@ -135,6 +136,8 @@ export function AppHeader() {
 
         {/* Right side actions */}
         <div className="flex items-center gap-2">
+          <NotificationCenter />
+          
           {/* Status indicator */}
           <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>

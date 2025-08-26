@@ -2,6 +2,7 @@ import React from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { AppHeader } from './AppHeader';
+import { NotificationCenter } from '@/components/core/NotificationCenter';
 
 interface AppLayoutProps {
   children: React.ReactNode;
