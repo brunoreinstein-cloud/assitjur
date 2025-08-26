@@ -1,0 +1,400 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+const loginSchema = z.object({
+  email: z.string().email('E-mail inválido'),
+  password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
+  rememberMe: z.boolean().optional()
+});
+
+const signupSchema = z.object({
+  name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').optional(),
+  email: z.string().email('E-mail inválido'),
+  password: z.string()
+    .min(8, 'Senha deve ter pelo menos 8 caracteres')
+    .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
+    .regex(/[0-9]/, 'Senha deve conter pelo menos um número'),
+  confirmPassword: z.string(),
+  acceptTerms: z.boolean().refine(val => val, 'Você deve aceitar os termos')
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Senhas não conferem",
+  path: ["confirmPassword"]
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+type SignupFormData = z.infer<typeof signupSchema>;
+
+interface EmailPasswordFormProps {
+  mode: 'signin' | 'signup';
+  onModeChange: (mode: 'signin' | 'signup') => void;
+  onForgotPassword: () => void;
+}
+
+export const EmailPasswordForm = ({ 
+  mode, 
+  onModeChange, 
+  onForgotPassword 
+}: EmailPasswordFormProps) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const loginForm = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      rememberMe: false
+    }
+  });
+
+  const signupForm = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      acceptTerms: false
+    }
+  });
+
+  const handleSignIn = async (data: LoginFormData) => {
+    setIsLoading(true);
+    
+    try {
+      if (!supabase) {
+        // Mock login for development
+        if (data.email === 'demo@hubjuria.com' && data.password === 'demo123') {
+          toast.success("Login realizado!", {
+            description: "Bem-vindo ao Hubjuria (modo demo)"
+          });
+          // Redirect would happen here in real app
+          return;
+        } else {
+          throw new Error('Credenciais inválidas');
+        }
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success("Login realizado!", {
+        description: "Bem-vindo ao Hubjuria"
+      });
+
+      // Redirect will be handled by auth state change
+
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast.error("Erro no login", {
+        description: "Não foi possível entrar. Verifique suas credenciais."
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignUp = async (data: SignupFormData) => {
+    setIsLoading(true);
+    
+    try {
+      if (!supabase) {
+        toast.info("Modo demo", {
+          description: "Cadastro simulado. Use demo@hubjuria.com / demo123 para entrar."
+        });
+        onModeChange('signin');
+        return;
+      }
+
+      const { error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/login?confirm=1`,
+          data: {
+            name: data.name
+          }
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success("Conta criada!", {
+        description: "Verifique seu e-mail para confirmar o cadastro."
+      });
+
+      onModeChange('signin');
+
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      toast.error("Erro no cadastro", {
+        description: error.message || "Não foi possível criar a conta."
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (mode === 'signup') {
+    return (
+      <form onSubmit={signupForm.handleSubmit(handleSignUp)} className="space-y-4">
+        {/* Name */}
+        <div className="space-y-2">
+          <Label htmlFor="name">Nome (opcional)</Label>
+          <Input
+            id="name"
+            placeholder="Seu nome completo"
+            {...signupForm.register('name')}
+            className={signupForm.formState.errors.name ? 'border-destructive' : ''}
+          />
+          {signupForm.formState.errors.name && (
+            <p className="text-sm text-destructive">{signupForm.formState.errors.name.message}</p>
+          )}
+        </div>
+
+        {/* Email */}
+        <div className="space-y-2">
+          <Label htmlFor="email">E-mail</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="seu@email.com"
+            {...signupForm.register('email')}
+            className={signupForm.formState.errors.email ? 'border-destructive' : ''}
+          />
+          {signupForm.formState.errors.email && (
+            <p className="text-sm text-destructive">{signupForm.formState.errors.email.message}</p>
+          )}
+        </div>
+
+        {/* Password */}
+        <div className="space-y-2">
+          <Label htmlFor="password">Senha</Label>
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              {...signupForm.register('password')}
+              className={signupForm.formState.errors.password ? 'border-destructive pr-10' : 'pr-10'}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <Eye className="h-4 w-4 text-muted-foreground" />
+              )}
+            </Button>
+          </div>
+          {signupForm.formState.errors.password && (
+            <p className="text-sm text-destructive">{signupForm.formState.errors.password.message}</p>
+          )}
+        </div>
+
+        {/* Confirm Password */}
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+          <div className="relative">
+            <Input
+              id="confirmPassword"
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              {...signupForm.register('confirmPassword')}
+              className={signupForm.formState.errors.confirmPassword ? 'border-destructive pr-10' : 'pr-10'}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {showConfirmPassword ? (
+                <EyeOff className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <Eye className="h-4 w-4 text-muted-foreground" />
+              )}
+            </Button>
+          </div>
+          {signupForm.formState.errors.confirmPassword && (
+            <p className="text-sm text-destructive">{signupForm.formState.errors.confirmPassword.message}</p>
+          )}
+        </div>
+
+        {/* Accept Terms */}
+        <div className="flex items-start space-x-3 pt-2">
+          <Checkbox
+            id="acceptTerms"
+            checked={signupForm.watch('acceptTerms')}
+            onCheckedChange={(checked) => signupForm.setValue('acceptTerms', !!checked)}
+            className={signupForm.formState.errors.acceptTerms ? 'border-destructive' : ''}
+          />
+          <Label htmlFor="acceptTerms" className="text-sm leading-relaxed cursor-pointer">
+            Li e aceito os{' '}
+            <button type="button" className="text-primary hover:underline">
+              Termos de Uso
+            </button>
+            {' '}e a{' '}
+            <button type="button" className="text-primary hover:underline">
+              Política de Privacidade
+            </button>
+          </Label>
+        </div>
+        {signupForm.formState.errors.acceptTerms && (
+          <p className="text-sm text-destructive">{signupForm.formState.errors.acceptTerms.message}</p>
+        )}
+
+        {/* Submit Button */}
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Criando conta...
+            </>
+          ) : (
+            'Criar conta'
+          )}
+        </Button>
+
+        {/* Switch to Sign In */}
+        <div className="text-center text-sm">
+          <span className="text-muted-foreground">Já tem uma conta? </span>
+          <button
+            type="button"
+            onClick={() => onModeChange('signin')}
+            className="text-primary hover:underline font-medium"
+          >
+            Entrar
+          </button>
+        </div>
+      </form>
+    );
+  }
+
+  return (
+    <form onSubmit={loginForm.handleSubmit(handleSignIn)} className="space-y-4">
+      {/* Email */}
+      <div className="space-y-2">
+        <Label htmlFor="email">E-mail</Label>
+        <Input
+          id="email"
+          type="email"
+          placeholder="seu@email.com"
+          {...loginForm.register('email')}
+          className={loginForm.formState.errors.email ? 'border-destructive' : ''}
+        />
+        {loginForm.formState.errors.email && (
+          <p className="text-sm text-destructive">{loginForm.formState.errors.email.message}</p>
+        )}
+      </div>
+
+      {/* Password */}
+      <div className="space-y-2">
+        <Label htmlFor="password">Senha</Label>
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="••••••••"
+            {...loginForm.register('password')}
+            className={loginForm.formState.errors.password ? 'border-destructive pr-10' : 'pr-10'}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? (
+              <EyeOff className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <Eye className="h-4 w-4 text-muted-foreground" />
+            )}
+          </Button>
+        </div>
+        {loginForm.formState.errors.password && (
+          <p className="text-sm text-destructive">{loginForm.formState.errors.password.message}</p>
+        )}
+      </div>
+
+      {/* Remember Me */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="rememberMe"
+            checked={loginForm.watch('rememberMe')}
+            onCheckedChange={(checked) => loginForm.setValue('rememberMe', !!checked)}
+          />
+          <Label htmlFor="rememberMe" className="text-sm cursor-pointer">
+            Lembrar de mim
+          </Label>
+        </div>
+        
+        <button
+          type="button"
+          onClick={onForgotPassword}
+          className="text-sm text-primary hover:underline"
+        >
+          Esqueci minha senha
+        </button>
+      </div>
+
+      {/* Submit Button */}
+      <Button 
+        type="submit" 
+        className="w-full" 
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            Entrando...
+          </>
+        ) : (
+          'Entrar'
+        )}
+      </Button>
+
+      {/* Switch to Sign Up */}
+      <div className="text-center text-sm">
+        <span className="text-muted-foreground">Não tem uma conta? </span>
+        <button
+          type="button"
+          onClick={() => onModeChange('signup')}
+          className="text-primary hover:underline font-medium"
+        >
+          Criar conta
+        </button>
+      </div>
+    </form>
+  );
+};

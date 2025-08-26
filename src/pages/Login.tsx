@@ -1,322 +1,191 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Eye, EyeOff, Scale, Shield, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Scale } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AuthCard } from '@/components/auth/AuthCard';
+import { OAuthButtons } from '@/components/auth/OAuthButtons';
+import { EmailPasswordForm } from '@/components/auth/EmailPasswordForm';
+import { MagicLinkForm } from '@/components/auth/MagicLinkForm';
+import { AlertBox } from '@/components/auth/AlertBox';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from '@/hooks/use-toast';
-
-const loginSchema = z.object({
-  email: z.string().email('E-mail inválido'),
-  password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
-  role: z.enum(['OFFICE', 'ADMIN'], { required_error: 'Selecione um perfil' }),
-  orgCode: z.string().optional(),
-  acceptTerms: z.boolean().refine((val) => val === true, {
-    message: 'É necessário aceitar os Termos para prosseguir.'
-  })
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+import heroImage from "@/assets/hero-legal-tech.jpg";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { signIn, loading, user } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
+  const [showMagicLink, setShowMagicLink] = useState(false);
 
-  const form = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-      role: 'OFFICE',
-      orgCode: '',
-      acceptTerms: false
-    }
-  });
-
-  const watchRole = form.watch('role');
+  // Check for URL parameters
+  const next = searchParams.get('next');
+  const confirm = searchParams.get('confirm');
 
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      navigate('/app/chat');
+      const redirectTo = next ? decodeURIComponent(next) : '/dados/mapa';
+      navigate(redirectTo);
     }
-  }, [user, navigate]);
-
-  const handleSignIn = async (data: LoginFormData) => {
-    try {
-      setIsSubmitting(true);
-      
-      const { error } = await signIn(
-        data.email, 
-        data.password, 
-        data.role,
-        data.role === 'ADMIN' ? data.orgCode : undefined
-      );
-
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Erro no login",
-          description: error.message
-        });
-        return;
-      }
-
-      toast({
-        title: "Login realizado com sucesso",
-        description: "Bem-vindo ao Hubjuria!"
-      });
-
-      // Navigation will be handled by the auth state change
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erro inesperado",
-        description: error.message || "Tente novamente em alguns instantes."
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  }, [user, navigate, next]);
 
   const handleForgotPassword = () => {
-    toast({
-      title: "Recuperação de senha",
-      description: "Entre em contato com o administrador do sistema."
-    });
+    navigate('/reset');
+  };
+
+  const handleMagicLinkToggle = () => {
+    setShowMagicLink(!showMagicLink);
+  };
+
+  const handleModeChange = (mode: 'signin' | 'signup') => {
+    setActiveTab(mode);
+    setShowMagicLink(false);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-subtle flex flex-col">
-      {/* Header */}
-      <header className="w-full p-6 flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          <Scale className="h-8 w-8 text-primary" />
-          <span className="text-2xl font-bold text-foreground">Hubjuria</span>
+    <div className="min-h-screen bg-gradient-subtle lg:grid lg:grid-cols-2">
+      {/* Left side - Form */}
+      <div className="flex flex-col justify-center px-6 py-12 lg:px-8">
+        <div className="mx-auto w-full max-w-md">
+          {/* Logo */}
+          <div className="flex items-center justify-center mb-8 lg:hidden">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-md">
+                <Scale className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Hubjuria</h1>
+                <p className="text-sm text-muted-foreground">Assistente de Testemunhas</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Confirmation Banner */}
+          {confirm === '1' && (
+            <div className="mb-6">
+              <AlertBox variant="info" title="Confirme seu cadastro">
+                Verifique seu e-mail e clique no link de confirmação para ativar sua conta.
+              </AlertBox>
+            </div>
+          )}
+
+          {/* Magic Link Form or Auth Form */}
+          {showMagicLink ? (
+            <AuthCard
+              title="Entrar com link"
+              description="Acesso seguro"
+            >
+              <MagicLinkForm onBack={() => setShowMagicLink(false)} />
+            </AuthCard>
+          ) : (
+            <AuthCard
+              title={activeTab === 'signin' ? 'Acesse sua conta' : 'Comece gratuitamente'}
+              description="Acesso seguro"
+            >
+              <div className="space-y-6">
+                {/* OAuth Buttons */}
+                <OAuthButtons />
+
+                {/* Tabs */}
+                <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'signin' | 'signup')}>
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="signin">Entrar</TabsTrigger>
+                    <TabsTrigger value="signup">Criar conta</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="signin" className="mt-6">
+                    <EmailPasswordForm
+                      mode="signin"
+                      onModeChange={handleModeChange}
+                      onForgotPassword={handleForgotPassword}
+                    />
+                    
+                    {/* Magic Link Toggle */}
+                    <div className="mt-4 text-center">
+                      <button
+                        type="button"
+                        onClick={handleMagicLinkToggle}
+                        className="text-sm text-primary hover:underline"
+                      >
+                        Entrar com link de e-mail
+                      </button>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="signup" className="mt-6">
+                    <EmailPasswordForm
+                      mode="signup"
+                      onModeChange={handleModeChange}
+                      onForgotPassword={handleForgotPassword}
+                    />
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </AuthCard>
+          )}
+
+          {/* Footer */}
+          <div className="mt-8 text-center">
+            <p className="text-xs text-muted-foreground">
+              Dados tratados conforme{' '}
+              <button className="text-primary hover:underline">LGPD</button>
+              {' • '}
+              <button className="text-primary hover:underline">Política de Privacidade</button>
+              {' • '}
+              <button className="text-primary hover:underline">Termos</button>
+            </p>
+          </div>
         </div>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="ghost" size="sm">
-              Política de Privacidade/LGPD
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Política de Privacidade e LGPD</DialogTitle>
-              <DialogDescription>
-                Informações sobre tratamento de dados pessoais
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 text-sm">
-              <p>
-                A Hubjuria está comprometida com a proteção da privacidade e dos dados pessoais 
-                de seus usuários, em conformidade com a Lei Geral de Proteção de Dados (LGPD).
-              </p>
-              <h3 className="font-semibold">Dados Coletados</h3>
-              <p>
-                Coletamos apenas os dados necessários para o funcionamento da plataforma: 
-                e-mail, informações de perfil profissional e logs de auditoria.
-              </p>
-              <h3 className="font-semibold">Finalidade</h3>
-              <p>
-                Os dados são utilizados exclusivamente para autenticação, controle de acesso 
-                e auditoria de segurança da plataforma.
-              </p>
-              <h3 className="font-semibold">Segurança</h3>
-              <p>
-                Todos os dados são criptografados e armazenados em servidores seguros. 
-                Implementamos medidas técnicas e organizacionais adequadas para proteger 
-                suas informações.
-              </p>
-              <h3 className="font-semibold">Seus Direitos</h3>
-              <p>
-                Você tem direito ao acesso, correção, exclusão e portabilidade de seus dados. 
-                Entre em contato conosco para exercer esses direitos.
-              </p>
+      </div>
+
+      {/* Right side - Hero (hidden on mobile) */}
+      <div className="hidden lg:block relative">
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary-light) / 0.8)), url(${heroImage})`
+          }}
+        >
+          <div className="absolute inset-0 flex flex-col justify-center p-12 text-primary-foreground">
+            {/* Logo */}
+            <div className="flex items-center space-x-3 mb-12">
+              <div className="w-12 h-12 bg-primary-foreground/20 rounded-xl flex items-center justify-center">
+                <Scale className="w-7 h-7 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">Hubjuria</h1>
+                <p className="text-sm opacity-80">Assistente de Testemunhas</p>
+              </div>
             </div>
-          </DialogContent>
-        </Dialog>
-      </header>
 
-      {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-6">
-        <Card className="w-full max-w-md shadow-premium">
-          <CardHeader className="text-center space-y-2">
-            <div className="mx-auto p-3 bg-primary/10 rounded-full w-fit">
-              <Shield className="h-8 w-8 text-primary" />
+            {/* Headline */}
+            <div className="space-y-6">
+              <h2 className="text-4xl font-bold leading-tight">
+                Análise avançada de testemunhas com LGPD by design
+              </h2>
+              <p className="text-xl opacity-90 leading-relaxed">
+                Detecte padrões suspeitos, triangulações e provas emprestadas com total conformidade às normas de proteção de dados.
+              </p>
+              
+              {/* Features */}
+              <div className="space-y-3 pt-8">
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
+                  <span>Mascaramento automático de PII</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
+                  <span>Trilha de auditoria completa</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
+                  <span>Criptografia end-to-end</span>
+                </div>
+              </div>
             </div>
-            <CardTitle className="text-2xl font-bold">Acesso ao Sistema</CardTitle>
-            <CardDescription>
-              Entre com suas credenciais para continuar
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-6">
-              {/* Profile Selection */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">Tipo de Acesso</Label>
-                <RadioGroup
-                  value={form.watch('role')}
-                  onValueChange={(value) => form.setValue('role', value as 'OFFICE' | 'ADMIN')}
-                  className="grid grid-cols-1 gap-3"
-                >
-                  <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent transition-colors">
-                    <RadioGroupItem value="OFFICE" id="office" />
-                    <Label htmlFor="office" className="flex-1 cursor-pointer">
-                      <div>
-                        <div className="font-medium">Entrar como Escritório</div>
-                        <div className="text-xs text-muted-foreground">Acesso para análise e consultas</div>
-                      </div>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent transition-colors">
-                    <RadioGroupItem value="ADMIN" id="admin" />
-                    <Label htmlFor="admin" className="flex-1 cursor-pointer">
-                      <div>
-                        <div className="font-medium">Entrar como Administrador</div>
-                        <div className="text-xs text-muted-foreground">Acesso completo e gestão de base</div>
-                      </div>
-                    </Label>
-                  </div>
-                </RadioGroup>
-                {form.formState.errors.role && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{form.formState.errors.role.message}</AlertDescription>
-                  </Alert>
-                )}
-              </div>
-
-              {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  {...form.register('email')}
-                  className={form.formState.errors.email ? 'border-destructive' : ''}
-                />
-                {form.formState.errors.email && (
-                  <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
-                )}
-              </div>
-
-              {/* Password */}
-              <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    {...form.register('password')}
-                    className={form.formState.errors.password ? 'border-destructive pr-10' : 'pr-10'}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </Button>
-                </div>
-                {form.formState.errors.password && (
-                  <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
-                )}
-              </div>
-
-              {/* Organization Code for Admin */}
-              {watchRole === 'ADMIN' && (
-                <div className="space-y-2">
-                  <Label htmlFor="orgCode">Código da Organização</Label>
-                  <Input
-                    id="orgCode"
-                    placeholder="org_XXXXX"
-                    {...form.register('orgCode')}
-                    className={form.formState.errors.orgCode ? 'border-destructive' : ''}
-                  />
-                  {form.formState.errors.orgCode && (
-                    <p className="text-sm text-destructive">{form.formState.errors.orgCode.message}</p>
-                  )}
-                </div>
-              )}
-
-              {/* Terms Acceptance */}
-              <div className="flex items-start space-x-2">
-                <Checkbox
-                  id="acceptTerms"
-                  checked={form.watch('acceptTerms')}
-                  onCheckedChange={(checked) => form.setValue('acceptTerms', !!checked)}
-                  className={form.formState.errors.acceptTerms ? 'border-destructive' : ''}
-                />
-                <Label htmlFor="acceptTerms" className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Aceito os Termos de Uso e a Política de Privacidade
-                </Label>
-              </div>
-              {form.formState.errors.acceptTerms && (
-                <Alert variant="destructive">
-                  <AlertDescription>{form.formState.errors.acceptTerms.message}</AlertDescription>
-                </Alert>
-              )}
-
-              {/* Submit Button */}
-              <Button 
-                type="submit" 
-                className="w-full" 
-                variant="professional"
-                disabled={isSubmitting || loading}
-              >
-                {isSubmitting || loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Entrando...
-                  </>
-                ) : (
-                  'Entrar'
-                )}
-              </Button>
-
-              {/* Forgot Password */}
-              <div className="text-center">
-                <Button
-                  type="button"
-                  variant="link"
-                  size="sm"
-                  onClick={handleForgotPassword}
-                  className="text-muted-foreground hover:text-primary"
-                >
-                  Esqueci minha senha
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </main>
-
-      {/* Footer */}
-      <footer className="w-full p-6 text-center">
-        <p className="text-sm text-muted-foreground">
-          Dados criptografados. Tentativas são registradas para auditoria.
-        </p>
-      </footer>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

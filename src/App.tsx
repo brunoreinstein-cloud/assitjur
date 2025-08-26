@@ -23,7 +23,9 @@ import OpenAIModels from "./pages/admin/openai/Models";
 import PromptStudio from "./pages/admin/openai/PromptStudio";
 import OpenAIPlayground from "./pages/admin/openai/Playground";
 import Logs from "./pages/admin/Logs";
-import MapaTestemunhas from "./pages/MapaTestemunhas";
+import ResetConfirm from "./pages/ResetConfirm";
+import Reset from "./pages/Reset";
+import VerifyOtp from "./pages/VerifyOtp";
 
 // Analytics component import and routes
 const queryClient = new QueryClient();
@@ -38,6 +40,9 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/reset" element={<Reset />} />
+            <Route path="/reset/confirm" element={<ResetConfirm />} />
+            <Route path="/verify-otp" element={<VerifyOtp />} />
             <Route 
               path="/app/chat" 
               element={
