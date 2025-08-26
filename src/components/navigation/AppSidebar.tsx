@@ -47,19 +47,13 @@ const mainNavItems = [
     title: 'Início',
     url: '/',
     icon: Home,
-    description: 'Visão geral do sistema'
+    description: 'Mapa de Testemunhas'
   },
   {
     title: 'Chat Assistente',
     url: '/chat',
     icon: MessageSquare,
     description: 'Análise com IA'
-  },
-  {
-    title: 'Mapa de Testemunhas',
-    url: '/dados/mapa',
-    icon: Database,
-    description: 'Visualização de dados'
   }
 ];
 

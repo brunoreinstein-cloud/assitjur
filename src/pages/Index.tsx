@@ -2,21 +2,30 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { 
   Users, 
   Scale,
   AlertTriangle,
   FileText,
   Database,
-  TrendingUp
+  TrendingUp,
+  Calendar,
+  Clock
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useMapaStore } from "@/stores/useMapaStore";
-import { TabsSwitcher } from "@/components/mapa/TabsSwitcher";
-import { RiskPanel } from "@/components/mapa/RiskPanel";
+import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
+import { ProcessoTable } from "@/components/mapa-testemunhas/ProcessoTable";
+import { TestemunhaTable } from "@/components/mapa-testemunhas/TestemunhaTable";
+import { ProcessoFilters } from "@/components/mapa-testemunhas/ProcessoFilters";
+import { TestemunhaFilters } from "@/components/mapa-testemunhas/TestemunhaFilters";
+import { DetailDrawer } from "@/components/mapa-testemunhas/DetailDrawer";
+import { ImportModal } from "@/components/mapa-testemunhas/ImportModal";
 import { MaskPIISwitch } from "@/components/mapa/MaskPIISwitch";
 import { ExportCsvButton } from "@/components/mapa/ExportCsvButton";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 
 // Mock data for demonstration
 const mockProcessoData = [
@@ -95,16 +104,31 @@ const Index = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const {
-    tab,
-    rows,
-    total,
-    loading,
-    maskPII,
-    setRows,
-    setLoading
-  } = useMapaStore();
+    activeTab,
+    processos,
+    testemunhas,
+    isLoading,
+    isPiiMasked,
+    setActiveTab,
+    setProcessos,
+    setTestemunhas,
+    setIsLoading,
+    setIsImportModalOpen
+  } = useMapaTestemunhasStore();
   
   const { toast } = useToast();
+  
+  // Get current date and time for last update
+  const lastUpdate = new Date();
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   useEffect(() => {
     if (!user) {
@@ -115,26 +139,27 @@ const Index = () => {
 
   // Load mock data
   useEffect(() => {
-    setLoading(true);
+    setIsLoading(true);
     
     // Simulate API call delay
     const timer = setTimeout(() => {
-      if (tab === 'por-processo') {
-        setRows(mockProcessoData as any[], mockProcessoData.length);
-      } else {
-        setRows(mockTestemunhaData as any[], mockTestemunhaData.length);
-      }
-      setLoading(false);
+      setProcessos(mockProcessoData as any[]);
+      setTestemunhas(mockTestemunhaData as any[]);
+      setIsLoading(false);
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [tab, setRows, setLoading]);
+  }, [setProcessos, setTestemunhas, setIsLoading]);
 
   const stats = {
-    totalProcessos: tab === 'por-processo' ? total : mockProcessoData.length,
-    totalTestemunhas: tab === 'por-testemunha' ? total : mockTestemunhaData.length,
-    processosAltoRisco: mockProcessoData.filter(p => p.classificacao_final === 'Risco Alto').length,
-    testemunhasAmbosPolos: mockTestemunhaData.filter(t => t.foi_testemunha_em_ambos_polos).length
+    totalProcessos: processos.length,
+    totalTestemunhas: testemunhas.length,
+    processosAltoRisco: processos.filter((p: any) => p.classificacao_final === 'Risco Alto').length,
+    testemunhasAmbosPolos: testemunhas.filter((t: any) => t.foi_testemunha_em_ambos_polos).length
+  };
+
+  const getCurrentData = () => {
+    return activeTab === 'processos' ? processos : testemunhas;
   };
 
   if (!user) {
@@ -155,8 +180,27 @@ const Index = () => {
               <p className="text-muted-foreground mt-1">
                 Análise estratégica de testemunhas e processos judiciais
               </p>
+              <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  <span>Última atualização: {formatDate(lastUpdate)}</span>
+                </div>
+                <Separator orientation="vertical" className="h-4" />
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  <span>Dados em tempo real</span>
+                </div>
+              </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setIsImportModalOpen(true)}
+                className="gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                Importar Dados
+              </Button>
               <MaskPIISwitch />
               <ExportCsvButton />
             </div>
@@ -231,7 +275,7 @@ const Index = () => {
         </div>
 
         {/* PII Warning */}
-        {!maskPII && (
+        {!isPiiMasked && (
           <Card className="rounded-2xl border-amber-500/50 bg-amber-500/5 mb-6">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 text-amber-600">
@@ -243,73 +287,49 @@ const Index = () => {
           </Card>
         )}
 
-        {/* Risk Panel */}
-        <RiskPanel />
-
         {/* Main Content */}
         <div className="mt-8">
-          <TabsSwitcher />
-          
-          {loading ? (
-            <div className="flex items-center justify-center p-12">
-              <div className="animate-pulse text-muted-foreground">Carregando dados...</div>
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'processos' | 'testemunhas')}>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+              <TabsList className="grid w-full lg:w-auto grid-cols-2">
+                <TabsTrigger value="processos" className="flex items-center gap-2">
+                  <Scale className="h-4 w-4" />
+                  Por Processo
+                </TabsTrigger>
+                <TabsTrigger value="testemunhas" className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Por Testemunha
+                </TabsTrigger>
+              </TabsList>
             </div>
-          ) : (
-            <Card className="rounded-2xl border-border/50 mt-6">
-              <CardContent className="p-6">
-                <div className="text-center py-12">
-                  <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
-                    {tab === 'por-processo' ? 'Dados de Processos' : 'Dados de Testemunhas'}
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    Visualização detalhada dos dados. {total} registros encontrados.
-                  </p>
-                  
-                  {/* Sample Data Preview */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto text-sm">
-                    {rows.slice(0, 6).map((row: any, index) => (
-                      <div key={index} className="p-4 bg-muted/30 rounded-lg text-left">
-                        <div className="font-medium text-foreground mb-2">
-                          {tab === 'por-processo' ? row.cnj : row.nome_testemunha}
-                        </div>
-                        <div className="text-xs text-muted-foreground space-y-1">
-                          {tab === 'por-processo' ? (
-                            <>
-                              <div>{row.uf} - {row.comarca}</div>
-                              <div>Fase: {row.fase}</div>
-                              <Badge 
-                                className={`text-xs ${
-                                  row.classificacao_final === 'Risco Alto' ? 'bg-destructive' : 
-                                  row.classificacao_final === 'Risco Médio' ? 'bg-warning' : 'bg-success'
-                                }`}
-                              >
-                                {row.classificacao_final}
-                              </Badge>
-                            </>
-                          ) : (
-                            <>
-                              <div>{row.qtd_depoimentos} depoimentos</div>
-                              <div>Ambos polos: {row.foi_testemunha_em_ambos_polos ? 'Sim' : 'Não'}</div>
-                              <Badge 
-                                className={`text-xs ${
-                                  row.classificacao_estrategica === 'Crítico' ? 'bg-destructive' :
-                                  row.classificacao_estrategica === 'Atenção' ? 'bg-warning' : 'bg-secondary'
-                                }`}
-                              >
-                                {row.classificacao_estrategica}
-                              </Badge>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+
+            <TabsContent value="processos" className="space-y-6">
+              <ProcessoFilters />
+              {isLoading ? (
+                <div className="flex items-center justify-center p-12">
+                  <div className="animate-pulse text-muted-foreground">Carregando dados...</div>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              ) : (
+                <ProcessoTable data={processos} />
+              )}
+            </TabsContent>
+
+            <TabsContent value="testemunhas" className="space-y-6">
+              <TestemunhaFilters />
+              {isLoading ? (
+                <div className="flex items-center justify-center p-12">
+                  <div className="animate-pulse text-muted-foreground">Carregando dados...</div>
+                </div>
+              ) : (
+                <TestemunhaTable data={testemunhas} />
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
+
+        {/* Modals and Drawers */}
+        <DetailDrawer />
+        <ImportModal />
       </div>
     </div>
   );
