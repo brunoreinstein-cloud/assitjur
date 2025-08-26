@@ -1,0 +1,81 @@
+export type PorProcesso = {
+  cnj: string;
+  status: string | null;
+  uf: string | null;
+  comarca: string | null;
+  fase: string | null;
+  reclamante_limpo: string | null;
+  advogados_parte_ativa: string[] | null;
+  testemunhas_ativo_limpo: string[] | null;
+  testemunhas_passivo_limpo: string[] | null;
+  todas_testemunhas: string[] | null;
+  reclamante_foi_testemunha: boolean | null;
+  qtd_vezes_reclamante_foi_testemunha: number | null;
+  cnjs_em_que_reclamante_foi_testemunha: string[] | null;
+  reclamante_testemunha_polo_passivo: boolean | null;
+  cnjs_passivo: string[] | null;
+  troca_direta: boolean | null;
+  desenho_troca_direta: string | null;
+  cnjs_troca_direta: string[] | null;
+  triangulacao_confirmada: boolean | null;
+  desenho_triangulacao: string | null;
+  cnjs_triangulacao: string[] | null;
+  testemunha_do_reclamante_ja_foi_testemunha_antes: boolean | null;
+  qtd_total_depos_unicos: number | null;
+  cnjs_depos_unicos: string[] | null;
+  contem_prova_emprestada: boolean | null;
+  testemunhas_prova_emprestada: string[] | null;
+  classificacao_final: string | null;
+  insight_estrategico: string | null;
+  org_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PorTestemunha = {
+  nome_testemunha: string;
+  qtd_depoimentos: number | null;
+  cnjs_como_testemunha: string[] | null;
+  ja_foi_reclamante: boolean | null;
+  cnjs_como_reclamante: string[] | null;
+  foi_testemunha_ativo: boolean | null;
+  cnjs_ativo: string[] | null;
+  foi_testemunha_passivo: boolean | null;
+  cnjs_passivo: string[] | null;
+  foi_testemunha_em_ambos_polos: boolean | null;
+  participou_troca_favor: boolean | null;
+  cnjs_troca_favor: string[] | null;
+  participou_triangulacao: boolean | null;
+  cnjs_triangulacao: string[] | null;
+  e_prova_emprestada: boolean | null;
+  classificacao: string | null;
+  classificacao_estrategica: string | null;
+  org_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProcessoFilters = {
+  uf?: string;
+  status?: string;
+  fase?: string;
+  search?: string;
+  qtdDeposMin?: number;
+  qtdDeposMax?: number;
+};
+
+export type TestemunhaFilters = {
+  ambosPolos?: boolean;
+  jaFoiReclamante?: boolean;
+  qtdDeposMin?: number;
+  qtdDeposMax?: number;
+  search?: string;
+  temTriangulacao?: boolean;
+  temTroca?: boolean;
+};
+
+export type ImportResult = {
+  stagingRows: number;
+  upserts: number;
+  errors: string[];
+};

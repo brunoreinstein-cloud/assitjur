@@ -23,6 +23,7 @@ import OpenAIModels from "./pages/admin/openai/Models";
 import PromptStudio from "./pages/admin/openai/PromptStudio";
 import OpenAIPlayground from "./pages/admin/openai/Playground";
 import Logs from "./pages/admin/Logs";
+import MapaTestemunhas from "./pages/MapaTestemunhas";
 
 // Analytics component import and routes
 const queryClient = new QueryClient();
