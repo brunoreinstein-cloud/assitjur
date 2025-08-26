@@ -11,7 +11,7 @@ export function TestemunhaFilters() {
   const { testemunhaFilters, setTestemunhaFilters, resetFilters } = useMapaTestemunhasStore();
 
   const updateFilter = (key: keyof TestemunhaFiltersType, value: string | number | boolean | undefined) => {
-    if (value === '' || value === undefined) {
+    if (value === '' || value === undefined || value === 'TODOS') {
       const newFilters = { ...testemunhaFilters };
       delete newFilters[key];
       setTestemunhaFilters(newFilters);
@@ -56,14 +56,14 @@ export function TestemunhaFilters() {
           <div className="space-y-2">
             <Label htmlFor="ambosPolos">Em Ambos os Polos</Label>
             <Select
-              value={testemunhaFilters.ambosPolos !== undefined ? testemunhaFilters.ambosPolos.toString() : ''}
-              onValueChange={(value) => updateFilter('ambosPolos', value ? value === 'true' : undefined)}
+              value={testemunhaFilters.ambosPolos !== undefined ? testemunhaFilters.ambosPolos.toString() : 'TODOS'}
+              onValueChange={(value) => updateFilter('ambosPolos', value === 'TODOS' ? undefined : value === 'true')}
             >
               <SelectTrigger id="ambosPolos">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="TODOS">Todos</SelectItem>
                 <SelectItem value="true">Sim</SelectItem>
                 <SelectItem value="false">Não</SelectItem>
               </SelectContent>
@@ -73,14 +73,14 @@ export function TestemunhaFilters() {
           <div className="space-y-2">
             <Label htmlFor="jaFoiReclamante">Já Foi Reclamante</Label>
             <Select
-              value={testemunhaFilters.jaFoiReclamante !== undefined ? testemunhaFilters.jaFoiReclamante.toString() : ''}
-              onValueChange={(value) => updateFilter('jaFoiReclamante', value ? value === 'true' : undefined)}
+              value={testemunhaFilters.jaFoiReclamante !== undefined ? testemunhaFilters.jaFoiReclamante.toString() : 'TODOS'}
+              onValueChange={(value) => updateFilter('jaFoiReclamante', value === 'TODOS' ? undefined : value === 'true')}
             >
               <SelectTrigger id="jaFoiReclamante">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="TODOS">Todos</SelectItem>
                 <SelectItem value="true">Sim</SelectItem>
                 <SelectItem value="false">Não</SelectItem>
               </SelectContent>
@@ -90,14 +90,14 @@ export function TestemunhaFilters() {
           <div className="space-y-2">
             <Label htmlFor="temTriangulacao">Participou Triangulação</Label>
             <Select
-              value={testemunhaFilters.temTriangulacao !== undefined ? testemunhaFilters.temTriangulacao.toString() : ''}
-              onValueChange={(value) => updateFilter('temTriangulacao', value ? value === 'true' : undefined)}
+              value={testemunhaFilters.temTriangulacao !== undefined ? testemunhaFilters.temTriangulacao.toString() : 'TODOS'}
+              onValueChange={(value) => updateFilter('temTriangulacao', value === 'TODOS' ? undefined : value === 'true')}
             >
               <SelectTrigger id="temTriangulacao">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="TODOS">Todos</SelectItem>
                 <SelectItem value="true">Sim</SelectItem>
                 <SelectItem value="false">Não</SelectItem>
               </SelectContent>
@@ -107,14 +107,14 @@ export function TestemunhaFilters() {
           <div className="space-y-2">
             <Label htmlFor="temTroca">Participou Troca</Label>
             <Select
-              value={testemunhaFilters.temTroca !== undefined ? testemunhaFilters.temTroca.toString() : ''}
-              onValueChange={(value) => updateFilter('temTroca', value ? value === 'true' : undefined)}
+              value={testemunhaFilters.temTroca !== undefined ? testemunhaFilters.temTroca.toString() : 'TODOS'}
+              onValueChange={(value) => updateFilter('temTroca', value === 'TODOS' ? undefined : value === 'true')}
             >
               <SelectTrigger id="temTroca">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="TODOS">Todos</SelectItem>
                 <SelectItem value="true">Sim</SelectItem>
                 <SelectItem value="false">Não</SelectItem>
               </SelectContent>

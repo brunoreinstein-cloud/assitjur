@@ -25,7 +25,7 @@ export function ProcessoFilters() {
   const { processoFilters, setProcessoFilters, resetFilters } = useMapaTestemunhasStore();
 
   const updateFilter = (key: keyof ProcessoFiltersType, value: string | number | undefined) => {
-    if (value === '' || value === undefined) {
+    if (value === '' || value === undefined || value === 'TODAS' || value === 'TODOS') {
       const newFilters = { ...processoFilters };
       delete newFilters[key];
       setProcessoFilters(newFilters);
@@ -70,14 +70,14 @@ export function ProcessoFilters() {
           <div className="space-y-2">
             <Label htmlFor="uf">UF</Label>
             <Select
-              value={processoFilters.uf || ''}
+              value={processoFilters.uf || 'TODAS'}
               onValueChange={(value) => updateFilter('uf', value)}
             >
               <SelectTrigger id="uf">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas</SelectItem>
+                <SelectItem value="TODAS">Todas</SelectItem>
                 {UF_OPTIONS.map((uf) => (
                   <SelectItem key={uf} value={uf}>
                     {uf}
@@ -90,14 +90,14 @@ export function ProcessoFilters() {
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
             <Select
-              value={processoFilters.status || ''}
+              value={processoFilters.status || 'TODOS'}
               onValueChange={(value) => updateFilter('status', value)}
             >
               <SelectTrigger id="status">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="TODOS">Todos</SelectItem>
                 {STATUS_OPTIONS.map((status) => (
                   <SelectItem key={status} value={status}>
                     {status}
@@ -110,14 +110,14 @@ export function ProcessoFilters() {
           <div className="space-y-2">
             <Label htmlFor="fase">Fase</Label>
             <Select
-              value={processoFilters.fase || ''}
+              value={processoFilters.fase || 'TODAS'}
               onValueChange={(value) => updateFilter('fase', value)}
             >
               <SelectTrigger id="fase">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas</SelectItem>
+                <SelectItem value="TODAS">Todas</SelectItem>
                 {FASE_OPTIONS.map((fase) => (
                   <SelectItem key={fase} value={fase}>
                     {fase}
