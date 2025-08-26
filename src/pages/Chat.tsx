@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Sidebar } from '@/components/chat/Sidebar';
 import { ChatHeader } from '@/components/chat/ChatHeader';
 import { MessageList } from '@/components/chat/MessageList';
@@ -14,13 +14,13 @@ export default function Chat() {
   const { conversationId } = useChatStore();
 
   // Initialize with mock data on mount
-  useEffect(() => {
+  React.useEffect(() => {
     // In a real app, you would load conversation data from Supabase here
     console.log('Chat initialized for user:', user?.id);
   }, [user]);
 
   return (
-    <div className="h-screen bg-gradient-subtle flex flex-col">
+    <div className="h-full bg-gradient-subtle flex flex-col">
       {/* LGPD Notice */}
       <Alert className="m-4 mb-0 bg-amber-50 border-amber-200">
         <AlertTriangle className="h-4 w-4 text-amber-600" />

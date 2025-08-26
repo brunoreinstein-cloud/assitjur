@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import AuthGuard from "@/components/AuthGuard";
+import { AppLayout } from "@/components/navigation/AppLayout";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Chat from "./pages/Chat";
@@ -41,51 +42,44 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            {/* Public routes without layout */}
             <Route path="/login" element={<Login />} />
             <Route path="/reset" element={<Reset />} />
             <Route path="/reset/confirm" element={<ResetConfirm />} />
             <Route path="/verify-otp" element={<VerifyOtp />} />
-            <Route 
-              path="/dados/mapa" 
-              element={
-                <AuthGuard>
-                  <MapaTestemunhas />
-                </AuthGuard>
-              } 
-            />
-            <Route 
-              path="/chat" 
-              element={
-                <AuthGuard>
-                  <Chat />
-                </AuthGuard>
-              } 
-            />
-            <Route 
-              path="/app/chat" 
-              element={
-                <AuthGuard>
-                  <ChatApp />
-                </AuthGuard>
-              } 
-            />
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="analytics" element={<Analytics />} />
-              <Route path="ia" element={<OpenAI />} />
-              <Route path="ia/chaves" element={<OpenAIKeys />} />
-              <Route path="ia/modelos" element={<OpenAIModels />} />
-              <Route path="ia/prompt-studio" element={<PromptStudio />} />
-              <Route path="ia/testes" element={<OpenAIPlayground />} />
-              <Route path="base" element={<ImportBase />} />
-              <Route path="versoes" element={<Versions />} />
-              <Route path="org" element={<Organization />} />
-              <Route path="dados" element={<DataExplorer />} />
-              <Route path="logs" element={<Logs />} />
-              <Route path="config" element={<SystemConfig />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
+            
+            {/* Protected routes with app layout */}
+            <Route path="/*" element={
+              <AuthGuard>
+                <AppLayout>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/chat" element={<Chat />} />
+                    <Route path="/dados/mapa" element={<MapaTestemunhas />} />
+                    <Route path="/app/chat" element={<ChatApp />} />
+                    
+                    {/* Admin routes */}
+                    <Route path="/admin" element={<AdminLayout />}>
+                      <Route index element={<Dashboard />} />
+                      <Route path="analytics" element={<Analytics />} />
+                      <Route path="ia" element={<OpenAI />} />
+                      <Route path="ia/chaves" element={<OpenAIKeys />} />
+                      <Route path="ia/modelos" element={<OpenAIModels />} />
+                      <Route path="ia/prompt-studio" element={<PromptStudio />} />
+                      <Route path="ia/testes" element={<OpenAIPlayground />} />
+                      <Route path="base" element={<ImportBase />} />
+                      <Route path="versoes" element={<Versions />} />
+                      <Route path="org" element={<Organization />} />
+                      <Route path="dados" element={<DataExplorer />} />
+                      <Route path="logs" element={<Logs />} />
+                      <Route path="config" element={<SystemConfig />} />
+                    </Route>
+                    
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </AppLayout>
+              </AuthGuard>
+            } />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
