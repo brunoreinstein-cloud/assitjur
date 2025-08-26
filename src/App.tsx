@@ -30,7 +30,7 @@ import Logs from "./pages/admin/Logs";
 import ResetConfirm from "./pages/ResetConfirm";
 import Reset from "./pages/Reset";
 import VerifyOtp from "./pages/VerifyOtp";
-import MapaTestemunhas from "./pages/MapaTestemunhas";
+
 
 // Analytics component import and routes
 const queryClient = new QueryClient({
@@ -66,7 +66,7 @@ const App = () => (
                       <Routes>
                         <Route path="/" element={<Index />} />
                         <Route path="/chat" element={<Chat />} />
-                        <Route path="/dados/mapa" element={<MapaTestemunhas />} />
+                        <Route path="/dados/mapa" element={<Index />} />
                         <Route path="/app/chat" element={<ChatApp />} />
                         
                         {/* Admin routes - using same layout for consistency */}
