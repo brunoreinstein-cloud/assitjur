@@ -7,23 +7,23 @@ import { Toasts } from '@/components/chat/Toasts';
 
 export default function ChatApp() {
   return (
-    <div className="h-screen bg-gradient-subtle flex flex-col">
+    <div className="min-h-screen bg-gradient-subtle flex flex-col">
       {/* Header */}
       <ChatHeader />
       
       {/* Main Content - 3 column layout */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex min-h-0">
         {/* Central Column */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 min-h-0">
           {/* Input Area */}
-          <div className="border-b bg-card/50 backdrop-blur-sm">
+          <div className="border-b bg-card/50 backdrop-blur-sm flex-shrink-0">
             <div className="container mx-auto px-6 py-4">
               <Composer />
             </div>
           </div>
           
           {/* Conversation Area */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 min-h-0">
             <MessageList />
           </div>
         </div>

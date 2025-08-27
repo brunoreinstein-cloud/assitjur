@@ -33,14 +33,14 @@ export function Strategies({ block }: StrategiesProps) {
   };
 
   return (
-    <Card className="border-l-4 border-l-green-500">
+    <Card className="border-l-4 border-l-green-500 min-h-fit">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Target className="h-4 w-4 text-green-600" />
           {block.title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 min-h-fit">
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-medium text-foreground">Recomendações Estratégicas</h4>
           <Badge className={getPriorityColor(data.priority)}>

@@ -23,14 +23,14 @@ export function Executive({ block }: ExecutiveProps) {
   };
 
   return (
-    <Card className="border-l-4 border-l-violet-500">
+    <Card className="border-l-4 border-l-violet-500 min-h-fit">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Pin className="h-4 w-4 text-violet-600" />
           {block.title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 min-h-fit">
         <div className="prose prose-sm max-w-none">
           <p className="text-muted-foreground leading-relaxed">
             {data.summary}

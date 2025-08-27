@@ -50,13 +50,13 @@ export function MessageList() {
   useEffect(() => {
     if (status === 'success' || status === 'error') {
       // Increased delay for complex content rendering
-      setTimeout(() => scrollToBottom('smooth'), 250);
+      setTimeout(() => scrollToBottom('smooth'), 400);
     }
   }, [status]);
 
   return (
-    <ScrollArea ref={scrollAreaRef} className="flex-1 px-6">
-      <div className="py-6 space-y-6">
+    <ScrollArea ref={scrollAreaRef} className="h-full w-full px-6">
+      <div className="py-6 space-y-6 min-h-fit">
         {messages.length === 0 ? (
           <div className="text-center py-12">
             <div className="max-w-md mx-auto space-y-4">

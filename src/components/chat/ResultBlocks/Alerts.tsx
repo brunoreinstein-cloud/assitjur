@@ -14,14 +14,14 @@ export function Alerts({ block }: AlertsProps) {
   const { data, citations } = block;
 
   return (
-    <Card className="border-l-4 border-l-red-500">
+    <Card className="border-l-4 border-l-red-500 min-h-fit">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <AlertTriangle className="h-4 w-4 text-red-600" />
           {block.title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 min-h-fit">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Alert className="border-red-200 bg-red-50">
             <XCircle className="h-4 w-4 text-red-600" />

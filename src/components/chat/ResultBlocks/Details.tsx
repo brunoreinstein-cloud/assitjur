@@ -13,14 +13,14 @@ export function Details({ block }: DetailsProps) {
   const { data, citations } = block;
 
   return (
-    <Card>
+    <Card className="min-h-fit">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <FileText className="h-4 w-4 text-blue-600" />
           {block.title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 min-h-fit">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center p-3 bg-blue-50 rounded-lg">
             <Network className="h-5 w-5 text-blue-600 mx-auto mb-1" />
