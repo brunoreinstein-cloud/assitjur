@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { Upload, FileSpreadsheet, AlertCircle, CheckCircle, FileText } from 'lucide-react';
+import { Upload, FileSpreadsheet, AlertCircle, CheckCircle, FileText, Download } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { detectFileStructure } from '@/lib/importer/detect';
 import { generateSessionId } from '@/lib/importer/utils';
 import { MappingDialog } from './MappingDialog';
@@ -143,6 +144,15 @@ export function UploadStep({ onComplete }: UploadStepProps) {
                   <p className="text-xs text-muted-foreground">
                     Tamanho máximo: 50MB
                   </p>
+                  <div className="mt-4">
+                    <Link 
+                      to="/import/template"
+                      className="inline-flex items-center text-sm text-primary hover:text-primary/80 font-medium"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Baixar template
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>
@@ -217,9 +227,21 @@ export function UploadStep({ onComplete }: UploadStepProps) {
               </div>
 
               {!showMapping && (
-                <Button onClick={() => handleContinue(detectedSheets)} className="w-full">
-                  Continuar para Validação
-                </Button>
+                <div className="space-y-4">
+                  <Button onClick={() => handleContinue(detectedSheets)} className="w-full">
+                    Continuar para Validação
+                  </Button>
+                  
+                  <div className="text-center">
+                    <Link 
+                      to="/import/template"
+                      className="inline-flex items-center text-sm text-primary hover:text-primary/80 font-medium"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Baixar template
+                    </Link>
+                  </div>
+                </div>
               )}
             </div>
           )}

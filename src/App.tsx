@@ -25,6 +25,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import Analytics from "./pages/admin/Analytics";
 import ImportBase from "./pages/admin/ImportBase";
 import Import from "./pages/Import";
+import TemplatePage from "./pages/TemplatePage";
 import Versions from "./pages/admin/Versions";
 import Organization from "./pages/admin/Organization";
 import DataExplorer from "./pages/admin/DataExplorer";
@@ -65,6 +66,7 @@ const App = () => (
               <Route path="/reset" element={<Reset />} />
               <Route path="/reset/confirm" element={<ResetConfirm />} />
               <Route path="/verify-otp" element={<VerifyOtp />} />
+              <Route path="/import/template" element={<TemplatePage />} />
               
               {/* Protected routes with app layout */}
               <Route path="/*" element={
