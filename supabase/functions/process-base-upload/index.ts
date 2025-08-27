@@ -34,7 +34,7 @@ interface ProcessedRow {
   observacoes?: string
 }
 
-interface ValidationResult {
+interface ProcessedDataValidationResult {
   totalRows: number
   validRows: number
   errors: ValidationError[]
@@ -47,6 +47,24 @@ interface ValidationError {
   type: 'error' | 'warning'
   message: string
   value?: string
+}
+
+interface HeaderMappingResult {
+  requiredFields: Record<string, number>;
+  optionalFields: Record<string, number>;
+  unmappedFields: string[];
+  suggestions: Array<{
+    header: string;
+    suggestion: string;
+    confidence: number;
+  }>;
+}
+
+interface ValidationResult {
+  isValid: boolean;
+  error?: string;
+  warning?: string;
+  normalizedValue?: any;
 }
 
 // JWT verification function
@@ -234,15 +252,46 @@ async function processFileInChunks(
   }
   
   console.log('📊 Headers found:', headers);
-  const headerMap = mapHeaders(headers);
   
-  if (!headerMap.cnj) {
+  // Use advanced header mapping
+  const headerMappingResult = mapHeadersAdvanced(headers);
+  const headerMap = { ...headerMappingResult.requiredFields, ...headerMappingResult.optionalFields };
+  
+  // Check for required fields
+  if (!headerMappingResult.requiredFields.cnj) {
     errors.push({
       row: 0,
       column: 'cnj',
       type: 'error',
       message: 'Coluna CNJ é obrigatória'
     });
+  }
+  
+  if (!headerMappingResult.requiredFields.reclamante_nome) {
+    errors.push({
+      row: 0,
+      column: 'reclamante_nome',
+      type: 'error',
+      message: 'Coluna "Nome do Reclamante" é obrigatória'
+    });
+  }
+  
+  if (!headerMappingResult.requiredFields.reu_nome) {
+    errors.push({
+      row: 0,
+      column: 'reu_nome',
+      type: 'error',
+      message: 'Coluna "Nome do Réu" é obrigatória'
+    });
+  }
+  
+  // Log header mapping suggestions for better diagnostics
+  if (headerMappingResult.suggestions.length > 0) {
+    console.log('💡 Header mapping suggestions:', headerMappingResult.suggestions);
+  }
+  
+  if (headerMappingResult.unmappedFields.length > 0) {
+    console.log('⚠️ Unmapped fields:', headerMappingResult.unmappedFields);
   }
   
   totalRows = range.e.r; // Total rows minus header
@@ -253,6 +302,8 @@ async function processFileInChunks(
     const sampleSize = Math.min(5000, totalRows);
     console.log('🔍 Processing sample of', sampleSize, 'rows for validation');
     
+    const duplicateCNJs = new Set<string>();
+    
     for (let row = 1; row <= sampleSize; row++) {
       const rowData: any[] = [];
       for (let col = range.s.c; col <= range.e.c; col++) {
@@ -262,7 +313,7 @@ async function processFileInChunks(
       }
       
       try {
-        const processedRow = await processRow(rowData, headerMap, row + 1, errors, warnings);
+        const processedRow = await processRow(rowData, headerMap, row + 1, errors, warnings, duplicateCNJs);
         if (processedRow) {
           validRows++;
         }
@@ -321,6 +372,7 @@ async function processFileInChunks(
 
     // Process rows in chunks to avoid memory issues
     const batchData: ProcessedRow[] = [];
+    const duplicateCNJs = new Set<string>();
     
     for (let row = 1; row <= totalRows; row++) {
       const rowData: any[] = [];
@@ -331,7 +383,7 @@ async function processFileInChunks(
       }
       
       try {
-        const processedRow = await processRow(rowData, headerMap, row + 1, errors, warnings);
+        const processedRow = await processRow(rowData, headerMap, row + 1, errors, warnings, duplicateCNJs);
         if (processedRow) {
           batchData.push({
             ...processedRow,
@@ -446,112 +498,638 @@ async function processFileInChunks(
   throw new Error('Invalid action');
 }
 
-function mapHeaders(headers: string[]): Record<string, number> {
-  const map: Record<string, number> = {}
-  
+/**
+ * Advanced header mapping with intelligent pattern matching
+ */
+function mapHeadersAdvanced(headers: string[]): HeaderMappingResult {
+  const requiredFieldMappings = {
+    cnj: ['cnj', 'numero', 'processo', 'num_processo', 'número'],
+    reclamante_nome: ['reclamante', 'autor', 'requerente', 'nome_reclamante', 'nome_autor'],
+    reu_nome: ['reu', 'réu', 'requerido', 'nome_reu', 'demandado', 'nome_requerido']
+  };
+
+  const optionalFieldMappings = {
+    comarca: ['comarca', 'local', 'municipio', 'município'],
+    tribunal: ['tribunal', 'trib', 'orgao', 'órgão'],
+    vara: ['vara', 'juizo', 'juízo'],
+    fase: ['fase', 'situacao', 'situação', 'etapa'],
+    status: ['status', 'situacao', 'situação', 'estado'],
+    reclamante_cpf: ['cpf', 'cpf_reclamante', 'documento', 'doc_reclamante', 'cpf_autor'],
+    data_audiencia: ['audiencia', 'audiência', 'data_audiencia', 'data', 'data_aud'],
+    advogados_ativo: ['advogados_ativo', 'adv_ativo', 'advogado_autor', 'advogados_autor'],
+    advogados_passivo: ['advogados_passivo', 'adv_passivo', 'advogado_reu', 'advogados_reu'],
+    testemunhas_ativo: ['testemunhas_ativo', 'test_ativo', 'testemunha_autor', 'testemunhas_autor'],
+    testemunhas_passivo: ['testemunhas_passivo', 'test_passivo', 'testemunha_reu', 'testemunhas_reu'],
+    observacoes: ['observacoes', 'observações', 'obs', 'comentarios', 'comentários'],
+    score_risco: ['score', 'risco', 'score_risco', 'pontuacao', 'pontuação'],
+    classificacao_final: ['classificacao', 'classificação', 'class_final', 'resultado']
+  };
+
+  const requiredFields: Record<string, number> = {};
+  const optionalFields: Record<string, number> = {};
+  const unmappedFields: string[] = [];
+  const suggestions: Array<{ header: string; suggestion: string; confidence: number }> = [];
+
   headers.forEach((header, index) => {
     const normalized = header.toLowerCase().trim()
-    
-    if (normalized.includes('cnj')) map.cnj = index
-    if (normalized.includes('comarca')) map.comarca = index
-    if (normalized.includes('tribunal')) map.tribunal = index
-    if (normalized.includes('vara')) map.vara = index
-    if (normalized.includes('fase')) map.fase = index
-    if (normalized.includes('status')) map.status = index
-    if (normalized.includes('reclamante') && normalized.includes('nome')) map.reclamante_nome = index
-    if (normalized.includes('reclamante') && normalized.includes('cpf')) map.reclamante_cpf = index
-    if (normalized.includes('reu') || normalized.includes('réu')) map.reu_nome = index
-    if (normalized.includes('audiencia') || normalized.includes('audiência')) map.data_audiencia = index
-    if (normalized.includes('observ')) map.observacoes = index
-  })
-  
-  return map
+      .replace(/[áàâãä]/g, 'a')
+      .replace(/[éèêë]/g, 'e')
+      .replace(/[íìîï]/g, 'i')
+      .replace(/[óòôõö]/g, 'o')
+      .replace(/[úùûü]/g, 'u')
+      .replace(/[ç]/g, 'c')
+      .replace(/[^a-z0-9_]/g, '_');
+
+    let mapped = false;
+
+    // Check required fields
+    for (const [field, patterns] of Object.entries(requiredFieldMappings)) {
+      for (const pattern of patterns) {
+        if (normalized.includes(pattern.toLowerCase()) || pattern.toLowerCase().includes(normalized)) {
+          requiredFields[field] = index;
+          mapped = true;
+          break;
+        }
+      }
+      if (mapped) break;
+    }
+
+    // Check optional fields if not already mapped
+    if (!mapped) {
+      for (const [field, patterns] of Object.entries(optionalFieldMappings)) {
+        for (const pattern of patterns) {
+          if (normalized.includes(pattern.toLowerCase()) || pattern.toLowerCase().includes(normalized)) {
+            optionalFields[field] = index;
+            mapped = true;
+            break;
+          }
+        }
+        if (mapped) break;
+      }
+    }
+
+    // If still not mapped, try to suggest
+    if (!mapped) {
+      const allMappings = { ...requiredFieldMappings, ...optionalFieldMappings };
+      
+      for (const [field, patterns] of Object.entries(allMappings)) {
+        for (const pattern of patterns) {
+          const similarity = calculateSimilarity(normalized, pattern.toLowerCase());
+          if (similarity > 0.6) {
+            suggestions.push({
+              header,
+              suggestion: field,
+              confidence: similarity
+            });
+            break;
+          }
+        }
+      }
+      
+      if (suggestions.length === 0 || !suggestions.some(s => s.header === header)) {
+        unmappedFields.push(header);
+      }
+    }
+  });
+
+  return {
+    requiredFields,
+    optionalFields,
+    unmappedFields,
+    suggestions: suggestions.sort((a, b) => b.confidence - a.confidence)
+  };
 }
 
+/**
+ * Calculate string similarity using Levenshtein distance
+ */
+function calculateSimilarity(str1: string, str2: string): number {
+  const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+
+  for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
+  for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
+
+  for (let j = 1; j <= str2.length; j++) {
+    for (let i = 1; i <= str1.length; i++) {
+      const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
+      matrix[j][i] = Math.min(
+        matrix[j][i - 1] + 1,
+        matrix[j - 1][i] + 1,
+        matrix[j - 1][i - 1] + indicator
+      );
+    }
+  }
+
+  const maxLength = Math.max(str1.length, str2.length);
+  return (maxLength - matrix[str2.length][str1.length]) / maxLength;
+}
+
+/**
+ * Fallback function for backward compatibility
+ */
+function mapHeaders(headers: string[]): Record<string, number> {
+  const result = mapHeadersAdvanced(headers);
+  return { ...result.requiredFields, ...result.optionalFields };
+}
+
+/**
+ * Advanced row processing with comprehensive validation
+ */
 async function processRow(
   row: any[], 
   headerMap: Record<string, number>, 
   rowNumber: number,
   errors: ValidationError[],
-  warnings: ValidationError[]
+  warnings: ValidationError[],
+  duplicateCNJs?: Set<string>
 ): Promise<ProcessedRow | null> {
   
-  const cnj = row[headerMap.cnj]?.toString()?.trim()
-  
-  if (!cnj) {
+  let hasErrors = false;
+  const processedRow: Partial<ProcessedRow> = {};
+
+  // Validate CNJ (required field)
+  const cnjValidation = validateCNJAdvanced(row[headerMap.cnj]);
+  if (!cnjValidation.isValid) {
     errors.push({
       row: rowNumber,
       column: 'cnj',
       type: 'error',
-      message: 'CNJ é obrigatório',
-      value: cnj
-    })
-    return null
-  }
-
-  // Normalize CNJ
-  const cnj_normalizado = normalizeCNJ(cnj)
-  if (!validateCNJ(cnj_normalizado)) {
+      message: cnjValidation.error || 'CNJ inválido',
+      value: String(row[headerMap.cnj] || '')
+    });
+    hasErrors = true;
+  } else if (cnjValidation.warning) {
     warnings.push({
       row: rowNumber,
       column: 'cnj',
       type: 'warning',
-      message: 'CNJ não segue padrão esperado',
-      value: cnj
-    })
+      message: cnjValidation.warning,
+      value: String(row[headerMap.cnj] || '')
+    });
   }
 
-  // Process other fields
-  const processedRow: ProcessedRow = {
-    cnj,
-    cnj_normalizado,
-    comarca: row[headerMap.comarca]?.toString()?.trim() || undefined,
-    tribunal: row[headerMap.tribunal]?.toString()?.trim() || undefined,
-    vara: row[headerMap.vara]?.toString()?.trim() || undefined,
-    fase: row[headerMap.fase]?.toString()?.trim() || undefined,
-    status: row[headerMap.status]?.toString()?.trim() || undefined,
-    reclamante_nome: row[headerMap.reclamante_nome]?.toString()?.trim() || undefined,
-    reclamante_cpf_mask: maskCPF(row[headerMap.reclamante_cpf]?.toString()?.trim()),
-    reu_nome: row[headerMap.reu_nome]?.toString()?.trim() || undefined,
-    data_audiencia: parseDate(row[headerMap.data_audiencia]),
-    observacoes: row[headerMap.observacoes]?.toString()?.trim() || undefined,
-    // Default boolean values
-    reclamante_foi_testemunha: false,
-    troca_direta: false,
-    triangulacao_confirmada: false,
-    prova_emprestada: false,
-    score_risco: 0
+  if (!hasErrors && cnjValidation.normalizedValue) {
+    processedRow.cnj = String(row[headerMap.cnj]);
+    processedRow.cnj_normalizado = cnjValidation.normalizedValue;
+
+    // Check for duplicate CNJ
+    if (duplicateCNJs) {
+      const duplicateCheck = checkDuplicateCNJAdvanced(cnjValidation.normalizedValue, duplicateCNJs);
+      if (!duplicateCheck.isValid) {
+        errors.push({
+          row: rowNumber,
+          column: 'cnj',
+          type: 'error',
+          message: duplicateCheck.error || 'CNJ duplicado',
+          value: String(row[headerMap.cnj])
+        });
+        hasErrors = true;
+      }
+    }
   }
 
-  return processedRow
+  // Validate reclamante_nome (required)
+  const reclNomeValidation = sanitizeTextAdvanced(row[headerMap.reclamante_nome]);
+  if (!reclNomeValidation.normalizedValue) {
+    errors.push({
+      row: rowNumber,
+      column: 'reclamante_nome',
+      type: 'error',
+      message: 'Nome do reclamante é obrigatório',
+      value: String(row[headerMap.reclamante_nome] || '')
+    });
+    hasErrors = true;
+  } else {
+    processedRow.reclamante_nome = reclNomeValidation.normalizedValue;
+  }
+
+  // Validate reu_nome (required)
+  const reuNomeValidation = sanitizeTextAdvanced(row[headerMap.reu_nome]);
+  if (!reuNomeValidation.normalizedValue) {
+    errors.push({
+      row: rowNumber,
+      column: 'reu_nome',
+      type: 'error',
+      message: 'Nome do réu é obrigatório',
+      value: String(row[headerMap.reu_nome] || '')
+    });
+    hasErrors = true;
+  } else {
+    processedRow.reu_nome = reuNomeValidation.normalizedValue;
+  }
+
+  if (hasErrors) {
+    return null;
+  }
+
+  // Process optional fields with validation
+  
+  // CPF validation
+  const cpfValidation = validateCPFAdvanced(row[headerMap.reclamante_cpf]);
+  if (!cpfValidation.isValid && cpfValidation.error) {
+    warnings.push({
+      row: rowNumber,
+      column: 'reclamante_cpf',
+      type: 'warning',
+      message: cpfValidation.error,
+      value: String(row[headerMap.reclamante_cpf] || '')
+    });
+  } else if (cpfValidation.warning) {
+    warnings.push({
+      row: rowNumber,
+      column: 'reclamante_cpf',
+      type: 'warning',
+      message: cpfValidation.warning,
+      value: String(row[headerMap.reclamante_cpf] || '')
+    });
+  }
+  processedRow.reclamante_cpf_mask = cpfValidation.normalizedValue;
+
+  // Date validation
+  const dateValidation = validateDateAdvanced(row[headerMap.data_audiencia]);
+  if (!dateValidation.isValid && dateValidation.error) {
+    warnings.push({
+      row: rowNumber,
+      column: 'data_audiencia',
+      type: 'warning',
+      message: dateValidation.error,
+      value: String(row[headerMap.data_audiencia] || '')
+    });
+  } else if (dateValidation.warning) {
+    warnings.push({
+      row: rowNumber,
+      column: 'data_audiencia',
+      type: 'warning',
+      message: dateValidation.warning,
+      value: String(row[headerMap.data_audiencia] || '')
+    });
+  }
+  processedRow.data_audiencia = dateValidation.normalizedValue;
+
+  // Score validation
+  const scoreValidation = validateScoreRiscoAdvanced(row[headerMap.score_risco]);
+  if (!scoreValidation.isValid && scoreValidation.error) {
+    warnings.push({
+      row: rowNumber,
+      column: 'score_risco',
+      type: 'warning',
+      message: scoreValidation.error,
+      value: String(row[headerMap.score_risco] || '')
+    });
+  }
+  processedRow.score_risco = scoreValidation.normalizedValue || 0;
+
+  // Text fields
+  processedRow.comarca = sanitizeTextAdvanced(row[headerMap.comarca]).normalizedValue;
+  processedRow.tribunal = sanitizeTextAdvanced(row[headerMap.tribunal]).normalizedValue;
+  processedRow.vara = sanitizeTextAdvanced(row[headerMap.vara]).normalizedValue;
+  processedRow.fase = sanitizeTextAdvanced(row[headerMap.fase]).normalizedValue;
+  processedRow.status = sanitizeTextAdvanced(row[headerMap.status]).normalizedValue;
+  processedRow.observacoes = sanitizeTextAdvanced(row[headerMap.observacoes]).normalizedValue;
+  processedRow.classificacao_final = sanitizeTextAdvanced(row[headerMap.classificacao_final]).normalizedValue;
+
+  // Array fields
+  processedRow.advogados_ativo = parseArrayFieldAdvanced(row[headerMap.advogados_ativo]).normalizedValue || [];
+  processedRow.advogados_passivo = parseArrayFieldAdvanced(row[headerMap.advogados_passivo]).normalizedValue || [];
+  processedRow.testemunhas_ativo = parseArrayFieldAdvanced(row[headerMap.testemunhas_ativo]).normalizedValue || [];
+  processedRow.testemunhas_passivo = parseArrayFieldAdvanced(row[headerMap.testemunhas_passivo]).normalizedValue || [];
+
+  // Default boolean values
+  processedRow.reclamante_foi_testemunha = false;
+  processedRow.troca_direta = false;
+  processedRow.triangulacao_confirmada = false;
+  processedRow.prova_emprestada = false;
+
+  return processedRow as ProcessedRow;
 }
 
+/**
+ * Advanced CNJ validation with check digit algorithm
+ */
+function validateCNJAdvanced(cnj: any): ValidationResult {
+  if (!cnj) {
+    return { isValid: false, error: 'CNJ é obrigatório' };
+  }
+
+  // Normalize CNJ (remove all non-digits)
+  const normalized = String(cnj).replace(/\D/g, '');
+  
+  if (normalized.length !== 20) {
+    return { 
+      isValid: false, 
+      error: 'CNJ deve ter exatamente 20 dígitos',
+      normalizedValue: normalized
+    };
+  }
+
+  // Validate CNJ check digits
+  const isValidCheckDigit = validateCNJCheckDigits(normalized);
+  if (!isValidCheckDigit) {
+    return {
+      isValid: false,
+      error: 'CNJ possui dígitos verificadores inválidos',
+      normalizedValue: normalized
+    };
+  }
+
+  return {
+    isValid: true,
+    normalizedValue: normalized,
+  };
+}
+
+/**
+ * Validates CNJ check digits using the official algorithm
+ */
+function validateCNJCheckDigits(cnj: string): boolean {
+  if (cnj.length !== 20) return false;
+
+  // Extract parts: NNNNNNN-DD.AAAA.J.TR.OOOO
+  const sequencial = cnj.substring(0, 7);
+  const digitosVerificadores = cnj.substring(7, 9);
+  const ano = cnj.substring(9, 13);
+  const segmento = cnj.substring(13, 14);
+  const tribunal = cnj.substring(14, 16);
+  const origem = cnj.substring(16, 20);
+
+  // Calculate first check digit
+  const weights1 = [2, 3, 4, 5, 6, 7, 8, 9, 2, 3, 4, 5, 6, 7, 8, 9, 2, 3];
+  let sum1 = 0;
+  
+  const digits = (sequencial + ano + segmento + tribunal + origem).split('').map(Number);
+  
+  for (let i = 0; i < digits.length; i++) {
+    sum1 += digits[i] * weights1[i];
+  }
+  
+  const remainder1 = sum1 % 97;
+  const checkDigit1 = 98 - remainder1;
+  
+  return checkDigit1.toString().padStart(2, '0') === digitosVerificadores;
+}
+
+/**
+ * Advanced CPF validation with check digit algorithm
+ */
+function validateCPFAdvanced(cpf: any): ValidationResult {
+  if (!cpf) {
+    return { isValid: true, warning: 'CPF não informado' }; // CPF is optional
+  }
+
+  const normalized = String(cpf).replace(/\D/g, '');
+  
+  if (normalized.length !== 11) {
+    return {
+      isValid: false,
+      error: 'CPF deve ter exatamente 11 dígitos',
+      normalizedValue: normalized
+    };
+  }
+
+  // Check for known invalid CPFs (all same digits)
+  if (/^(\d)\1{10}$/.test(normalized)) {
+    return {
+      isValid: false,
+      error: 'CPF inválido (todos os dígitos iguais)',
+      normalizedValue: normalized
+    };
+  }
+
+  // Validate check digits
+  if (!validateCPFCheckDigits(normalized)) {
+    return {
+      isValid: false,
+      error: 'CPF possui dígitos verificadores inválidos',
+      normalizedValue: normalized
+    };
+  }
+
+  return {
+    isValid: true,
+    normalizedValue: maskCPFAdvanced(normalized)
+  };
+}
+
+/**
+ * Validates CPF check digits
+ */
+function validateCPFCheckDigits(cpf: string): boolean {
+  // First check digit
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(cpf.charAt(i)) * (10 - i);
+  }
+  let checkDigit1 = 11 - (sum % 11);
+  if (checkDigit1 >= 10) checkDigit1 = 0;
+
+  if (checkDigit1 !== parseInt(cpf.charAt(9))) return false;
+
+  // Second check digit
+  sum = 0;
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(cpf.charAt(i)) * (11 - i);
+  }
+  let checkDigit2 = 11 - (sum % 11);
+  if (checkDigit2 >= 10) checkDigit2 = 0;
+
+  return checkDigit2 === parseInt(cpf.charAt(10));
+}
+
+/**
+ * Mask CPF for privacy
+ */
+function maskCPFAdvanced(cpf: string): string {
+  if (cpf.length !== 11) return cpf;
+  return `${cpf.substring(0, 3)}.***.***-${cpf.substring(9, 11)}`;
+}
+
+/**
+ * Validate date formats
+ */
+function validateDateAdvanced(dateStr: any): ValidationResult {
+  if (!dateStr) {
+    return { isValid: true, warning: 'Data não informada' };
+  }
+
+  let date: Date;
+  
+  // Try parsing different date formats
+  if (typeof dateStr === 'number') {
+    // Excel serial date
+    date = new Date((dateStr - 25569) * 86400 * 1000);
+  } else if (typeof dateStr === 'string') {
+    // Try various string formats
+    const cleanDateStr = String(dateStr).trim();
+    
+    // DD/MM/YYYY
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(cleanDateStr)) {
+      const [day, month, year] = cleanDateStr.split('/').map(Number);
+      date = new Date(year, month - 1, day);
+    }
+    // YYYY-MM-DD
+    else if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(cleanDateStr)) {
+      date = new Date(cleanDateStr);
+    }
+    // DD-MM-YYYY
+    else if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(cleanDateStr)) {
+      const [day, month, year] = cleanDateStr.split('-').map(Number);
+      date = new Date(year, month - 1, day);
+    }
+    else {
+      return {
+        isValid: false,
+        error: 'Formato de data inválido. Use DD/MM/YYYY, YYYY-MM-DD ou DD-MM-YYYY'
+      };
+    }
+  } else {
+    return {
+      isValid: false,
+      error: 'Tipo de data inválido'
+    };
+  }
+
+  if (isNaN(date.getTime())) {
+    return {
+      isValid: false,
+      error: 'Data inválida'
+    };
+  }
+
+  // Check reasonable date range (not too old, not in future)
+  const now = new Date();
+  const minDate = new Date(1900, 0, 1);
+  const maxDate = new Date(now.getFullYear() + 10, 11, 31);
+
+  if (date < minDate || date > maxDate) {
+    return {
+      isValid: false,
+      error: `Data fora do intervalo válido (${minDate.getFullYear()}-${maxDate.getFullYear()})`
+    };
+  }
+
+  return {
+    isValid: true,
+    normalizedValue: date.toISOString().split('T')[0] // YYYY-MM-DD format
+  };
+}
+
+/**
+ * Validate numeric score range
+ */
+function validateScoreRiscoAdvanced(score: any): ValidationResult {
+  if (!score && score !== 0) {
+    return { isValid: true, warning: 'Score de risco não informado' };
+  }
+
+  const numScore = Number(score);
+  
+  if (isNaN(numScore)) {
+    return {
+      isValid: false,
+      error: 'Score de risco deve ser um número'
+    };
+  }
+
+  if (numScore < 0 || numScore > 100) {
+    return {
+      isValid: false,
+      error: 'Score de risco deve estar entre 0 e 100'
+    };
+  }
+
+  return {
+    isValid: true,
+    normalizedValue: Math.round(numScore)
+  };
+}
+
+/**
+ * Sanitize text fields
+ */
+function sanitizeTextAdvanced(text: any): ValidationResult {
+  if (!text) {
+    return { isValid: true, normalizedValue: null };
+  }
+
+  const cleanText = String(text)
+    .trim()
+    .replace(/\s+/g, ' ') // Multiple spaces to single space
+    .replace(/[<>]/g, '') // Remove potential HTML
+    .substring(0, 1000); // Limit length
+
+  return {
+    isValid: true,
+    normalizedValue: cleanText || null
+  };
+}
+
+/**
+ * Parse array fields (advogados, testemunhas)
+ */
+function parseArrayFieldAdvanced(value: any): ValidationResult {
+  if (!value) {
+    return { isValid: true, normalizedValue: [] };
+  }
+
+  let names: string[] = [];
+
+  if (Array.isArray(value)) {
+    names = value.map(v => String(v).trim()).filter(Boolean);
+  } else if (typeof value === 'string') {
+    // Split by common separators
+    names = String(value).split(/[;,\|\n]/)
+      .map(name => name.trim())
+      .filter(Boolean);
+  } else {
+    names = [String(value).trim()].filter(Boolean);
+  }
+
+  // Sanitize each name
+  const sanitizedNames = names.map(name => 
+    name.replace(/[<>]/g, '').substring(0, 200)
+  );
+
+  return {
+    isValid: true,
+    normalizedValue: sanitizedNames
+  };
+}
+
+/**
+ * Check for duplicate CNJs
+ */
+function checkDuplicateCNJAdvanced(cnj: string, existingCNJs: Set<string>): ValidationResult {
+  const normalized = cnj.replace(/\D/g, '');
+  
+  if (existingCNJs.has(normalized)) {
+    return {
+      isValid: false,
+      error: 'CNJ duplicado encontrado'
+    };
+  }
+
+  existingCNJs.add(normalized);
+  return { isValid: true };
+}
+
+// Legacy functions for backward compatibility
 function normalizeCNJ(cnj: string): string {
   return cnj.replace(/\D/g, '')
 }
 
 function validateCNJ(cnj: string): boolean {
-  // Basic CNJ validation (20 digits)
-  return /^\d{20}$/.test(cnj)
+  return validateCNJAdvanced(cnj).isValid;
 }
 
 function maskCPF(cpf?: string): string | undefined {
-  if (!cpf) return undefined
-  const cleaned = cpf.replace(/\D/g, '')
-  if (cleaned.length !== 11) return cpf
-  return `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6, 9)}-**`
+  if (!cpf) return undefined;
+  const result = validateCPFAdvanced(cpf);
+  return result.normalizedValue;
 }
 
 function parseDate(dateStr: any): string | undefined {
-  if (!dateStr) return undefined
-  
-  try {
-    const date = new Date(dateStr)
-    if (isNaN(date.getTime())) return undefined
-    return date.toISOString().split('T')[0]
-  } catch {
-    return undefined
-  }
+  const result = validateDateAdvanced(dateStr);
+  return result.normalizedValue;
 }
 
 function generateHash(): string {
