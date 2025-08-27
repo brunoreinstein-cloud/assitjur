@@ -21,10 +21,15 @@ export function Fieldset({ label, children, error, help, required }: FieldsetPro
       </label>
       
       <div>
-        {React.cloneElement(children as React.ReactElement, {
-          id: fieldId,
-          'aria-describedby': error ? errorId : help ? helpId : undefined,
-        })}
+        {React.isValidElement(children) ? 
+          React.cloneElement(children as React.ReactElement, {
+            id: fieldId,
+            'aria-describedby': error ? errorId : help ? helpId : undefined,
+          }) : 
+          <div id={fieldId} aria-describedby={error ? errorId : help ? helpId : undefined}>
+            {children}
+          </div>
+        }
       </div>
 
       {help && !error && (

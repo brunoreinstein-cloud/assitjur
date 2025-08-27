@@ -34,25 +34,25 @@ export function AboutHeader({ onOpenBetaModal }: AboutHeaderProps) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <a href="/" className="text-xl font-bold text-foreground">
+            <button onClick={() => navigate('/')} className="text-xl font-bold text-foreground">
               Hub<span className="text-accent">JUR</span><span className="text-primary">.IA</span>
-            </a>
+            </button>
           </div>
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a 
-              href="/" 
+            <button
+              onClick={() => navigate('/')}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Início
-            </a>
-            <a 
-              href="/sobre" 
+            </button>
+            <button
+              onClick={() => navigate('/sobre')}
               className="text-foreground font-medium"
             >
               Sobre
-            </a>
+            </button>
             <button
               onClick={() => scrollToSection('seguranca')}
               className="text-muted-foreground hover:text-foreground transition-colors"

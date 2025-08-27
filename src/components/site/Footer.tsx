@@ -1,11 +1,14 @@
 import React from 'react';
 import { Separator } from '@/components/ui/separator';
+import { useNavigate } from 'react-router-dom';
 
 export function Footer() {
+  const navigate = useNavigate();
+  
   const footerLinks = [
-    { label: 'Sobre o Hub', href: '/sobre' },
-    { label: 'Sobre Bianca', href: '/sobre' },
-    { label: 'Contato', href: '/sobre#contato' },
+    { label: 'Sobre o Hub', action: () => navigate('/sobre') },
+    { label: 'Sobre Bianca', action: () => navigate('/sobre') },
+    { label: 'Contato', action: () => navigate('/sobre#contato') },
   ];
 
   return (
@@ -15,13 +18,13 @@ export function Footer() {
           {/* Links de navegação */}
           <div className="flex flex-wrap justify-center gap-8 mb-12">
             {footerLinks.map((link, index) => (
-              <a
+              <button
                 key={index}
-                href={link.href}
-                className="text-background/80 hover:text-background transition-colors font-medium"
+                onClick={link.action}
+                className="text-background/80 hover:text-background transition-colors font-medium underline underline-offset-4"
               >
                 {link.label}
-              </a>
+              </button>
             ))}
           </div>
 
