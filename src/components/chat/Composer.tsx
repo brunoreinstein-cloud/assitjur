@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { useChatStore, QueryKind } from '@/stores/useChatStore';
 import { Search, User, Building, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const QUERY_CHIPS = [
   { kind: 'processo' as QueryKind, label: '🔎 Por Processo', icon: Search },
@@ -83,12 +84,18 @@ export function Composer() {
     }, 1500);
 
     try {
+      // Get current session token properly
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Authentication required');
+      }
+
       // Try real API first
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('supabase.auth.token')}` // Get from auth
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
           kind,
