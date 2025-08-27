@@ -28,8 +28,11 @@ serve(async (req) => {
   }
 
   try {
+    console.log('[chat-legal] Request received:', req.method);
+    
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.error('[chat-legal] Missing authorization header');
       throw new Error('Authorization header is required');
     }
 
@@ -54,7 +57,19 @@ serve(async (req) => {
       throw new Error('Invalid authentication token');
     }
 
-    const { message, conversationId, queryType } = await req.json();
+    const requestBody = await req.json();
+    const { message, conversationId, queryType } = requestBody;
+    
+    console.log('[chat-legal] Request data:', { message: message?.substring(0, 100), queryType, hasConversationId: !!conversationId });
+    
+    // Validate input
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      throw new Error('Message is required and must be a non-empty string');
+    }
+    
+    if (message.length > 2000) {
+      throw new Error('Message is too long (max 2000 characters)');
+    }
 
     // Get user profile and organization
     const { data: profile } = await supabase
@@ -170,31 +185,54 @@ serve(async (req) => {
     // Add current message
     messages.push({ role: 'user', content: message });
 
-    // Call OpenAI API
-    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openaiApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: settings.model || 'gpt-4o-mini',
-        messages: messages,
-        temperature: settings.temperature || 0.7,
-        max_completion_tokens: settings.max_output_tokens || 2000,
-        top_p: settings.top_p || 0.9,
-        stream: false
-      }),
-    });
+    console.log('[chat-legal] Calling OpenAI API with model:', settings.model || 'gpt-4o-mini');
+    
+    // Call OpenAI API with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 second timeout
+    
+    try {
+      const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openaiApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: settings.model || 'gpt-4o-mini',
+          messages: messages,
+          temperature: settings.temperature || 0.7,
+          max_tokens: settings.max_output_tokens || 2000, // Use max_tokens for gpt-4o-mini
+          top_p: settings.top_p || 0.9,
+          stream: false
+        }),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
 
-    if (!openaiResponse.ok) {
-      const errorData = await openaiResponse.json();
-      console.error('OpenAI API Error:', errorData);
-      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
+      if (!openaiResponse.ok) {
+        const errorData = await openaiResponse.json();
+        console.error('[chat-legal] OpenAI API Error:', errorData);
+        throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
+      }
+
+      const openaiData = await openaiResponse.json();
+      const assistantMessage = openaiData.choices[0]?.message?.content;
+      
+      if (!assistantMessage) {
+        throw new Error('No response from OpenAI API');
+      }
+      
+      console.log('[chat-legal] OpenAI response received, length:', assistantMessage.length);
+      
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        throw new Error('OpenAI API request timeout');
+      }
+      throw fetchError;
     }
-
-    const openaiData = await openaiResponse.json();
-    const assistantMessage = openaiData.choices[0].message.content;
 
     // Save messages to database
     await supabase.from('messages').insert([
@@ -228,6 +266,8 @@ serve(async (req) => {
       request_type: 'chat'
     });
 
+    console.log('[chat-legal] Request completed successfully');
+    
     return new Response(JSON.stringify({
       message: assistantMessage,
       conversationId: conversation.id,
@@ -237,11 +277,18 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error in chat-legal function:', error);
+    console.error('[chat-legal] Error:', error);
+    
+    const errorMessage = error.message || 'Internal server error';
+    const status = error.message?.includes('timeout') ? 408 : 
+                   error.message?.includes('Authorization') ? 401 :
+                   error.message?.includes('required') ? 400 : 500;
+    
     return new Response(JSON.stringify({ 
-      error: error.message || 'Internal server error' 
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     }), {
-      status: 500,
+      status,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

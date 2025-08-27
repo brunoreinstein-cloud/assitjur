@@ -84,8 +84,14 @@ export function Composer() {
     }, 1500);
 
     try {
-      // Call Supabase Edge Function directly
-      const { data, error } = await supabase.functions.invoke('chat-legal', {
+      console.log(`[Chat] Starting analysis for query: "${query}" (type: ${getQueryType(kind)})`);
+      
+      // Call Supabase Edge Function with timeout
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 30000)
+      );
+
+      const callPromise = supabase.functions.invoke('chat-legal', {
         body: {
           message: query,
           queryType: getQueryType(kind),
@@ -94,28 +100,49 @@ export function Composer() {
         }
       });
 
+      const { data, error } = await Promise.race([callPromise, timeoutPromise]) as any;
+
+      console.log('[Chat] Edge function response:', { data, error });
+
       if (error) {
         throw new Error(`Edge function error: ${error.message}`);
       }
 
+      if (!data?.message) {
+        throw new Error('Invalid response from edge function');
+      }
+
       // Generate structured response blocks based on kind
-      const blocks = generateMockBlocks(kind, query, data.message || 'Análise concluída com sucesso.');
+      const blocks = generateMockBlocks(kind, query, data.message);
 
       // Update assistant message with final blocks
       useChatStore.getState().updateMessage(assistantMessageId, {
         blocks: blocks
       });
 
+      console.log('[Chat] Analysis completed successfully');
+
     } catch (apiError) {
-      console.warn('API unavailable, falling back to mock:', apiError);
+      console.error('[Chat] API Error:', apiError);
       
-      // Fallback to mock behavior
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Stop hint rotation on error
+      clearInterval(hintInterval);
+      setStatus('error');
       
-      const mockBlocks = getMockBlocks(kind, query);
+      // Remove the assistant message with loading state
       useChatStore.getState().updateMessage(assistantMessageId, {
-        blocks: mockBlocks
+        blocks: []
       });
+      
+      toast({
+        variant: "destructive",
+        title: "Erro na análise",
+        description: apiError.message.includes('timeout') 
+          ? "A análise está demorando mais que o esperado. Tente novamente."
+          : `Falha na comunicação com o sistema: ${apiError.message}`,
+      });
+      
+      return; // Exit early on error
     }
 
     // Stop hint rotation
