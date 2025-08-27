@@ -3,9 +3,9 @@ import { Separator } from '@/components/ui/separator';
 
 export function Footer() {
   const footerLinks = [
-    { label: 'Sobre o Hub', href: '#sobre-hub' },
-    { label: 'Sobre Bianca', href: '#sobre-bianca' },
-    { label: 'Contato', href: '#contato' },
+    { label: 'Sobre o Hub', href: '/sobre' },
+    { label: 'Sobre Bianca', href: '/sobre' },
+    { label: 'Contato', href: '/sobre#contato' },
   ];
 
   return (

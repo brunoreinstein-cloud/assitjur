@@ -26,7 +26,9 @@ export default function About() {
         <SecuritySection />
         <FinalCTA onOpenBetaModal={openBetaModal} />
       </main>
-      <Footer />
+      <div id="contato">
+        <Footer />
+      </div>
       <BetaModal isOpen={isBetaModalOpen} onClose={closeBetaModal} />
     </div>
   );

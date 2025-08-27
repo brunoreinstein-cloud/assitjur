@@ -32,6 +32,7 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
 
   const navItems = [
     { label: 'Início', action: () => scrollToSection('hero') },
+    { label: 'Sobre', action: () => window.location.href = '/sobre' },
     { label: 'Diferencial', action: () => scrollToSection('diferenciais') },
     { label: 'Para Quem', action: () => scrollToSection('publico') },
     { label: 'Agentes', action: () => scrollToSection('agentes') },
