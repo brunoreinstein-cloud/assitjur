@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useBetaFormStore } from '@/stores/useBetaFormStore';
+import { useNavigate } from 'react-router-dom';
 
 interface AboutHeaderProps {
   onOpenBetaModal?: () => void;
@@ -8,6 +8,7 @@ interface AboutHeaderProps {
 
 export function AboutHeader({ onOpenBetaModal }: AboutHeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -68,14 +69,7 @@ export function AboutHeader({ onOpenBetaModal }: AboutHeaderProps) {
 
           {/* CTA Button */}
           <Button 
-            onClick={() => {
-              const ctaSection = document.getElementById('cta-final');
-              if (ctaSection) {
-                ctaSection.scrollIntoView({ behavior: 'smooth' });
-              } else if (onOpenBetaModal) {
-                onOpenBetaModal();
-              }
-            }}
+            onClick={() => navigate('/beta')}
             className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground px-6 py-2 shadow-lg"
           >
             Entrar na Lista Beta

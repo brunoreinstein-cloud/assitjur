@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowDown, Sparkles, Users, Shield, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { NeedsForm } from './NeedsForm';
 
 interface ImprovedHeroProps {
@@ -15,6 +16,7 @@ const trustIndicators = [
 
 export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
   const [formVisible, setFormVisible] = useState(false);
+  const navigate = useNavigate();
 
   const scrollToForm = () => {
     setFormVisible(true);
@@ -68,7 +70,7 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button 
                 size="lg" 
-                onClick={scrollToForm}
+                onClick={() => navigate('/beta')}
                 className="bg-gradient-primary hover:bg-primary/90 text-lg px-8 py-6 shadow-lg hover:shadow-glow transition-all duration-300 group"
               >
                 Testar o Hub

@@ -311,7 +311,7 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
 
   if (variant === 'card') {
     return (
-      <Card className={`max-w-lg mx-auto shadow-glow border-2 border-primary/20 ${className}`}>
+      <Card data-beta-signup className={`max-w-lg mx-auto shadow-glow border-2 border-primary/20 ${className}`}>
         <CardContent className="p-6">
           {content}
         </CardContent>
@@ -320,7 +320,7 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
   }
 
   return (
-    <div className={`max-w-lg mx-auto ${className}`}>
+    <div data-beta-signup className={`max-w-lg mx-auto ${className}`}>
       {content}
     </div>
   );

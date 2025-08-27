@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface PublicHeaderProps {
   onBetaClick?: () => void;
@@ -9,6 +10,7 @@ interface PublicHeaderProps {
 export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -74,7 +76,7 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
           {/* CTA + Mobile Menu */}
           <div className="flex items-center space-x-4">
             <Button 
-              onClick={onBetaClick}
+              onClick={() => navigate('/beta')}
               className="hidden sm:flex bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200"
             >
               Entrar na Lista Beta
@@ -111,7 +113,7 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
               <div className="pt-3">
                 <Button 
                   onClick={() => {
-                    onBetaClick?.();
+                    navigate('/beta');
                     setIsMobileMenuOpen(false);
                   }}
                   className="w-full bg-primary hover:bg-primary/90"
