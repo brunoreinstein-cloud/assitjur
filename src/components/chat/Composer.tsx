@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/popover';
 import { useChatStore } from '@/stores/useChatStore';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const commands = [
   {
@@ -79,9 +80,11 @@ export function Composer() {
     setStreaming, 
     addMessage, 
     updateMessage,
-    agentId,
+    agentId, 
     setAgent,
-    conversationId
+    conversationId,
+    setConversationId,
+    updateCosts
   } = useChatStore();
 
   // Handle input change and command detection
@@ -149,7 +152,7 @@ export function Composer() {
     }, 1500);
   };
 
-  // Handle message sending with mock API
+  // Handle message sending with real API
   const handleSend = async () => {
     if (!input.trim() || streaming) return;
 
@@ -188,45 +191,73 @@ export function Composer() {
       }
     }
 
-    // Mock streaming response
+    // Add assistant message placeholder
     const assistantMessageId = addMessage({
       conversationId: conversationId || 'new',
       role: 'assistant',
-      content: '',
+      content: 'Processando...',
       tokensIn: 0,
       tokensOut: 0
     });
 
-    // Simulate streaming
-    const mockResponse = getMockResponse(userInput, agentId);
-    let currentContent = '';
-    
-    for (let i = 0; i < mockResponse.length; i += 3) {
-      await new Promise(resolve => setTimeout(resolve, 50));
-      currentContent += mockResponse.slice(i, i + 3);
+    try {
+      // Determine query type based on agent
+      const queryTypeMap = {
+        'cnj': 'cnj_analysis',
+        'risco': 'risk_analysis', 
+        'resumo': 'summary',
+        'peca': 'document_draft'
+      };
       
+      const queryType = queryTypeMap[agentId as keyof typeof queryTypeMap] || 'general';
+
+      // Call the chat API
+      const { data, error } = await supabase.functions.invoke('chat-legal', {
+        body: {
+          message: userInput,
+          conversationId: conversationId,
+          queryType: queryType
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Erro ao processar mensagem');
+      }
+
+      // Update assistant message with real response
       updateMessage(assistantMessageId, {
-        content: currentContent,
-        tokensIn: Math.floor(userInput.length / 4),
-        tokensOut: Math.floor(currentContent.length / 4)
+        content: data.message,
+        tokensIn: data.usage?.prompt_tokens || Math.floor(userInput.length / 4),
+        tokensOut: data.usage?.completion_tokens || Math.floor(data.message?.length / 4)
+      });
+
+      // Update conversation ID if it was created
+      if (data.conversationId && !conversationId) {
+        setConversationId(data.conversationId);
+      }
+
+      // Update costs
+      const tokenCost = (data.usage?.total_tokens || 0) * 0.000001; // Rough estimate
+      updateCosts(
+        data.usage?.prompt_tokens || 0,
+        data.usage?.completion_tokens || 0,
+        tokenCost
+      );
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      
+      // Update message with error
+      updateMessage(assistantMessageId, {
+        content: `❌ Erro: ${error instanceof Error ? error.message : 'Falha na comunicação'}`,
+      });
+      
+      toast({
+        variant: "destructive",
+        title: "Erro ao enviar mensagem",
+        description: error instanceof Error ? error.message : 'Tente novamente em alguns segundos.',
       });
     }
-
-    // Add mock citations
-    updateMessage(assistantMessageId, {
-      citations: [
-        {
-          source: 'por_processo' as const,
-          ref: '0001234-56.2023.5.02.0001',
-          content: 'Processo com triangulação identificada'
-        },
-        {
-          source: 'por_testemunha' as const,
-          ref: 'João da Silva Santos',
-          content: 'Testemunha em múltiplos processos'
-        }
-      ]
-    });
 
     setStreaming(false);
   };
