@@ -1,15 +1,11 @@
 import React from 'react';
 import { BetaSignup } from '@/components/beta/BetaSignup';
 
-console.log('FinalCTA: BetaSignup import result:', BetaSignup);
-
 interface FinalCTAProps {
   onOpenBetaModal?: () => void;
 }
 
 export function FinalCTA({ onOpenBetaModal }: FinalCTAProps) {
-  console.log('FinalCTA: About to render, BetaSignup is:', BetaSignup);
-  
   return (
     <section id="cta-final" className="py-20 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/10 relative overflow-hidden">
       {/* Background Effects */}

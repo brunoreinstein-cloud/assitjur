@@ -41,18 +41,38 @@ export function BetaSuccess({ onReset, className = '' }: BetaSuccessProps) {
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Button
-          variant="outline"
-          onClick={() => window.open('https://linkedin.com/company/hubjuria', '_blank')}
-          className="gap-2 border-primary/30 hover:bg-primary/5"
+          className="flex items-center space-x-2 text-white hover:text-primary bg-primary hover:bg-white transition-colors"
+          onClick={() => {
+            try {
+              window.open('https://www.linkedin.com/company/hubjuria', '_blank', 'noopener,noreferrer');
+            } catch (error) {
+              console.error('Erro ao abrir LinkedIn:', error);
+            }
+          }}
         >
-          <Linkedin className="h-4 w-4" />
-          Seguir no LinkedIn
+          <Linkedin className="w-4 h-4" />
+          <span>Seguir no LinkedIn</span>
         </Button>
         
         <Button
-          variant="outline"
-          onClick={() => window.open('/whitepaper-hubjuria.pdf', '_blank')}
+          variant="outline" 
           className="gap-2 border-primary/30 hover:bg-primary/5"
+          onClick={() => {
+            try {
+              const link = document.createElement('a');
+              link.href = '/whitepaper-hubjuria.pdf';
+              link.download = 'hubjuria-whitepaper.pdf';
+              link.target = '_blank';
+              link.rel = 'noopener noreferrer';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            } catch (error) {
+              console.error('Erro ao baixar whitepaper:', error);
+              // Fallback para abrir em nova aba
+              window.open('/whitepaper-hubjuria.pdf', '_blank', 'noopener,noreferrer');
+            }
+          }}
         >
           <Download className="h-4 w-4" />
           Baixar material
