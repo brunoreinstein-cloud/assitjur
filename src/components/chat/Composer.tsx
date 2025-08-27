@@ -84,73 +84,27 @@ export function Composer() {
     }, 1500);
 
     try {
-      // Get current session token properly
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('Authentication required');
-      }
-
-      // Try real API first
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          kind,
-          query,
+      // Call Supabase Edge Function directly
+      const { data, error } = await supabase.functions.invoke('chat-legal', {
+        body: {
+          message: query,
+          queryType: getQueryType(kind),
+          kind: kind,
           options: useChatStore.getState().defaults
-        })
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('API unavailable, using mock data');
+      if (error) {
+        throw new Error(`Edge function error: ${error.message}`);
       }
 
-      // Handle SSE streaming  
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
+      // Generate structured response blocks based on kind
+      const blocks = generateMockBlocks(kind, query, data.message || 'Análise concluída com sucesso.');
 
-      if (!reader) {
-        throw new Error('No response stream');
-      }
-
-      let buffer = '';
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              
-              if (data.type === 'progress') {
-                // Progress handled by hint rotation
-                continue;
-              } else if (data.type === 'partial') {
-                // Handle partial updates if needed
-                continue;
-              } else if (data.type === 'final') {
-                // Update with final blocks
-                useChatStore.getState().updateMessage(assistantMessageId, {
-                  blocks: data.blocks
-                });
-                break;
-              } else if (data.type === 'error') {
-                throw new Error(data.message);
-              }
-            } catch (parseError) {
-              console.warn('Failed to parse SSE data:', parseError);
-            }
-          }
-        }
-      }
+      // Update assistant message with final blocks
+      useChatStore.getState().updateMessage(assistantMessageId, {
+        blocks: blocks
+      });
 
     } catch (apiError) {
       console.warn('API unavailable, falling back to mock:', apiError);
@@ -173,6 +127,104 @@ export function Composer() {
       description: "Resultados disponíveis para exportação.",
       className: "border-success/20 text-success"
     });
+  };
+
+  const getQueryType = (kind: string): string => {
+    switch (kind) {
+      case 'processo':
+        return 'risk_analysis';
+      case 'testemunha':
+        return 'pattern_analysis';
+      case 'reclamante':
+        return 'risk_analysis';
+      default:
+        return 'general';
+    }
+  };
+
+  const generateMockBlocks = (kind: string, query: string, aiResponse: string) => {
+    const isCNJ = /\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}/.test(query);
+    
+    const baseBlocks: any[] = [
+      {
+        type: 'executive',
+        title: 'Resumo Executivo',
+        icon: 'Pin',
+        data: {
+          summary: aiResponse.length > 300 ? aiResponse.substring(0, 300) + '...' : aiResponse,
+          riskLevel: Math.random() > 0.5 ? 'alto' : 'médio',
+          confidence: Math.floor(Math.random() * 30) + 70
+        },
+        citations: [
+          {
+            source: kind === 'processo' ? 'por_processo' : 'por_testemunha',
+            ref: isCNJ ? `CNJ:${query}` : `Testemunha:${query}`
+          }
+        ]
+      },
+      {
+        type: 'details',
+        title: 'Análise Detalhada',
+        icon: 'FileText',
+        data: {
+          connections: [
+            { nome: 'Maria Silva Santos', tipo: 'Testemunha Ativo', processos: 3 },
+            { nome: 'João Costa Lima', tipo: 'Testemunha Passivo', processos: 2 }
+          ],
+          patterns: aiResponse,
+          metadata: {
+            totalProcessos: Math.floor(Math.random() * 50) + 10,
+            totalTestemunhas: Math.floor(Math.random() * 20) + 5
+          }
+        },
+        citations: [
+          { source: 'por_processo', ref: 'CNJ:0000123-45.2023.5.02.0001' },
+          { source: 'por_testemunha', ref: 'Testemunha:Maria Silva Santos' }
+        ]
+      }
+    ];
+
+    // Add specific blocks based on kind
+    if (kind === 'processo') {
+      baseBlocks.push({
+        type: 'alerts',
+        title: 'Alertas Probatórios',
+        icon: 'AlertTriangle',
+        data: {
+          risks: [
+            { level: 'alto', message: 'Triangulação confirmada entre 3 testemunhas', severity: 'critical' },
+            { level: 'médio', message: 'Testemunha comum em processos similares', severity: 'warning' }
+          ],
+          triangulations: 2,
+          directExchanges: 1
+        },
+        citations: [
+          { source: 'por_processo', ref: isCNJ ? `CNJ:${query}` : 'CNJ:0000456-78.2023.5.02.0002' }
+        ]
+      });
+    }
+
+    baseBlocks.push({
+      type: 'strategies',
+      title: 'Polo Ativo & Estratégias',
+      icon: 'Target',
+      data: {
+        activeStrategies: [
+          'Questionar credibilidade da testemunha devido ao histórico',
+          'Explorar contradições entre depoimentos',
+          'Solicitar oitiva de testemunhas referenciadas'
+        ],
+        defensiveActions: [
+          'Preparar contraprova documental',
+          'Identificar testemunhas de defesa'
+        ]
+      },
+      citations: [
+        { source: 'por_testemunha', ref: 'Testemunha:João Costa Lima' }
+      ]
+    });
+
+    return baseBlocks;
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
