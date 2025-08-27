@@ -6,18 +6,24 @@ import { LoadingHints } from './LoadingHints';
 
 export function MessageList() {
   const { messages, status } = useChatStore();
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (scrollAreaRef.current) {
+      const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (viewport) {
+        viewport.scrollTo({
+          top: viewport.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
     }
   }, [messages, status]);
 
   return (
-    <ScrollArea className="flex-1 px-6">
-      <div ref={scrollRef} className="py-6 space-y-6">
+    <ScrollArea ref={scrollAreaRef} className="flex-1 px-6">
+      <div className="py-6 space-y-6">
         {messages.length === 0 ? (
           <div className="text-center py-12">
             <div className="max-w-md mx-auto space-y-4">
