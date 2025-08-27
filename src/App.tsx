@@ -11,6 +11,7 @@ import { ErrorBoundary } from "@/components/core/ErrorBoundary";
 
 import Index from "./pages/Index";
 import PublicHome from "./pages/PublicHome";
+import About from "./pages/About";
 import Login from "./pages/Login";
 import Reset from "./pages/Reset";
 import ResetConfirm from "./pages/ResetConfirm";
@@ -56,6 +57,7 @@ const App = () => (
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<PublicHome />} />
+              <Route path="/sobre" element={<About />} />
               <Route path="/login" element={<Login />} />
               <Route path="/reset" element={<Reset />} />
               <Route path="/reset/confirm" element={<ResetConfirm />} />
