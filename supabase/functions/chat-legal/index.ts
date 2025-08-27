@@ -23,7 +23,10 @@ interface ProcessoContext {
 }
 
 serve(async (req) => {
+  console.log('[chat-legal] Function invoked:', req.method, req.url);
+  
   if (req.method === 'OPTIONS') {
+    console.log('[chat-legal] CORS preflight request');
     return new Response(null, { headers: corsHeaders });
   }
 
@@ -36,7 +39,10 @@ serve(async (req) => {
       throw new Error('Authorization header is required');
     }
 
+    console.log('[chat-legal] Auth header present:', !!authHeader);
+
     // Initialize Supabase client
+    console.log('[chat-legal] Initializing Supabase client');
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -46,16 +52,21 @@ serve(async (req) => {
     );
 
     // Initialize service role client for privileged operations
+    console.log('[chat-legal] Initializing service role client');
     const supabaseService = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
     // Get user from token
+    console.log('[chat-legal] Getting user from token');
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
+      console.error('[chat-legal] User error:', userError);
       throw new Error('Invalid authentication token');
     }
+    
+    console.log('[chat-legal] User authenticated:', user.id);
 
     const requestBody = await req.json();
     const { message, conversationId, queryType } = requestBody;

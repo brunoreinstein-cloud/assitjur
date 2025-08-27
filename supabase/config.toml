@@ -3,6 +3,9 @@ project_id = "fgjypmlszuzkgvhuszxn"
 [functions.chat-legal]
 verify_jwt = true
 
+[functions.chat-legal-test]
+verify_jwt = false
+
 [functions.admin-openai-keys]
 verify_jwt = false
 
