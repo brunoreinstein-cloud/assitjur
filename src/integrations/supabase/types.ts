@@ -67,6 +67,45 @@ export type Database = {
           },
         ]
       }
+      beta_signups: {
+        Row: {
+          cargo: string | null
+          created_at: string
+          email: string
+          id: string
+          necessidades: string[]
+          nome: string
+          organizacao: string
+          outro_texto: string | null
+          updated_at: string
+          utm: Json | null
+        }
+        Insert: {
+          cargo?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          necessidades?: string[]
+          nome: string
+          organizacao: string
+          outro_texto?: string | null
+          updated_at?: string
+          utm?: Json | null
+        }
+        Update: {
+          cargo?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          necessidades?: string[]
+          nome?: string
+          organizacao?: string
+          outro_texto?: string | null
+          updated_at?: string
+          utm?: Json | null
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string | null
