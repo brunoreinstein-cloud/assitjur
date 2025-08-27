@@ -4,7 +4,7 @@ import { CheckCircle, ArrowRight, Target, TrendingUp, Shield } from 'lucide-reac
 
 export function ValueProps() {
   return (
-    <section className="py-20 bg-muted/20">
+    <section id="diferenciais" className="py-20 bg-muted/20">
       <div className="container mx-auto px-6">
         <div className="max-w-4xl mx-auto">
           {/* Problema vs Solução */}
@@ -15,7 +15,7 @@ export function ValueProps() {
             
             <div className="grid md:grid-cols-2 gap-8 items-center">
               {/* Problema */}
-              <Card className="border-destructive/20 bg-destructive/5">
+              <Card className="border-destructive/20 bg-destructive/5 animate-slide-up hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-8 text-center">
                   <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-destructive/20 flex items-center justify-center">
                     <Target className="h-6 w-6 text-destructive" />
@@ -29,14 +29,14 @@ export function ValueProps() {
 
               {/* Arrow */}
               <div className="hidden md:flex justify-center">
-                <ArrowRight className="h-8 w-8 text-primary" />
+                <ArrowRight className="h-8 w-8 text-primary animate-pulse" />
               </div>
               <div className="md:hidden flex justify-center">
-                <ArrowRight className="h-8 w-8 text-primary rotate-90" />
+                <ArrowRight className="h-8 w-8 text-primary rotate-90 animate-pulse" />
               </div>
 
               {/* Solução */}
-              <Card className="border-primary/20 bg-primary/5">
+              <Card className="border-primary/20 bg-primary/5 animate-slide-up hover:shadow-glow transition-all duration-300" style={{ animationDelay: '0.2s' }}>
                 <CardContent className="p-8 text-center">
                   <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
                     <CheckCircle className="h-6 w-6 text-primary" />
@@ -58,10 +58,10 @@ export function ValueProps() {
             
             <div className="grid md:grid-cols-3 gap-6">
               {/* Governança */}
-              <Card className="border-border/50 hover:border-primary/50 transition-colors">
+              <Card className="border-border/50 hover:border-accent/50 hover:shadow-lg group transition-all duration-300 animate-slide-up">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
-                    <Shield className="h-6 w-6 text-accent" />
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-accent/20 group-hover:bg-accent/30 flex items-center justify-center transition-colors">
+                    <Shield className="h-6 w-6 text-accent group-hover:scale-110 transition-transform" />
                   </div>
                   <h4 className="text-lg font-semibold mb-3 text-foreground">
                     Aumento da governança
@@ -73,10 +73,10 @@ export function ValueProps() {
               </Card>
 
               {/* Estratégia */}
-              <Card className="border-border/50 hover:border-primary/50 transition-colors">
+              <Card className="border-border/50 hover:border-primary/50 hover:shadow-glow group transition-all duration-300 animate-slide-up" style={{ animationDelay: '0.1s' }}>
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
-                    <Target className="h-6 w-6 text-primary" />
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary/20 group-hover:bg-primary/30 flex items-center justify-center transition-colors">
+                    <Target className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
                   </div>
                   <h4 className="text-lg font-semibold mb-3 text-foreground">
                     Fortalecimento da estratégia
@@ -88,10 +88,10 @@ export function ValueProps() {
               </Card>
 
               {/* Produtividade */}
-              <Card className="border-border/50 hover:border-primary/50 transition-colors">
+              <Card className="border-border/50 hover:border-success/50 hover:shadow-lg group transition-all duration-300 animate-slide-up" style={{ animationDelay: '0.2s' }}>
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-success/20 flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-success" />
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-success/20 group-hover:bg-success/30 flex items-center justify-center transition-colors">
+                    <TrendingUp className="h-6 w-6 text-success group-hover:scale-110 transition-transform" />
                   </div>
                   <h4 className="text-lg font-semibold mb-3 text-foreground">
                     Ganhos de produtividade
