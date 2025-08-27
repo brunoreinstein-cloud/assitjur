@@ -12,6 +12,12 @@ import { EmailHint } from './EmailHint';
 import { Fieldset } from './Fieldset';
 import { supabase } from '@/integrations/supabase/client';
 
+console.log('BetaSignup: Checking imports...');
+console.log('BetaTrustBadges:', BetaTrustBadges);
+console.log('BetaSuccess:', BetaSuccess);
+console.log('EmailHint:', EmailHint);
+console.log('Fieldset:', Fieldset);
+
 const betaSignupSchema = z.object({
   nome: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
   email: z.string().email('E-mail inválido'),
