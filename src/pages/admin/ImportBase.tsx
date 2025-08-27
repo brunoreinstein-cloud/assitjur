@@ -18,6 +18,7 @@ import { useDropzone } from 'react-dropzone';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import TemplateDownload from '@/components/TemplateDownload';
+import ErrorReportGenerator from '@/components/admin/ErrorReportGenerator';
 
 const ImportBase = () => {
   const [currentStep, setCurrentStep] = useState<'upload' | 'validation' | 'preview' | 'publish'>('upload');
@@ -261,6 +262,14 @@ const ImportBase = () => {
               </div>
             )}
 
+            {/* Error Report Generator */}
+            {(validationResults.errors?.length > 0 || validationResults.warnings?.length > 0) && (
+              <ErrorReportGenerator 
+                validationResults={validationResults}
+                fileName={uploadedFile?.name || 'arquivo'}
+              />
+            )}
+
             <div className="flex gap-2 justify-between">
               <Button variant="outline" onClick={() => {
                 setCurrentStep('upload');
@@ -270,10 +279,6 @@ const ImportBase = () => {
                 Voltar
               </Button>
               <div className="flex gap-2">
-                <Button variant="outline" className="flex items-center gap-2" disabled>
-                  <Download className="h-4 w-4" />
-                  Relatório
-                </Button>
                 <Button 
                   onClick={() => setCurrentStep('preview')}
                   disabled={validationResults.validRows === 0}
