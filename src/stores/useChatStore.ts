@@ -1,218 +1,124 @@
 import { create } from 'zustand';
 
+export type QueryKind = 'processo' | 'testemunha' | 'reclamante';
+export type MessageRole = 'user' | 'assistant';
+export type BlockType = 'executive' | 'details' | 'alerts' | 'strategies';
+export type ExportType = 'pdf' | 'csv' | 'json';
+export type Language = 'pt' | 'en';
+export type ChatStatus = 'idle' | 'loading' | 'success' | 'error';
+
+export interface Citation {
+  source: 'por_processo' | 'por_testemunha' | 'outro';
+  ref: string;
+}
+
+export interface ResultBlock {
+  type: BlockType;
+  title: string;
+  icon: string;
+  data: any;
+  citations?: Citation[];
+}
+
 export interface Message {
   id: string;
-  conversationId: string;
-  role: 'user' | 'assistant' | 'tool';
-  content: string;
-  json?: any;
-  tokensIn?: number;
-  tokensOut?: number;
-  citations?: Array<{
-    source: 'por_processo' | 'por_testemunha';
-    ref: string;
-    content?: string;
-  }>;
-  createdAt: Date;
+  role: MessageRole;
+  content?: string;
+  blocks?: ResultBlock[];
+  exporting?: boolean;
+  timestamp: Date;
 }
 
-export interface Conversation {
-  id: string;
-  title: string;
-  agentId: string;
-  createdAt: Date;
-  updatedAt: Date;
-  messageCount: number;
-  lastMessage?: string;
-}
-
-export interface Attachment {
-  id: string;
-  conversationId: string;
-  kind: 'file' | 'url';
-  name: string;
-  ext?: string;
-  size?: number;
-  status: 'uploading' | 'indexing' | 'ready' | 'error';
-  createdAt: Date;
-}
-
-export interface ChatContext {
-  cnj?: string;
-  testemunha?: string;
-  rows?: any[];
+export interface ChatDefaults {
+  language: Language;
+  export: ExportType;
 }
 
 export interface ChatStore {
-  // Current conversation
-  conversationId?: string;
-  agentId: string;
-  model: string;
-  temperature: number;
-  
-  // Messages and streaming
+  // Core state
+  kind: QueryKind;
+  input: string;
   messages: Message[];
-  streaming: boolean;
-  
-  // Costs and tokens
-  costUsd: number;
-  tokensIn: number;
-  tokensOut: number;
-  
-  // Context
-  ctx: ChatContext;
-  attachments: Attachment[];
-  maskPII: boolean;
-  
-  // History
-  conversations: Conversation[];
-  searchQuery: string;
-  
+  status: ChatStatus;
+  agentOnline: boolean;
+  defaults: ChatDefaults;
+
+  // Loading states
+  loadingHints: string[];
+  currentHintIndex: number;
+
   // Actions
-  setAgent: (agentId: string) => void;
-  setModel: (model: string) => void;
-  setTemperature: (temp: number) => void;
-  setContext: (ctx: ChatContext) => void;
-  addMessage: (message: Omit<Message, 'id' | 'createdAt'>) => string;
+  setKind: (kind: QueryKind) => void;
+  setInput: (input: string) => void;
+  addMessage: (message: Omit<Message, 'id' | 'timestamp'>) => string;
   updateMessage: (id: string, updates: Partial<Message>) => void;
-  setStreaming: (streaming: boolean) => void;
-  addAttachment: (attachment: Omit<Attachment, 'id' | 'createdAt'>) => void;
-  setMaskPII: (mask: boolean) => void;
-  updateCosts: (tokensIn: number, tokensOut: number, costUsd: number) => void;
-  setConversations: (conversations: Conversation[]) => void;
-  setSearchQuery: (query: string) => void;
-  setConversationId: (id?: string) => void;
+  setStatus: (status: ChatStatus) => void;
+  setAgentOnline: (online: boolean) => void;
+  setDefaults: (defaults: Partial<ChatDefaults>) => void;
   reset: () => void;
+  nextHint: () => void;
 }
 
-// Mock data
-const mockConversations: Conversation[] = [
-  {
-    id: 'conv-1',
-    title: 'Análise CNJ 0001234-56.2023.5.02.0001',
-    agentId: 'cnj',
-    createdAt: new Date('2024-01-15T10:30:00'),
-    updatedAt: new Date('2024-01-15T11:45:00'),
-    messageCount: 8,
-    lastMessage: 'Encontrei irregularidades na triangulação de testemunhas...'
-  },
-  {
-    id: 'conv-2', 
-    title: 'Padrões de Risco - João Pereira',
-    agentId: 'risco',
-    createdAt: new Date('2024-01-14T15:20:00'),
-    updatedAt: new Date('2024-01-14T16:30:00'),
-    messageCount: 12,
-    lastMessage: 'A testemunha aparece em 15 processos como polo ativo...'
-  },
-  {
-    id: 'conv-3',
-    title: 'Resumo Processual - Comarca São Paulo',
-    agentId: 'resumo',
-    createdAt: new Date('2024-01-13T09:15:00'),
-    updatedAt: new Date('2024-01-13T10:20:00'),
-    messageCount: 6,
-    lastMessage: 'Resumo dos principais achados da comarca...'
-  },
-  {
-    id: 'conv-4',
-    title: 'Minuta Contestação - Triangulação',
-    agentId: 'peca',
-    createdAt: new Date('2024-01-12T14:10:00'),
-    updatedAt: new Date('2024-01-12T15:30:00'),
-    messageCount: 4,
-    lastMessage: 'Minuta de contestação baseada nos padrões identificados...'
-  },
-  {
-    id: 'conv-5',
-    title: 'Análise Global de Fraudes',
-    agentId: 'risco',
-    createdAt: new Date('2024-01-11T11:00:00'),
-    updatedAt: new Date('2024-01-11T12:15:00'),
-    messageCount: 18,
-    lastMessage: 'Identificados 23 casos suspeitos de coordenação...'
-  },
-  {
-    id: 'conv-6',
-    title: 'Consulta Rápida - Advogado Silva',
-    agentId: 'cnj',
-    createdAt: new Date('2024-01-10T16:45:00'),
-    updatedAt: new Date('2024-01-10T17:00:00'),
-    messageCount: 3,
-    lastMessage: 'Advogado presente em 8 processos com padrão similar...'
-  }
+const LOADING_HINTS = [
+  "⏱ Mapeando conexões de testemunhas…",
+  "🔎 Checando histórico probatório…",
+  "⚖️ Analisando padrões de triangulação…",
+  "📋 Identificando riscos processuais…",
+  "👥 Cruzando dados do polo ativo…",
+  "🎯 Gerando insights estratégicos…",
+  "📊 Compilando relatório executivo…"
 ];
 
 export const useChatStore = create<ChatStore>((set, get) => ({
   // Initial state
-  agentId: 'cnj',
-  model: 'gpt-4o-mini',
-  temperature: 0.7,
+  kind: 'processo',
+  input: '',
   messages: [],
-  streaming: false,
-  costUsd: 0,
-  tokensIn: 0,
-  tokensOut: 0,
-  ctx: {},
-  attachments: [],
-  maskPII: false,
-  conversations: mockConversations,
-  searchQuery: '',
+  status: 'idle',
+  agentOnline: true,
+  defaults: {
+    language: 'pt',
+    export: 'pdf'
+  },
+  loadingHints: LOADING_HINTS,
+  currentHintIndex: 0,
 
   // Actions
-  setAgent: (agentId) => set({ agentId }),
-  setModel: (model) => set({ model }),
-  setTemperature: (temperature) => set({ temperature }),
-  setContext: (ctx) => set({ ctx }),
-  
+  setKind: (kind) => set({ kind }),
+  setInput: (input) => set({ input }),
+
   addMessage: (message) => {
     const newMessage = {
       ...message,
       id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date()
+      timestamp: new Date()
     };
     set((state) => ({
       messages: [...state.messages, newMessage]
     }));
     return newMessage.id;
   },
-  
+
   updateMessage: (id, updates) => set((state) => ({
     messages: state.messages.map(msg => 
       msg.id === id ? { ...msg, ...updates } : msg
     )
   })),
-  
-  setStreaming: (streaming) => set({ streaming }),
-  
-  addAttachment: (attachment) => set((state) => ({
-    attachments: [...state.attachments, {
-      ...attachment,
-      id: `att-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date()
-    }]
+
+  setStatus: (status) => set({ status }),
+  setAgentOnline: (agentOnline) => set({ agentOnline }),
+  setDefaults: (defaults) => set((state) => ({
+    defaults: { ...state.defaults, ...defaults }
   })),
-  
-  setMaskPII: (maskPII) => set({ maskPII }),
-  
-  updateCosts: (tokensIn, tokensOut, costUsd) => set((state) => ({
-    tokensIn: state.tokensIn + tokensIn,
-    tokensOut: state.tokensOut + tokensOut,
-    costUsd: state.costUsd + costUsd
-  })),
-  
-  setConversations: (conversations) => set({ conversations }),
-  setSearchQuery: (searchQuery) => set({ searchQuery }),
-  setConversationId: (conversationId) => set({ conversationId }),
-  
+
   reset: () => set({
-    conversationId: undefined,
+    input: '',
     messages: [],
-    streaming: false,
-    costUsd: 0,
-    tokensIn: 0,
-    tokensOut: 0,
-    ctx: {},
-    attachments: []
-  })
+    status: 'idle',
+    currentHintIndex: 0
+  }),
+
+  nextHint: () => set((state) => ({
+    currentHintIndex: (state.currentHintIndex + 1) % state.loadingHints.length
+  }))
 }));
