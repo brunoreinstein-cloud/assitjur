@@ -202,50 +202,42 @@ serve(async (req) => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 second timeout
     
-    try {
-      const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openaiApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: settings.model || 'gpt-4o-mini',
-          messages: messages,
-          temperature: settings.temperature || 0.7,
-          max_tokens: settings.max_output_tokens || 2000, // Use max_tokens for gpt-4o-mini
-          top_p: settings.top_p || 0.9,
-          stream: false
-        }),
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
+    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: settings.model || 'gpt-4o-mini',
+        messages: messages,
+        temperature: settings.temperature || 0.7,
+        max_tokens: settings.max_output_tokens || 2000, // Use max_tokens for gpt-4o-mini
+        top_p: settings.top_p || 0.9,
+        stream: false
+      }),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
 
-      if (!openaiResponse.ok) {
-        const errorData = await openaiResponse.json();
-        console.error('[chat-legal] OpenAI API Error:', errorData);
-        throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
-      }
-
-      const openaiData = await openaiResponse.json();
-      const assistantMessage = openaiData.choices[0]?.message?.content;
-      
-      if (!assistantMessage) {
-        throw new Error('No response from OpenAI API');
-      }
-      
-      console.log('[chat-legal] OpenAI response received, length:', assistantMessage.length);
-      
-    } catch (fetchError) {
-      clearTimeout(timeoutId);
-      if (fetchError.name === 'AbortError') {
-        throw new Error('OpenAI API request timeout');
-      }
-      throw fetchError;
+    if (!openaiResponse.ok) {
+      const errorData = await openaiResponse.json();
+      console.error('[chat-legal] OpenAI API Error:', errorData);
+      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
     }
 
+    const openaiData = await openaiResponse.json();
+    const assistantMessage = openaiData.choices[0]?.message?.content;
+    
+    if (!assistantMessage) {
+      throw new Error('No response from OpenAI API');
+    }
+    
+    console.log('[chat-legal] OpenAI response received, length:', assistantMessage.length);
+
     // Save messages to database
+    console.log('[chat-legal] Saving messages to database');
     await supabase.from('messages').insert([
       {
         conversation_id: conversation.id,
@@ -265,6 +257,7 @@ serve(async (req) => {
     ]);
 
     // Log OpenAI usage (using service role for system operations)
+    console.log('[chat-legal] Logging OpenAI usage');
     await supabaseService.from('openai_logs').insert({
       user_id: user.id,
       org_id: profile.organization_id,

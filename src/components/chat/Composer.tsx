@@ -84,15 +84,6 @@ export function Composer() {
     }, 1500);
 
     try {
-      // Test call to edge function first
-      console.log(`[Chat] Testing edge function availability...`);
-      
-      const testResponse = await supabase.functions.invoke('chat-legal-test', {
-        body: { test: true }
-      });
-      
-      console.log('[Chat] Test response:', testResponse);
-      
       console.log(`[Chat] Starting analysis for query: "${query}" (type: ${getQueryType(kind)})`);
       
       // Call Supabase Edge Function with timeout
