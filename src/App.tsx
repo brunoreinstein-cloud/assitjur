@@ -8,8 +8,13 @@ import { AuthProvider } from "@/hooks/useAuth";
 import AuthGuard from "@/components/AuthGuard";
 import { AppLayout } from "@/components/navigation/AppLayout";
 import { ErrorBoundary } from "@/components/core/ErrorBoundary";
+
 import Index from "./pages/Index";
+import PublicHome from "./pages/PublicHome";
 import Login from "./pages/Login";
+import Reset from "./pages/Reset";
+import ResetConfirm from "./pages/ResetConfirm";
+import VerifyOtp from "./pages/VerifyOtp";
 import Chat from "./pages/Chat";
 import ChatApp from "./pages/ChatApp";
 import NotFound from "./pages/NotFound";
@@ -27,9 +32,6 @@ import OpenAIModels from "./pages/admin/openai/Models";
 import PromptStudio from "./pages/admin/openai/PromptStudio";
 import OpenAIPlayground from "./pages/admin/openai/Playground";
 import Logs from "./pages/admin/Logs";
-import ResetConfirm from "./pages/ResetConfirm";
-import Reset from "./pages/Reset";
-import VerifyOtp from "./pages/VerifyOtp";
 
 
 // Analytics component import and routes
@@ -52,7 +54,8 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* Public routes without layout */}
+              {/* Public routes */}
+              <Route path="/" element={<PublicHome />} />
               <Route path="/login" element={<Login />} />
               <Route path="/reset" element={<Reset />} />
               <Route path="/reset/confirm" element={<ResetConfirm />} />
@@ -64,12 +67,12 @@ const App = () => (
                   <AppLayout>
                     <ErrorBoundary>
                       <Routes>
-                        <Route path="/" element={<Index />} />
+                        <Route path="/dashboard" element={<Index />} />
                         <Route path="/chat" element={<Chat />} />
                         <Route path="/dados/mapa" element={<Index />} />
                         <Route path="/app/chat" element={<ChatApp />} />
                         
-                        {/* Admin routes - using same layout for consistency */}
+                        {/* Admin routes */}
                         <Route path="/admin" element={<Dashboard />} />
                         <Route path="/admin/analytics" element={<Analytics />} />
                         <Route path="/admin/ia" element={<OpenAI />} />

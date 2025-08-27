@@ -8,31 +8,35 @@ All colors MUST be HSL. Professional navy/blue theme for trust and authority.
 
 @layer base {
   :root {
-    /* Core Brand Colors - Professional Legal Tech */
+    /* HubJUR.IA Brand Colors */
     --background: 0 0% 100%;
-    --foreground: 210 15% 15%;
+    --foreground: 0 0% 17%; /* Cinza Chumbo #2C2C2C */
 
     --card: 0 0% 100%;
-    --card-foreground: 210 15% 15%;
+    --card-foreground: 0 0% 17%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 15% 15%;
+    --popover-foreground: 0 0% 17%;
 
-    /* Primary - Professional Navy */
-    --primary: 220 40% 18%;
+    /* Primary - Violeta Tech Neon */
+    --primary: 257 42% 51%; /* #6C4AB6 */
     --primary-foreground: 0 0% 98%;
-    --primary-light: 220 40% 25%;
-    --primary-glow: 220 60% 50%;
+    --primary-light: 257 42% 61%;
+    --primary-glow: 257 42% 71%;
 
-    /* Secondary - Clean Professional Gray */
-    --secondary: 210 8% 95%;
-    --secondary-foreground: 210 15% 25%;
+    /* Accent - Dourado Elegante */
+    --accent: 50 31% 33%; /* #776931 */
+    --accent-foreground: 0 0% 98%;
 
-    --muted: 210 8% 95%;
-    --muted-foreground: 210 10% 45%;
+    /* Secondary - Cinza Neutro */
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 54%; /* #8A8A8A */
 
-    --accent: 220 30% 92%;
-    --accent-foreground: 220 40% 18%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 54%;
+
+    /* Tech accent for highlights */
+    --tech-glow: 257 42% 51% / 0.2;
 
     /* Status Colors for Risk Assessment */
     --success: 142 76% 36%;
@@ -48,20 +52,23 @@ All colors MUST be HSL. Professional navy/blue theme for trust and authority.
     --destructive-light: 0 45% 95%;
 
     /* UI Elements */
-    --border: 210 12% 88%;
-    --input: 210 12% 88%;
-    --ring: 220 40% 18%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 257 42% 51%;
 
     /* Gradients for Premium Feel */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
+    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(50 31% 43%));
     --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(210 8% 98%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(0 0% 98%));
+    --gradient-glow: radial-gradient(circle at 50% 0%, hsl(var(--primary-glow) / 0.1), transparent 70%);
 
     /* Shadows for Depth */
-    --shadow-sm: 0 1px 2px 0 hsl(220 25% 25% / 0.05);
-    --shadow-md: 0 4px 8px 0 hsl(220 25% 25% / 0.1);
-    --shadow-lg: 0 10px 25px 0 hsl(220 25% 25% / 0.15);
-    --shadow-premium: 0 20px 40px 0 hsl(220 40% 18% / 0.1);
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 17% / 0.05);
+    --shadow-md: 0 4px 8px 0 hsl(0 0% 17% / 0.1);
+    --shadow-lg: 0 10px 25px 0 hsl(0 0% 17% / 0.15);
+    --shadow-premium: 0 20px 40px 0 hsl(257 42% 51% / 0.15);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.4);
 
     /* Professional Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
