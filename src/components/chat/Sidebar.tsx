@@ -27,6 +27,7 @@ import {
 import { useChatStore } from '@/stores/useChatStore';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
 
 const agentConfig = {
   cnj: { icon: FileText, label: 'Análise CNJ', color: 'bg-blue-500/10 text-blue-600' },
@@ -42,7 +43,8 @@ export function Sidebar() {
     setSearchQuery, 
     conversationId, 
     setConversationId,
-    reset 
+    reset,
+    addMessage
   } = useChatStore();
   
   const [filter, setFilter] = useState<string>('all');
@@ -59,9 +61,41 @@ export function Sidebar() {
     setConversationId(undefined);
   };
 
-  const handleSelectConversation = (conv: any) => {
+  const handleSelectConversation = async (conv: any) => {
     setConversationId(conv.id);
-    // In a real app, load messages for this conversation
+    
+    // Load messages for this conversation
+    try {
+      const { data: messages, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', conv.id)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error loading messages:', error);
+        return;
+      }
+
+      // Clear current messages and load new ones
+      reset();
+      setConversationId(conv.id);
+      
+      if (messages) {
+        messages.forEach(msg => {
+          const metadata = msg.metadata as any; // Type assertion for flexibility
+          addMessage({
+            conversationId: conv.id,
+            role: msg.role as 'user' | 'assistant',
+            content: msg.content,
+            tokensIn: (metadata && typeof metadata === 'object' && metadata.tokens_in) || 0,
+            tokensOut: (metadata && typeof metadata === 'object' && metadata.tokens_out) || 0
+          });
+        });
+      }
+    } catch (error) {
+      console.error('Error loading messages:', error);
+    }
   };
 
   return (
