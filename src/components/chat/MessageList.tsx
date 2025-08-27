@@ -49,8 +49,8 @@ export function MessageList() {
   // Scroll when status changes (loading -> success)
   useEffect(() => {
     if (status === 'success' || status === 'error') {
-      // Delay to ensure content is fully rendered
-      setTimeout(() => scrollToBottom('smooth'), 150);
+      // Increased delay for complex content rendering
+      setTimeout(() => scrollToBottom('smooth'), 250);
     }
   }, [status]);
 
