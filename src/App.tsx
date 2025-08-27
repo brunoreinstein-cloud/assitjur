@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/admin/Dashboard";
 import Analytics from "./pages/admin/Analytics";
 import ImportBase from "./pages/admin/ImportBase";
+import Import from "./pages/Import";
 import Versions from "./pages/admin/Versions";
 import Organization from "./pages/admin/Organization";
 import DataExplorer from "./pages/admin/DataExplorer";
@@ -85,6 +86,7 @@ const App = () => (
                         <Route path="/admin/ia/prompt-studio" element={<PromptStudio />} />
                         <Route path="/admin/ia/testes" element={<OpenAIPlayground />} />
                         <Route path="/admin/base" element={<ImportBase />} />
+                        <Route path="/import" element={<Import />} />
                         <Route path="/admin/versoes" element={<Versions />} />
                         <Route path="/admin/org" element={<Organization />} />
                         <Route path="/admin/dados" element={<DataExplorer />} />
