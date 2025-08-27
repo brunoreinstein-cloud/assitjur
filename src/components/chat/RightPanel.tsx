@@ -6,7 +6,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useChatStore, QueryKind, Language, ExportType } from '@/stores/useChatStore';
-import { Search, User, Building, Shield, HelpCircle, Settings, Globe, Download } from 'lucide-react';
+import { useOfflineDetection } from '@/hooks/useOfflineDetection';
+import { Search, User, Building, Shield, HelpCircle, Settings, Globe, Download, Wifi, WifiOff } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const QUERY_TYPES = [
@@ -17,10 +18,42 @@ const QUERY_TYPES = [
 
 export function RightPanel() {
   const { kind, defaults, setKind, setDefaults } = useChatStore();
+  const { isOnline, apiAvailable, isFullyOnline } = useOfflineDetection();
 
   return (
     <div className="w-80 border-l bg-card/50 backdrop-blur-sm overflow-y-auto">
       <div className="p-6 space-y-6">
+        {/* Connection Status */}
+        <Card className={isFullyOnline ? "border-success/20 bg-success/5" : "border-warning/20 bg-warning/5"}>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              {isFullyOnline ? (
+                <>
+                  <Wifi className="h-4 w-4 text-success" />
+                  <Badge variant="secondary" className="bg-success/10 text-success">
+                    Sistema Online
+                  </Badge>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="h-4 w-4 text-warning" />
+                  <Badge variant="secondary" className="bg-warning/10 text-warning">
+                    Modo Offline
+                  </Badge>
+                </>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">
+              {isFullyOnline 
+                ? "Todas as funcionalidades disponíveis"
+                : "Usando dados locais como fallback"
+              }
+            </p>
+          </CardContent>
+        </Card>
+
         {/* Tipos de Consulta */}
         <Card>
           <CardHeader>

@@ -4,8 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 
-// Import the new ChatApp component which has the full MVP Testemunhas implementation
 import ChatApp from './ChatApp';
+import { KeyboardShortcuts } from '@/components/chat/KeyboardShortcuts';
 
 export default function Chat() {
   const { user, loading } = useAuth();
@@ -30,6 +30,9 @@ export default function Chat() {
   // Render the full ChatApp with MVP Testemunhas implementation
   return (
     <div className="h-full">
+      {/* Keyboard Shortcuts Handler */}
+      <KeyboardShortcuts />
+      
       {/* LGPD Notice */}
       <Alert className="m-4 mb-0 bg-amber-50 border-amber-200">
         <AlertTriangle className="h-4 w-4 text-amber-600" />

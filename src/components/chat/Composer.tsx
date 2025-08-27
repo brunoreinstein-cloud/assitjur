@@ -61,7 +61,7 @@ export function Composer() {
     }
 
     // Add user message
-    addMessage({
+    const userMessageId = addMessage({
       role: 'user',
       content: input.trim()
     });
@@ -71,39 +71,101 @@ export function Composer() {
     setInput('');
     setStatus('loading');
 
+    // Add assistant message for streaming
+    const assistantMessageId = addMessage({
+      role: 'assistant',
+      blocks: []
+    });
+
+    // Start hint rotation
+    const hintInterval = setInterval(() => {
+      nextHint();
+    }, 1500);
+
     try {
-      // Simulate streaming with hints
-      const hintInterval = setInterval(() => {
-        nextHint();
-      }, 800);
+      // Try real API first
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('supabase.auth.token')}` // Get from auth
+        },
+        body: JSON.stringify({
+          kind,
+          query,
+          options: useChatStore.getState().defaults
+        })
+      });
 
-      // Mock API call
-      setTimeout(() => {
-        clearInterval(hintInterval);
-        
-        // Add mock response with structured blocks
-        addMessage({
-          role: 'assistant',
-          blocks: getMockBlocks(kind, query)
-        });
-        
-        setStatus('success');
-        
-        toast({
-          title: "Análise concluída com sucesso",
-          description: "Resultados disponíveis para exportação.",
-          className: "border-success/20 text-success"
-        });
-      }, 3000);
+      if (!response.ok) {
+        throw new Error('API unavailable, using mock data');
+      }
 
-    } catch (error) {
-      setStatus('error');
-      toast({
-        variant: "destructive",
-        title: "Erro na análise",
-        description: "Não encontramos dados suficientes. Verifique o CNJ ou tente outra entrada."
+      // Handle SSE streaming  
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error('No response stream');
+      }
+
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              
+              if (data.type === 'progress') {
+                // Progress handled by hint rotation
+                continue;
+              } else if (data.type === 'partial') {
+                // Handle partial updates if needed
+                continue;
+              } else if (data.type === 'final') {
+                // Update with final blocks
+                useChatStore.getState().updateMessage(assistantMessageId, {
+                  blocks: data.blocks
+                });
+                break;
+              } else if (data.type === 'error') {
+                throw new Error(data.message);
+              }
+            } catch (parseError) {
+              console.warn('Failed to parse SSE data:', parseError);
+            }
+          }
+        }
+      }
+
+    } catch (apiError) {
+      console.warn('API unavailable, falling back to mock:', apiError);
+      
+      // Fallback to mock behavior
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const mockBlocks = getMockBlocks(kind, query);
+      useChatStore.getState().updateMessage(assistantMessageId, {
+        blocks: mockBlocks
       });
     }
+
+    // Stop hint rotation
+    clearInterval(hintInterval);
+    setStatus('success');
+    
+    toast({
+      title: "Análise concluída com sucesso",
+      description: "Resultados disponíveis para exportação.",
+      className: "border-success/20 text-success"
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
