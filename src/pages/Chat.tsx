@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { ChatDebugPanel } from '@/components/chat/ChatDebugPanel';
 
 export default function Chat() {
   const { user, profile, loading } = useAuth();
@@ -102,6 +103,9 @@ export default function Chat() {
           <RightPanel />
         </div>
       </div>
+
+      {/* Debug Panel (only in development) */}
+      <ChatDebugPanel />
     </div>
   );
 }
