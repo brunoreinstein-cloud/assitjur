@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useChatStore } from '@/stores/useChatStore';
 import { MessageItem } from './MessageItem';
@@ -7,19 +7,52 @@ import { LoadingHints } from './LoadingHints';
 export function MessageList() {
   const { messages, status } = useChatStore();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
+  // Scroll to bottom function with multiple fallbacks
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    // Method 1: Scroll to end marker (most reliable)
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior, block: 'end' });
+      return;
+    }
+
+    // Method 2: Radix UI ScrollArea viewport
     if (scrollAreaRef.current) {
-      const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
       if (viewport) {
         viewport.scrollTo({
           top: viewport.scrollHeight,
-          behavior: 'smooth'
+          behavior
         });
+        return;
       }
     }
-  }, [messages, status]);
+
+    // Method 3: Direct scroll area fallback
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTo({
+        top: scrollAreaRef.current.scrollHeight,
+        behavior
+      });
+    }
+  };
+
+  // Immediate scroll after DOM updates (for new messages)
+  useLayoutEffect(() => {
+    if (messages.length > 0) {
+      // Immediate scroll for new messages
+      setTimeout(() => scrollToBottom('smooth'), 50);
+    }
+  }, [messages.length]);
+
+  // Scroll when status changes (loading -> success)
+  useEffect(() => {
+    if (status === 'success' || status === 'error') {
+      // Delay to ensure content is fully rendered
+      setTimeout(() => scrollToBottom('smooth'), 150);
+    }
+  }, [status]);
 
   return (
     <ScrollArea ref={scrollAreaRef} className="flex-1 px-6">
@@ -56,6 +89,9 @@ export function MessageList() {
             
             {/* Loading indicator */}
             {status === 'loading' && <LoadingHints />}
+            
+            {/* Scroll target marker */}
+            <div ref={messagesEndRef} className="h-1" />
           </>
         )}
       </div>
