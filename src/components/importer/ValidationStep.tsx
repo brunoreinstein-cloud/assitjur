@@ -16,7 +16,7 @@ import {
   FileX,
   Shield
 } from 'lucide-react';
-import { normalizeAndValidate } from '@/lib/importer/validate-enhanced';
+import { normalizeAndValidate as enhancedValidate } from '@/lib/importer/validate-enhanced';
 import { generateReports } from '@/lib/importer/report';
 import type { ImportSession, ValidationResult } from '@/lib/importer/types';
 
@@ -58,7 +58,7 @@ export function ValidationStep({ session, onComplete }: ValidationStepProps) {
       }, 200);
 
       // Normalização e validação
-      const validationResult = await normalizeAndValidate(session, autoCorrections);
+      const validationResult = await enhancedValidate(session, autoCorrections);
       
       // Armazenar correções aplicadas
       if (validationResult.corrections) {
