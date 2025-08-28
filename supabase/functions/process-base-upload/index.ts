@@ -319,13 +319,13 @@ async function processFileInChunks(
       }
       
       try {
-        const processedRow = await processRow(rowData, headerMap, row + 1, errors, warnings, duplicateCNJs);
+        const processedRow = await processRow(rowData, headerMap, row, errors, warnings, duplicateCNJs);
         if (processedRow) {
           validRows++;
         }
       } catch (error: any) {
         errors.push({
-          row: row + 1,
+          row: row,
           column: 'general',
           type: 'error',
           message: `Error processing row: ${error.message}`
@@ -392,7 +392,7 @@ async function processFileInChunks(
       }
       
       try {
-        const processedRow = await processRow(rowData, headerMap, row + 1, errors, warnings, duplicateCNJs);
+        const processedRow = await processRow(rowData, headerMap, row, errors, warnings, duplicateCNJs);
         if (processedRow) {
           // Preparar dados para staging (mapeamento correto)
           stagingData.push({
@@ -415,7 +415,7 @@ async function processFileInChunks(
         }
       } catch (error: any) {
         errors.push({
-          row: row + 1,
+          row: row,
           column: 'general',
           type: 'error',
           message: `Error processing row: ${error.message}`
@@ -900,20 +900,23 @@ function validateCNJCheckDigits(cnj: string): boolean {
   const tribunal = cnj.substring(14, 16);
   const origem = cnj.substring(16, 20);
 
-  // Calculate first check digit
-  const weights1 = [2, 3, 4, 5, 6, 7, 8, 9, 2, 3, 4, 5, 6, 7, 8, 9, 2, 3];
-  let sum1 = 0;
+  // Build CNJ without check digits for calculation: NNNNNNN + AAAA + J + TR + OOOO
+  const cnjWithoutCheckDigits = sequencial + ano + segmento + tribunal + origem;
   
-  const digits = (sequencial + ano + segmento + tribunal + origem).split('').map(Number);
+  // Calculate check digits using the official algorithm
+  const weights = [2, 3, 4, 5, 6, 7, 8, 9, 2, 3, 4, 5, 6, 7, 8, 9, 2, 3];
+  let sum = 0;
+  
+  const digits = cnjWithoutCheckDigits.split('').map(Number);
   
   for (let i = 0; i < digits.length; i++) {
-    sum1 += digits[i] * weights1[i];
+    sum += digits[i] * weights[i];
   }
   
-  const remainder1 = sum1 % 97;
-  const checkDigit1 = 98 - remainder1;
+  const remainder = sum % 97;
+  const calculatedCheckDigits = 98 - remainder;
   
-  return checkDigit1.toString().padStart(2, '0') === digitosVerificadores;
+  return calculatedCheckDigits.toString().padStart(2, '0') === digitosVerificadores;
 }
 
 /**
