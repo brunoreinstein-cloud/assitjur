@@ -1,27 +1,39 @@
 import { z } from 'zod';
 
-// Schemas de validação seguindo as regras específicas
-export const BaseRowSchema = z.object({
-  cnj: z.string().min(1),
+// Schemas de validação alinhados com a tabela processos do Supabase
+export const ProcessoRowSchema = z.object({
+  cnj: z.string().min(1, 'CNJ é obrigatório'),
   cnj_digits: z.string().length(20).refine(v => /^\d{20}$/.test(v), 'CNJ deve ter 20 dígitos'),
+  reclamante_nome: z.string().min(1, 'Nome do reclamante é obrigatório'),
+  reu_nome: z.string().min(1, 'Nome do réu é obrigatório'),
+  comarca: z.string().optional().nullable(),
+  tribunal: z.string().optional().nullable(),
+  vara: z.string().optional().nullable(),
+  fase: z.string().optional().nullable(),
+  status: z.string().optional().nullable(),
+  reclamante_cpf_mask: z.string().optional().nullable(),
+  data_audiencia: z.string().optional().nullable(), // String que será convertida para date
+  advogados_ativo: z.array(z.string()).optional().nullable(),
+  advogados_passivo: z.array(z.string()).optional().nullable(),
+  testemunhas_ativo: z.array(z.string()).optional().nullable(),
+  testemunhas_passivo: z.array(z.string()).optional().nullable(),
+  observacoes: z.string().optional().nullable(),
 });
 
-export const TestemunhaRowSchema = BaseRowSchema.extend({
+// Para compatibilidade com sistema antigo
+export const TestemunhaRowSchema = z.object({
+  cnj: z.string().min(1),
+  cnj_digits: z.string().length(20).refine(v => /^\d{20}$/.test(v), 'CNJ deve ter 20 dígitos'),
   nome_testemunha: z.string().min(1, 'Nome da testemunha é obrigatório'),
   reclamante_nome: z.string().optional().nullable(),
   reu_nome: z.string().optional().nullable(),
 });
 
-export const ProcessoRowSchema = BaseRowSchema.extend({
-  reclamante_nome: z.string().min(1, 'Nome do reclamante é obrigatório'),
-  reu_nome: z.string().min(1, 'Nome do réu é obrigatório'),
-});
-
-export type TestemunhaRow = z.infer<typeof TestemunhaRowSchema>;
 export type ProcessoRow = z.infer<typeof ProcessoRowSchema>;
+export type TestemunhaRow = z.infer<typeof TestemunhaRowSchema>;
 
-// Tipos para detecção e mapeamento
-export type SheetModel = 'testemunha' | 'processo' | 'ambiguous';
+// Tipos para detecção e mapeamento  
+export type SheetModel = 'processo' | 'testemunha' | 'ambiguous';
 
 export interface DetectedSheet {
   name: string;
@@ -66,10 +78,10 @@ export interface ValidationResult {
   summary: ValidationSummary;
   issues: ValidationIssue[];
   normalizedData: {
-    testemunhas?: TestemunhaRow[];
     processos?: ProcessoRow[];
+    testemunhas?: TestemunhaRow[];
   };
-  downloadUrls: {
+  downloadUrls?: {
     fixedXlsx: string;
     reportCsv: string;
     reportJson: string;

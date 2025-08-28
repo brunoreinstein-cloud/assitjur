@@ -89,7 +89,7 @@ function validateNormalizedData(
     }
   }
   
-  // Valida processos
+// Valida processos
   if (normalizedData.processos) {
     for (let i = 0; i < normalizedData.processos.length; i++) {
       const row = normalizedData.processos[i];
@@ -108,6 +108,29 @@ function validateNormalizedData(
             rule: 'Auto-preenchido via Réu padrão da organização',
             value: row.reu_nome,
             autofilled: true
+          });
+        }
+        
+        // Warnings para campos importantes
+        if (!row.comarca) {
+          issues.push({
+            sheet: sheetName,
+            row: i + 1,
+            column: 'comarca',
+            severity: 'warning',
+            rule: 'Comarca não informada',
+            value: row.comarca
+          });
+        }
+        
+        if (!row.status) {
+          issues.push({
+            sheet: sheetName,
+            row: i + 1,
+            column: 'status',
+            severity: 'warning',
+            rule: 'Status do processo não informado',
+            value: row.status
           });
         }
       } else {
@@ -201,9 +224,9 @@ export async function normalizeAndValidate(
   let totalAnalyzed = 0;
   let totalValid = 0;
   
-  const normalizedData: { testemunhas?: any[]; processos?: any[] } = {
-    testemunhas: [],
-    processos: []
+  const normalizedData: { processos?: any[]; testemunhas?: any[] } = {
+    processos: [],
+    testemunhas: []
   };
   
   // Processa cada sheet
@@ -219,15 +242,15 @@ export async function normalizeAndValidate(
         autoCorrections.applyDefaultReu ? orgSettings : null
       );
       
-      // Acumula dados normalizados
-      if (sheetData.testemunhas) {
-        normalizedData.testemunhas!.push(...sheetData.testemunhas);
-        totalAnalyzed += sheetData.testemunhas.length;
-      }
-      
+      // Acumula dados normalizados - prioriza processos
       if (sheetData.processos) {
         normalizedData.processos!.push(...sheetData.processos);
         totalAnalyzed += sheetData.processos.length;
+      }
+      
+      if (sheetData.testemunhas) {
+        normalizedData.testemunhas!.push(...sheetData.testemunhas);
+        totalAnalyzed += sheetData.testemunhas.length;
       }
       
       // Valida dados
@@ -264,8 +287,8 @@ export async function normalizeAndValidate(
     summary,
     issues: allIssues,
     normalizedData: {
-      testemunhas: normalizedData.testemunhas?.length ? normalizedData.testemunhas : undefined,
       processos: normalizedData.processos?.length ? normalizedData.processos : undefined,
+      testemunhas: normalizedData.testemunhas?.length ? normalizedData.testemunhas : undefined,
     }
   };
 }
