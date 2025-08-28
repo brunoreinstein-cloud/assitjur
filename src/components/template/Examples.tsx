@@ -33,8 +33,6 @@ export function Examples() {
                       <TableHead>CNJ</TableHead>
                       <TableHead>Reclamante_Limpo</TableHead>
                       <TableHead>Reu_Nome</TableHead>
-                      <TableHead className="text-muted-foreground">UF</TableHead>
-                      <TableHead className="text-muted-foreground">Comarca</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -43,15 +41,13 @@ export function Examples() {
                         <TableCell className="font-mono text-sm">{exemplo.CNJ}</TableCell>
                         <TableCell>{exemplo.Reclamante_Limpo}</TableCell>
                         <TableCell>{exemplo.Reu_Nome}</TableCell>
-                        <TableCell className="text-muted-foreground">{exemplo.UF}</TableCell>
-                        <TableCell className="text-muted-foreground">{exemplo.Comarca}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                * Campos em cinza são opcionais e aceitos pelo importador
+                Template simplificado contendo apenas campos obrigatórios para facilitar a importação
               </p>
             </CardContent>
           </Card>

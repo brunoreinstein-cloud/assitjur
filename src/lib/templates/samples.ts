@@ -2,10 +2,6 @@ export interface ProcessoSample {
   CNJ: string;
   Reclamante_Limpo: string;
   Reu_Nome: string;
-  UF?: string;
-  Comarca?: string;
-  Fase?: string;
-  Status?: string;
 }
 
 export interface TestemunhaSample {
@@ -34,92 +30,52 @@ export const processoSamples: ProcessoSample[] = [
   {
     CNJ: correctCNJs[0],
     Reclamante_Limpo: 'João Silva Santos',
-    Reu_Nome: 'Empresa ABC Ltda',
-    UF: 'SP',
-    Comarca: 'São Paulo',
-    Fase: 'Conhecimento',
-    Status: 'Em andamento'
+    Reu_Nome: 'Empresa ABC Ltda'
   },
   {
     CNJ: correctCNJs[1],
     Reclamante_Limpo: 'Maria Oliveira Costa',
-    Reu_Nome: 'Indústria XYZ S/A',
-    UF: 'SP',
-    Comarca: 'São Paulo',
-    Fase: 'Execução',
-    Status: 'Arquivado'
+    Reu_Nome: 'Indústria XYZ S/A'
   },
   {
     CNJ: correctCNJs[2],
     Reclamante_Limpo: 'Pedro Almeida Lima',
-    Reu_Nome: 'Comércio DEF ME',
-    UF: 'SP',
-    Comarca: 'Santos',
-    Fase: 'Conhecimento',
-    Status: 'Sentenciado'
+    Reu_Nome: 'Comércio DEF ME'
   },
   {
     CNJ: correctCNJs[3],
     Reclamante_Limpo: 'Ana Paula Ferreira',
-    Reu_Nome: 'Tech Solutions Ltda',
-    UF: 'SP',
-    Comarca: 'Campinas',
-    Fase: 'Recurso',
-    Status: 'Em andamento'
+    Reu_Nome: 'Tech Solutions Ltda'
   },
   {
     CNJ: correctCNJs[4],
     Reclamante_Limpo: 'Carlos Eduardo Souza',
-    Reu_Nome: 'Logística GHI S/A',
-    UF: 'SP',
-    Comarca: 'São Paulo',
-    Fase: 'Conhecimento',
-    Status: 'Conciliado'
+    Reu_Nome: 'Logística GHI S/A'
   },
   {
     CNJ: correctCNJs[5],
     Reclamante_Limpo: 'Luciana Ribeiro Dias',
-    Reu_Nome: 'Metalúrgica JKL Ltda',
-    UF: 'SP',
-    Comarca: 'São Bernardo do Campo',
-    Fase: 'Execução',
-    Status: 'Em andamento'
+    Reu_Nome: 'Metalúrgica JKL Ltda'
   },
   {
     CNJ: correctCNJs[6],
     Reclamante_Limpo: 'Roberto Carlos Mendes',
-    Reu_Nome: 'Serviços MNO Ltda',
-    UF: 'SP',
-    Comarca: 'São Paulo',
-    Fase: 'Conhecimento',
-    Status: 'Suspenso'
+    Reu_Nome: 'Serviços MNO Ltda'
   },
   {
     CNJ: correctCNJs[7],
     Reclamante_Limpo: 'Fernanda Lima Santos',
-    Reu_Nome: 'Construção PQR S/A',
-    UF: 'SP',
-    Comarca: 'Osasco',
-    Fase: 'Conhecimento',
-    Status: 'Em andamento'
+    Reu_Nome: 'Construção PQR S/A'
   },
   {
     CNJ: correctCNJs[8],
     Reclamante_Limpo: 'Marcos Antônio Silva',
-    Reu_Nome: 'Alimentação STU Ltda',
-    UF: 'SP',
-    Comarca: 'São Paulo',
-    Fase: 'Recurso',
-    Status: 'Julgado'
+    Reu_Nome: 'Alimentação STU Ltda'
   },
   {
     CNJ: correctCNJs[9],
     Reclamante_Limpo: 'Patrícia Gomes Oliveira',
-    Reu_Nome: 'Transporte VWX ME',
-    UF: 'SP',
-    Comarca: 'Guarulhos',
-    Fase: 'Conhecimento',
-    Status: 'Arquivado'
+    Reu_Nome: 'Transporte VWX ME'
   }
 ];
 
@@ -179,38 +135,6 @@ export const dicionarioFields: DicionarioField[] = [
     Exemplo: 'Empresa ABC Ltda'
   },
   {
-    Aba: 'Por Processo',
-    Campo: 'UF',
-    Tipo: 'texto',
-    Obrigatorio: 'Não',
-    Regra: 'Sigla do estado (2 letras). Campo opcional aceito pelo importador',
-    Exemplo: 'SP'
-  },
-  {
-    Aba: 'Por Processo',
-    Campo: 'Comarca',
-    Tipo: 'texto',
-    Obrigatorio: 'Não',
-    Regra: 'Nome da comarca. Campo opcional aceito pelo importador',
-    Exemplo: 'São Paulo'
-  },
-  {
-    Aba: 'Por Processo',
-    Campo: 'Fase',
-    Tipo: 'texto',
-    Obrigatorio: 'Não',
-    Regra: 'Fase processual atual. Campo opcional aceito pelo importador',
-    Exemplo: 'Conhecimento'
-  },
-  {
-    Aba: 'Por Processo',
-    Campo: 'Status',
-    Tipo: 'texto',
-    Obrigatorio: 'Não',
-    Regra: 'Status do processo. Campo opcional aceito pelo importador',
-    Exemplo: 'Em andamento'
-  },
-  {
     Aba: 'Por Testemunha',
     Campo: 'Nome_Testemunha',
     Tipo: 'texto',
@@ -225,21 +149,5 @@ export const dicionarioFields: DicionarioField[] = [
     Obrigatorio: 'Sim',
     Regra: 'Lista de CNJs onde atuou como testemunha. Aceita formatos: JSON-like, separado por ; ou ,',
     Exemplo: `['${correctCNJs[0]}','${correctCNJs[1]}']`
-  },
-  {
-    Aba: 'Por Testemunha',
-    Campo: 'Reclamante_Nome',
-    Tipo: 'texto',
-    Obrigatorio: 'Não',
-    Regra: 'Preenchimento automático via join com aba Por Processo. Pode ficar vazio',
-    Exemplo: '(vazio - preenchimento automático)'
-  },
-  {
-    Aba: 'Por Testemunha',
-    Campo: 'Reu_Nome',
-    Tipo: 'texto',
-    Obrigatorio: 'Não',
-    Regra: 'Preenchimento automático via configuração de "Réu padrão" ou join. Pode ficar vazio',
-    Exemplo: '(vazio - preenchimento automático)'
   }
 ];
