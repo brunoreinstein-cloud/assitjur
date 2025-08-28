@@ -26,7 +26,35 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
+    // Get JWT token from Authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({
+        success: false,
+        results: [],
+        totalProcessed: 0,
+        error: 'Token de autorização não encontrado'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401
+      });
+    }
+
+    // Create user client for permission checks
+    const userSupabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: {
+            Authorization: authHeader
+          }
+        }
+      }
+    );
+
+    // Create service role client for operations
+    const serviceSupabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
@@ -35,12 +63,45 @@ Deno.serve(async (req) => {
 
     console.log(`Starting database cleanup for org ${orgId}`, { operations, preview });
 
+    // Verificar se o usuário tem permissão (ADMIN na organização)
+    const { data: userProfile, error: profileError } = await userSupabase
+      .from('profiles')
+      .select('role, organization_id')
+      .eq('user_id', (await userSupabase.auth.getUser()).data?.user?.id)
+      .single();
+
+    if (profileError || !userProfile) {
+      console.error('Error fetching user profile:', profileError);
+      return new Response(JSON.stringify({
+        success: false,
+        results: [],
+        totalProcessed: 0,
+        error: 'Erro ao verificar permissões do usuário'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 403
+      });
+    }
+
+    if (userProfile.role !== 'ADMIN' || userProfile.organization_id !== orgId) {
+      console.error('Access denied:', { userRole: userProfile.role, userOrg: userProfile.organization_id, requestedOrg: orgId });
+      return new Response(JSON.stringify({
+        success: false,
+        results: [],
+        totalProcessed: 0,
+        error: 'Acesso negado. Apenas administradores podem executar esta operação.'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 403
+      });
+    }
+
     const results: CleanupResponse['results'] = [];
     let totalProcessed = 0;
 
     // Se é preview, apenas busca as informações
     if (preview) {
-      const { data: previewData, error } = await supabase.rpc('rpc_get_cleanup_preview', {
+      const { data: previewData, error } = await serviceSupabase.rpc('rpc_get_cleanup_preview', {
         p_org_id: orgId
       });
 
@@ -63,19 +124,19 @@ Deno.serve(async (req) => {
         
         switch (operation) {
           case 'invalid_cnjs':
-            result = await supabase.rpc('rpc_cleanup_invalid_cnjs', { p_org_id: orgId });
+            result = await serviceSupabase.rpc('rpc_cleanup_invalid_cnjs', { p_org_id: orgId });
             break;
           case 'empty_fields':
-            result = await supabase.rpc('rpc_cleanup_empty_required_fields', { p_org_id: orgId });
+            result = await serviceSupabase.rpc('rpc_cleanup_empty_required_fields', { p_org_id: orgId });
             break;
           case 'duplicates':
-            result = await supabase.rpc('rpc_cleanup_duplicates', { p_org_id: orgId });
+            result = await serviceSupabase.rpc('rpc_cleanup_duplicates', { p_org_id: orgId });
             break;
           case 'normalize_cnjs':
-            result = await supabase.rpc('rpc_cleanup_normalize_cnjs', { p_org_id: orgId });
+            result = await serviceSupabase.rpc('rpc_cleanup_normalize_cnjs', { p_org_id: orgId });
             break;
           case 'hard_delete_old':
-            result = await supabase.rpc('rpc_cleanup_hard_delete_old', { p_org_id: orgId });
+            result = await serviceSupabase.rpc('rpc_cleanup_hard_delete_old', { p_org_id: orgId });
             break;
           default:
             throw new Error(`Operação desconhecida: ${operation}`);
