@@ -64,7 +64,7 @@ function genCNJ(): string {
 
 const processoSamples: ProcessoSample[] = [
   {
-    CNJ: '1000000-71.2024.5.02.1000',
+    CNJ: '1000000-09.2024.5.02.1000',
     Reclamante_Limpo: 'João Silva Santos',
     Reu_Nome: 'Empresa ABC Ltda',
     UF: 'SP',
@@ -73,7 +73,7 @@ const processoSamples: ProcessoSample[] = [
     Status: 'Em andamento'
   },
   {
-    CNJ: '1000001-20.2024.5.02.1001',
+    CNJ: '1000001-58.2024.5.02.1001',
     Reclamante_Limpo: 'Maria Oliveira Costa',
     Reu_Nome: 'Indústria XYZ S/A',
     UF: 'SP',
@@ -82,7 +82,7 @@ const processoSamples: ProcessoSample[] = [
     Status: 'Arquivado'
   },
   {
-    CNJ: '1000002-75.2024.5.02.1002',
+    CNJ: '1000002-06.2024.5.02.1002',
     Reclamante_Limpo: 'Pedro Almeida Lima',
     Reu_Nome: 'Comércio DEF ME',
     UF: 'SP',
@@ -91,7 +91,7 @@ const processoSamples: ProcessoSample[] = [
     Status: 'Sentenciado'
   },
   {
-    CNJ: '1000003-24.2024.5.02.1003',
+    CNJ: '1000003-55.2024.5.02.1003',
     Reclamante_Limpo: 'Ana Paula Ferreira',
     Reu_Nome: 'Tech Solutions Ltda',
     UF: 'SP',
@@ -100,7 +100,7 @@ const processoSamples: ProcessoSample[] = [
     Status: 'Em andamento'
   },
   {
-    CNJ: '1000004-79.2024.5.02.1004',
+    CNJ: '1000004-03.2024.5.02.1004',
     Reclamante_Limpo: 'Carlos Eduardo Souza',
     Reu_Nome: 'Logística GHI S/A',
     UF: 'SP',
@@ -109,7 +109,7 @@ const processoSamples: ProcessoSample[] = [
     Status: 'Conciliado'
   },
   {
-    CNJ: '1000005-28.2024.5.02.1005',
+    CNJ: '1000005-52.2024.5.02.1005',
     Reclamante_Limpo: 'Luciana Ribeiro Dias',
     Reu_Nome: 'Metalúrgica JKL Ltda',
     UF: 'SP',
@@ -118,7 +118,7 @@ const processoSamples: ProcessoSample[] = [
     Status: 'Em andamento'
   },
   {
-    CNJ: '1000006-83.2024.5.02.1006',
+    CNJ: '1000006-00.2024.5.02.1006',
     Reclamante_Limpo: 'Roberto Carlos Mendes',
     Reu_Nome: 'Serviços MNO Ltda',
     UF: 'SP',
@@ -127,7 +127,7 @@ const processoSamples: ProcessoSample[] = [
     Status: 'Suspenso'
   },
   {
-    CNJ: '1000007-32.2024.5.02.1007',
+    CNJ: '1000007-49.2024.5.02.1007',
     Reclamante_Limpo: 'Fernanda Lima Santos',
     Reu_Nome: 'Construção PQR S/A',
     UF: 'SP',
@@ -136,7 +136,7 @@ const processoSamples: ProcessoSample[] = [
     Status: 'Em andamento'
   },
   {
-    CNJ: '1000008-87.2024.5.02.1008',
+    CNJ: '1000008-97.2024.5.02.1008',
     Reclamante_Limpo: 'Marcos Antônio Silva',
     Reu_Nome: 'Alimentação STU Ltda',
     UF: 'SP',
@@ -145,7 +145,7 @@ const processoSamples: ProcessoSample[] = [
     Status: 'Julgado'
   },
   {
-    CNJ: '1000009-36.2024.5.02.1009',
+    CNJ: '1000009-46.2024.5.02.1009',
     Reclamante_Limpo: 'Patrícia Gomes Oliveira',
     Reu_Nome: 'Transporte VWX ME',
     UF: 'SP',
