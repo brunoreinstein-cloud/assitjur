@@ -73,19 +73,7 @@ function decodeJWT(token: string) {
 
 // Header mapping will be handled by the advanced function later in the file
 
-// Utility functions for validation
-function sanitizeTextAdvanced(value: any): ValidationResult {
-  if (value === null || value === undefined) {
-    return { isValid: false, error: 'Campo vazio' };
-  }
-  
-  const text = String(value).trim();
-  if (text.length === 0) {
-    return { isValid: false, error: 'Campo vazio' };
-  }
-  
-  return { isValid: true, normalizedValue: text };
-}
+// Text sanitization will be handled by the advanced function later in the file
 
 // CNJ validation will be handled by the advanced function later in the file
 
