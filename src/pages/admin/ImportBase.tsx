@@ -20,7 +20,7 @@ import {
 import { useDropzone } from 'react-dropzone';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import TemplateDownload from '@/components/TemplateDownload';
+
 import ErrorReportGenerator from '@/components/admin/ErrorReportGenerator';
 import ImportWizardSteps from '@/components/admin/ImportWizardSteps';
 import ImportHelpPanel from '@/components/admin/ImportHelpPanel';
@@ -128,35 +128,101 @@ const ImportBase = () => {
   };
 
   const renderUploadStep = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Upload className="h-5 w-5" />
-          Upload de Arquivo
-        </CardTitle>
-        <CardDescription>
-          Faça upload do arquivo CSV ou XLSX com os dados da base
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div 
-          {...getRootProps()} 
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-            isDragActive ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-primary'
-          }`}
-        >
-          <input {...getInputProps()} />
-          <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          {isDragActive ? (
-            <p className="text-lg">Solte o arquivo aqui...</p>
-          ) : (
-            <div>
-              <p className="text-lg mb-2">Arraste e solte o arquivo aqui</p>
-              <p className="text-sm text-muted-foreground mb-4">ou clique para selecionar</p>
-              <Button variant="outline">Selecionar Arquivo</Button>
+    <div className="space-y-6">
+      {/* Template Download Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Download className="h-5 w-5" />
+            Template de Exemplo
+          </CardTitle>
+          <CardDescription>
+            Baixe o modelo com dados de exemplo para testar o upload
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert className="border-green-200 bg-green-50 dark:bg-green-950 mb-4">
+            <Info className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800 dark:text-green-200">
+              <strong>✅ Template atualizado!</strong> Este arquivo contém 10 registros com CNJs válidos e todas as colunas esperadas pelo sistema.
+            </AlertDescription>
+          </Alert>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+            <div className="text-center p-3 bg-muted rounded-lg">
+              <div className="text-lg font-bold text-red-600">CNJ</div>
+              <div className="text-xs text-muted-foreground">obrigatório</div>
             </div>
-          )}
-        </div>
+            <div className="text-center p-3 bg-muted rounded-lg">
+              <div className="text-lg font-bold text-red-600">Reclamante_Limpo</div>
+              <div className="text-xs text-muted-foreground">obrigatório</div>
+            </div>
+            <div className="text-center p-3 bg-muted rounded-lg">
+              <div className="text-lg font-bold text-red-600">Reu_Nome</div>
+              <div className="text-xs text-muted-foreground">obrigatório</div>
+            </div>
+          </div>
+
+          <Button 
+            onClick={() => {
+              const link = document.createElement('a');
+              link.href = '/template-base-exemplo.csv';
+              link.download = 'template-base-exemplo.csv';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }}
+            className="w-full mb-4"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Baixar Template de Exemplo
+          </Button>
+
+          <div className="bg-muted p-4 rounded-lg space-y-2">
+            <h4 className="font-medium text-sm">Dicas importantes:</h4>
+            <ul className="text-sm space-y-1 text-muted-foreground">
+              <li>✅ <strong>CNJs agora são validados</strong> - dígitos verificadores corretos</li>
+              <li>• Mantenha o formato CSV para melhor performance</li>
+              <li>• Use no máximo 10.000 linhas por arquivo (10MB)</li>
+              <li>• CNJ deve ter 20 dígitos: 1000000-91.2024.5.02.1000</li>
+              <li>• CPF será automaticamente mascarado por segurança</li>
+              <li>• Datas no formato YYYY-MM-DD ou DD/MM/YYYY</li>
+              <li>• Campos obrigatórios: CNJ, Reclamante_Limpo, Reu_Nome</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Upload Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Upload className="h-5 w-5" />
+            Upload de Arquivo
+          </CardTitle>
+          <CardDescription>
+            Faça upload do arquivo CSV ou XLSX com os dados da base
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div 
+            {...getRootProps()} 
+            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+              isDragActive ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-primary'
+            }`}
+          >
+            <input {...getInputProps()} />
+            <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            {isDragActive ? (
+              <p className="text-lg">Solte o arquivo aqui...</p>
+            ) : (
+              <div>
+                <p className="text-lg mb-2">Arraste e solte o arquivo aqui</p>
+                <p className="text-sm text-muted-foreground mb-4">ou clique para selecionar</p>
+                <Button variant="outline">Selecionar Arquivo</Button>
+              </div>
+            )}
+          </div>
 
         {uploadedFile && (
           <div className="mt-4 p-4 bg-muted rounded-lg">
@@ -200,9 +266,10 @@ const ImportBase = () => {
               </div>
             )}
           </div>
-        )}
-      </CardContent>
-    </Card>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 
   const renderValidationStep = () => (
@@ -545,36 +612,21 @@ const ImportBase = () => {
         isProcessing={isProcessing}
       />
 
-      <Tabs defaultValue="upload" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="upload">Importar Dados</TabsTrigger>
-          <TabsTrigger value="template">Template de Exemplo</TabsTrigger>
-        </TabsList>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
+        <div className="lg:col-span-3 space-y-6">
+          {currentStep === 'upload' && renderUploadStep()}
+          {currentStep === 'validation' && renderValidationStep()}
+          {currentStep === 'preview' && renderPreviewStep()}
+          {currentStep === 'publish' && renderPublishStep()}
+        </div>
         
-        <TabsContent value="template" className="mt-6">
-          <div className="flex justify-center">
-            <TemplateDownload />
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="upload" className="mt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-3 space-y-6">
-              {currentStep === 'upload' && renderUploadStep()}
-              {currentStep === 'validation' && renderValidationStep()}
-              {currentStep === 'preview' && renderPreviewStep()}
-              {currentStep === 'publish' && renderPublishStep()}
-            </div>
-            
-            <div className="lg:col-span-1">
-              <ImportHelpPanel 
-                currentStep={currentStep}
-                validationResults={validationResults}
-              />
-            </div>
-          </div>
-        </TabsContent>
-      </Tabs>
+        <div className="lg:col-span-1">
+          <ImportHelpPanel 
+            currentStep={currentStep}
+            validationResults={validationResults}
+          />
+        </div>
+      </div>
     </div>
   );
 };
