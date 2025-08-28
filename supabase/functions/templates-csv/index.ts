@@ -27,16 +27,36 @@ interface DicionarioField {
   Exemplo: string;
 }
 
-// Gerar CNJ sintético no formato correto
-function genCNJ(): string {
-  const ano = 2018 + Math.floor(Math.random() * 8); // 2018-2025
-  const sequencial = String(Math.floor(Math.random() * 999999)).padStart(7, '0');
-  const dv = String(Math.floor(Math.random() * 100)).padStart(2, '0');
-  const justica = '5'; // Justiça do Trabalho
-  const tribunal = String(Math.floor(Math.random() * 24) + 1).padStart(2, '0');
-  const origem = String(Math.floor(Math.random() * 9999) + 1).padStart(4, '0');
+// Generate valid CNJ with correct check digits
+function generateValidCNJ(sequential?: number): string {
+  const seq = sequential || Math.floor(Math.random() * 9999999) + 1000000;
+  const year = 2024;
+  const justice = '5'; // Justiça do Trabalho
+  const tribunal = '02'; // TRT 2ª Região
+  const origin = String(1000 + (seq - 1000000)).padStart(4, '0');
+  const sequentialStr = String(seq).padStart(7, '0');
   
-  return `${sequencial.substring(0, 7)}-${dv}.${ano}.${justica}.${tribunal}.${origem}`;
+  // Build CNJ without check digits: NNNNNNN + AAAA + J + TR + OOOO
+  const cnjWithoutCheckDigits = sequentialStr + year + justice + tribunal + origin;
+  
+  // Calculate check digits using official algorithm
+  const weights = [2, 3, 4, 5, 6, 7, 8, 9, 2, 3, 4, 5, 6, 7, 8, 9, 2, 3];
+  let sum = 0;
+  
+  const digits = cnjWithoutCheckDigits.split('').map(Number);
+  for (let i = 0; i < digits.length; i++) {
+    sum += digits[i] * weights[i];
+  }
+  
+  const remainder = sum % 97;
+  const checkDigits = (98 - remainder).toString().padStart(2, '0');
+  
+  return `${sequentialStr}-${checkDigits}.${year}.${justice}.${tribunal}.${origin}`;
+}
+
+// Wrapper for backward compatibility
+function genCNJ(): string {
+  return generateValidCNJ();
 }
 
 const processoSamples: ProcessoSample[] = [

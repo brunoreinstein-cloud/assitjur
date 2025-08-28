@@ -24,16 +24,12 @@ export interface DicionarioField {
   Exemplo: string;
 }
 
-// Gerar CNJ sintético no formato correto
+// Import the CNJ generator with valid check digits
+import { generateValidCNJ } from '../cnj-generator';
+
+// Gerar CNJ sintético no formato correto com dígitos verificadores válidos
 export function genCNJ(): string {
-  const ano = 2018 + Math.floor(Math.random() * 8); // 2018-2025
-  const sequencial = String(Math.floor(Math.random() * 999999)).padStart(7, '0');
-  const dv = String(Math.floor(Math.random() * 100)).padStart(2, '0');
-  const justica = '5'; // Justiça do Trabalho
-  const tribunal = String(Math.floor(Math.random() * 24) + 1).padStart(2, '0');
-  const origem = String(Math.floor(Math.random() * 9999) + 1).padStart(4, '0');
-  
-  return `${sequencial.substring(0, 7)}-${dv}.${ano}.${justica}.${tribunal}.${origem}`;
+  return generateValidCNJ();
 }
 
 export const processoSamples: ProcessoSample[] = [
@@ -120,8 +116,8 @@ export const dicionarioFields: DicionarioField[] = [
     Campo: 'CNJ',
     Tipo: 'texto (com máscara)',
     Obrigatorio: 'Sim',
-    Regra: '20 dígitos após remover pontuações',
-    Exemplo: '0012345-67.2024.5.02.0001'
+    Regra: '20 dígitos com dígitos verificadores válidos',
+    Exemplo: '1000000-71.2024.5.02.1000'
   },
   {
     Aba: 'Por Processo',
@@ -153,7 +149,7 @@ export const dicionarioFields: DicionarioField[] = [
     Tipo: 'lista (string)',
     Obrigatorio: 'Sim',
     Regra: 'Aceita JSON-like, ; ou ,',
-    Exemplo: "['0000000-00.2024.5.02.0001','0000000-00.2024.5.02.0002']"
+    Exemplo: "['1000000-71.2024.5.02.1000','1000001-79.2024.5.02.1001']"
   },
   {
     Aba: 'Por Testemunha',
