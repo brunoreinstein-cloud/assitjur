@@ -61,49 +61,94 @@ function genCNJ(): string {
 
 const processoSamples: ProcessoSample[] = [
   {
-    CNJ: genCNJ(),
-    Reclamante_Limpo: 'Maria Santos Silva',
-    Reu_Nome: 'Empresa Alpha Ltda',
+    CNJ: '1000000-71.2024.5.02.1000',
+    Reclamante_Limpo: 'João Silva Santos',
+    Reu_Nome: 'Empresa ABC Ltda',
     UF: 'SP',
     Comarca: 'São Paulo',
     Fase: 'Conhecimento',
     Status: 'Em andamento'
   },
   {
-    CNJ: genCNJ(),
-    Reclamante_Limpo: 'João Pereira Costa',
-    Reu_Nome: 'Beta Indústria S.A.',
-    UF: 'RJ',
-    Comarca: 'Rio de Janeiro',
+    CNJ: '1000001-20.2024.5.02.1001',
+    Reclamante_Limpo: 'Maria Oliveira Costa',
+    Reu_Nome: 'Indústria XYZ S/A',
+    UF: 'SP',
+    Comarca: 'São Paulo',
     Fase: 'Execução',
     Status: 'Arquivado'
   },
   {
-    CNJ: genCNJ(),
-    Reclamante_Limpo: 'Ana Oliveira Lima',
-    Reu_Nome: 'Gamma Serviços ME',
-    UF: 'MG',
-    Comarca: 'Belo Horizonte',
-    Fase: 'Recurso',
-    Status: 'Julgado'
+    CNJ: '1000002-75.2024.5.02.1002',
+    Reclamante_Limpo: 'Pedro Almeida Lima',
+    Reu_Nome: 'Comércio DEF ME',
+    UF: 'SP',
+    Comarca: 'Santos',
+    Fase: 'Conhecimento',
+    Status: 'Sentenciado'
   },
   {
-    CNJ: genCNJ(),
-    Reclamante_Limpo: 'Carlos Eduardo Souza',
-    Reu_Nome: 'Delta Tech Solutions',
+    CNJ: '1000003-24.2024.5.02.1003',
+    Reclamante_Limpo: 'Ana Paula Ferreira',
+    Reu_Nome: 'Tech Solutions Ltda',
     UF: 'SP',
     Comarca: 'Campinas',
+    Fase: 'Recurso',
+    Status: 'Em andamento'
+  },
+  {
+    CNJ: '1000004-79.2024.5.02.1004',
+    Reclamante_Limpo: 'Carlos Eduardo Souza',
+    Reu_Nome: 'Logística GHI S/A',
+    UF: 'SP',
+    Comarca: 'São Paulo',
     Fase: 'Conhecimento',
     Status: 'Conciliado'
   },
   {
-    CNJ: genCNJ(),
-    Reclamante_Limpo: 'Fernanda Ribeiro Dias',
-    Reu_Nome: 'Epsilon Logística S.A.',
+    CNJ: '1000005-28.2024.5.02.1005',
+    Reclamante_Limpo: 'Luciana Ribeiro Dias',
+    Reu_Nome: 'Metalúrgica JKL Ltda',
     UF: 'SP',
-    Comarca: 'Santos',
+    Comarca: 'São Bernardo do Campo',
     Fase: 'Execução',
+    Status: 'Em andamento'
+  },
+  {
+    CNJ: '1000006-83.2024.5.02.1006',
+    Reclamante_Limpo: 'Roberto Carlos Mendes',
+    Reu_Nome: 'Serviços MNO Ltda',
+    UF: 'SP',
+    Comarca: 'São Paulo',
+    Fase: 'Conhecimento',
     Status: 'Suspenso'
+  },
+  {
+    CNJ: '1000007-32.2024.5.02.1007',
+    Reclamante_Limpo: 'Fernanda Lima Santos',
+    Reu_Nome: 'Construção PQR S/A',
+    UF: 'SP',
+    Comarca: 'Osasco',
+    Fase: 'Conhecimento',
+    Status: 'Em andamento'
+  },
+  {
+    CNJ: '1000008-87.2024.5.02.1008',
+    Reclamante_Limpo: 'Marcos Antônio Silva',
+    Reu_Nome: 'Alimentação STU Ltda',
+    UF: 'SP',
+    Comarca: 'São Paulo',
+    Fase: 'Recurso',
+    Status: 'Julgado'
+  },
+  {
+    CNJ: '1000009-36.2024.5.02.1009',
+    Reclamante_Limpo: 'Patrícia Gomes Oliveira',
+    Reu_Nome: 'Transporte VWX ME',
+    UF: 'SP',
+    Comarca: 'Guarulhos',
+    Fase: 'Conhecimento',
+    Status: 'Arquivado'
   }
 ];
 

@@ -34,7 +34,7 @@ export function genCNJ(): string {
 
 export const processoSamples: ProcessoSample[] = [
   {
-    CNJ: '1000000-04.2024.5.02.1000',
+    CNJ: '1000000-71.2024.5.02.1000',
     Reclamante_Limpo: 'João Silva Santos',
     Reu_Nome: 'Empresa ABC Ltda',
     UF: 'SP',
@@ -43,7 +43,7 @@ export const processoSamples: ProcessoSample[] = [
     Status: 'Em andamento'
   },
   {
-    CNJ: '1000001-59.2024.5.02.1001',
+    CNJ: '1000001-20.2024.5.02.1001',
     Reclamante_Limpo: 'Maria Oliveira Costa',
     Reu_Nome: 'Indústria XYZ S/A',
     UF: 'SP',
@@ -52,7 +52,7 @@ export const processoSamples: ProcessoSample[] = [
     Status: 'Arquivado'
   },
   {
-    CNJ: '1000002-11.2024.5.02.1002',
+    CNJ: '1000002-75.2024.5.02.1002',
     Reclamante_Limpo: 'Pedro Almeida Lima',
     Reu_Nome: 'Comércio DEF ME',
     UF: 'SP',
@@ -61,7 +61,7 @@ export const processoSamples: ProcessoSample[] = [
     Status: 'Sentenciado'
   },
   {
-    CNJ: '1000003-66.2024.5.02.1003',
+    CNJ: '1000003-24.2024.5.02.1003',
     Reclamante_Limpo: 'Ana Paula Ferreira',
     Reu_Nome: 'Tech Solutions Ltda',
     UF: 'SP',
@@ -70,13 +70,58 @@ export const processoSamples: ProcessoSample[] = [
     Status: 'Em andamento'
   },
   {
-    CNJ: '1000004-18.2024.5.02.1004',
+    CNJ: '1000004-79.2024.5.02.1004',
     Reclamante_Limpo: 'Carlos Eduardo Souza',
     Reu_Nome: 'Logística GHI S/A',
     UF: 'SP',
     Comarca: 'São Paulo',
     Fase: 'Conhecimento',
     Status: 'Conciliado'
+  },
+  {
+    CNJ: '1000005-28.2024.5.02.1005',
+    Reclamante_Limpo: 'Luciana Ribeiro Dias',
+    Reu_Nome: 'Metalúrgica JKL Ltda',
+    UF: 'SP',
+    Comarca: 'São Bernardo do Campo',
+    Fase: 'Execução',
+    Status: 'Em andamento'
+  },
+  {
+    CNJ: '1000006-83.2024.5.02.1006',
+    Reclamante_Limpo: 'Roberto Carlos Mendes',
+    Reu_Nome: 'Serviços MNO Ltda',
+    UF: 'SP',
+    Comarca: 'São Paulo',
+    Fase: 'Conhecimento',
+    Status: 'Suspenso'
+  },
+  {
+    CNJ: '1000007-32.2024.5.02.1007',
+    Reclamante_Limpo: 'Fernanda Lima Santos',
+    Reu_Nome: 'Construção PQR S/A',
+    UF: 'SP',
+    Comarca: 'Osasco',
+    Fase: 'Conhecimento',
+    Status: 'Em andamento'
+  },
+  {
+    CNJ: '1000008-87.2024.5.02.1008',
+    Reclamante_Limpo: 'Marcos Antônio Silva',
+    Reu_Nome: 'Alimentação STU Ltda',
+    UF: 'SP',
+    Comarca: 'São Paulo',
+    Fase: 'Recurso',
+    Status: 'Julgado'
+  },
+  {
+    CNJ: '1000009-36.2024.5.02.1009',
+    Reclamante_Limpo: 'Patrícia Gomes Oliveira',
+    Reu_Nome: 'Transporte VWX ME',
+    UF: 'SP',
+    Comarca: 'Guarulhos',
+    Fase: 'Conhecimento',
+    Status: 'Arquivado'
   }
 ];
 
@@ -117,7 +162,7 @@ export const dicionarioFields: DicionarioField[] = [
     Tipo: 'texto (com máscara)',
     Obrigatorio: 'Sim',
     Regra: '20 dígitos com dígitos verificadores válidos',
-    Exemplo: '1000000-04.2024.5.02.1000'
+    Exemplo: '1000000-71.2024.5.02.1000'
   },
   {
     Aba: 'Por Processo',
@@ -149,7 +194,7 @@ export const dicionarioFields: DicionarioField[] = [
     Tipo: 'lista (string)',
     Obrigatorio: 'Sim',
     Regra: 'Aceita JSON-like, ; ou ,',
-    Exemplo: "['1000000-04.2024.5.02.1000','1000001-59.2024.5.02.1001']"
+    Exemplo: "['1000000-71.2024.5.02.1000','1000001-20.2024.5.02.1001']"
   },
   {
     Aba: 'Por Testemunha',
