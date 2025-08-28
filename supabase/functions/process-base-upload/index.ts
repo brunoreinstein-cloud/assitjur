@@ -258,37 +258,59 @@ async function processFileInChunks(
   const headerMappingResult = mapHeadersAdvanced(headers);
   const headerMap = { ...headerMappingResult.requiredFields, ...headerMappingResult.optionalFields };
   
-  // Check for required fields
-  if (!headerMappingResult.requiredFields.cnj) {
-    errors.push({
-      row: 0,
-      column: 'cnj',
-      type: 'error',
-      message: 'Coluna CNJ é obrigatória. Use exatamente "CNJ" (case-insensitive)'
-    });
-  }
-  
-  // Compatível com template: aceita "Reclamante_Limpo" ou "Reclamante_Nome"  
-  const reclamanteField = headerMappingResult.requiredFields.reclamante_limpo !== undefined ? 
-    'reclamante_limpo' : 
-    (headerMappingResult.requiredFields.reclamante_nome !== undefined ? 'reclamante_nome' : null);
-  
-  if (!reclamanteField) {
-    errors.push({
-      row: 0,
-      column: 'reclamante',
-      type: 'error',
-      message: 'Coluna "Reclamante_Limpo" ou "Reclamante_Nome" é obrigatória'
-    });
-  }
-  
-  if (!headerMappingResult.requiredFields.reu_nome) {
-    errors.push({
-      row: 0,
-      column: 'reu_nome',
-      type: 'error',
-      message: 'Coluna "Nome do Réu" é obrigatória'
-    });
+  // Check for required fields based on file type
+  if (headerMappingResult.fileType === 'processos') {
+    // Processo validation
+    if (!headerMappingResult.requiredFields.cnj) {
+      errors.push({
+        row: 0,
+        column: 'cnj',
+        type: 'error',
+        message: 'Coluna CNJ é obrigatória. Use exatamente "CNJ" (case-insensitive)'
+      });
+    }
+    
+    // Compatível com template: aceita "Reclamante_Limpo" ou "Reclamante_Nome"  
+    const reclamanteField = headerMappingResult.requiredFields.reclamante_limpo !== undefined ? 
+      'reclamante_limpo' : 
+      (headerMappingResult.requiredFields.reclamante_nome !== undefined ? 'reclamante_nome' : null);
+    
+    if (!reclamanteField) {
+      errors.push({
+        row: 0,
+        column: 'reclamante',
+        type: 'error',
+        message: 'Coluna "Reclamante_Limpo" ou "Reclamante_Nome" é obrigatória'
+      });
+    }
+    
+    if (!headerMappingResult.requiredFields.reu_nome) {
+      errors.push({
+        row: 0,
+        column: 'reu_nome',
+        type: 'error',
+        message: 'Coluna "Nome do Réu" é obrigatória'
+      });
+    }
+  } else if (headerMappingResult.fileType === 'testemunhas') {
+    // Testemunha validation
+    if (!headerMappingResult.requiredFields.nome_testemunha) {
+      errors.push({
+        row: 0,
+        column: 'nome_testemunha',
+        type: 'error',
+        message: 'Coluna "Nome_Testemunha" é obrigatória'
+      });
+    }
+    
+    if (!headerMappingResult.requiredFields.cnjs_como_testemunha) {
+      errors.push({
+        row: 0,
+        column: 'cnjs_como_testemunha',
+        type: 'error',
+        message: 'Coluna "CNJs_Como_Testemunha" é obrigatória'
+      });
+    }
   }
   
   // Log header mapping suggestions for better diagnostics
@@ -319,7 +341,7 @@ async function processFileInChunks(
       }
       
       try {
-        const processedRow = await processRow(rowData, headerMap, row, errors, warnings, duplicateCNJs);
+        const processedRow = await processRow(rowData, headerMap, row, errors, warnings, duplicateCNJs, headerMappingResult.fileType);
         if (processedRow) {
           validRows++;
         }
@@ -392,7 +414,7 @@ async function processFileInChunks(
       }
       
       try {
-        const processedRow = await processRow(rowData, headerMap, row, errors, warnings, duplicateCNJs);
+        const processedRow = await processRow(rowData, headerMap, row, errors, warnings, duplicateCNJs, headerMappingResult.fileType);
         if (processedRow) {
           // Preparar dados para staging (mapeamento correto)
           stagingData.push({
@@ -539,8 +561,41 @@ async function processFileInChunks(
 
 /**
  * Advanced header mapping with intelligent pattern matching
+ * Supports both 'processos' and 'testemunhas' file types
  */
-function mapHeadersAdvanced(headers: string[]): HeaderMappingResult {
+function mapHeadersAdvanced(headers: string[]): HeaderMappingResult & { fileType: 'processos' | 'testemunhas' } {
+  // Detect file type based on headers
+  const normalizedHeaders = headers.map(h => h.toLowerCase().trim()
+    .replace(/[áàâãä]/g, 'a')
+    .replace(/[éèêë]/g, 'e')
+    .replace(/[íìîï]/g, 'i')
+    .replace(/[óòôõö]/g, 'o')
+    .replace(/[úùûü]/g, 'u')
+    .replace(/[ç]/g, 'c')
+    .replace(/[^a-z0-9_]/g, '_'));
+
+  // Check if it's a testemunhas file
+  const isTestemunhasFile = normalizedHeaders.some(h => 
+    h.includes('nome_testemunha') || 
+    h.includes('testemunha') || 
+    h.includes('cnjs_como_testemunha') ||
+    h.includes('cnj_como_testemunha')
+  );
+
+  const fileType = isTestemunhasFile ? 'testemunhas' : 'processos';
+  console.log('📋 File type detected:', fileType);
+
+  if (fileType === 'testemunhas') {
+    return mapTestemunhasHeaders(headers, normalizedHeaders);
+  } else {
+    return mapProcessosHeaders(headers, normalizedHeaders);
+  }
+}
+
+/**
+ * Map headers for processos files
+ */
+function mapProcessosHeaders(headers: string[], normalizedHeaders: string[]): HeaderMappingResult & { fileType: 'processos' } {
   const requiredFieldMappings = {
     cnj: ['cnj', 'numero', 'processo', 'num_processo', 'número'],
     reclamante_limpo: ['reclamante_limpo', 'reclamante', 'autor', 'requerente', 'nome_reclamante', 'nome_autor'],
@@ -565,21 +620,43 @@ function mapHeadersAdvanced(headers: string[]): HeaderMappingResult {
     classificacao_final: ['classificacao', 'classificação', 'class_final', 'resultado']
   };
 
+  return performHeaderMapping(headers, normalizedHeaders, requiredFieldMappings, optionalFieldMappings, 'processos');
+}
+
+/**
+ * Map headers for testemunhas files
+ */
+function mapTestemunhasHeaders(headers: string[], normalizedHeaders: string[]): HeaderMappingResult & { fileType: 'testemunhas' } {
+  const requiredFieldMappings = {
+    nome_testemunha: ['nome_testemunha', 'testemunha', 'nome', 'pessoa'],
+    cnjs_como_testemunha: ['cnjs_como_testemunha', 'cnj_como_testemunha', 'cnjs', 'processos', 'cnj']
+  };
+
+  const optionalFieldMappings = {
+    reclamante_nome: ['reclamante_nome', 'reclamante', 'autor', 'requerente'],
+    reu_nome: ['reu_nome', 'reu', 'réu', 'requerido', 'demandado']
+  };
+
+  return performHeaderMapping(headers, normalizedHeaders, requiredFieldMappings, optionalFieldMappings, 'testemunhas');
+}
+
+/**
+ * Perform the actual header mapping
+ */
+function performHeaderMapping(
+  headers: string[], 
+  normalizedHeaders: string[], 
+  requiredFieldMappings: Record<string, string[]>, 
+  optionalFieldMappings: Record<string, string[]>,
+  fileType: 'processos' | 'testemunhas'
+): HeaderMappingResult & { fileType: 'processos' | 'testemunhas' } {
   const requiredFields: Record<string, number> = {};
   const optionalFields: Record<string, number> = {};
   const unmappedFields: string[] = [];
   const suggestions: Array<{ header: string; suggestion: string; confidence: number }> = [];
 
   headers.forEach((header, index) => {
-    const normalized = header.toLowerCase().trim()
-      .replace(/[áàâãä]/g, 'a')
-      .replace(/[éèêë]/g, 'e')
-      .replace(/[íìîï]/g, 'i')
-      .replace(/[óòôõö]/g, 'o')
-      .replace(/[úùûü]/g, 'u')
-      .replace(/[ç]/g, 'c')
-      .replace(/[^a-z0-9_]/g, '_');
-
+    const normalized = normalizedHeaders[index];
     let mapped = false;
 
     // Check required fields
@@ -636,7 +713,8 @@ function mapHeadersAdvanced(headers: string[]): HeaderMappingResult {
     requiredFields,
     optionalFields,
     unmappedFields,
-    suggestions: suggestions.sort((a, b) => b.confidence - a.confidence)
+    suggestions: suggestions.sort((a, b) => b.confidence - a.confidence),
+    fileType
   };
 }
 
@@ -674,8 +752,112 @@ function mapHeaders(headers: string[]): Record<string, number> {
 
 /**
  * Advanced row processing with comprehensive validation
+ * Supports both 'processos' and 'testemunhas' file types
  */
 async function processRow(
+  row: any[], 
+  headerMap: Record<string, number>, 
+  rowNumber: number,
+  errors: ValidationError[],
+  warnings: ValidationError[],
+  duplicateCNJs?: Set<string>,
+  fileType: 'processos' | 'testemunhas' = 'processos'
+): Promise<ProcessedRow | null> {
+  
+  if (fileType === 'testemunhas') {
+    return processTestemunhaRow(row, headerMap, rowNumber, errors, warnings);
+  } else {
+    return processProcessoRow(row, headerMap, rowNumber, errors, warnings, duplicateCNJs);
+  }
+}
+
+/**
+ * Process testemunha row
+ */
+async function processTestemunhaRow(
+  row: any[], 
+  headerMap: Record<string, number>, 
+  rowNumber: number,
+  errors: ValidationError[],
+  warnings: ValidationError[]
+): Promise<any | null> {
+  
+  let hasErrors = false;
+  const processedRow: any = {};
+
+  // Validate Nome_Testemunha (required)
+  const nomeValidation = sanitizeTextAdvanced(row[headerMap.nome_testemunha]);
+  if (!nomeValidation.normalizedValue) {
+    errors.push({
+      row: rowNumber,
+      column: 'nome_testemunha',
+      type: 'error',
+      message: 'Nome da testemunha é obrigatório',
+      value: String(row[headerMap.nome_testemunha] || '')
+    });
+    hasErrors = true;
+  } else {
+    processedRow.nome_testemunha = nomeValidation.normalizedValue;
+  }
+
+  // Validate CNJs_Como_Testemunha (required)
+  const cnjsValidation = parseArrayFieldAdvanced(row[headerMap.cnjs_como_testemunha]);
+  if (!cnjsValidation.normalizedValue || cnjsValidation.normalizedValue.length === 0) {
+    errors.push({
+      row: rowNumber,
+      column: 'cnjs_como_testemunha',
+      type: 'error',
+      message: 'CNJs como testemunha são obrigatórios',
+      value: String(row[headerMap.cnjs_como_testemunha] || '')
+    });
+    hasErrors = true;
+  } else {
+    // Validate each CNJ in the array
+    const validCNJs: string[] = [];
+    for (const cnj of cnjsValidation.normalizedValue) {
+      const cnjValidation = validateCNJAdvanced(cnj);
+      if (cnjValidation.isValid && cnjValidation.normalizedValue) {
+        validCNJs.push(cnjValidation.normalizedValue);
+      } else {
+        warnings.push({
+          row: rowNumber,
+          column: 'cnjs_como_testemunha',
+          type: 'warning',
+          message: `CNJ inválido no array: ${cnj}`,
+          value: cnj
+        });
+      }
+    }
+    
+    if (validCNJs.length === 0) {
+      errors.push({
+        row: rowNumber,
+        column: 'cnjs_como_testemunha',
+        type: 'error',
+        message: 'Nenhum CNJ válido encontrado',
+        value: String(row[headerMap.cnjs_como_testemunha])
+      });
+      hasErrors = true;
+    } else {
+      processedRow.cnjs_como_testemunha = validCNJs;
+    }
+  }
+
+  // Optional fields
+  processedRow.reclamante_nome = sanitizeTextAdvanced(row[headerMap.reclamante_nome]).normalizedValue;
+  processedRow.reu_nome = sanitizeTextAdvanced(row[headerMap.reu_nome]).normalizedValue;
+
+  if (hasErrors) {
+    return null;
+  }
+
+  return processedRow;
+}
+
+/**
+ * Process processo row (existing logic)
+ */
+async function processProcessoRow(
   row: any[], 
   headerMap: Record<string, number>, 
   rowNumber: number,
