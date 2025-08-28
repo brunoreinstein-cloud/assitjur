@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -205,11 +205,10 @@ export function ImportModal() {
       
       setUploadProgress(40);
 
-      // Call import Edge function
+      // Call import Edge function - send porProcesso as processos
       const { data, error } = await supabase.functions.invoke('import-mapa-testemunhas', {
         body: {
-          porProcesso,
-          porTestemunha,
+          processos: porProcesso,
         },
       });
 
@@ -250,6 +249,9 @@ export function ImportModal() {
             <FileSpreadsheet className="h-5 w-5" />
             Importar Dados Excel
           </DialogTitle>
+          <DialogDescription>
+            Importe dados do Excel com as abas "Por Processo" e/ou "Por Testemunha" seguindo o formato requerido.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
