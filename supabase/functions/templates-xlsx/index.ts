@@ -1,8 +1,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { corsHeaders } from '../_shared/cors.ts'
 
-// Import XLSX for Deno
-import * as XLSX from 'https://cdn.skypack.dev/xlsx'
+// Import XLSX for Deno - using official Deno-compatible version
+import * as XLSX from 'https://deno.land/x/sheetjs@v0.18.5/xlsx.mjs'
 
 interface ProcessoSample {
   CNJ: string;
