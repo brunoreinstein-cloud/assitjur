@@ -205,24 +205,44 @@ const ImportBase = () => {
           </div>
         ) : (
           <div className="space-y-4">
+            {/* Métricas de validação melhoradas */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-4 bg-muted rounded-lg">
                 <div className="text-2xl font-bold">{validationResults.totalRows?.toLocaleString()}</div>
                 <div className="text-sm text-muted-foreground">Linhas analisadas</div>
               </div>
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">{validationResults.validRows?.toLocaleString()}</div>
+              <div className="text-center p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{validationResults.validRows?.toLocaleString()}</div>
                 <div className="text-sm text-muted-foreground">Linhas válidas</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {validationResults.totalRows > 0 ? `${Math.round((validationResults.validRows / validationResults.totalRows) * 100)}%` : '0%'}
+                </div>
               </div>
-              <div className="text-center p-4 bg-red-50 rounded-lg">
-                <div className="text-2xl font-bold text-red-600">{validationResults.errors?.length || 0}</div>
+              <div className="text-center p-4 bg-red-50 dark:bg-red-950 rounded-lg">
+                <div className="text-2xl font-bold text-red-600 dark:text-red-400">{validationResults.errors?.length || 0}</div>
                 <div className="text-sm text-muted-foreground">Erros</div>
+                {validationResults.errors?.length > 0 && (
+                  <div className="text-xs text-red-600 dark:text-red-400 mt-1">Impedem publicação</div>
+                )}
               </div>
-              <div className="text-center p-4 bg-orange-50 rounded-lg">
-                <div className="text-2xl font-bold text-orange-600">{validationResults.warnings?.length || 0}</div>
+              <div className="text-center p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
+                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{validationResults.warnings?.length || 0}</div>
                 <div className="text-sm text-muted-foreground">Avisos</div>
+                {validationResults.warnings?.length > 0 && (
+                  <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">Permitido publicar</div>
+                )}
               </div>
             </div>
+
+            {/* Alerta para problemas críticos */}
+            {validationResults.errors?.length === 0 && validationResults.validRows > 0 && (
+              <Alert className="border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800 dark:text-green-200">
+                  ✅ Arquivo pronto para publicação! {validationResults.validRows} registros serão importados.
+                </AlertDescription>
+              </Alert>
+            )}
 
             {validationResults.errors?.length > 0 && (
               <div className="space-y-2">
@@ -281,12 +301,27 @@ const ImportBase = () => {
               <div className="flex gap-2">
                 <Button 
                   onClick={() => setCurrentStep('preview')}
-                  disabled={validationResults.validRows === 0}
+                  disabled={validationResults.validRows === 0 || (validationResults.errors?.length || 0) > 0}
+                  className={validationResults.errors?.length > 0 ? 'opacity-50' : ''}
                 >
-                  Continuar para Prévia
+                  {validationResults.errors?.length > 0 ? 'Corrigir Erros Primeiro' : 'Continuar para Prévia'}
                 </Button>
               </div>
             </div>
+
+            {/* Link para template se houver erros */}
+            {validationResults.errors?.length > 0 && (
+              <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
+                  💡 <strong>Dica:</strong> Use nosso template para evitar erros de formato:
+                </p>
+                <Button variant="outline" size="sm" asChild>
+                  <a href="/template" target="_blank" rel="noopener noreferrer">
+                    📥 Baixar Template de Exemplo
+                  </a>
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
@@ -306,39 +341,54 @@ const ImportBase = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          {/* Preview baseado nos dados reais */}
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center p-4 bg-muted rounded-lg">
-              <div className="text-2xl font-bold">15,420</div>
-              <div className="text-sm text-muted-foreground">Processos</div>
+              <div className="text-2xl font-bold">{validationResults?.validRows?.toLocaleString() || '0'}</div>
+              <div className="text-sm text-muted-foreground">Registros válidos</div>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
-              <div className="text-2xl font-bold">8,542</div>
-              <div className="text-sm text-muted-foreground">Pessoas distintas</div>
+              <div className="text-2xl font-bold">
+                {validationResults?.validRows ? Math.round((validationResults.validRows / validationResults.totalRows) * 100) : 0}%
+              </div>
+              <div className="text-sm text-muted-foreground">Taxa de sucesso</div>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
-              <div className="text-2xl font-bold">85%</div>
-              <div className="text-sm text-muted-foreground">Com indicadores</div>
+              <div className="text-2xl font-bold">
+                {validationResults ? (validationResults.errors?.length || 0) + (validationResults.warnings?.length || 0) : 0}
+              </div>
+              <div className="text-sm text-muted-foreground">Problemas detectados</div>
             </div>
           </div>
 
+          {/* Sumário de importação */}
+          <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
+            <Eye className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-800 dark:text-blue-200">
+              <strong>Prévia da Importação:</strong> {validationResults?.validRows || 0} registros serão processados e inseridos na base de dados.
+              Os dados passarão por validação final e normalização antes da inserção.
+            </AlertDescription>
+          </Alert>
+
+          {/* Sample data table - exemplo fictício por enquanto */}
           <div className="border rounded-lg overflow-hidden">
             <table className="w-full">
               <thead className="bg-muted">
                 <tr>
                   <th className="p-3 text-left">CNJ</th>
-                  <th className="p-3 text-left">Comarca</th>
                   <th className="p-3 text-left">Reclamante</th>
+                  <th className="p-3 text-left">Réu</th>
                   <th className="p-3 text-left">Status</th>
                 </tr>
               </thead>
               <tbody>
-                {[...Array(5)].map((_, i) => (
+                {[...Array(3)].map((_, i) => (
                   <tr key={i} className="border-t">
-                    <td className="p-3 font-mono text-sm">5001234-12.2024.5.01.{String(i).padStart(4, '0')}</td>
-                    <td className="p-3">São Paulo</td>
-                    <td className="p-3">João Silva</td>
+                    <td className="p-3 font-mono text-sm">****-**.2024.*.**.**</td>
+                    <td className="p-3">Nome do Reclamante {i + 1}</td>
+                    <td className="p-3">Nome da Empresa Ré</td>
                     <td className="p-3">
-                      <Badge variant="secondary">Em andamento</Badge>
+                      <Badge variant="secondary">Pronto para importar</Badge>
                     </td>
                   </tr>
                 ))}
@@ -346,9 +396,18 @@ const ImportBase = () => {
             </table>
           </div>
 
-          <Button onClick={() => setCurrentStep('publish')} className="w-full">
-            Publicar Versão
-          </Button>
+          <div className="flex gap-2 justify-between">
+            <Button variant="outline" onClick={() => setCurrentStep('validation')}>
+              Voltar para Validação
+            </Button>
+            <Button 
+              onClick={() => setCurrentStep('publish')}
+              className="bg-green-600 hover:bg-green-700"
+              disabled={(validationResults?.errors?.length || 0) > 0}
+            >
+              Publicar Nova Versão
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -386,10 +445,32 @@ const ImportBase = () => {
                     <strong>Tamanho:</strong> {uploadedFile ? (uploadedFile.size / 1024 / 1024).toFixed(2) : 0} MB
                   </div>
                   <div>
-                    <strong>Linhas válidas:</strong> {validationResults?.validRows?.toLocaleString() || 0}
+                    <strong>Linhas válidas:</strong> 
+                    <span className="text-green-600 font-semibold ml-1">
+                      {validationResults?.validRows?.toLocaleString() || 0}
+                    </span>
                   </div>
                   <div>
-                    <strong>Erros:</strong> {validationResults?.errors?.length || 0}
+                    <strong>Problemas:</strong> 
+                    <span className="text-orange-600 ml-1">
+                      {(validationResults?.errors?.length || 0) + (validationResults?.warnings?.length || 0)} 
+                    </span>
+                    <span className="text-xs text-muted-foreground ml-1">
+                      ({validationResults?.errors?.length || 0} erros, {validationResults?.warnings?.length || 0} avisos)
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Indicador de qualidade */}
+                <div className="mt-3 p-3 rounded-lg bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950 dark:to-blue-950">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Qualidade dos Dados:</span>
+                    <span className="text-sm font-bold text-green-600">
+                      {validationResults?.totalRows > 0 
+                        ? `${Math.round((validationResults.validRows / validationResults.totalRows) * 100)}% aprovado` 
+                        : '0% aprovado'
+                      }
+                    </span>
                   </div>
                 </div>
               </div>

@@ -1,139 +1,200 @@
-// Helpers utilitários seguindo as regras específicas
+import { z } from 'zod';
 
 /**
- * Remove todos os caracteres não-numéricos
+ * Remove acentos e converte para slug (snake_case)
  */
-export const onlyDigits = (s: string): string => (s ?? '').replace(/\D/g, '');
-
-/**
- * Verifica se é um CNJ válido de 20 dígitos
- */
-export const isCNJ20 = (s: string): boolean => /^\d{20}$/.test(onlyDigits(s));
-
-/**
- * Converte string para slug_case minúsculo
- */
-export const toSlugCase = (str: string): string => {
-  return str
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
-};
-
-/**
- * Parse de listas - suporta JSON, arrays separados por vírgula/ponto-vírgula
- */
-export const parseList = (v: any): string[] => {
-  const s = String(v ?? '').trim();
-  if (!s || s === '[]') return [];
-  
-  // Tenta JSON primeiro
-  if (s.startsWith('[') && s.endsWith(']')) {
-    try {
-      return JSON.parse(s.replace(/'/g, '"')).map((x: any) => String(x).trim());
-    } catch {
-      // Se falhar no JSON, remove os colchetes e trata como lista simples
-    }
-  }
-  
-  // Split por vírgula ou ponto-vírgula
-  return s
-    .replace(/^\[|\]$/g, '') // Remove colchetes se existirem
-    .split(/[;,]/)
-    .map(x => x.trim())
-    .filter(Boolean);
-};
-
-/**
- * Verifica se um valor está vazio ou é "a preencher"
- */
-export const isEmpty = (v: any): boolean => {
-  if (!v) return true;
-  const str = String(v).trim().toLowerCase();
-  return str === '' || str === 'a preencher' || str === 'null' || str === 'undefined';
-};
-
-/**
- * Normaliza CNJ removendo pontuação
- */
-export const normalizeCNJ = (cnj: string): string => {
-  return onlyDigits(cnj);
-};
-
-/**
- * Formata CNJ para exibição com máscara
- */
-export const formatCNJ = (cnj: string): string => {
-  const digits = onlyDigits(cnj);
-  if (digits.length !== 20) return cnj;
-  
-  return `${digits.slice(0, 7)}-${digits.slice(7, 9)}.${digits.slice(9, 13)}.${digits.slice(13, 14)}.${digits.slice(14, 16)}.${digits.slice(16)}`;
-};
-
-/**
- * Detecta separador de CSV automaticamente
- */
-export const detectCsvSeparator = (csvText: string): string => {
-  const sample = csvText.split('\n')[0] || '';
-  const separators = [',', ';', '\t', '|'];
-  
-  let maxCount = 0;
-  let bestSeparator = ',';
-  
-  for (const sep of separators) {
-    const count = (sample.match(new RegExp(`\\${sep}`, 'g')) || []).length;
-    if (count > maxCount) {
-      maxCount = count;
-      bestSeparator = sep;
-    }
-  }
-  
-  return bestSeparator;
-};
-
-/**
- * Sanitiza texto removendo caracteres perigosos
- */
-export const sanitizeText = (text: string): string => {
+export function toSlugCase(text: string): string {
   if (!text) return '';
   
   return text
-    .replace(/<[^>]*>/g, '') // Remove HTML tags
-    .replace(/[<>"';&|$`]/g, '') // Remove caracteres perigosos
-    .trim()
-    .slice(0, 500); // Limita tamanho
-};
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
+}
 
 /**
- * Gera ID único para sessão
+ * Normaliza CNJ para 20 dígitos (compatível com cnj_digits)
  */
-export const generateSessionId = (): string => {
-  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-};
+export function normalizeCNJ(cnj: string): string {
+  if (!cnj) return '';
+  return onlyDigits(cnj);
+}
 
 /**
- * Mapeia colunas conhecidas do arquivo real
+ * Extrai apenas dígitos
  */
-export const getColumnMappings = () => {
+export function onlyDigits(text: string): string {
+  return String(text || '').replace(/\D/g, '');
+}
+
+/**
+ * Sanitiza texto removendo caracteres especiais
+ */
+export function sanitizeText(text: string): string {
+  if (!text) return '';
+  return String(text).trim();
+}
+
+/**
+ * Verifica se valor está vazio
+ */
+export function isEmpty(value: any): boolean {
+  return value === null || value === undefined || String(value).trim() === '';
+}
+
+/**
+ * Converte string de lista em array
+ * Suporta formatos: JSON-like, separado por ; ou ,
+ */
+export function parseList(value: any): string[] {
+  if (!value) return [];
+  
+  const str = String(value).trim();
+  
+  // JSON-like format: ['item1','item2']
+  if (str.startsWith('[') && str.endsWith(']')) {
+    try {
+      const parsed = str
+        .slice(1, -1) // Remove [ ]
+        .split(',')
+        .map(item => item.trim().replace(/^['"]|['"]$/g, ''))
+        .filter(item => item.length > 0);
+      return parsed;
+    } catch {
+      // fallback to regular split
+    }
+  }
+  
+  // Separado por ; ou ,
+  if (str.includes(';')) {
+    return str.split(';').map(s => s.trim()).filter(s => s.length > 0);
+  }
+  
+  if (str.includes(',')) {
+    return str.split(',').map(s => s.trim()).filter(s => s.length > 0);
+  }
+  
+  // Item único
+  return [str];
+}
+
+/**
+ * Mapeamentos de colunas conhecidas (compatível com template)
+ */
+/**
+ * Gera um ID de sessão único
+ */
+export function generateSessionId(): string {
+  return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+}
+
+/**
+ * Detecta o separador CSV analisando uma amostra do arquivo
+ */
+export function detectCsvSeparator(csvText: string): ',' | ';' | '\t' {
+  const sample = csvText.substring(0, 1000); // Primeira parte do arquivo
+  
+  const separators = [',', ';', '\t'];
+  const counts = separators.map(sep => (sample.match(new RegExp(`\\${sep}`, 'g')) || []).length);
+  
+  const maxCount = Math.max(...counts);
+  const bestSeparator = separators[counts.indexOf(maxCount)];
+  
+  return bestSeparator as ',' | ';' | '\t';
+}
+
+export function getColumnMappings() {
   return {
-    // Aba "Por Testemunha"
+    // Colunas específicas por modelo
+    processo: {
+      'CNJ': 'cnj',
+      'Reclamante_Limpo': 'reclamante_limpo',
+      'Reclamante_Nome': 'reclamante_nome', // Compatibilidade
+      'Reu_Nome': 'reu_nome',
+      'UF': 'uf',
+      'Comarca': 'comarca',
+      'Tribunal': 'tribunal',
+      'Vara': 'vara',
+      'Fase': 'fase',
+      'Status': 'status'
+    },
     testemunha: {
       'Nome_Testemunha': 'nome_testemunha',
       'CNJs_Como_Testemunha': 'cnjs_como_testemunha',
+      'Reclamante_Nome': 'reclamante_nome',
+      'Reu_Nome': 'reu_nome'
     },
-    // Aba "Por Processo"  
-    processo: {
-      'CNJ': 'cnj',
-      'Reclamante_Limpo': 'reclamante_nome',
-      'Reclamante Limpo': 'reclamante_nome',
-    },
-    // Mapeamentos genéricos
+    // Colunas comuns
     common: {
-      'reu_nome': 'reu_nome',
-      'Réu': 'reu_nome',
-      'Reu': 'reu_nome',
+      'CNJ': 'cnj',
+      'cnj': 'cnj',
+      'observacoes': 'observacoes',
+      'data_audiencia': 'data_audiencia'
     }
   };
-};
+}
+
+/**
+ * Mapeamento avançado de headers (case-insensitive, fuzzy)
+ */
+export function mapHeadersAdvanced(headers: string[]): {
+  requiredFields: Record<string, number>;
+  optionalFields: Record<string, number>;
+  unmapped: string[];
+  suggestions: Array<{ header: string; suggestion: string; confidence: number }>;
+} {
+  const result = {
+    requiredFields: {} as Record<string, number>,
+    optionalFields: {} as Record<string, number>,
+    unmapped: [] as string[],
+    suggestions: [] as Array<{ header: string; suggestion: string; confidence: number }>
+  };
+
+  const mappings = getColumnMappings();
+  
+  for (let i = 0; i < headers.length; i++) {
+    const header = headers[i];
+    const normalized = header.toLowerCase().trim();
+    let mapped = false;
+
+    // Match exato (case-insensitive)
+    for (const [key, value] of Object.entries({...mappings.common, ...mappings.processo, ...mappings.testemunha})) {
+      if (key.toLowerCase() === normalized) {
+        if (['cnj', 'reclamante_limpo', 'reclamante_nome', 'reu_nome'].includes(value)) {
+          result.requiredFields[value] = i;
+        } else {
+          result.optionalFields[value] = i;
+        }
+        mapped = true;
+        break;
+      }
+    }
+
+    // Se não mapeou, tentar fuzzy matching
+    if (!mapped) {
+      if (normalized.includes('cnj') && !normalized.startsWith('cnj_')) {
+        result.requiredFields.cnj = i;
+        mapped = true;
+      } else if (normalized.includes('reclamante')) {
+        if (normalized.includes('limpo')) {
+          result.requiredFields.reclamante_limpo = i;
+        } else {
+          result.requiredFields.reclamante_nome = i;
+        }
+        mapped = true;
+      } else if (normalized.includes('reu') || normalized.includes('réu')) {
+        result.requiredFields.reu_nome = i;
+        mapped = true;
+      }
+    }
+
+    if (!mapped) {
+      result.unmapped.push(header);
+    }
+  }
+
+  return result;
+}

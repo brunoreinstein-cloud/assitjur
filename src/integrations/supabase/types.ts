@@ -1074,6 +1074,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_staging: {
+        Args: { p_import_job_id?: string }
+        Returns: undefined
+      }
       get_current_user_org: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1148,6 +1152,14 @@ export type Database = {
       sanitize_input: {
         Args: { input_text: string }
         Returns: string
+      }
+      upsert_staging_to_final: {
+        Args: { p_import_job_id?: string; p_org_id: string }
+        Returns: {
+          error_count: number
+          inserted_count: number
+          updated_count: number
+        }[]
       }
     }
     Enums: {

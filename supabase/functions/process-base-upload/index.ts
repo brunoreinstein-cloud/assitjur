@@ -11,26 +11,17 @@ const corsHeaders = {
 
 interface ProcessedRow {
   cnj: string
-  cnj_normalizado: string
+  cnj_digits: string  // Alinhado com novo schema
+  reclamante_limpo?: string  // Mapeamento correto do template
   comarca?: string
   tribunal?: string
   vara?: string
   fase?: string
   status?: string
   reclamante_nome?: string
-  reclamante_cpf_mask?: string
+  reclamante_cpf?: string
   reu_nome?: string
-  advogados_ativo?: string[]
-  advogados_passivo?: string[]
-  testemunhas_ativo?: string[]
-  testemunhas_passivo?: string[]
   data_audiencia?: string
-  reclamante_foi_testemunha?: boolean
-  troca_direta?: boolean
-  triangulacao_confirmada?: boolean
-  prova_emprestada?: boolean
-  classificacao_final?: string
-  score_risco?: number
   observacoes?: string
 }
 
@@ -80,6 +71,115 @@ function decodeJWT(token: string) {
   }
 }
 
+// Header mapping function (simplificada para edge function)
+function mapHeadersAdvanced(headers: string[]): HeaderMappingResult {
+  const result: HeaderMappingResult = {
+    requiredFields: {},
+    optionalFields: {},
+    unmappedFields: [],
+    suggestions: []
+  };
+
+  const mappings = {
+    'cnj': 'cnj',
+    'reclamante_limpo': 'reclamante_limpo', 
+    'reclamante_nome': 'reclamante_nome',
+    'reu_nome': 'reu_nome',
+    'comarca': 'comarca',
+    'tribunal': 'tribunal',
+    'vara': 'vara',
+    'fase': 'fase',
+    'status': 'status',
+    'observacoes': 'observacoes',
+    'data_audiencia': 'data_audiencia'
+  };
+
+  for (let i = 0; i < headers.length; i++) {
+    const header = headers[i];
+    const normalized = header.toLowerCase().trim().replace(/[^a-z0-9_]/g, '_');
+    let mapped = false;
+
+    // Exact match (case-insensitive)
+    for (const [key, value] of Object.entries(mappings)) {
+      if (key === normalized || header.toLowerCase() === key) {
+        if (['cnj', 'reclamante_limpo', 'reclamante_nome', 'reu_nome'].includes(value)) {
+          result.requiredFields[value] = i;
+        } else {
+          result.optionalFields[value] = i;
+        }
+        mapped = true;
+        break;
+      }
+    }
+
+    // Fuzzy matching
+    if (!mapped) {
+      if (normalized.includes('cnj') && !normalized.startsWith('cnj_')) {
+        result.requiredFields.cnj = i;
+        mapped = true;
+      } else if (normalized.includes('reclamante')) {
+        if (normalized.includes('limpo')) {
+          result.requiredFields.reclamante_limpo = i;
+        } else {
+          result.requiredFields.reclamante_nome = i;
+        }
+        mapped = true;
+      } else if (normalized.includes('reu') || normalized.includes('réu')) {
+        result.requiredFields.reu_nome = i;
+        mapped = true;
+      } else if (normalized.includes('comarca')) {
+        result.optionalFields.comarca = i;
+        mapped = true;
+      }
+    }
+
+    if (!mapped) {
+      result.unmappedFields.push(header);
+    }
+  }
+
+  return result;
+}
+
+// Utility functions for validation
+function sanitizeTextAdvanced(value: any): ValidationResult {
+  if (value === null || value === undefined) {
+    return { isValid: false, error: 'Campo vazio' };
+  }
+  
+  const text = String(value).trim();
+  if (text.length === 0) {
+    return { isValid: false, error: 'Campo vazio' };
+  }
+  
+  return { isValid: true, normalizedValue: text };
+}
+
+function validateCNJAdvanced(value: any): ValidationResult {
+  if (!value) {
+    return { isValid: false, error: 'CNJ não informado' };
+  }
+  
+  const digits = String(value).replace(/\D/g, '');
+  
+  if (digits.length !== 20) {
+    return { 
+      isValid: false, 
+      error: `CNJ deve ter 20 dígitos (encontrados: ${digits.length})`,
+      warning: digits.length > 10 ? 'CNJ próximo ao formato correto' : undefined
+    };
+  }
+  
+  return { isValid: true, normalizedValue: digits };
+}
+
+function checkDuplicateCNJAdvanced(cnjDigits: string, duplicateSet: Set<string>): ValidationResult {
+  if (duplicateSet.has(cnjDigits)) {
+    return { isValid: false, error: 'CNJ duplicado no arquivo' };
+  }
+  
+  duplicateSet.add(cnjDigits);
+  return { isValid: true };
 serve(async (req) => {
   console.log('📊 Base Upload Function Started');
   console.log('Method:', req.method, 'URL:', req.url);
@@ -263,16 +363,17 @@ async function processFileInChunks(
       row: 0,
       column: 'cnj',
       type: 'error',
-      message: 'Coluna CNJ é obrigatória'
+      message: 'Coluna CNJ é obrigatória. Use exatamente "CNJ" (case-insensitive)'
     });
   }
   
-  if (!headerMappingResult.requiredFields.reclamante_nome) {
+  // Compatível com template: aceita "Reclamante_Limpo" ou "Reclamante_Nome"
+  if (!headerMappingResult.requiredFields.reclamante_limpo && !headerMappingResult.requiredFields.reclamante_nome) {
     errors.push({
       row: 0,
-      column: 'reclamante_nome',
+      column: 'reclamante',
       type: 'error',
-      message: 'Coluna "Nome do Reclamante" é obrigatória'
+      message: 'Coluna "Reclamante_Limpo" ou "Reclamante_Nome" é obrigatória'
     });
   }
   
@@ -370,9 +471,12 @@ async function processFileInChunks(
       console.error('⚠️ Storage upload error:', storageError);
     }
 
-    // Process rows in chunks to avoid memory issues
-    const batchData: ProcessedRow[] = [];
+    // Usar staging table para processamento robusto
+    const stagingData: any[] = [];
     const duplicateCNJs = new Set<string>();
+    
+    // Limpar staging antes de começar
+    await supabase.rpc('cleanup_staging');
     
     for (let row = 1; row <= totalRows; row++) {
       const rowData: any[] = [];
@@ -385,11 +489,23 @@ async function processFileInChunks(
       try {
         const processedRow = await processRow(rowData, headerMap, row + 1, errors, warnings, duplicateCNJs);
         if (processedRow) {
-          batchData.push({
-            ...processedRow,
-            org_id: orgId,
-            version_id: version.id
-          } as any);
+          // Preparar dados para staging (mapeamento correto)
+          stagingData.push({
+            cnj: processedRow.cnj,
+            cnj_digits: processedRow.cnj_digits || processedRow.cnj_normalizado, // Compatibilidade
+            reclamante_limpo: processedRow.reclamante_limpo || processedRow.reclamante_nome, // Mapeamento
+            reu_nome: processedRow.reu_nome,
+            comarca: processedRow.comarca,
+            tribunal: processedRow.tribunal,
+            vara: processedRow.vara,
+            fase: processedRow.fase,
+            status: processedRow.status,
+            reclamante_cpf: processedRow.reclamante_cpf,
+            data_audiencia: processedRow.data_audiencia,
+            observacoes: processedRow.observacoes,
+            row_number: row,
+            import_job_id: version.id
+          });
           validRows++;
         }
       } catch (error: any) {
@@ -403,27 +519,27 @@ async function processFileInChunks(
       
       processedCount++;
       
-      // Insert batch when it reaches chunk size or we're at the end
-      if (batchData.length >= CHUNK_SIZE || row === totalRows) {
-        if (batchData.length > 0) {
-          console.log(`💾 Inserting batch of ${batchData.length} records...`);
+      // Insert batch em staging quando atingir chunk size
+      if (stagingData.length >= CHUNK_SIZE || row === totalRows) {
+        if (stagingData.length > 0) {
+          console.log(`💾 Inserting staging batch of ${stagingData.length} records...`);
           
-          const { error: insertError } = await supabase
-            .from('processos')
-            .insert(batchData);
+          const { error: stagingError } = await supabase
+            .from('stg_processos')
+            .insert(stagingData);
 
-          if (insertError) {
-            console.error(`❌ Batch insert error:`, insertError);
-            throw new Error(`Failed to insert data batch: ${insertError.message}`);
+          if (stagingError) {
+            console.error(`❌ Staging insert error:`, stagingError);
+            throw new Error(`Failed to insert staging batch: ${stagingError.message}`);
           }
           
-          batchData.length = 0; // Clear the batch
+          stagingData.length = 0; // Clear the batch
         }
       }
       
-      // Log progress every 2000 rows
-      if (processedCount % 2000 === 0) {
-        console.log(`📊 Progress: ${processedCount}/${totalRows} rows processed`);
+      // Log progress every 500 rows for better feedback
+      if (processedCount % 500 === 0) {
+        console.log(`📊 Progress: ${processedCount}/${totalRows} rows processed (${Math.round((processedCount/totalRows)*100)}%)`);
       }
     }
 
@@ -447,6 +563,24 @@ async function processFileInChunks(
     if (fileError) {
       throw new Error(`Failed to save file record: ${fileError.message}`);
     }
+
+    // Processar staging → final usando função robusta
+    console.log('🔄 Processing staging to final...');
+    const { data: upsertResult, error: upsertError } = await supabase
+      .rpc('upsert_staging_to_final', { 
+        p_org_id: orgId, 
+        p_import_job_id: version.id 
+      });
+
+    if (upsertError) {
+      throw new Error(`Failed to upsert staging data: ${upsertError.message}`);
+    }
+
+    const { inserted_count, updated_count } = upsertResult[0] || { inserted_count: 0, updated_count: 0 };
+    console.log(`✅ Upsert completed: ${inserted_count} inserted, ${updated_count} updated`);
+
+    // Limpar staging após sucesso
+    await supabase.rpc('cleanup_staging', { p_import_job_id: version.id });
 
     // Update version status to PUBLISHED and set as active
     await supabase
@@ -670,37 +804,45 @@ async function processRow(
 
   if (!hasErrors && cnjValidation.normalizedValue) {
     processedRow.cnj = String(row[headerMap.cnj]);
-    processedRow.cnj_normalizado = cnjValidation.normalizedValue;
+    processedRow.cnj_digits = cnjValidation.normalizedValue; // Usar cnj_digits ao invés de cnj_normalizado
 
-    // Check for duplicate CNJ
-    if (duplicateCNJs) {
-      const duplicateCheck = checkDuplicateCNJAdvanced(cnjValidation.normalizedValue, duplicateCNJs);
-      if (!duplicateCheck.isValid) {
-        errors.push({
-          row: rowNumber,
-          column: 'cnj',
-          type: 'error',
-          message: duplicateCheck.error || 'CNJ duplicado',
-          value: String(row[headerMap.cnj])
-        });
-        hasErrors = true;
+      // Check for duplicate CNJ
+      if (duplicateCNJs) {
+        const duplicateCheck = checkDuplicateCNJAdvanced(cnjValidation.normalizedValue, duplicateCNJs);
+        if (!duplicateCheck.isValid) {
+          errors.push({
+            row: rowNumber,
+            column: 'cnj',
+            type: 'error',
+            message: duplicateCheck.error || 'CNJ duplicado',
+            value: String(row[headerMap.cnj])
+          });
+          hasErrors = true;
+        }
       }
     }
-  }
 
-  // Validate reclamante_nome (required)
-  const reclNomeValidation = sanitizeTextAdvanced(row[headerMap.reclamante_nome]);
-  if (!reclNomeValidation.normalizedValue) {
+  // Validate reclamante_nome (required) - compatível com ambos os campos
+  let reclamanteValidation: any = null;
+  if (headerMap.reclamante_limpo !== undefined) {
+    reclamanteValidation = sanitizeTextAdvanced(row[headerMap.reclamante_limpo]);
+  } else if (headerMap.reclamante_nome !== undefined) {
+    reclamanteValidation = sanitizeTextAdvanced(row[headerMap.reclamante_nome]);
+  }
+  
+  if (!reclamanteValidation || !reclamanteValidation.normalizedValue) {
     errors.push({
       row: rowNumber,
-      column: 'reclamante_nome',
+      column: 'reclamante',
       type: 'error',
-      message: 'Nome do reclamante é obrigatório',
-      value: String(row[headerMap.reclamante_nome] || '')
+      message: 'Nome do reclamante é obrigatório (use Reclamante_Limpo ou Reclamante_Nome)',
+      value: String(row[headerMap.reclamante_limpo || headerMap.reclamante_nome] || '')
     });
     hasErrors = true;
   } else {
-    processedRow.reclamante_nome = reclNomeValidation.normalizedValue;
+    // Mapear para o campo correto no processedRow
+    processedRow.reclamante_limpo = reclamanteValidation.normalizedValue;
+    processedRow.reclamante_nome = reclamanteValidation.normalizedValue;
   }
 
   // Validate reu_nome (required)
