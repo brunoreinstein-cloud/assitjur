@@ -85,23 +85,23 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
   const [loading, setLoading] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [step, setStep] = useState<'preview' | 'confirm' | 'running'>('preview');
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (open && user?.user_metadata?.organization_id) {
+    if (open && profile?.organization_id) {
       loadPreview();
     }
-  }, [open, user]);
+  }, [open, profile]);
 
   const loadPreview = async () => {
-    if (!user?.user_metadata?.organization_id) return;
+    if (!profile?.organization_id) return;
     
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('database-cleanup', {
         body: {
-          orgId: user.user_metadata.organization_id,
+          orgId: profile.organization_id,
           preview: true
         }
       });
@@ -140,7 +140,7 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
   };
 
   const handleExecuteCleanup = async () => {
-    if (!user?.user_metadata?.organization_id) return;
+    if (!profile?.organization_id) return;
 
     const selectedOperations = operations.filter(op => op.enabled).map(op => op.id);
     
@@ -159,7 +159,7 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
     try {
       const { data, error } = await supabase.functions.invoke('database-cleanup', {
         body: {
-          orgId: user.user_metadata.organization_id,
+          orgId: profile.organization_id,
           operations: selectedOperations
         }
       });
