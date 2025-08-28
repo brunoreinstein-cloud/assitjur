@@ -87,23 +87,7 @@ function sanitizeTextAdvanced(value: any): ValidationResult {
   return { isValid: true, normalizedValue: text };
 }
 
-function validateCNJAdvanced(value: any): ValidationResult {
-  if (!value) {
-    return { isValid: false, error: 'CNJ não informado' };
-  }
-  
-  const digits = String(value).replace(/\D/g, '');
-  
-  if (digits.length !== 20) {
-    return { 
-      isValid: false, 
-      error: `CNJ deve ter 20 dígitos (encontrados: ${digits.length})`,
-      warning: digits.length > 10 ? 'CNJ próximo ao formato correto' : undefined
-    };
-  }
-  
-  return { isValid: true, normalizedValue: digits };
-}
+// CNJ validation will be handled by the advanced function later in the file
 
 function checkDuplicateCNJAdvanced(cnjDigits: string, duplicateSet: Set<string>): ValidationResult {
   if (duplicateSet.has(cnjDigits)) {
