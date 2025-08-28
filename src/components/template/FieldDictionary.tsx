@@ -9,35 +9,61 @@ export function FieldDictionary() {
   const processoFields = dicionarioFields.filter(f => f.Aba === 'Por Processo');
   const testemunhaFields = dicionarioFields.filter(f => f.Aba === 'Por Testemunha');
 
-  const renderFieldTable = (fields: typeof dicionarioFields) => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Campo</TableHead>
-          <TableHead>Tipo</TableHead>
-          <TableHead>Obrigatório</TableHead>
-          <TableHead>Regra</TableHead>
-          <TableHead>Exemplo</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {fields.map((field, index) => (
-          <TableRow key={index}>
-            <TableCell className="font-medium">{field.Campo}</TableCell>
-            <TableCell className="text-muted-foreground">{field.Tipo}</TableCell>
-            <TableCell>
-              <Badge variant={field.Obrigatorio === 'Sim' ? 'destructive' : 'secondary'}>
-                {field.Obrigatorio}
-              </Badge>
-            </TableCell>
-            <TableCell className="text-sm">{field.Regra}</TableCell>
-            <TableCell className="text-sm font-mono bg-muted/50 rounded px-2 py-1">
-              {field.Exemplo}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+  const renderFieldTable = (fields: typeof dicionarioFields, title: string, description: string) => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          {title === 'Aba "Por Processo"' ? '⚖️' : '👤'}
+          {title}
+        </CardTitle>
+        <CardDescription>
+          {description}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-32">Campo</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead className="text-center">Obrigatório</TableHead>
+                <TableHead>Regra de Validação</TableHead>
+                <TableHead className="min-w-40">Exemplo</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {fields.map((field, index) => (
+                <TableRow key={index}>
+                  <TableCell className="font-mono text-sm font-medium">
+                    {field.Campo}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="secondary" className="text-xs">
+                      {field.Tipo}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge 
+                      variant={field.Obrigatorio === 'Sim' ? 'destructive' : 'outline'}
+                      className="text-xs"
+                    >
+                      {field.Obrigatorio}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm max-w-xs">
+                    {field.Regra}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground break-all">
+                    {field.Exemplo}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
   );
 
   return (
@@ -45,7 +71,7 @@ export function FieldDictionary() {
       <CardHeader>
         <CardTitle>Dicionário de Campos</CardTitle>
         <CardDescription>
-          Especificação completa dos campos aceitos pelo importador
+          Especificações técnicas para cada campo nas abas do template com validação rigorosa
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -54,17 +80,19 @@ export function FieldDictionary() {
             <TabsTrigger value="processo">Por Processo</TabsTrigger>
             <TabsTrigger value="testemunha">Por Testemunha</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="processo" className="mt-4">
-            <div className="rounded-md border">
-              {renderFieldTable(processoFields)}
-            </div>
+          <TabsContent value="processo" className="space-y-4 mt-6">
+            {renderFieldTable(
+              processoFields, 
+              'Aba "Por Processo"',
+              'Dados de processos judiciais com validação rigorosa de CNJ e campos obrigatórios'
+            )}
           </TabsContent>
-          
-          <TabsContent value="testemunha" className="mt-4">
-            <div className="rounded-md border">
-              {renderFieldTable(testemunhaFields)}
-            </div>
+          <TabsContent value="testemunha" className="space-y-4 mt-6">
+            {renderFieldTable(
+              testemunhaFields, 
+              'Aba "Por Testemunha"',
+              'Dados de testemunhas com lista de CNJs dos processos onde atuaram como testemunhas'
+            )}
           </TabsContent>
         </Tabs>
       </CardContent>

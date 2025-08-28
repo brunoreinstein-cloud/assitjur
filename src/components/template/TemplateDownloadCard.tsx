@@ -8,6 +8,7 @@ interface TemplateDownloadCardProps {
   downloadUrl: string;
   icon: 'xlsx' | 'csv';
   filename: string;
+  recommended?: boolean;
 }
 
 export function TemplateDownloadCard({
@@ -15,7 +16,8 @@ export function TemplateDownloadCard({
   description,
   downloadUrl,
   icon,
-  filename
+  filename,
+  recommended = false
 }: TemplateDownloadCardProps) {
   const handleDownload = () => {
     const link = document.createElement('a');
@@ -26,31 +28,36 @@ export function TemplateDownloadCard({
     document.body.removeChild(link);
   };
 
-  const IconComponent = icon === 'xlsx' ? FileSpreadsheet : FileText;
-
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start gap-3">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <IconComponent className="h-5 w-5 text-primary" />
-          </div>
-          <div className="flex-1">
-            <CardTitle className="text-lg">{title}</CardTitle>
-            <CardDescription className="text-sm mt-1">
-              {description}
-            </CardDescription>
+    <Card className={`relative transition-all hover:shadow-lg ${recommended ? 'border-primary' : ''}`}>
+      {recommended && (
+        <div className="absolute -top-2 -right-2">
+          <div className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full font-medium">
+            Recomendado
           </div>
         </div>
+      )}
+      <CardHeader>
+        <CardTitle className="flex items-center gap-3">
+          {icon === 'xlsx' ? (
+            <FileSpreadsheet className="h-6 w-6 text-green-600" />
+          ) : (
+            <FileText className="h-6 w-6 text-blue-600" />
+          )}
+          {title}
+        </CardTitle>
+        <CardDescription className="text-sm">
+          {description}
+        </CardDescription>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent>
         <Button 
-          onClick={handleDownload}
+          onClick={handleDownload} 
           className="w-full"
-          aria-label={`Baixar ${title}`}
+          variant={recommended ? 'default' : 'outline'}
         >
           <Download className="h-4 w-4 mr-2" />
-          Download
+          Baixar {filename}
         </Button>
       </CardContent>
     </Card>

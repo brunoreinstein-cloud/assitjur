@@ -159,7 +159,7 @@ export const dicionarioFields: DicionarioField[] = [
     Campo: 'CNJ',
     Tipo: 'texto (com máscara)',
     Obrigatorio: 'Sim',
-    Regra: '20 dígitos com dígitos verificadores válidos',
+    Regra: 'Exatamente 20 dígitos após remover pontuação. Dígitos verificadores devem ser válidos',
     Exemplo: correctCNJs[0]
   },
   {
@@ -167,47 +167,79 @@ export const dicionarioFields: DicionarioField[] = [
     Campo: 'Reclamante_Limpo',
     Tipo: 'texto',
     Obrigatorio: 'Sim',
-    Regra: 'Nome do reclamante',
-    Exemplo: 'Ana Lima'
+    Regra: 'Nome completo do reclamante. Não pode estar vazio ou conter apenas espaços',
+    Exemplo: 'João Silva Santos'
   },
   {
     Aba: 'Por Processo',
     Campo: 'Reu_Nome',
     Tipo: 'texto',
     Obrigatorio: 'Sim',
-    Regra: 'Nome da empresa/ré',
-    Exemplo: 'Empresa X S.A.'
+    Regra: 'Nome da empresa ou pessoa ré. Não pode estar vazio ou conter apenas espaços',
+    Exemplo: 'Empresa ABC Ltda'
+  },
+  {
+    Aba: 'Por Processo',
+    Campo: 'UF',
+    Tipo: 'texto',
+    Obrigatorio: 'Não',
+    Regra: 'Sigla do estado (2 letras). Campo opcional aceito pelo importador',
+    Exemplo: 'SP'
+  },
+  {
+    Aba: 'Por Processo',
+    Campo: 'Comarca',
+    Tipo: 'texto',
+    Obrigatorio: 'Não',
+    Regra: 'Nome da comarca. Campo opcional aceito pelo importador',
+    Exemplo: 'São Paulo'
+  },
+  {
+    Aba: 'Por Processo',
+    Campo: 'Fase',
+    Tipo: 'texto',
+    Obrigatorio: 'Não',
+    Regra: 'Fase processual atual. Campo opcional aceito pelo importador',
+    Exemplo: 'Conhecimento'
+  },
+  {
+    Aba: 'Por Processo',
+    Campo: 'Status',
+    Tipo: 'texto',
+    Obrigatorio: 'Não',
+    Regra: 'Status do processo. Campo opcional aceito pelo importador',
+    Exemplo: 'Em andamento'
   },
   {
     Aba: 'Por Testemunha',
     Campo: 'Nome_Testemunha',
     Tipo: 'texto',
     Obrigatorio: 'Sim',
-    Regra: 'Nome completo da testemunha',
-    Exemplo: 'João Pereira'
+    Regra: 'Nome completo da testemunha. Não pode estar vazio ou conter apenas espaços',
+    Exemplo: 'Roberto Silva Mendes'
   },
   {
     Aba: 'Por Testemunha',
     Campo: 'CNJs_Como_Testemunha',
     Tipo: 'lista (string)',
     Obrigatorio: 'Sim',
-    Regra: 'Aceita JSON-like, ; ou ,',
+    Regra: 'Lista de CNJs onde atuou como testemunha. Aceita formatos: JSON-like, separado por ; ou ,',
     Exemplo: `['${correctCNJs[0]}','${correctCNJs[1]}']`
   },
   {
     Aba: 'Por Testemunha',
     Campo: 'Reclamante_Nome',
     Tipo: 'texto',
-    Obrigatorio: 'Opcional',
-    Regra: 'Join automático pela aba Por Processo',
-    Exemplo: '(vazio)'
+    Obrigatorio: 'Não',
+    Regra: 'Preenchimento automático via join com aba Por Processo. Pode ficar vazio',
+    Exemplo: '(vazio - preenchimento automático)'
   },
   {
     Aba: 'Por Testemunha',
     Campo: 'Reu_Nome',
     Tipo: 'texto',
-    Obrigatorio: 'Opcional',
-    Regra: 'Pode ser auto-preenchido pelo "Réu padrão"',
-    Exemplo: '(vazio)'
+    Obrigatorio: 'Não',
+    Regra: 'Preenchimento automático via configuração de "Réu padrão" ou join. Pode ficar vazio',
+    Exemplo: '(vazio - preenchimento automático)'
   }
 ];
