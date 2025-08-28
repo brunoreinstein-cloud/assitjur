@@ -36,80 +36,8 @@ import { ExportCsvButton } from "@/components/mapa/ExportCsvButton";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { fetchPorProcesso, fetchPorTestemunha } from "@/lib/supabase";
 import { Processo, Testemunha, StatsData, TabType } from "@/types/mapa";
-
-// Mock data for demonstration - will be replaced by real API calls
-const mockProcessoData: Processo[] = [
-  {
-    cnj: "0001234-56.2024.5.01.0001",
-    uf: "RJ", 
-    comarca: "Rio de Janeiro",
-    fase: "Instrução",
-    status: "Ativo",
-    reclamante_limpo: "Ana Lima",
-    qtd_total_depos_unicos: 2,
-    classificacao_final: "Risco Médio",
-    triangulacao_confirmada: true,
-    troca_direta: false,
-    contem_prova_emprestada: true,
-    todas_testemunhas: ["João Pereira", "Beatriz Nunes"]
-  },
-  {
-    cnj: "0009876-12.2023.5.04.0002",
-    uf: "RS",
-    comarca: "Porto Alegre", 
-    fase: "Recurso",
-    status: "Ativo",
-    reclamante_limpo: "Carlos Souza",
-    qtd_total_depos_unicos: 1,
-    classificacao_final: "Risco Alto",
-    triangulacao_confirmada: true,
-    troca_direta: true,
-    contem_prova_emprestada: false,
-    todas_testemunhas: ["Rafael Gomes"]
-  },
-  {
-    cnj: "0012345-00.2022.5.02.0003",
-    uf: "SP",
-    comarca: "São Paulo",
-    fase: "Sentença", 
-    status: "Encerrado",
-    reclamante_limpo: "Marina Rocha",
-    qtd_total_depos_unicos: 0,
-    classificacao_final: "Baixo",
-    triangulacao_confirmada: false,
-    troca_direta: false,
-    contem_prova_emprestada: false,
-    todas_testemunhas: []
-  }
-];
-
-const mockTestemunhaData: Testemunha[] = [
-  {
-    nome_testemunha: "João Pereira",
-    qtd_depoimentos: 4,
-    foi_testemunha_em_ambos_polos: true,
-    ja_foi_reclamante: false,
-    classificacao_estrategica: "Atenção",
-    cnjs_como_testemunha: ["0001234-56.2024.5.01.0001", "0009876-12.2023.5.04.0002"]
-  },
-  {
-    nome_testemunha: "Beatriz Nunes", 
-    qtd_depoimentos: 2,
-    foi_testemunha_em_ambos_polos: false,
-    ja_foi_reclamante: true,
-    classificacao_estrategica: "Observação",
-    cnjs_como_testemunha: ["0001234-56.2024.5.01.0001"]
-  },
-  {
-    nome_testemunha: "Rafael Gomes",
-    qtd_depoimentos: 6,
-    foi_testemunha_em_ambos_polos: true, 
-    ja_foi_reclamante: false,
-    classificacao_estrategica: "Crítico",
-    cnjs_como_testemunha: ["0009876-12.2023.5.04.0002"]
-  }
-];
 
 const Index = () => {
   const navigate = useNavigate();
@@ -190,18 +118,37 @@ const Index = () => {
     setSearchParams({ tab: newTab });
   };
 
-  // Load mock data - simulate API call
+  // Load real data from Supabase
   useEffect(() => {
     if (!user) return;
 
-    setIsLoading(true);
-    setError(false);
-    
-    // Simulate API call delay
-    const timer = setTimeout(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      setError(false);
+      
       try {
-        setProcessos(mockProcessoData);
-        setTestemunhas(mockTestemunhaData);
+        // Get filters from the store (in real implementation, you'd use filter states)
+        const processosParams = {
+          page: 1,
+          pageSize: 1000, // Load all data for now
+          filters: {} // Empty filters for initial load
+        };
+        
+        const testemunhasParams = {
+          page: 1,
+          pageSize: 1000, // Load all data for now
+          filters: {} // Empty filters for initial load
+        };
+
+        // Fetch both datasets in parallel
+        const [processosResult, testemunhasResult] = await Promise.all([
+          fetchPorProcesso(processosParams),
+          fetchPorTestemunha(testemunhasParams)
+        ]);
+
+        // Update store with real data
+        setProcessos(processosResult.data);
+        setTestemunhas(testemunhasResult.data);
         
         // Set lastUpdate only when data finishes loading
         if (isFirstLoad) {
@@ -210,20 +157,27 @@ const Index = () => {
         }
         
         setIsLoading(false);
+        
+        console.log('Data loaded successfully:', {
+          processos: processosResult.data.length,
+          testemunhas: testemunhasResult.data.length
+        });
+        
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
-        setError(true, 'Falha ao carregar dados. Tente novamente.');
+        setError(true, 'Falha ao carregar dados. Verifique sua conexão.');
         setIsLoading(false);
         
         toast({
           title: "Erro ao carregar dados",
-          description: "Não foi possível carregar os dados. Tente novamente.",
+          description: "Não foi possível carregar os dados do Supabase. Tente novamente.",
           variant: "destructive",
         });
       }
-    }, 500);
+    };
 
-    return () => clearTimeout(timer);
+    loadData();
+    
   }, [user, setProcessos, setTestemunhas, setIsLoading, setError, setLastUpdate, isFirstLoad, toast]);
 
   // Show loading during auth check

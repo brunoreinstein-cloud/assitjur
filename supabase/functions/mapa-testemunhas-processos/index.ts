@@ -46,15 +46,17 @@ serve(async (req) => {
 
     const orgId = profile.organization_id
 
-    // Build query
+    // Build query for processos table
     let query = supabase
-      .from('hubjuria.por_processo')
+      .from('processos')
       .select('*', { count: 'exact' })
       .eq('org_id', orgId)
+      .is('deleted_at', null)
 
     // Apply filters
     if (filters.uf) {
-      query = query.eq('uf', filters.uf)
+      // Extract UF from comarca or tribunal field if available
+      query = query.or(`comarca.ilike.%${filters.uf}%,tribunal.ilike.%${filters.uf}%`)
     }
 
     if (filters.status) {
@@ -66,15 +68,12 @@ serve(async (req) => {
     }
 
     if (filters.search) {
-      query = query.or(`cnj.ilike.%${filters.search}%,comarca.ilike.%${filters.search}%,reclamante_limpo.ilike.%${filters.search}%`)
+      query = query.or(`cnj.ilike.%${filters.search}%,comarca.ilike.%${filters.search}%,reclamante_nome.ilike.%${filters.search}%`)
     }
 
-    if (filters.qtdDeposMin !== undefined) {
-      query = query.gte('qtd_total_depos_unicos', filters.qtdDeposMin)
-    }
-
-    if (filters.qtdDeposMax !== undefined) {
-      query = query.lte('qtd_total_depos_unicos', filters.qtdDeposMax)
+    // For witness count filters, we'll filter based on array length
+    if (filters.qtdDeposMin !== undefined || filters.qtdDeposMax !== undefined) {
+      // This will be handled in post-processing since PostgreSQL array length filtering is complex
     }
 
     // Apply pagination
@@ -91,19 +90,82 @@ serve(async (req) => {
       throw error
     }
 
+    // Transform processos data to match PorProcesso type
+    const transformedData = (data || []).map(processo => ({
+      cnj: processo.cnj,
+      status: processo.status,
+      uf: extractUFFromField(processo.comarca) || extractUFFromField(processo.tribunal),
+      comarca: processo.comarca,
+      fase: processo.fase,
+      reclamante_limpo: processo.reclamante_nome,
+      advogados_parte_ativa: processo.advogados_ativo || [],
+      testemunhas_ativo_limpo: processo.testemunhas_ativo || [],
+      testemunhas_passivo_limpo: processo.testemunhas_passivo || [],
+      todas_testemunhas: [
+        ...(processo.testemunhas_ativo || []),
+        ...(processo.testemunhas_passivo || [])
+      ].filter((name, index, arr) => arr.indexOf(name) === index), // Remove duplicates
+      reclamante_foi_testemunha: processo.reclamante_foi_testemunha || false,
+      qtd_vezes_reclamante_foi_testemunha: 0, // Would need cross-reference calculation
+      cnjs_em_que_reclamante_foi_testemunha: [],
+      reclamante_testemunha_polo_passivo: false,
+      cnjs_passivo: [],
+      troca_direta: processo.troca_direta || false,
+      desenho_troca_direta: null,
+      cnjs_troca_direta: [],
+      triangulacao_confirmada: processo.triangulacao_confirmada || false,
+      desenho_triangulacao: null,
+      cnjs_triangulacao: [],
+      testemunha_do_reclamante_ja_foi_testemunha_antes: false,
+      qtd_total_depos_unicos: calculateUniqueDepositions(processo.testemunhas_ativo, processo.testemunhas_passivo),
+      cnjs_depos_unicos: [],
+      contem_prova_emprestada: processo.prova_emprestada || false,
+      testemunhas_prova_emprestada: [],
+      classificacao_final: processo.classificacao_final || 'Não Classificado',
+      insight_estrategico: null,
+      org_id: processo.org_id,
+      created_at: processo.created_at,
+      updated_at: processo.updated_at,
+    }))
+
+    // Apply post-processing filters
+    let filteredData = transformedData
+    if (filters.qtdDeposMin !== undefined) {
+      filteredData = filteredData.filter(p => p.qtd_total_depos_unicos >= filters.qtdDeposMin)
+    }
+    if (filters.qtdDeposMax !== undefined) {
+      filteredData = filteredData.filter(p => p.qtd_total_depos_unicos <= filters.qtdDeposMax)
+    }
+
     return new Response(
       JSON.stringify({
-        data: data || [],
-        count: count || 0,
+        data: filteredData,
+        count: filteredData.length,
         page,
         limit,
-        totalPages: Math.ceil((count || 0) / limit)
+        totalPages: Math.ceil(filteredData.length / limit)
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       },
     )
+
+// Helper functions
+function extractUFFromField(field) {
+  if (!field) return null
+  // Simple UF extraction - could be improved with better logic
+  const ufMatch = field.match(/\b(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b/i)
+  return ufMatch ? ufMatch[1].toUpperCase() : null
+}
+
+function calculateUniqueDepositions(testemunhasAtivo, testemunhasPassivo) {
+  const allTestemunhas = [
+    ...(testemunhasAtivo || []),
+    ...(testemunhasPassivo || [])
+  ]
+  return new Set(allTestemunhas).size
+}
 
   } catch (error) {
     console.error('Error:', error)
