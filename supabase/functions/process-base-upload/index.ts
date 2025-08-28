@@ -180,6 +180,8 @@ function checkDuplicateCNJAdvanced(cnjDigits: string, duplicateSet: Set<string>)
   
   duplicateSet.add(cnjDigits);
   return { isValid: true };
+}
+
 serve(async (req) => {
   console.log('📊 Base Upload Function Started');
   console.log('Method:', req.method, 'URL:', req.url);
