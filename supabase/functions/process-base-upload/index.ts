@@ -75,16 +75,7 @@ function decodeJWT(token: string) {
 
 // Text sanitization will be handled by the advanced function later in the file
 
-// CNJ validation will be handled by the advanced function later in the file
-
-function checkDuplicateCNJAdvanced(cnjDigits: string, duplicateSet: Set<string>): ValidationResult {
-  if (duplicateSet.has(cnjDigits)) {
-    return { isValid: false, error: 'CNJ duplicado no arquivo' };
-  }
-  
-  duplicateSet.add(cnjDigits);
-  return { isValid: true };
-}
+// CNJ validation and duplicate checking will be handled by the advanced functions later in the file
 
 serve(async (req) => {
   console.log('📊 Base Upload Function Started');
