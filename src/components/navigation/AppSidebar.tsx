@@ -79,20 +79,20 @@ const adminNavItems = [
   {
     title: 'Base de Dados',
     url: '/admin/base',
+    icon: Database,
+    description: 'Visualizar e explorar dados'
+  },
+  {
+    title: 'Importação de Dados',
+    url: '/admin/base-import',
     icon: Upload,
-    description: 'Importar e gerir dados'
+    description: 'Upload e importação'
   },
   {
     title: 'Versões',
     url: '/admin/versoes',
     icon: History,
     description: 'Histórico e rollback'
-  },
-  {
-    title: 'Explorar Dados',
-    url: '/admin/dados',
-    icon: Database,
-    description: 'Visualizar dados'
   },
   {
     title: 'Organização',

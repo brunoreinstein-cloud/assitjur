@@ -28,7 +28,7 @@ import Import from "./pages/Import";
 import TemplatePage from "./pages/TemplatePage";
 import Versions from "./pages/admin/Versions";
 import Organization from "./pages/admin/Organization";
-import DataExplorer from "./pages/admin/DataExplorer";
+
 import SystemConfig from "./pages/admin/SystemConfig";
 import OpenAI from "./pages/admin/OpenAI";
 import OpenAIKeys from "./pages/admin/openai/Keys";
@@ -102,7 +102,6 @@ const App = () => (
                         <Route path="/import" element={<Import />} />
                         <Route path="/admin/versoes" element={<Versions />} />
                         <Route path="/admin/org" element={<Organization />} />
-                        <Route path="/admin/dados" element={<DataExplorer />} />
                         <Route path="/admin/logs" element={<Logs />} />
                         <Route path="/admin/config" element={<SystemConfig />} />
                         
