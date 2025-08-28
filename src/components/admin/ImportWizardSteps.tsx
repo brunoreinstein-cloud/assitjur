@@ -116,7 +116,7 @@ const ImportWizardSteps: React.FC<ImportWizardStepsProps> = ({
                   {getStepIcon(step, status)}
                 </div>
                 <div className="mt-3 text-center">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center gap-2">
                     <span className={`text-sm font-medium ${
                       isActive ? 'text-foreground' : 
                       isCompleted ? 'text-green-700 dark:text-green-300' : 
@@ -125,11 +125,11 @@ const ImportWizardSteps: React.FC<ImportWizardStepsProps> = ({
                     }`}>
                       {step.title}
                     </span>
-                    {getStepBadge(step.id, status)}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  {getStepBadge(step.id, status)}
+                  <div className="text-xs text-muted-foreground mt-1">
                     {step.description}
-                  </p>
+                  </div>
                 </div>
               </div>
               

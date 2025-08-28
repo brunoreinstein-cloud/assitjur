@@ -62,21 +62,26 @@ export async function normalizeAndValidate(
     // Se arquivo fornecido, processa dados reais
     if (file) {
       try {
+        console.log('📊 Processando dados reais do arquivo:', file.name);
         const normalizedResult = await normalizeSheetData(file, sheet, orgSettings);
         
         if (sheet.model === 'testemunha' && normalizedResult.testemunhas) {
           realData = normalizedResult.testemunhas;
+          console.log(`✅ ${realData.length} testemunhas carregadas do arquivo`);
         } else if (sheet.model === 'processo' && normalizedResult.processos) {
           realData = normalizedResult.processos;
+          console.log(`✅ ${realData.length} processos carregados do arquivo`);
+        }
+        
+        if (realData.length === 0) {
+          throw new Error('Nenhum dado válido encontrado no arquivo. Verifique se o arquivo contém dados nas colunas corretas.');
         }
       } catch (error) {
         console.error('Erro ao processar dados reais:', error);
-        // Fallback para dados mock se houver erro
-        realData = createMockData(sheet);
+        throw new Error(`Erro ao processar arquivo: ${error.message}`);
       }
     } else {
-      // Fallback para dados mock se arquivo não fornecido
-      realData = createMockData(sheet);
+      throw new Error('Arquivo não fornecido para validação');
     }
     
     // Aplicar correções inteligentes se habilitado
@@ -131,41 +136,7 @@ export async function normalizeAndValidate(
   };
 }
 
-/**
- * Cria dados mock para demonstração das correções
- */
-function createMockData(sheet: any): any[] {
-  const mockRows = [];
-  const rowCount = Math.min(sheet.rows || 10, 20); // Limita para demo
-  
-  for (let i = 0; i < rowCount; i++) {
-    if (sheet.model === 'processo') {
-      mockRows.push({
-        cnj: '123456789', // CNJ inválido para demonstrar correção
-        cnj_digits: '12345678901234567890',
-        reclamante_nome: 'joao silva santos', // Nome em minúscula para correção
-        reu_nome: '', // Vazio para preenchimento automático
-        data_audiencia: '31/12/2023', // Data em formato BR para correção
-        comarca: 'São Paulo',
-        tribunal: 'TRT-2',
-        vara: '1ª Vara',
-        fase: '',
-        status: ''
-      });
-    } else if (sheet.model === 'testemunha') {
-      mockRows.push({
-        cnj: '987654321', // CNJ inválido
-        cnj_digits: '98765432109876543210',
-        nome_testemunha: 'maria OLIVEIRA', // Nome em caps misto para correção
-        reclamante_nome: '', // Vazio
-        reu_nome: '',
-        data_audiencia: '2023-12-25'
-      });
-    }
-  }
-  
-  return mockRows;
-}
+// Removed createMockData - system now only processes real data
 
 /**
  * Aplica correções inteligentes aos dados normalizados
