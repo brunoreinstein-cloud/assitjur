@@ -17,10 +17,10 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { processos } = await req.json()
+    const { processos, testemunhas } = await req.json()
 
-    if (!processos || !Array.isArray(processos)) {
-      throw new Error('Missing required data: processos array')
+    if (!processos && !testemunhas) {
+      throw new Error('Missing required data: processos or testemunhas array')
     }
 
     // Get user's org_id from JWT
@@ -51,48 +51,88 @@ serve(async (req) => {
     const orgId = profile.organization_id
 
     console.log(`Processing import for org ${orgId}`)
-    console.log(`Processos: ${processos.length} rows`)
+    console.log(`Processos: ${processos?.length || 0} rows`)
+    console.log(`Testemunhas: ${testemunhas?.length || 0} rows`)
 
-    // Transform and validate data
-    const processedData = processos.map((row: any) => {
-      // Normalize CNJ
-      const cnjDigits = String(row.cnj || '').replace(/[^\d]/g, '')
+    let allProcessedData: any[] = [];
+
+    // Process processos data
+    if (processos && Array.isArray(processos)) {
+      const processedProcessos = processos.map((row: any) => {
+        // Normalize CNJ
+        const cnjDigits = String(row.cnj || '').replace(/[^\d]/g, '')
+        
+        return {
+          org_id: orgId,
+          cnj: row.cnj,
+          cnj_digits: cnjDigits.length === 20 ? cnjDigits : null,
+          cnj_normalizado: cnjDigits,
+          reclamante_nome: row.reclamante_limpo || row.reclamante_nome,
+          reu_nome: row.reu_nome,
+          comarca: row.comarca || "",
+          tribunal: row.tribunal || "",
+          vara: row.vara || "",
+          fase: row.fase || "",
+          status: row.status || "",
+          reclamante_cpf_mask: row.reclamante_cpf_mask || "",
+          data_audiencia: row.data_audiencia || null,
+          advogados_ativo: null,
+          advogados_passivo: null,
+          testemunhas_ativo: null,
+          testemunhas_passivo: null,
+          observacoes: row.observacoes || "",
+          // Set computed fields as false by default - will be calculated later
+          reclamante_foi_testemunha: false,
+          troca_direta: false,
+          triangulacao_confirmada: false,
+          prova_emprestada: false,
+          score_risco: null,
+          classificacao_final: 'Pendente'
+        }
+      })
       
-      return {
-        org_id: orgId,
-        cnj: row.cnj,
-        cnj_digits: cnjDigits.length === 20 ? cnjDigits : null,
-        cnj_normalizado: cnjDigits,
-        reclamante_nome: row.reclamante_nome || row.Reclamante || row['Nome do Reclamante'],
-        reu_nome: row.reu_nome || row.Reu || row['Nome do Réu'] || row.Reclamado,
-        comarca: row.comarca || row.Comarca,
-        tribunal: row.tribunal || row.Tribunal,
-        vara: row.vara || row.Vara,
-        fase: row.fase || row.Fase,
-        status: row.status || row.Status,
-        reclamante_cpf_mask: row.reclamante_cpf_mask || row['CPF Reclamante'],
-        data_audiencia: row.data_audiencia || row['Data Audiência'],
-        advogados_ativo: Array.isArray(row.advogados_ativo) ? row.advogados_ativo : 
-          typeof row.advogados_ativo === 'string' ? row.advogados_ativo.split(',').map((s: string) => s.trim()) : null,
-        advogados_passivo: Array.isArray(row.advogados_passivo) ? row.advogados_passivo : 
-          typeof row.advogados_passivo === 'string' ? row.advogados_passivo.split(',').map((s: string) => s.trim()) : null,
-        testemunhas_ativo: Array.isArray(row.testemunhas_ativo) ? row.testemunhas_ativo : 
-          typeof row.testemunhas_ativo === 'string' ? row.testemunhas_ativo.split(',').map((s: string) => s.trim()) : null,
-        testemunhas_passivo: Array.isArray(row.testemunhas_passivo) ? row.testemunhas_passivo : 
-          typeof row.testemunhas_passivo === 'string' ? row.testemunhas_passivo.split(',').map((s: string) => s.trim()) : null,
-        observacoes: row.observacoes || row.Observacoes,
-        // Set computed fields as false by default - will be calculated later
-        reclamante_foi_testemunha: false,
-        troca_direta: false,
-        triangulacao_confirmada: false,
-        prova_emprestada: false,
-        score_risco: null,
-        classificacao_final: 'Pendente'
-      }
-    })
+      allProcessedData = allProcessedData.concat(processedProcessos)
+    }
+
+    // Process testemunhas data - convert to processos format
+    if (testemunhas && Array.isArray(testemunhas)) {
+      const processedTestemunhas = testemunhas.map((row: any) => {
+        const cnjDigits = String(row.cnj_digits || '').replace(/[^\d]/g, '')
+        
+        return {
+          org_id: orgId,
+          cnj: row.cnj || "",
+          cnj_digits: cnjDigits.length === 20 ? cnjDigits : null,
+          cnj_normalizado: cnjDigits,
+          reclamante_nome: "Testemunha: " + (row.nome_testemunha || ""),
+          reu_nome: "Não informado",
+          comarca: "",
+          tribunal: "",
+          vara: "",
+          fase: "",
+          status: "",
+          reclamante_cpf_mask: "",
+          data_audiencia: null,
+          advogados_ativo: null,
+          advogados_passivo: null,
+          testemunhas_ativo: [row.nome_testemunha || ""],
+          testemunhas_passivo: null,
+          observacoes: `Importado como testemunha no CNJ: ${row.cnj}`,
+          // Set computed fields as false by default - will be calculated later
+          reclamante_foi_testemunha: true,
+          troca_direta: false,
+          triangulacao_confirmada: false,
+          prova_emprestada: false,
+          score_risco: null,
+          classificacao_final: 'Testemunha'
+        }
+      })
+      
+      allProcessedData = allProcessedData.concat(processedTestemunhas)
+    }
 
     // Filter valid data (must have CNJ and required fields)
-    const validData = processedData.filter(row => 
+    const validData = allProcessedData.filter(row => 
       row.cnj_digits && 
       row.cnj_digits.length === 20 && 
       row.reclamante_nome && 
@@ -103,7 +143,7 @@ serve(async (req) => {
       throw new Error('No valid records found. Check CNJ format and required fields.')
     }
 
-    console.log(`Filtered to ${validData.length} valid records out of ${processos.length}`)
+    console.log(`Filtered to ${validData.length} valid records out of ${allProcessedData.length}`)
 
     // Insert/update records in batches
     const batchSize = 100
@@ -136,7 +176,7 @@ serve(async (req) => {
       .eq('org_id', orgId)
 
     const result = {
-      stagingRows: processos.length,
+      stagingRows: allProcessedData.length,
       validRows: validData.length,
       upserts: insertedCount,
       finalCount: finalCount || 0,

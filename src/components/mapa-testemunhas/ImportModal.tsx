@@ -14,80 +14,67 @@ import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
 import { ImportResult } from "@/types/mapa-testemunhas";
 
-// Robust list parser for array fields
+// Utils
+const onlyDigits = (s: any) => String(s ?? "").replace(/\D/g, "");
+const isCNJ20 = (s: string) => onlyDigits(s).length === 20;
+
 const parseList = (v: any): string[] => {
-  const s = String(v ?? '').trim();
-  if (!s || s === '[]') return [];
-  if (s.startsWith('[') && s.endsWith(']')) { 
-    try { 
-      return JSON.parse(s.replace(/'/g,'"')).map((x:any) => String(x).trim()).filter(Boolean); 
-    } catch {} 
+  const s = String(v ?? "").trim();
+  if (!s || s === "[]") return [];
+  if (s.startsWith("[") && s.endsWith("]")) {
+    try { return JSON.parse(s.replace(/'/g, '"')).map((x: any) => String(x).trim()).filter(Boolean); } catch {}
   }
   return s.split(/[;,]/).map(x => x.trim()).filter(Boolean);
 };
 
-// Strict column mapping
-const mapColumns = (headers: string[], mode: 'testemunha' | 'processo') => {
-  const mappings: Record<string, string> = {};
-  
-  if (mode === 'testemunha') {
-    // Exact match required for testemunha mode
-    const requiredMappings = {
-      'Nome_Testemunha': 'nome_testemunha',
-      'CNJs_Como_Testemunha': 'cnjs_como_testemunha'
-    };
-    
-    headers.forEach(header => {
-      const cleaned = header.trim();
-      if (requiredMappings[cleaned]) {
-        mappings[cleaned] = requiredMappings[cleaned];
-      }
-    });
-  } else if (mode === 'processo') {
-    // Exact match required for processo mode  
-    const requiredMappings = {
-      'CNJ': 'cnj',
-      'Reclamante_Limpo': 'reclamante_nome',
-      'Reu_Nome': 'reu_nome'
-    };
-    
-    headers.forEach(header => {
-      const cleaned = header.trim();
-      if (requiredMappings[cleaned]) {
-        mappings[cleaned] = requiredMappings[cleaned];
-      }
-    });
-  }
-  
-  return mappings;
+// Cabeçalhos obrigatórios (match exato; case-insensitive)
+const REQUIRED_TESTEMUNHA = ["Nome_Testemunha", "CNJs_Como_Testemunha"];
+const REQUIRED_PROCESSO   = ["CNJ", "Reclamante_Limpo", "Reu_Nome"];
+
+const getHeaderRow = (sheet: XLSX.WorkSheet): string[] => {
+  const rows = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1, blankrows: false }) as any[];
+  return (rows[0] || []).map((h: any) => String(h || "").trim());
 };
 
-// Validation for testemunha mode
-const validateTestemunhaRow = (row: any): { isValid: boolean; errors: string[] } => {
-  const errors: string[] = [];
-  
-  if (!row.nome_testemunha || String(row.nome_testemunha).trim() === '') {
-    errors.push('Nome_Testemunha é obrigatório');
-  }
-  
-  // Validate CNJs in list
-  if (row.cnjs_como_testemunha) {
-    const cnjs = parseList(row.cnjs_como_testemunha);
-    cnjs.forEach((cnj, index) => {
-      const cleaned = cnj.replace(/\D/g, ''); // Remove masks
-      if (cleaned.length !== 20) {
-        errors.push(`CNJ ${index + 1} deve ter 20 dígitos após remover máscara`);
-      }
-    });
-  }
-  
-  // Reclamante/Réu are warnings, not errors in testemunha mode
-  
-  return {
-    isValid: errors.length === 0,
-    errors
-  };
+const hasHeaders = (headers: string[], required: string[]) => {
+  const set = new Set(headers.map(h => h.toLowerCase()));
+  const missing = required.filter(r => !set.has(r.toLowerCase()));
+  return { ok: missing.length === 0, missing };
 };
+
+// Tipos de erro por linha
+type RowError = { idx: number; messages: string[] };
+
+// Validações (trocar pela versão abaixo)
+const validateTestemunhaRows = (rows: any[]): RowError[] => {
+  const errors: RowError[] = [];
+  rows.forEach((r, i) => {
+    const msgs: string[] = [];
+    if (!r.nome_testemunha || String(r.nome_testemunha).trim() === "") {
+      msgs.push("Nome_Testemunha é obrigatório");
+    }
+    const list = Array.isArray(r.cnjs_como_testemunha)
+      ? r.cnjs_como_testemunha
+      : parseList(r.cnjs_como_testemunha);
+    if (!list.length) msgs.push("Lista de CNJs vazia");
+    if (!list.some(isCNJ20)) msgs.push("Nenhum CNJ com 20 dígitos na lista");
+    if (msgs.length) errors.push({ idx: i + 2, messages: msgs }); // +2 porque header é linha 1
+  });
+  return errors;
+};
+
+const validateProcessoRows = (rows: any[]): RowError[] => {
+  const errors: RowError[] = [];
+  rows.forEach((r, i) => {
+    const msgs: string[] = [];
+    if (!r.cnj || !isCNJ20(r.cnj)) msgs.push("CNJ deve ter 20 dígitos (removendo máscara)");
+    if (!r.reclamante_limpo || String(r.reclamante_limpo).trim() === "") msgs.push("Reclamante_Limpo é obrigatório");
+    if (!r.reu_nome || String(r.reu_nome).trim() === "") msgs.push("Reu_Nome é obrigatório");
+    if (msgs.length) errors.push({ idx: i + 2, messages: msgs });
+  });
+  return errors;
+};
+
 
 export function ImportModal() {
   const isImportModalOpen = useMapaTestemunhasStore(selectIsImportModalOpen);
@@ -97,6 +84,7 @@ export function ImportModal() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [result, setResult] = useState<ImportResult | null>(null);
+  const [preview, setPreview] = useState<{ processos: any[]; testemunhas: any[] } | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const uploadedFile = acceptedFiles[0];
@@ -115,79 +103,83 @@ export function ImportModal() {
     maxFiles: 1,
   });
 
-  const processExcelFile = async (file: File): Promise<{ porProcesso: any[], porTestemunha: any[] }> => {
+  // Leitura, mapeamento e normalização do Excel (substituir processExcelFile)
+  const processExcelFile = async (
+    file: File
+  ): Promise<{ porProcesso: any[]; porTestemunha: any[]; errors: RowError[]; preview: { processos: any[]; testemunhas: any[] } }> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
           const data = new Uint8Array(e.target?.result as ArrayBuffer);
-          const workbook = XLSX.read(data, { type: 'array' });
-          
-          const porProcessoSheet = workbook.Sheets['Por Processo'];
-          const porTestemunhaSheet = workbook.Sheets['Por Testemunha'];
-          
-          if (!porProcessoSheet && !porTestemunhaSheet) {
-            throw new Error('Arquivo deve conter pelo menos uma das abas: "Por Processo" ou "Por Testemunha"');
+          const wb = XLSX.read(data, { type: "array" });
+
+          const sheetProc = wb.Sheets["Por Processo"];
+          const sheetTest = wb.Sheets["Por Testemunha"];
+
+          if (!sheetProc && !sheetTest) {
+            throw new Error('Arquivo deve conter ao menos uma aba: "Por Processo" ou "Por Testemunha".');
           }
-          
-          let porProcesso: any[] = [];
-          let porTestemunha: any[] = [];
-          
-          if (porProcessoSheet) {
-            const rawProcesso = XLSX.utils.sheet_to_json(porProcessoSheet);
-            const headers = Object.keys(rawProcesso[0] || {});
-            const mappings = mapColumns(headers, 'processo');
-            
-            // Check if exact mapping found
-            if (!mappings['CNJ'] || !mappings['Reclamante_Limpo']) {
-              throw new Error('Modo Processo requer colunas exatas: CNJ, Reclamante_Limpo, Reu_Nome');
-            }
-            
-            porProcesso = rawProcesso.map(row => {
-              const mapped: any = {};
-              Object.entries(mappings).forEach(([original, target]) => {
-                mapped[target] = (row as any)[original];
-              });
-              return mapped;
+
+          const outProc: any[] = [];
+          const outTest: any[] = [];
+          let allErrors: RowError[] = [];
+
+          // ----- Por Processo -----
+          if (sheetProc) {
+            const headers = getHeaderRow(sheetProc);
+            const { ok, missing } = hasHeaders(headers, REQUIRED_PROCESSO);
+            if (!ok) throw new Error(`Modo Processo: faltam colunas: ${missing.join(", ")}`);
+
+            const raw = XLSX.utils.sheet_to_json<any>(sheetProc, { defval: "" });
+            raw.forEach((row) => {
+              const cnj = String(row["CNJ"] ?? "").trim();
+              const mapped = {
+                cnj,                                    // CNJ com máscara (exibição)
+                cnj_digits: onlyDigits(cnj),            // 20 dígitos (backend)
+                reclamante_limpo: row["Reclamante_Limpo"],
+                reu_nome: row["Reu_Nome"],
+                comarca: row["Comarca"] ?? "",
+                fase: row["Fase"] ?? "",
+                status: row["Status"] ?? "",
+              };
+              outProc.push(mapped);
             });
+
+            allErrors = allErrors.concat(validateProcessoRows(outProc));
           }
-          
-          if (porTestemunhaSheet) {
-            const rawTestemunha = XLSX.utils.sheet_to_json(porTestemunhaSheet);
-            const headers = Object.keys(rawTestemunha[0] || {});
-            const mappings = mapColumns(headers, 'testemunha');
-            
-            // Check if exact mapping found
-            if (!mappings['Nome_Testemunha']) {
-              throw new Error('Modo Testemunha requer coluna exata: Nome_Testemunha');
-            }
-            
-            porTestemunha = rawTestemunha.map(row => {
-              const mapped: any = {};
-              Object.entries(mappings).forEach(([original, target]) => {
-                if (target === 'cnjs_como_testemunha') {
-                  mapped[target] = parseList((row as any)[original]);
-                } else {
-                  mapped[target] = (row as any)[original];
-                }
-              });
-              
-              // Validate row
-              const validation = validateTestemunhaRow(mapped);
-              if (!validation.isValid) {
-                console.warn('Linha inválida:', validation.errors);
-              }
-              
-              return mapped;
+
+          // ----- Por Testemunha -----
+          if (sheetTest) {
+            const headers = getHeaderRow(sheetTest);
+            const { ok, missing } = hasHeaders(headers, REQUIRED_TESTEMUNHA);
+            if (!ok) throw new Error(`Modo Testemunha: faltam colunas: ${missing.join(", ")}`);
+
+            const raw = XLSX.utils.sheet_to_json<any>(sheetTest, { defval: "" });
+            raw.forEach((row) => {
+              const list = parseList(row["CNJs_Como_Testemunha"]);
+              const mapped = {
+                nome_testemunha: row["Nome_Testemunha"],
+                cnjs_como_testemunha: list, // mantém array
+              };
+              outTest.push(mapped);
             });
+
+            allErrors = allErrors.concat(validateTestemunhaRows(outTest));
           }
-          
-          resolve({ porProcesso, porTestemunha });
-        } catch (error) {
-          reject(error);
+
+          // Prévia (até 5 linhas)
+          const preview = {
+            processos: outProc.slice(0, 5),
+            testemunhas: outTest.slice(0, 5),
+          };
+
+          resolve({ porProcesso: outProc, porTestemunha: outTest, errors: allErrors, preview });
+        } catch (err) {
+          reject(err);
         }
       };
-      reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+      reader.onerror = () => reject(new Error("Erro ao ler arquivo"));
       reader.readAsArrayBuffer(file);
     });
   };
@@ -199,27 +191,61 @@ export function ImportModal() {
     setUploadProgress(0);
 
     try {
-      // Process Excel file
+      // Envio para Edge Function (substituir trecho do handleImport)
       setUploadProgress(20);
-      const { porProcesso, porTestemunha } = await processExcelFile(file);
-      
+      const { porProcesso, porTestemunha, errors, preview } = await processExcelFile(file);
+
+      // mostre preview (opcional: guarde num state para renderizar)
+      console.log("Preview", preview);
+      setPreview(preview);
+
+      if (errors.length) {
+        setIsUploading(false);
+        setUploadProgress(0);
+        setResult({
+          stagingRows: 0,
+          upserts: 0,
+          errors: errors.flatMap(e => e.messages.map(m => `Linha ${e.idx}: ${m}`)),
+        });
+        toast({
+          title: "Erros na validação do arquivo",
+          description: "Corrija os erros exibidos abaixo e tente novamente.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       setUploadProgress(40);
 
-      // Call import Edge function - send porProcesso as processos
-      const { data, error } = await supabase.functions.invoke('import-mapa-testemunhas', {
-        body: {
-          processos: porProcesso,
-        },
-      });
+      // explode testemunhas
+      const testemunhasExplodidas = porTestemunha.flatMap(t =>
+        (t.cnjs_como_testemunha as string[]).map((cnj: string) => ({
+          nome_testemunha: t.nome_testemunha,
+          cnj,
+          cnj_digits: onlyDigits(cnj),
+        }))
+      );
+
+      // monta payload
+      const payload: any = {};
+      if (porProcesso.length) payload.processos = porProcesso;
+      if (testemunhasExplodidas.length) payload.testemunhas = testemunhasExplodidas;
+
+      // chama Edge
+      const { data, error } = await supabase.functions.invoke("import-mapa-testemunhas", { body: payload });
 
       setUploadProgress(100);
-
       if (error) throw error;
 
-      setResult(data);
+      setResult({
+        stagingRows: data?.stagingRows ?? 0,
+        upserts: data?.upserts ?? 0,
+        errors: data?.errors ?? [],
+      });
+
       toast({
         title: "Importação concluída!",
-        description: `${data.upserts} registros processados com sucesso.`,
+        description: `${data?.upserts ?? 0} registros processados com sucesso.`,
       });
     } catch (error) {
       console.error('Import error:', error);
@@ -238,6 +264,7 @@ export function ImportModal() {
     setIsImportModalOpen(false);
     setFile(null);
     setResult(null);
+    setPreview(null);
     setUploadProgress(0);
   };
 
@@ -255,7 +282,7 @@ export function ImportModal() {
         </DialogHeader>
 
         <div className="space-y-6">
-            <Alert>
+          <Alert>
             <AlertCircle className="h-4 w-4" aria-hidden="true" />
             <AlertDescription>
               <strong>Formato requerido:</strong> Arquivo Excel (.xlsx) com abas: 
@@ -264,6 +291,46 @@ export function ImportModal() {
               <br />• <strong>Processo:</strong> CNJ, Reclamante_Limpo, Reu_Nome
             </AlertDescription>
           </Alert>
+
+          {/* Prévia dos dados */}
+          {preview && (
+            <div className="space-y-4">
+              <Alert>
+                <CheckCircle className="h-4 w-4" aria-hidden="true" />
+                <AlertDescription>
+                  <strong>Prévia dos dados:</strong>
+                  {preview.processos.length > 0 && (
+                    <div>• {preview.processos.length} processos encontrados</div>
+                  )}
+                  {preview.testemunhas.length > 0 && (
+                    <div>• {preview.testemunhas.length} testemunhas encontradas</div>
+                  )}
+                </AlertDescription>
+              </Alert>
+
+              {preview.processos.length > 0 && (
+                <div className="bg-muted/50 p-3 rounded-xl">
+                  <p className="font-medium mb-2">Primeiros processos:</p>
+                  {preview.processos.slice(0, 3).map((p, idx) => (
+                    <div key={idx} className="text-sm text-muted-foreground">
+                      • CNJ: {p.cnj} | Reclamante: {p.reclamante_limpo}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {preview.testemunhas.length > 0 && (
+                <div className="bg-muted/50 p-3 rounded-xl">
+                  <p className="font-medium mb-2">Primeiras testemunhas:</p>
+                  {preview.testemunhas.slice(0, 3).map((t, idx) => (
+                    <div key={idx} className="text-sm text-muted-foreground">
+                      • {t.nome_testemunha} | CNJs: {t.cnjs_como_testemunha?.length || 0}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {!file && (
             <div
