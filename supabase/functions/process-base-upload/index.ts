@@ -71,75 +71,7 @@ function decodeJWT(token: string) {
   }
 }
 
-// Header mapping function (simplificada para edge function)
-function mapHeadersAdvanced(headers: string[]): HeaderMappingResult {
-  const result: HeaderMappingResult = {
-    requiredFields: {},
-    optionalFields: {},
-    unmappedFields: [],
-    suggestions: []
-  };
-
-  const mappings = {
-    'cnj': 'cnj',
-    'reclamante_limpo': 'reclamante_limpo', 
-    'reclamante_nome': 'reclamante_nome',
-    'reu_nome': 'reu_nome',
-    'comarca': 'comarca',
-    'tribunal': 'tribunal',
-    'vara': 'vara',
-    'fase': 'fase',
-    'status': 'status',
-    'observacoes': 'observacoes',
-    'data_audiencia': 'data_audiencia'
-  };
-
-  for (let i = 0; i < headers.length; i++) {
-    const header = headers[i];
-    const normalized = header.toLowerCase().trim().replace(/[^a-z0-9_]/g, '_');
-    let mapped = false;
-
-    // Exact match (case-insensitive)
-    for (const [key, value] of Object.entries(mappings)) {
-      if (key === normalized || header.toLowerCase() === key) {
-        if (['cnj', 'reclamante_limpo', 'reclamante_nome', 'reu_nome'].includes(value)) {
-          result.requiredFields[value] = i;
-        } else {
-          result.optionalFields[value] = i;
-        }
-        mapped = true;
-        break;
-      }
-    }
-
-    // Fuzzy matching
-    if (!mapped) {
-      if (normalized.includes('cnj') && !normalized.startsWith('cnj_')) {
-        result.requiredFields.cnj = i;
-        mapped = true;
-      } else if (normalized.includes('reclamante')) {
-        if (normalized.includes('limpo')) {
-          result.requiredFields.reclamante_limpo = i;
-        } else {
-          result.requiredFields.reclamante_nome = i;
-        }
-        mapped = true;
-      } else if (normalized.includes('reu') || normalized.includes('réu')) {
-        result.requiredFields.reu_nome = i;
-        mapped = true;
-      } else if (normalized.includes('comarca')) {
-        result.optionalFields.comarca = i;
-        mapped = true;
-      }
-    }
-
-    if (!mapped) {
-      result.unmappedFields.push(header);
-    }
-  }
-
-  return result;
-}
+// Header mapping will be handled by the advanced function later in the file
 
 // Utility functions for validation
 function sanitizeTextAdvanced(value: any): ValidationResult {
