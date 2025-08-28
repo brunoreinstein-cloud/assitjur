@@ -83,7 +83,11 @@ serve(async (req) => {
 
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    console.log('✅ Handling CORS preflight request');
+    return new Response('OK', { 
+      status: 200,
+      headers: corsHeaders 
+    });
   }
 
   try {
@@ -264,8 +268,12 @@ async function processFileInChunks(
     });
   }
   
-  // Compatível com template: aceita "Reclamante_Limpo" ou "Reclamante_Nome"
-  if (!headerMappingResult.requiredFields.reclamante_limpo && !headerMappingResult.requiredFields.reclamante_nome) {
+  // Compatível com template: aceita "Reclamante_Limpo" ou "Reclamante_Nome"  
+  const reclamanteField = headerMappingResult.requiredFields.reclamante_limpo !== undefined ? 
+    'reclamante_limpo' : 
+    (headerMappingResult.requiredFields.reclamante_nome !== undefined ? 'reclamante_nome' : null);
+  
+  if (!reclamanteField) {
     errors.push({
       row: 0,
       column: 'reclamante',
@@ -535,8 +543,9 @@ async function processFileInChunks(
 function mapHeadersAdvanced(headers: string[]): HeaderMappingResult {
   const requiredFieldMappings = {
     cnj: ['cnj', 'numero', 'processo', 'num_processo', 'número'],
-    reclamante_nome: ['reclamante', 'autor', 'requerente', 'nome_reclamante', 'nome_autor'],
-    reu_nome: ['reu', 'réu', 'requerido', 'nome_reu', 'demandado', 'nome_requerido']
+    reclamante_limpo: ['reclamante_limpo', 'reclamante', 'autor', 'requerente', 'nome_reclamante', 'nome_autor'],
+    reclamante_nome: ['reclamante_nome', 'reclamante', 'autor', 'requerente', 'nome_reclamante', 'nome_autor'],
+    reu_nome: ['reu', 'réu', 'requerido', 'nome_reu', 'demandado', 'nome_requerido', 'reu_nome']
   };
 
   const optionalFieldMappings = {
