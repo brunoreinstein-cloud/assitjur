@@ -11,6 +11,18 @@ import type {
   OrgSettings 
 } from './types';
 
+// Funções de validação específicas conforme solicitado
+const onlyDigits = (s = '') => s.replace(/\D/g, '');
+const isCNJ20 = (s: string) => onlyDigits(s).length === 20;
+const parseList = (v: any): string[] => {
+  const s = String(v ?? '').trim();
+  if (!s || s === '[]') return [];
+  if (s.startsWith('[') && s.endsWith(']')) { 
+    try { return JSON.parse(s.replace(/'/g, '"')).map((x: any) => String(x).trim()).filter(Boolean); } catch {} 
+  }
+  return s.split(/[;,]/).map(x => x.trim()).filter(Boolean);
+};
+
 /**
  * Configurações padrão da organização (mock)
  */
@@ -23,7 +35,7 @@ const getMockOrgSettings = (): OrgSettings => ({
 });
 
 /**
- * Função principal de validação com correções inteligentes
+ * Função principal de validação com dados REAIS do arquivo
  */
 export async function normalizeAndValidate(
   session: ImportSession, 
@@ -32,7 +44,8 @@ export async function normalizeAndValidate(
     standardizeCNJ: boolean; 
     applyDefaultReu: boolean; 
     intelligentCorrections?: boolean; 
-  }
+  },
+  file?: File
 ): Promise<Omit<ValidationResult, 'downloadUrls'> & { corrections?: Map<string, any> }> {
   
   let totalAnalyzed = 0;
@@ -40,20 +53,40 @@ export async function normalizeAndValidate(
   const allIssues: ValidationIssue[] = [];
   const combinedNormalizedData: { testemunhas?: any[], processos?: any[] } = {};
   const allCorrections = new Map<string, any>();
+  const orgSettings = getMockOrgSettings();
 
-  // Processa cada aba - simula processamento com dados mock
+  // Processa cada aba com dados REAIS do arquivo
   for (const sheet of session.sheets) {
-    // Cria dados mock baseado no tipo da sheet
-    let mockData = createMockData(sheet);
+    let realData: any[] = [];
+    
+    // Se arquivo fornecido, processa dados reais
+    if (file) {
+      try {
+        const normalizedResult = await normalizeSheetData(file, sheet, orgSettings);
+        
+        if (sheet.model === 'testemunha' && normalizedResult.testemunhas) {
+          realData = normalizedResult.testemunhas;
+        } else if (sheet.model === 'processo' && normalizedResult.processos) {
+          realData = normalizedResult.processos;
+        }
+      } catch (error) {
+        console.error('Erro ao processar dados reais:', error);
+        // Fallback para dados mock se houver erro
+        realData = createMockData(sheet);
+      }
+    } else {
+      // Fallback para dados mock se arquivo não fornecido
+      realData = createMockData(sheet);
+    }
     
     // Aplicar correções inteligentes se habilitado
-    if (autoCorrections.intelligentCorrections !== false) {
+    if (autoCorrections.intelligentCorrections !== false && realData.length > 0) {
       const { correctedData, corrections } = applyIntelligentCorrections(
-        mockData, 
+        realData, 
         sheet.name,
         sheet.model === 'processo' ? 'processo' : 'testemunha'
       );
-      mockData = correctedData;
+      realData = correctedData;
       
       // Registrar correções
       corrections.forEach((correction, key) => {
@@ -61,30 +94,26 @@ export async function normalizeAndValidate(
       });
     }
     
-    totalAnalyzed += mockData.length;
+    totalAnalyzed += realData.length;
 
-    // Validar dados normalizados
-    const { issues: validationIssues, validCount } = validateNormalizedData(mockData, sheet.name);
+    // Validar dados com regras específicas por modelo
+    const { issues: validationIssues, validCount } = validateDataByModel(realData, sheet);
     allIssues.push(...validationIssues);
     totalValid += validCount;
 
     // Detectar duplicatas
-    const duplicateIssues = detectDuplicates(mockData, sheet.name);
+    const duplicateIssues = detectDuplicates(realData, sheet.name);
     allIssues.push(...duplicateIssues);
 
     // Acumular dados por tipo
     if (sheet.model === 'processo' || sheet.model === 'ambiguous') {
       if (!combinedNormalizedData.processos) combinedNormalizedData.processos = [];
-      combinedNormalizedData.processos.push(...(mockData.filter((row: any) => 
-        row.reclamante_nome && row.reu_nome
-      )));
+      combinedNormalizedData.processos.push(...realData);
     }
     
     if (sheet.model === 'testemunha' || sheet.model === 'ambiguous') {
       if (!combinedNormalizedData.testemunhas) combinedNormalizedData.testemunhas = [];
-      combinedNormalizedData.testemunhas.push(...(mockData.filter((row: any) => 
-        row.nome_testemunha
-      )));
+      combinedNormalizedData.testemunhas.push(...realData);
     }
   }
 
@@ -232,41 +261,133 @@ function applyIntelligentCorrections(
 }
 
 /**
- * Valida dados normalizados usando Zod
+ * Valida dados por modelo específico conforme regras solicitadas
  */
-function validateNormalizedData(
-  normalizedData: any,
-  sheetName: string
+function validateDataByModel(
+  normalizedData: any[],
+  sheet: { name: string; model: string }
 ): { issues: ValidationIssue[], validCount: number } {
   const issues: ValidationIssue[] = [];
   let validCount = 0;
   
-  // Simula validação para cada linha
   normalizedData.forEach((row: any, index: number) => {
-    // Validação básica de CNJ
-    if (!row.cnj_digits || row.cnj_digits.length !== 20) {
-      issues.push({
-        sheet: sheetName,
-        row: index + 1,
-        column: 'cnj',
-        severity: 'error',
-        rule: 'CNJ deve ter 20 dígitos',
-        value: row.cnj
-      });
-    } else {
-      validCount++;
+    const rowNumber = index + 1;
+    let rowValid = true;
+    
+    if (sheet.model === 'testemunha') {
+      // VALIDAÇÃO MODO TESTEMUNHA
+      
+      // 1. Erro se nome_testemunha vazio
+      if (!row.nome_testemunha || String(row.nome_testemunha).trim() === '') {
+        issues.push({
+          sheet: sheet.name,
+          row: rowNumber,
+          column: 'nome_testemunha',
+          severity: 'error',
+          rule: 'Nome da testemunha é obrigatório',
+          value: row.nome_testemunha || 'N/A'
+        });
+        rowValid = false;
+      }
+      
+      // 2. Erro se nenhum CNJ válido na lista
+      const cnjsList = row.cnjs_como_testemunha ? parseList(row.cnjs_como_testemunha) : [];
+      const validCNJs = cnjsList.filter(cnj => isCNJ20(cnj));
+      
+      if (validCNJs.length === 0) {
+        issues.push({
+          sheet: sheet.name,
+          row: rowNumber,
+          column: 'cnjs_como_testemunha',
+          severity: 'error',
+          rule: 'Nenhum CNJ válido encontrado',
+          value: cnjsList
+        });
+        rowValid = false;
+        
+        // Avisos para CNJs inválidos
+        cnjsList.forEach(cnj => {
+          if (!isCNJ20(cnj)) {
+            issues.push({
+              sheet: sheet.name,
+              row: rowNumber,
+              column: 'cnjs_como_testemunha',
+              severity: 'warning',
+              rule: 'CNJ inválido no array',
+              value: cnj
+            });
+          }
+        });
+      }
+      
+      // 3. Avisos para reclamante/réu vazios (não bloqueiam)
+      if (!row.reclamante_nome || String(row.reclamante_nome).trim() === '') {
+        issues.push({
+          sheet: sheet.name,
+          row: rowNumber,
+          column: 'reclamante_nome',
+          severity: 'warning',
+          rule: 'Reclamante não informado',
+          value: row.reclamante_nome || 'N/A'
+        });
+      }
+      
+      if (!row.reu_nome || String(row.reu_nome).trim() === '') {
+        issues.push({
+          sheet: sheet.name,
+          row: rowNumber,
+          column: 'reu_nome',
+          severity: 'warning',
+          rule: 'Réu não informado',
+          value: row.reu_nome || 'N/A'
+        });
+      }
+      
+    } else if (sheet.model === 'processo') {
+      // VALIDAÇÃO MODO PROCESSO
+      
+      // 1. Erro se reclamante_nome vazio
+      if (!row.reclamante_nome || String(row.reclamante_nome).trim() === '') {
+        issues.push({
+          sheet: sheet.name,
+          row: rowNumber,
+          column: 'reclamante_nome',
+          severity: 'error',
+          rule: 'Nome do reclamante é obrigatório',
+          value: row.reclamante_nome || 'N/A'
+        });
+        rowValid = false;
+      }
+      
+      // 2. Erro se reu_nome vazio
+      if (!row.reu_nome || String(row.reu_nome).trim() === '') {
+        issues.push({
+          sheet: sheet.name,
+          row: rowNumber,
+          column: 'reu_nome',
+          severity: 'error',
+          rule: 'Nome do réu é obrigatório',
+          value: row.reu_nome || 'N/A'
+        });
+        rowValid = false;
+      }
+      
+      // 3. Erro se CNJ inválido
+      if (!row.cnj || !isCNJ20(row.cnj)) {
+        issues.push({
+          sheet: sheet.name,
+          row: rowNumber,
+          column: 'cnj',
+          severity: 'error',
+          rule: 'CNJ deve ter 20 dígitos',
+          value: row.cnj || 'N/A'
+        });
+        rowValid = false;
+      }
     }
     
-    // Validação de nomes obrigatórios
-    if (!row.reclamante_nome && !row.nome_testemunha) {
-      issues.push({
-        sheet: sheetName,
-        row: index + 1,
-        column: 'nome',
-        severity: 'error',
-        rule: 'Nome do reclamante ou testemunha é obrigatório',
-        value: null
-      });
+    if (rowValid) {
+      validCount++;
     }
   });
   

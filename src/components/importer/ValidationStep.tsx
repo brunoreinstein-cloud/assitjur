@@ -22,10 +22,11 @@ import type { ImportSession, ValidationResult } from '@/lib/importer/types';
 
 interface ValidationStepProps {
   session: ImportSession;
+  file: File; // Adicionar arquivo para processamento real
   onComplete: (result: ValidationResult) => void;
 }
 
-export function ValidationStep({ session, onComplete }: ValidationStepProps) {
+export function ValidationStep({ session, file, onComplete }: ValidationStepProps) {
   const [isProcessing, setIsProcessing] = useState(true);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<ValidationResult | null>(null);
@@ -57,8 +58,8 @@ export function ValidationStep({ session, onComplete }: ValidationStepProps) {
         });
       }, 200);
 
-      // Normalização e validação
-      const validationResult = await enhancedValidate(session, autoCorrections);
+      // Normalização e validação COM DADOS REAIS
+      const validationResult = await enhancedValidate(session, autoCorrections, file);
       
       // Armazenar correções aplicadas
       if (validationResult.corrections) {

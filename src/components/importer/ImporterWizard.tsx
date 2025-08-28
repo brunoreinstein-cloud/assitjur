@@ -13,6 +13,7 @@ type WizardStep = 'upload' | 'validation' | 'confirm';
 export function ImporterWizard() {
   const [currentStep, setCurrentStep] = useState<WizardStep>('upload');
   const [session, setSession] = useState<ImportSession | null>(null);
+  const [file, setFile] = useState<File | null>(null); // Armazenar arquivo para validação
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
 
   const steps = [
@@ -21,8 +22,9 @@ export function ImporterWizard() {
     { id: 'confirm', label: 'Confirmação & Importação', icon: Circle },
   ] as const;
 
-  const handleUploadComplete = (newSession: ImportSession) => {
+  const handleUploadComplete = (newSession: ImportSession, uploadedFile: File) => {
     setSession(newSession);
+    setFile(uploadedFile); // Armazenar arquivo
     setCurrentStep('validation');
   };
 
@@ -34,6 +36,7 @@ export function ImporterWizard() {
   const handleConfirmComplete = () => {
     // Reset wizard
     setSession(null);
+    setFile(null); // Limpar arquivo
     setValidationResult(null);
     setCurrentStep('upload');
   };
@@ -97,9 +100,10 @@ export function ImporterWizard() {
           <UploadStep onComplete={handleUploadComplete} />
         )}
         
-        {currentStep === 'validation' && session && (
+        {currentStep === 'validation' && session && file && (
           <ValidationStep 
             session={session} 
+            file={file}
             onComplete={handleValidationComplete}
           />
         )}

@@ -13,7 +13,7 @@ import { MappingDialog } from './MappingDialog';
 import type { ImportSession, DetectedSheet } from '@/lib/importer/types';
 
 interface UploadStepProps {
-  onComplete: (session: ImportSession) => void;
+  onComplete: (session: ImportSession, file: File) => void; // Incluir arquivo no callback
 }
 
 export function UploadStep({ onComplete }: UploadStepProps) {
@@ -90,7 +90,7 @@ export function UploadStep({ onComplete }: UploadStepProps) {
       sessionId: generateSessionId()
     };
 
-    onComplete(session);
+    onComplete(session, file); // Passar arquivo junto com session
   };
 
   const handleMappingComplete = (updatedSheets: DetectedSheet[]) => {
