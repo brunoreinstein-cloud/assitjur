@@ -1,11 +1,11 @@
 CNJ,Comarca,Tribunal,Vara,Fase,Status,Reclamante_Limpo,Reclamante_CPF,Reu_Nome,Data_Audiencia,Observacoes
-1000000-71.2024.5.02.1000,São Paulo,TRT 2ª Região,1ª Vara do Trabalho,Conhecimento,Em andamento,João Silva Santos,123.456.789-00,Empresa ABC Ltda,2024-09-15,Ação trabalhista por rescisão indireta
-1000001-79.2024.5.02.1001,São Paulo,TRT 2ª Região,2ª Vara do Trabalho,Execução,Arquivado,Maria Oliveira Costa,987.654.321-00,Indústria XYZ S/A,2024-08-20,Processo executório de verbas rescisórias
-1000002-87.2024.5.02.1002,Santos,TRT 2ª Região,Vara do Trabalho de Santos,Conhecimento,Sentenciado,Pedro Almeida Lima,456.789.123-00,Comércio DEF ME,,Ação de cobrança de horas extras
-1000003-95.2024.5.02.1003,Campinas,TRT 15ª Região,3ª Vara do Trabalho,Recurso,Em andamento,Ana Paula Ferreira,321.654.987-00,Tech Solutions Ltda,2024-10-05,Recurso ordinário - adicional de insalubridade
-1000004-00.2024.5.02.1004,São Paulo,TRT 2ª Região,4ª Vara do Trabalho,Conhecimento,Conciliado,Carlos Eduardo Souza,654.321.987-00,Logística GHI S/A,,Acordo homologado em audiência
-1000005-18.2024.5.02.1005,São Bernardo do Campo,TRT 2ª Região,Vara do Trabalho de SBC,Execução,Em andamento,Luciana Ribeiro Dias,789.123.456-00,Metalúrgica JKL Ltda,2024-09-30,Execução de acordo judicial
-1000006-26.2024.5.02.1006,São Paulo,TRT 2ª Região,5ª Vara do Trabalho,Conhecimento,Suspenso,Roberto Carlos Mendes,147.258.369-00,Serviços MNO Ltda,,Processo suspenso for perícia médica
-1000007-34.2024.5.02.1007,Osasco,TRT 2ª Região,Vara do Trabalho de Osasco,Conhecimento,Em andamento,Fernanda Lima Santos,258.369.147-00,Construção PQR S/A,2024-11-12,Ação de equiparação salarial
-1000008-42.2024.5.02.1008,São Paulo,TRT 2ª Região,6ª Vara do Trabalho,Recurso,Julgado,Marcos Antônio Silva,369.147.258-00,Alimentação STU Ltda,,TST - Recurso de revista negado
-1000009-50.2024.5.02.1009,Guarulhos,TRT 2ª Região,Vara do Trabalho de Guarulhos,Conhecimento,Arquivado,Patrícia Gomes Oliveira,741.852.963-00,Transporte VWX ME,2024-07-18,Processo extinto sem resolução do mérito
+1000000-91.2024.5.02.1000,São Paulo,TRT 2ª Região,1ª Vara do Trabalho,Conhecimento,Em andamento,João Silva Santos,123.456.789-00,Empresa ABC Ltda,2024-09-15,Ação trabalhista por rescisão indireta
+1000001-44.2024.5.02.1001,São Paulo,TRT 2ª Região,2ª Vara do Trabalho,Execução,Arquivado,Maria Oliveira Costa,987.654.321-00,Indústria XYZ S/A,2024-08-20,Processo executório de verbas rescisórias
+1000002-99.2024.5.02.1002,Santos,TRT 2ª Região,Vara do Trabalho de Santos,Conhecimento,Sentenciado,Pedro Almeida Lima,456.789.123-00,Comércio DEF ME,,Ação de cobrança de horas extras
+1000003-52.2024.5.02.1003,Campinas,TRT 15ª Região,3ª Vara do Trabalho,Recurso,Em andamento,Ana Paula Ferreira,321.654.987-00,Tech Solutions Ltda,2024-10-05,Recurso ordinário - adicional de insalubridade
+1000004-07.2024.5.02.1004,São Paulo,TRT 2ª Região,4ª Vara do Trabalho,Conhecimento,Conciliado,Carlos Eduardo Souza,654.321.987-00,Logística GHI S/A,,Acordo homologado em audiência
+1000005-60.2024.5.02.1005,São Bernardo do Campo,TRT 2ª Região,Vara do Trabalho de SBC,Execução,Em andamento,Luciana Ribeiro Dias,789.123.456-00,Metalúrgica JKL Ltda,2024-09-30,Execução de acordo judicial
+1000006-15.2024.5.02.1006,São Paulo,TRT 2ª Região,5ª Vara do Trabalho,Conhecimento,Suspenso,Roberto Carlos Mendes,147.258.369-00,Serviços MNO Ltda,,Processo suspenso for perícia médica
+1000007-68.2024.5.02.1007,Osasco,TRT 2ª Região,Vara do Trabalho de Osasco,Conhecimento,Em andamento,Fernanda Lima Santos,258.369.147-00,Construção PQR S/A,2024-11-12,Ação de equiparação salarial
+1000008-23.2024.5.02.1008,São Paulo,TRT 2ª Região,6ª Vara do Trabalho,Recurso,Julgado,Marcos Antônio Silva,369.147.258-00,Alimentação STU Ltda,,TST - Recurso de revista negado
+1000009-76.2024.5.02.1009,Guarulhos,TRT 2ª Região,Vara do Trabalho de Guarulhos,Conhecimento,Arquivado,Patrícia Gomes Oliveira,741.852.963-00,Transporte VWX ME,2024-07-18,Processo extinto sem resolução do mérito
