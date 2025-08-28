@@ -629,6 +629,7 @@ export type Database = {
           advogados_passivo: string[] | null
           classificacao_final: string | null
           cnj: string
+          cnj_digits: string | null
           cnj_normalizado: string
           comarca: string | null
           created_at: string | null
@@ -660,6 +661,7 @@ export type Database = {
           advogados_passivo?: string[] | null
           classificacao_final?: string | null
           cnj: string
+          cnj_digits?: string | null
           cnj_normalizado: string
           comarca?: string | null
           created_at?: string | null
@@ -691,6 +693,7 @@ export type Database = {
           advogados_passivo?: string[] | null
           classificacao_final?: string | null
           cnj?: string
+          cnj_digits?: string | null
           cnj_normalizado?: string
           comarca?: string | null
           created_at?: string | null
@@ -886,6 +889,57 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
           window_start?: string | null
+        }
+        Relationships: []
+      }
+      stg_processos: {
+        Row: {
+          cnj: string | null
+          cnj_digits: string | null
+          comarca: string | null
+          data_audiencia: string | null
+          fase: string | null
+          import_job_id: string | null
+          observacoes: string | null
+          reclamante_cpf: string | null
+          reclamante_limpo: string | null
+          reu_nome: string | null
+          row_number: number | null
+          status: string | null
+          tribunal: string | null
+          vara: string | null
+        }
+        Insert: {
+          cnj?: string | null
+          cnj_digits?: string | null
+          comarca?: string | null
+          data_audiencia?: string | null
+          fase?: string | null
+          import_job_id?: string | null
+          observacoes?: string | null
+          reclamante_cpf?: string | null
+          reclamante_limpo?: string | null
+          reu_nome?: string | null
+          row_number?: number | null
+          status?: string | null
+          tribunal?: string | null
+          vara?: string | null
+        }
+        Update: {
+          cnj?: string | null
+          cnj_digits?: string | null
+          comarca?: string | null
+          data_audiencia?: string | null
+          fase?: string | null
+          import_job_id?: string | null
+          observacoes?: string | null
+          reclamante_cpf?: string | null
+          reclamante_limpo?: string | null
+          reu_nome?: string | null
+          row_number?: number | null
+          status?: string | null
+          tribunal?: string | null
+          vara?: string | null
         }
         Relationships: []
       }
