@@ -47,7 +47,7 @@ const mapColumns = (headers: string[], mode: 'testemunha' | 'processo') => {
     // Exact match required for processo mode  
     const requiredMappings = {
       'CNJ': 'cnj',
-      'Reclamante_Limpo': 'reclamante_limpo',
+      'Reclamante_Limpo': 'reclamante_nome',
       'Reu_Nome': 'reu_nome'
     };
     
