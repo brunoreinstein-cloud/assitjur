@@ -4,38 +4,37 @@ import { DetectedSheet, SheetModel } from './types';
 import { toSlugCase, detectCsvSeparator, onlyDigits } from './utils';
 
 /**
- * Detecta modelo da aba baseado nas colunas
+ * Detecta modelo da aba baseado em MAPEAMENTO EXATO de colunas
+ * Implementa as regras exatas especificadas pelo usuário
  */
 function detectSheetModel(headers: string[]): SheetModel {
   const normalizedHeaders = headers.map(h => toSlugCase(h));
   
-  // Procura por coluna de CNJ exato (não CNJ_*)
-  const hasCNJ = normalizedHeaders.some(h => h === 'cnj');
+  // MAPEAMENTO EXATO: nome_testemunha SOMENTE de Nome_Testemunha
+  const hasNomeTestemunha = normalizedHeaders.includes('nome_testemunha');
   
-  // Procura por coluna de lista de CNJs (variações do CNJs_Como_Testemunha)
-  const hasTestemunhaList = normalizedHeaders.some(h => 
-    h.includes('cnjs_') && h.includes('testemunha')
-  );
+  // MAPEAMENTO EXATO: cnjs_como_testemunha SOMENTE de CNJs_Como_Testemunha
+  const hasTestemunhaList = normalizedHeaders.includes('cnjs_como_testemunha');
   
-  // Procura por nome de testemunha
-  const hasNomeTestemunha = normalizedHeaders.some(h => 
-    h.includes('nome_testemunha') || h.includes('testemunha')
-  );
+  // CNJ individual (para modelo processo)
+  const hasCNJ = normalizedHeaders.includes('cnj');
   
+  // Modelo testemunha: DEVE ter ambos campos exatos
   if (hasTestemunhaList && hasNomeTestemunha) {
     return 'testemunha';
   }
   
+  // Modelo processo: tem CNJ mas não lista de testemunhas
   if (hasCNJ && !hasTestemunhaList) {
     return 'processo';
   }
   
-  // Se tem ambos CNJ e lista de testemunhas na mesma aba
+  // Ambíguo: tem CNJ e lista de testemunhas (forçar diálogo)
   if (hasCNJ && hasTestemunhaList) {
     return 'ambiguous';
   }
   
-  // Default para processo se tem CNJ
+  // Default baseado na presença de CNJ
   return hasCNJ ? 'processo' : 'testemunha';
 }
 
@@ -79,9 +78,9 @@ function processXlsxFile(file: File): Promise<DetectedSheet[]> {
             return obj;
           });
           
-          // Verifica se tem coluna de lista
+          // Verifica se tem coluna de lista EXATA (cnjs_como_testemunha)
           const hasListColumn = filteredHeaders.some((h: string) => 
-            toSlugCase(h).includes('cnjs_') && toSlugCase(h).includes('testemunha')
+            toSlugCase(h) === 'cnjs_como_testemunha'
           );
           
           sheets.push({
@@ -149,7 +148,7 @@ function processCsvFile(file: File): Promise<DetectedSheet[]> {
             });
             
             const hasListColumn = filteredHeaders.some(h => 
-              toSlugCase(h).includes('cnjs_') && toSlugCase(h).includes('testemunha')
+              toSlugCase(h) === 'cnjs_como_testemunha'
             );
             
             resolve([{

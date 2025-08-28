@@ -46,39 +46,24 @@ export function isEmpty(value: any): boolean {
 }
 
 /**
- * Converte string de lista em array
- * Suporta formatos: JSON-like, separado por ; ou ,
+ * Parser de lista robusto (aceitar ['a','b'], a;b, a, b)
+ * Exatamente conforme especificado pelo usuário
  */
 export function parseList(value: any): string[] {
-  if (!value) return [];
+  const s = String(value ?? '').trim();
+  if (!s || s === '[]') return [];
   
-  const str = String(value).trim();
-  
-  // JSON-like format: ['item1','item2']
-  if (str.startsWith('[') && str.endsWith(']')) {
-    try {
-      const parsed = str
-        .slice(1, -1) // Remove [ ]
-        .split(',')
-        .map(item => item.trim().replace(/^['"]|['"]$/g, ''))
-        .filter(item => item.length > 0);
-      return parsed;
+  if (s.startsWith('[') && s.endsWith(']')) {
+    try { 
+      return JSON.parse(s.replace(/'/g, '"'))
+        .map((x: any) => String(x).trim())
+        .filter(Boolean); 
     } catch {
-      // fallback to regular split
+      // fallback para formato não-JSON
     }
   }
   
-  // Separado por ; ou ,
-  if (str.includes(';')) {
-    return str.split(';').map(s => s.trim()).filter(s => s.length > 0);
-  }
-  
-  if (str.includes(',')) {
-    return str.split(',').map(s => s.trim()).filter(s => s.length > 0);
-  }
-  
-  // Item único
-  return [str];
+  return s.split(/[;,]/).map(x => x.trim()).filter(Boolean);
 }
 
 /**

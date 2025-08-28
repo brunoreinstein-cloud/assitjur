@@ -12,36 +12,44 @@ import {
 import type { DetectedSheet, TestemunhaRow, ProcessoRow, OrgSettings } from './types';
 
 /**
- * Mapeia headers automaticamente baseado em padrões conhecidos
+ * MAPEAMENTO EXATO de headers - sem fuzzy matching
+ * Implementa as regras exatas especificadas pelo usuário
  */
 function mapHeaders(headers: string[], sheetModel: 'testemunha' | 'processo'): Record<string, string> {
-  const mappings = getColumnMappings();
   const result: Record<string, string> = {};
   
   for (const header of headers) {
     const normalized = toSlugCase(header);
     
-    // Mapeamentos específicos por modelo
+    // MAPEAMENTO EXATO para modelo testemunha
     if (sheetModel === 'testemunha') {
-      if (mappings.testemunha[header]) {
-        result[header] = mappings.testemunha[header];
-        continue;
-      }
-    } else if (sheetModel === 'processo') {
-      if (mappings.processo[header]) {
-        result[header] = mappings.processo[header];
-        continue;
+      if (normalized === 'nome_testemunha') {
+        result[header] = 'nome_testemunha';
+      } else if (normalized === 'cnjs_como_testemunha') {
+        result[header] = 'cnjs_como_testemunha';
+      } else if (normalized === 'reclamante_nome') {
+        result[header] = 'reclamante_nome';
+      } else if (normalized === 'reu_nome') {
+        result[header] = 'reu_nome';
+      } else {
+        // Mapeamento padrão para outras colunas
+        result[header] = normalized;
       }
     }
     
-    // Mapeamentos comuns
-    if (mappings.common[header]) {
-      result[header] = mappings.common[header];
-      continue;
+    // MAPEAMENTO EXATO para modelo processo
+    else if (sheetModel === 'processo') {
+      if (normalized === 'cnj') {
+        result[header] = 'cnj';
+      } else if (normalized === 'reclamante_nome') {
+        result[header] = 'reclamante_nome';
+      } else if (normalized === 'reu_nome') {
+        result[header] = 'reu_nome';
+      } else {
+        // Mapeamento padrão para outras colunas
+        result[header] = normalized;
+      }
     }
-    
-    // Auto-mapeamento por nome normalizado
-    result[header] = normalized;
   }
   
   return result;
@@ -86,10 +94,8 @@ function normalizeTestemunhaData(
       normalizedRow[normalizedHeader] = row[originalHeader];
     }
     
-    // Procura por lista de CNJs
-    const cnjsListField = Object.keys(normalizedRow).find(key => 
-      key.includes('cnjs_') && key.includes('testemunha')
-    );
+    // BUSCA EXATA por cnjs_como_testemunha (não qualquer cnjs_*)
+    const cnjsListField = normalizedRow.cnjs_como_testemunha ? 'cnjs_como_testemunha' : null;
     
     if (cnjsListField && normalizedRow[cnjsListField]) {
       // Explode a lista
