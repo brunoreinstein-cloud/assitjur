@@ -34,7 +34,7 @@ export function genCNJ(): string {
 
 export const processoSamples: ProcessoSample[] = [
   {
-    CNJ: '1000000-91.2024.5.02.1000',
+    CNJ: '1000000-04.2024.5.02.1000',
     Reclamante_Limpo: 'João Silva Santos',
     Reu_Nome: 'Empresa ABC Ltda',
     UF: 'SP',
@@ -43,7 +43,7 @@ export const processoSamples: ProcessoSample[] = [
     Status: 'Em andamento'
   },
   {
-    CNJ: '1000001-44.2024.5.02.1001',
+    CNJ: '1000001-59.2024.5.02.1001',
     Reclamante_Limpo: 'Maria Oliveira Costa',
     Reu_Nome: 'Indústria XYZ S/A',
     UF: 'SP',
@@ -52,7 +52,7 @@ export const processoSamples: ProcessoSample[] = [
     Status: 'Arquivado'
   },
   {
-    CNJ: '1000002-99.2024.5.02.1002',
+    CNJ: '1000002-11.2024.5.02.1002',
     Reclamante_Limpo: 'Pedro Almeida Lima',
     Reu_Nome: 'Comércio DEF ME',
     UF: 'SP',
@@ -61,7 +61,7 @@ export const processoSamples: ProcessoSample[] = [
     Status: 'Sentenciado'
   },
   {
-    CNJ: '1000003-52.2024.5.02.1003',
+    CNJ: '1000003-66.2024.5.02.1003',
     Reclamante_Limpo: 'Ana Paula Ferreira',
     Reu_Nome: 'Tech Solutions Ltda',
     UF: 'SP',
@@ -70,7 +70,7 @@ export const processoSamples: ProcessoSample[] = [
     Status: 'Em andamento'
   },
   {
-    CNJ: '1000004-07.2024.5.02.1004',
+    CNJ: '1000004-18.2024.5.02.1004',
     Reclamante_Limpo: 'Carlos Eduardo Souza',
     Reu_Nome: 'Logística GHI S/A',
     UF: 'SP',
@@ -117,7 +117,7 @@ export const dicionarioFields: DicionarioField[] = [
     Tipo: 'texto (com máscara)',
     Obrigatorio: 'Sim',
     Regra: '20 dígitos com dígitos verificadores válidos',
-    Exemplo: '1000000-91.2024.5.02.1000'
+    Exemplo: '1000000-04.2024.5.02.1000'
   },
   {
     Aba: 'Por Processo',
@@ -149,7 +149,7 @@ export const dicionarioFields: DicionarioField[] = [
     Tipo: 'lista (string)',
     Obrigatorio: 'Sim',
     Regra: 'Aceita JSON-like, ; ou ,',
-    Exemplo: "['1000000-91.2024.5.02.1000','1000001-44.2024.5.02.1001']"
+    Exemplo: "['1000000-04.2024.5.02.1000','1000001-59.2024.5.02.1001']"
   },
   {
     Aba: 'Por Testemunha',
