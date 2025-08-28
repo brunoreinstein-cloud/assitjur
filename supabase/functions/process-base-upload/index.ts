@@ -266,7 +266,7 @@ async function processFileInChunks(
         row: 0,
         column: 'cnj',
         type: 'error',
-        message: 'Coluna CNJ é obrigatória. Use exatamente "CNJ" (case-insensitive)'
+        message: 'Coluna CNJ é obrigatória. Verifique se existe uma coluna com o header "CNJ" (aceita variações como "Numero", "Processo")'
       });
     }
     
@@ -596,12 +596,16 @@ function mapHeadersAdvanced(headers: string[]): HeaderMappingResult & { fileType
  * Map headers for processos files
  */
 function mapProcessosHeaders(headers: string[], normalizedHeaders: string[]): HeaderMappingResult & { fileType: 'processos' } {
+  console.log('🏛️ Mapping processos headers...');
+  
   const requiredFieldMappings = {
-    cnj: ['cnj', 'numero', 'processo', 'num_processo', 'número'],
-    reclamante_limpo: ['reclamante_limpo', 'reclamante', 'autor', 'requerente', 'nome_reclamante', 'nome_autor'],
-    reclamante_nome: ['reclamante_nome', 'reclamante', 'autor', 'requerente', 'nome_reclamante', 'nome_autor'],
-    reu_nome: ['reu', 'réu', 'requerido', 'nome_reu', 'demandado', 'nome_requerido', 'reu_nome']
+    cnj: ['cnj', 'numero', 'processo', 'num_processo', 'número', 'numero_cnj', 'cnj_processo', 'numerocnj'],
+    reclamante_limpo: ['reclamante_limpo', 'reclamante', 'autor', 'requerente', 'nome_reclamante', 'nome_autor', 'reclamante_nome'],
+    reclamante_nome: ['reclamante_nome', 'reclamante_limpo', 'reclamante', 'autor', 'requerente', 'nome_reclamante', 'nome_autor'],
+    reu_nome: ['reu', 'réu', 'requerido', 'nome_reu', 'demandado', 'nome_requerido', 'reu_nome', 'empresa', 're_nome']
   };
+
+  console.log('🔍 Required field mappings configured:', Object.keys(requiredFieldMappings));
 
   const optionalFieldMappings = {
     comarca: ['comarca', 'local', 'municipio', 'município'],
