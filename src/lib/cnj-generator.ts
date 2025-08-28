@@ -5,7 +5,7 @@
 /**
  * Calculate CNJ check digits using the official algorithm
  */
-function calculateCNJCheckDigits(cnjWithoutCheckDigits: string): string {
+export function calculateCNJCheckDigits(cnjWithoutCheckDigits: string): string {
   if (cnjWithoutCheckDigits.length !== 18) {
     throw new Error('CNJ without check digits must have exactly 18 digits');
   }

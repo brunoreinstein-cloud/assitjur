@@ -74,6 +74,7 @@ export interface ValidationResult {
     reportCsv: string;
     reportJson: string;
   };
+  corrections?: Map<string, any>;
 }
 
 // Configurações da organização

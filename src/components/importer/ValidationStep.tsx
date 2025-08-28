@@ -16,7 +16,7 @@ import {
   FileX,
   Shield
 } from 'lucide-react';
-import { normalizeAndValidate } from '@/lib/importer/validate';
+import { normalizeAndValidate } from '@/lib/importer/validate-enhanced';
 import { generateReports } from '@/lib/importer/report';
 import type { ImportSession, ValidationResult } from '@/lib/importer/types';
 
@@ -33,7 +33,9 @@ export function ValidationStep({ session, onComplete }: ValidationStepProps) {
     explodeLists: true,
     standardizeCNJ: true,
     applyDefaultReu: true,
+    intelligentCorrections: true,
   });
+  const [corrections, setCorrections] = useState<Map<string, any>>(new Map());
 
   useEffect(() => {
     processValidation();
@@ -58,8 +60,18 @@ export function ValidationStep({ session, onComplete }: ValidationStepProps) {
       // Normalização e validação
       const validationResult = await normalizeAndValidate(session, autoCorrections);
       
+      // Armazenar correções aplicadas
+      if (validationResult.corrections) {
+        setCorrections(validationResult.corrections);
+      }
+      
       // Geração de relatórios
-      const reports = await generateReports(validationResult, session.fileName);
+      const reports = await generateReports(
+        validationResult, 
+        session.fileName,
+        undefined,
+        validationResult.corrections
+      );
       
       clearInterval(progressInterval);
       setProgress(100);
@@ -222,6 +234,21 @@ export function ValidationStep({ session, onComplete }: ValidationStepProps) {
                 }
               />
             </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label>Correções Inteligentes</Label>
+                <p className="text-sm text-muted-foreground">
+                  Corrige CNJs, datas, nomes e preenche campos automaticamente
+                </p>
+              </div>
+              <Switch 
+                checked={autoCorrections.intelligentCorrections} 
+                onCheckedChange={(checked) => 
+                  setAutoCorrections(prev => ({ ...prev, intelligentCorrections: checked }))
+                }
+              />
+            </div>
 
             <Button onClick={processValidation} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -234,8 +261,11 @@ export function ValidationStep({ session, onComplete }: ValidationStepProps) {
       {/* Resultados */}
       {result && !isProcessing && (
         <Tabs defaultValue="summary" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="summary">Resumo</TabsTrigger>
+            <TabsTrigger value="corrections">
+              Correções ({corrections.size})
+            </TabsTrigger>
             <TabsTrigger value="issues">
               Issues ({result.issues.length})
             </TabsTrigger>
@@ -264,6 +294,43 @@ export function ValidationStep({ session, onComplete }: ValidationStepProps) {
                     </AlertDescription>
                   </Alert>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="corrections">
+            <Card>
+              <CardHeader>
+                <CardTitle>Correções Aplicadas Automaticamente</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {corrections.size === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">
+                      Nenhuma correção automática foi aplicada
+                    </p>
+                  ) : (
+                    Array.from(corrections.entries()).map(([key, correction], index) => (
+                      <div key={index} className="border rounded-lg p-3 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-success" />
+                          <Badge variant="outline" className="text-xs">
+                            {key.split('!')[0]} - {key.split('_')[1]}
+                          </Badge>
+                          <Badge className="bg-success/10 text-success border-success/20">
+                            {correction.type}
+                          </Badge>
+                        </div>
+                        <p className="text-sm font-medium">{correction.reason}</p>
+                        <div className="text-xs text-muted-foreground space-y-1">
+                          <div><strong>Original:</strong> {String(correction.original) || 'vazio'}</div>
+                          <div><strong>Corrigido:</strong> {String(correction.corrected)}</div>
+                          <div><strong>Confiança:</strong> {Math.round(correction.confidence * 100)}%</div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -322,12 +389,19 @@ export function ValidationStep({ session, onComplete }: ValidationStepProps) {
               </CardHeader>
               <CardContent className="space-y-4">
                 {result.downloadUrls.fixedXlsx && (
-                  <Button asChild variant="outline" className="w-full">
-                    <a href={result.downloadUrls.fixedXlsx} download>
-                      <Download className="h-4 w-4 mr-2" />
-                      Baixar Arquivo Corrigido (XLSX)
-                    </a>
-                  </Button>
+                  <div className="space-y-2">
+                    <Button asChild className="w-full">
+                      <a href={result.downloadUrls.fixedXlsx} download={`${session.fileName.replace(/\.[^/.]+$/, '')}_corrigido.xlsx`}>
+                        <Download className="h-4 w-4 mr-2" />
+                        Baixar Arquivo Corrigido (XLSX)
+                      </a>
+                    </Button>
+                    {corrections.size > 0 && (
+                      <p className="text-xs text-muted-foreground text-center">
+                        ✨ Este arquivo contém {corrections.size} correção(ões) automática(s)
+                      </p>
+                    )}
+                  </div>
                 )}
                 
                 {result.downloadUrls.reportCsv && (
