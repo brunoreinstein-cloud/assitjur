@@ -17,3 +17,9 @@ verify_jwt = false
 
 [functions.database-cleanup]
 verify_jwt = true
+
+[functions.templates-xlsx]
+verify_jwt = false
+
+[functions.templates-csv]
+verify_jwt = false
