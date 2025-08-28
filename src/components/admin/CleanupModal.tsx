@@ -99,21 +99,40 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
     
     setLoading(true);
     try {
+      const { data: session } = await supabase.auth.getSession();
+      const token = session?.session?.access_token;
+      
+      if (!token) {
+        throw new Error('Token de autenticação não encontrado');
+      }
+
       const { data, error } = await supabase.functions.invoke('database-cleanup', {
         body: {
           orgId: profile.organization_id,
           preview: true
+        },
+        headers: {
+          Authorization: `Bearer ${token}`
         }
       });
 
-      if (error) throw error;
-      setPreview(data.preview);
+      if (error) {
+        console.error('Error loading preview:', error);
+        throw error;
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      setPreview(data?.preview);
+      console.log('Preview data loaded:', data?.preview);
     } catch (error) {
-      console.error('Erro ao carregar preview:', error);
+      console.error('Preview error:', error);
       toast({
-        title: "Erro",
-        description: "Falha ao carregar preview da limpeza",
-        variant: "destructive"
+        title: "Erro ao carregar preview",
+        description: error.message,
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -157,16 +176,35 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
     setIsRunning(true);
 
     try {
+      const { data: session } = await supabase.auth.getSession();
+      const token = session?.session?.access_token;
+      
+      if (!token) {
+        throw new Error('Token de autenticação não encontrado');
+      }
+
       const { data, error } = await supabase.functions.invoke('database-cleanup', {
         body: {
           orgId: profile.organization_id,
           operations: selectedOperations
+        },
+        headers: {
+          Authorization: `Bearer ${token}`
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error executing cleanup:', error);
+        throw error;
+      }
 
-      if (data.success) {
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      console.log('Cleanup completed:', data);
+
+      if (data?.success) {
         toast({
           title: "Limpeza concluída",
           description: `${data.totalProcessed} registros processados`,
@@ -176,18 +214,21 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
         // Recarregar a página para atualizar os dados
         window.location.reload();
       } else {
-        throw new Error(data.error || 'Erro na limpeza');
+        const failedOps = data?.results?.filter(r => !r.success) || [];
+        if (failedOps.length > 0) {
+          throw new Error(`Algumas operações falharam: ${failedOps.map(op => op.message).join(', ')}`);
+        }
       }
     } catch (error) {
-      console.error('Erro na limpeza:', error);
+      console.error('Cleanup error:', error);
       toast({
         title: "Erro na limpeza",
         description: error.message || "Falha ao executar limpeza da base",
         variant: "destructive"
       });
+      setStep('confirm'); // Volta para tela de confirmação
     } finally {
       setIsRunning(false);
-      setStep('preview');
     }
   };
 
