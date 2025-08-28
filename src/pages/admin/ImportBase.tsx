@@ -12,13 +12,18 @@ import {
   CheckCircle, 
   AlertCircle, 
   Download,
-  RefreshCw
+  RefreshCw,
+  FileX,
+  Zap,
+  Info
 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import TemplateDownload from '@/components/TemplateDownload';
 import ErrorReportGenerator from '@/components/admin/ErrorReportGenerator';
+import ImportWizardSteps from '@/components/admin/ImportWizardSteps';
+import ImportHelpPanel from '@/components/admin/ImportHelpPanel';
 
 const ImportBase = () => {
   const [currentStep, setCurrentStep] = useState<'upload' | 'validation' | 'preview' | 'publish'>('upload');
@@ -155,23 +160,42 @@ const ImportBase = () => {
 
         {uploadedFile && (
           <div className="mt-4 p-4 bg-muted rounded-lg">
-            <p className="font-medium">{uploadedFile.name}</p>
-            <p className="text-sm text-muted-foreground">
-              {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">{uploadedFile.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB • {uploadedFile.type || 'Arquivo'}
+                </p>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => {
+                  setUploadedFile(null);
+                  setValidationResults(null);
+                  setCurrentStep('upload');
+                }}
+              >
+                <FileX className="h-4 w-4" />
+              </Button>
+            </div>
+            
             {uploadedFile.size > 10 * 1024 * 1024 && (
-              <Alert className="mt-2">
+              <Alert className="mt-2" variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Arquivo muito grande. Tamanho máximo: 10MB
+                  <strong>Arquivo muito grande!</strong> Tamanho máximo: 10MB. 
+                  Considere dividir em arquivos menores.
                 </AlertDescription>
               </Alert>
             )}
+            
             {isProcessing && (
               <div className="mt-3">
                 <Progress value={uploadProgress} className="w-full" />
-                <p className="text-sm text-muted-foreground mt-1">
-                  {uploadProgress < 95 ? `Enviando... ${Math.round(uploadProgress)}%` : 'Validando dados...'}
+                <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
+                  <Zap className="h-3 w-3 animate-pulse" />
+                  {uploadProgress < 95 ? `Enviando arquivo... ${Math.round(uploadProgress)}%` : 'Processando e validando dados...'}
                 </p>
               </div>
             )}
@@ -316,7 +340,7 @@ const ImportBase = () => {
                   💡 <strong>Dica:</strong> Use nosso template para evitar erros de formato:
                 </p>
                 <Button variant="outline" size="sm" asChild>
-                  <a href="/template" target="_blank" rel="noopener noreferrer">
+                  <a href="/template-base-exemplo.csv" download="template-base-exemplo.csv">
                     📥 Baixar Template de Exemplo
                   </a>
                 </Button>
@@ -505,13 +529,21 @@ const ImportBase = () => {
   );
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Importar & Publicar Base</h1>
-        <p className="text-muted-foreground">
-          Gerencie o upload, validação e publicação de novas versões da base de dados
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Importador de Base de Dados
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          Gerencie versões da base de dados de processos e testemunhas com validação inteligente
         </p>
       </div>
+
+      <ImportWizardSteps 
+        currentStep={currentStep}
+        validationResults={validationResults}
+        isProcessing={isProcessing}
+      />
 
       <Tabs defaultValue="upload" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
@@ -526,25 +558,21 @@ const ImportBase = () => {
         </TabsContent>
         
         <TabsContent value="upload" className="mt-6">
-          <div className="flex items-center gap-4 mb-6">
-            {(['upload', 'validation', 'preview', 'publish'] as const).map((step, index) => (
-              <div key={step} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  currentStep === step ? 'bg-primary text-primary-foreground' :
-                  index < (['upload', 'validation', 'preview', 'publish'] as const).indexOf(currentStep) ? 'bg-green-500 text-white' :
-                  'bg-muted text-muted-foreground'
-                }`}>
-                  {index + 1}
-                </div>
-                {index < 3 && <div className="w-8 h-0.5 bg-muted mx-2" />}
-              </div>
-            ))}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-3 space-y-6">
+              {currentStep === 'upload' && renderUploadStep()}
+              {currentStep === 'validation' && renderValidationStep()}
+              {currentStep === 'preview' && renderPreviewStep()}
+              {currentStep === 'publish' && renderPublishStep()}
+            </div>
+            
+            <div className="lg:col-span-1">
+              <ImportHelpPanel 
+                currentStep={currentStep}
+                validationResults={validationResults}
+              />
+            </div>
           </div>
-
-          {currentStep === 'upload' && renderUploadStep()}
-          {currentStep === 'validation' && renderValidationStep()}
-          {currentStep === 'preview' && renderPreviewStep()}
-          {currentStep === 'publish' && renderPublishStep()}
         </TabsContent>
       </Tabs>
     </div>

@@ -34,49 +34,49 @@ export function genCNJ(): string {
 
 export const processoSamples: ProcessoSample[] = [
   {
-    CNJ: genCNJ(),
-    Reclamante_Limpo: 'Maria Santos Silva',
-    Reu_Nome: 'Empresa Alpha Ltda',
+    CNJ: '1000000-91.2024.5.02.1000',
+    Reclamante_Limpo: 'João Silva Santos',
+    Reu_Nome: 'Empresa ABC Ltda',
     UF: 'SP',
     Comarca: 'São Paulo',
     Fase: 'Conhecimento',
     Status: 'Em andamento'
   },
   {
-    CNJ: genCNJ(),
-    Reclamante_Limpo: 'João Pereira Costa',
-    Reu_Nome: 'Beta Indústria S.A.',
-    UF: 'RJ',
-    Comarca: 'Rio de Janeiro',
+    CNJ: '1000001-44.2024.5.02.1001',
+    Reclamante_Limpo: 'Maria Oliveira Costa',
+    Reu_Nome: 'Indústria XYZ S/A',
+    UF: 'SP',
+    Comarca: 'São Paulo',
     Fase: 'Execução',
     Status: 'Arquivado'
   },
   {
-    CNJ: genCNJ(),
-    Reclamante_Limpo: 'Ana Oliveira Lima',
-    Reu_Nome: 'Gamma Serviços ME',
-    UF: 'MG',
-    Comarca: 'Belo Horizonte',
-    Fase: 'Recurso',
-    Status: 'Julgado'
-  },
-  {
-    CNJ: genCNJ(),
-    Reclamante_Limpo: 'Carlos Eduardo Souza',
-    Reu_Nome: 'Delta Tech Solutions',
-    UF: 'SP',
-    Comarca: 'Campinas',
-    Fase: 'Conhecimento',
-    Status: 'Conciliado'
-  },
-  {
-    CNJ: genCNJ(),
-    Reclamante_Limpo: 'Fernanda Ribeiro Dias',
-    Reu_Nome: 'Epsilon Logística S.A.',
+    CNJ: '1000002-99.2024.5.02.1002',
+    Reclamante_Limpo: 'Pedro Almeida Lima',
+    Reu_Nome: 'Comércio DEF ME',
     UF: 'SP',
     Comarca: 'Santos',
-    Fase: 'Execução',
-    Status: 'Suspenso'
+    Fase: 'Conhecimento',
+    Status: 'Sentenciado'
+  },
+  {
+    CNJ: '1000003-52.2024.5.02.1003',
+    Reclamante_Limpo: 'Ana Paula Ferreira',
+    Reu_Nome: 'Tech Solutions Ltda',
+    UF: 'SP',
+    Comarca: 'Campinas',
+    Fase: 'Recurso',
+    Status: 'Em andamento'
+  },
+  {
+    CNJ: '1000004-07.2024.5.02.1004',
+    Reclamante_Limpo: 'Carlos Eduardo Souza',
+    Reu_Nome: 'Logística GHI S/A',
+    UF: 'SP',
+    Comarca: 'São Paulo',
+    Fase: 'Conhecimento',
+    Status: 'Conciliado'
   }
 ];
 
@@ -117,7 +117,7 @@ export const dicionarioFields: DicionarioField[] = [
     Tipo: 'texto (com máscara)',
     Obrigatorio: 'Sim',
     Regra: '20 dígitos com dígitos verificadores válidos',
-    Exemplo: '1000000-71.2024.5.02.1000'
+    Exemplo: '1000000-91.2024.5.02.1000'
   },
   {
     Aba: 'Por Processo',
@@ -149,7 +149,7 @@ export const dicionarioFields: DicionarioField[] = [
     Tipo: 'lista (string)',
     Obrigatorio: 'Sim',
     Regra: 'Aceita JSON-like, ; ou ,',
-    Exemplo: "['1000000-71.2024.5.02.1000','1000001-79.2024.5.02.1001']"
+    Exemplo: "['1000000-91.2024.5.02.1000','1000001-44.2024.5.02.1001']"
   },
   {
     Aba: 'Por Testemunha',
