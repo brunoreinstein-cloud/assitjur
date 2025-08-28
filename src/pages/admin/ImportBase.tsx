@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   Upload, 
   FileCheck, 
@@ -15,7 +15,9 @@ import {
   RefreshCw,
   FileX,
   Zap,
-  Info
+  Info,
+  ChevronDown,
+  HelpCircle
 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { toast } from '@/hooks/use-toast';
@@ -23,7 +25,6 @@ import { supabase } from '@/integrations/supabase/client';
 
 import ErrorReportGenerator from '@/components/admin/ErrorReportGenerator';
 import ImportWizardSteps from '@/components/admin/ImportWizardSteps';
-import ImportHelpPanel from '@/components/admin/ImportHelpPanel';
 
 const ImportBase = () => {
   const [currentStep, setCurrentStep] = useState<'upload' | 'validation' | 'preview' | 'publish'>('upload');
@@ -129,76 +130,55 @@ const ImportBase = () => {
 
   const renderUploadStep = () => (
     <div className="space-y-6">
-      {/* Template Download Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5" />
-            Template de Exemplo
-          </CardTitle>
-          <CardDescription>
-            Baixe o modelo com dados de exemplo para testar o upload
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Alert className="border-green-200 bg-green-50 dark:bg-green-950 mb-4">
-            <Info className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800 dark:text-green-200">
-              <strong>✅ Template atualizado!</strong> Este arquivo contém 10 registros com CNJs válidos e todas as colunas esperadas pelo sistema.
-            </AlertDescription>
-          </Alert>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-            <div className="text-center p-3 bg-muted rounded-lg">
-              <div className="text-lg font-bold text-red-600">CNJ</div>
-              <div className="text-xs text-muted-foreground">obrigatório</div>
-            </div>
-            <div className="text-center p-3 bg-muted rounded-lg">
-              <div className="text-lg font-bold text-red-600">Reclamante_Limpo</div>
-              <div className="text-xs text-muted-foreground">obrigatório</div>
-            </div>
-            <div className="text-center p-3 bg-muted rounded-lg">
-              <div className="text-lg font-bold text-red-600">Reu_Nome</div>
-              <div className="text-xs text-muted-foreground">obrigatório</div>
-            </div>
-          </div>
-
-          <Button 
-            onClick={() => {
-              const link = document.createElement('a');
-              link.href = '/template-base-exemplo.csv';
-              link.download = 'template-base-exemplo.csv';
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-            }}
-            className="w-full mb-4"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Baixar Template de Exemplo
-          </Button>
-
-          <div className="bg-muted p-4 rounded-lg space-y-2">
-            <h4 className="font-medium text-sm">Dicas importantes:</h4>
-            <ul className="text-sm space-y-1 text-muted-foreground">
-              <li>✅ <strong>CNJs agora são validados</strong> - dígitos verificadores corretos</li>
-              <li>• Mantenha o formato CSV para melhor performance</li>
-              <li>• Use no máximo 10.000 linhas por arquivo (10MB)</li>
-              <li>• CNJ deve ter 20 dígitos: 1000000-91.2024.5.02.1000</li>
-              <li>• CPF será automaticamente mascarado por segurança</li>
-              <li>• Datas no formato YYYY-MM-DD ou DD/MM/YYYY</li>
-              <li>• Campos obrigatórios: CNJ, Reclamante_Limpo, Reu_Nome</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Upload Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
-            Upload de Arquivo
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Upload className="h-5 w-5" />
+              Upload de Arquivo
+            </div>
+            <Collapsible>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-muted-foreground">
+                  <HelpCircle className="h-4 w-4 mr-2" />
+                  Precisa de ajuda?
+                  <ChevronDown className="h-4 w-4 ml-2" />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="absolute z-10 mt-2 p-4 bg-background border rounded-lg shadow-lg max-w-md right-0">
+                <div className="space-y-3">
+                  <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950">
+                    <Info className="h-4 w-4 text-blue-600" />
+                    <AlertDescription className="text-blue-800 dark:text-blue-200">
+                      <strong>Template disponível!</strong> Use nosso arquivo de exemplo para upload.
+                    </AlertDescription>
+                  </Alert>
+                  
+                  <Button 
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = '/template-base-exemplo.csv';
+                      link.download = 'template-base-exemplo.csv';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }}
+                    size="sm"
+                    className="w-full"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Baixar Template
+                  </Button>
+                  
+                  <div className="text-sm space-y-1 text-muted-foreground">
+                    <p><strong>Formatos:</strong> CSV, XLS, XLSX</p>
+                    <p><strong>Tamanho máximo:</strong> 10MB</p>
+                    <p><strong>Campos obrigatórios:</strong> CNJ, Reclamante, Réu</p>
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           </CardTitle>
           <CardDescription>
             Faça upload do arquivo CSV ou XLSX com os dados da base
@@ -402,16 +382,27 @@ const ImportBase = () => {
 
             {/* Link para template se houver erros */}
             {validationResults.errors?.length > 0 && (
-              <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-                <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
-                  💡 <strong>Dica:</strong> Use nosso template para evitar erros de formato:
-                </p>
-                <Button variant="outline" size="sm" asChild>
-                  <a href="/template-base-exemplo.csv" download="template-base-exemplo.csv">
-                    📥 Baixar Template de Exemplo
-                  </a>
-                </Button>
-              </div>
+              <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950">
+                <Info className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800 dark:text-blue-200">
+                  <strong>Dica:</strong> Use nosso template para evitar erros de formato.{' '}
+                  <Button 
+                    variant="link" 
+                    size="sm" 
+                    className="p-0 h-auto text-blue-600 hover:text-blue-800"
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = '/template-base-exemplo.csv';
+                      link.download = 'template-base-exemplo.csv';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }}
+                  >
+                    Baixar aqui
+                  </Button>
+                </AlertDescription>
+              </Alert>
             )}
           </div>
         )}
@@ -596,36 +587,21 @@ const ImportBase = () => {
   );
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Importador de Base de Dados
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Gerencie versões da base de dados de processos e testemunhas com validação inteligente
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-bold">Importar Base de Dados</h1>
+        <p className="text-muted-foreground">
+          Faça upload e publique uma nova versão da base de dados
         </p>
       </div>
 
-      <ImportWizardSteps 
-        currentStep={currentStep}
-        validationResults={validationResults}
-        isProcessing={isProcessing}
-      />
+      <ImportWizardSteps currentStep={currentStep} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
-        <div className="lg:col-span-3 space-y-6">
-          {currentStep === 'upload' && renderUploadStep()}
-          {currentStep === 'validation' && renderValidationStep()}
-          {currentStep === 'preview' && renderPreviewStep()}
-          {currentStep === 'publish' && renderPublishStep()}
-        </div>
-        
-        <div className="lg:col-span-1">
-          <ImportHelpPanel 
-            currentStep={currentStep}
-            validationResults={validationResults}
-          />
-        </div>
+      <div className="w-full">
+        {currentStep === 'upload' && renderUploadStep()}
+        {currentStep === 'validation' && renderValidationStep()}
+        {currentStep === 'preview' && renderPreviewStep()}
+        {currentStep === 'publish' && renderPublishStep()}
       </div>
     </div>
   );
