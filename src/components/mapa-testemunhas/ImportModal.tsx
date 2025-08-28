@@ -1,19 +1,97 @@
 import { useState, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Upload, FileSpreadsheet, AlertCircle, CheckCircle } from "lucide-react";
 import { useDropzone } from "react-dropzone";
-import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
+import { 
+  useMapaTestemunhasStore, 
+  selectIsImportModalOpen 
+} from "@/lib/store/mapa-testemunhas";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
 import { ImportResult } from "@/types/mapa-testemunhas";
 
+// Robust list parser for array fields
+const parseList = (v: any): string[] => {
+  const s = String(v ?? '').trim();
+  if (!s || s === '[]') return [];
+  if (s.startsWith('[') && s.endsWith(']')) { 
+    try { 
+      return JSON.parse(s.replace(/'/g,'"')).map((x:any) => String(x).trim()).filter(Boolean); 
+    } catch {} 
+  }
+  return s.split(/[;,]/).map(x => x.trim()).filter(Boolean);
+};
+
+// Strict column mapping
+const mapColumns = (headers: string[], mode: 'testemunha' | 'processo') => {
+  const mappings: Record<string, string> = {};
+  
+  if (mode === 'testemunha') {
+    // Exact match required for testemunha mode
+    const requiredMappings = {
+      'Nome_Testemunha': 'nome_testemunha',
+      'CNJs_Como_Testemunha': 'cnjs_como_testemunha'
+    };
+    
+    headers.forEach(header => {
+      const cleaned = header.trim();
+      if (requiredMappings[cleaned]) {
+        mappings[cleaned] = requiredMappings[cleaned];
+      }
+    });
+  } else if (mode === 'processo') {
+    // Exact match required for processo mode  
+    const requiredMappings = {
+      'CNJ': 'cnj',
+      'Reclamante_Limpo': 'reclamante_limpo',
+      'Reu_Nome': 'reu_nome'
+    };
+    
+    headers.forEach(header => {
+      const cleaned = header.trim();
+      if (requiredMappings[cleaned]) {
+        mappings[cleaned] = requiredMappings[cleaned];
+      }
+    });
+  }
+  
+  return mappings;
+};
+
+// Validation for testemunha mode
+const validateTestemunhaRow = (row: any): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  
+  if (!row.nome_testemunha || String(row.nome_testemunha).trim() === '') {
+    errors.push('Nome_Testemunha é obrigatório');
+  }
+  
+  // Validate CNJs in list
+  if (row.cnjs_como_testemunha) {
+    const cnjs = parseList(row.cnjs_como_testemunha);
+    cnjs.forEach((cnj, index) => {
+      const cleaned = cnj.replace(/\D/g, ''); // Remove masks
+      if (cleaned.length !== 20) {
+        errors.push(`CNJ ${index + 1} deve ter 20 dígitos após remover máscara`);
+      }
+    });
+  }
+  
+  // Reclamante/Réu are warnings, not errors in testemunha mode
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
 export function ImportModal() {
-  const { isImportModalOpen, setIsImportModalOpen } = useMapaTestemunhasStore();
+  const isImportModalOpen = useMapaTestemunhasStore(selectIsImportModalOpen);
+  const setIsImportModalOpen = useMapaTestemunhasStore(s => s.setIsImportModalOpen);
   const { toast } = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -48,12 +126,61 @@ export function ImportModal() {
           const porProcessoSheet = workbook.Sheets['Por Processo'];
           const porTestemunhaSheet = workbook.Sheets['Por Testemunha'];
           
-          if (!porProcessoSheet || !porTestemunhaSheet) {
-            throw new Error('Arquivo deve conter as abas "Por Processo" e "Por Testemunha"');
+          if (!porProcessoSheet && !porTestemunhaSheet) {
+            throw new Error('Arquivo deve conter pelo menos uma das abas: "Por Processo" ou "Por Testemunha"');
           }
           
-          const porProcesso = XLSX.utils.sheet_to_json(porProcessoSheet);
-          const porTestemunha = XLSX.utils.sheet_to_json(porTestemunhaSheet);
+          let porProcesso: any[] = [];
+          let porTestemunha: any[] = [];
+          
+          if (porProcessoSheet) {
+            const rawProcesso = XLSX.utils.sheet_to_json(porProcessoSheet);
+            const headers = Object.keys(rawProcesso[0] || {});
+            const mappings = mapColumns(headers, 'processo');
+            
+            // Check if exact mapping found
+            if (!mappings['CNJ'] || !mappings['Reclamante_Limpo']) {
+              throw new Error('Modo Processo requer colunas exatas: CNJ, Reclamante_Limpo, Reu_Nome');
+            }
+            
+            porProcesso = rawProcesso.map(row => {
+              const mapped: any = {};
+              Object.entries(mappings).forEach(([original, target]) => {
+                mapped[target] = (row as any)[original];
+              });
+              return mapped;
+            });
+          }
+          
+          if (porTestemunhaSheet) {
+            const rawTestemunha = XLSX.utils.sheet_to_json(porTestemunhaSheet);
+            const headers = Object.keys(rawTestemunha[0] || {});
+            const mappings = mapColumns(headers, 'testemunha');
+            
+            // Check if exact mapping found
+            if (!mappings['Nome_Testemunha']) {
+              throw new Error('Modo Testemunha requer coluna exata: Nome_Testemunha');
+            }
+            
+            porTestemunha = rawTestemunha.map(row => {
+              const mapped: any = {};
+              Object.entries(mappings).forEach(([original, target]) => {
+                if (target === 'cnjs_como_testemunha') {
+                  mapped[target] = parseList((row as any)[original]);
+                } else {
+                  mapped[target] = (row as any)[original];
+                }
+              });
+              
+              // Validate row
+              const validation = validateTestemunhaRow(mapped);
+              if (!validation.isValid) {
+                console.warn('Linha inválida:', validation.errors);
+              }
+              
+              return mapped;
+            });
+          }
           
           resolve({ porProcesso, porTestemunha });
         } catch (error) {
@@ -126,11 +253,13 @@ export function ImportModal() {
         </DialogHeader>
 
         <div className="space-y-6">
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
+            <Alert>
+            <AlertCircle className="h-4 w-4" aria-hidden="true" />
             <AlertDescription>
-              <strong>Formato requerido:</strong> Arquivo Excel (.xlsx) com duas abas: 
-              "Por Processo" e "Por Testemunha"
+              <strong>Formato requerido:</strong> Arquivo Excel (.xlsx) com abas: 
+              "Por Processo" e/ou "Por Testemunha". Mapeamento estrito de colunas:
+              <br />• <strong>Testemunha:</strong> Nome_Testemunha, CNJs_Como_Testemunha
+              <br />• <strong>Processo:</strong> CNJ, Reclamante_Limpo, Reu_Nome
             </AlertDescription>
           </Alert>
 
@@ -142,7 +271,7 @@ export function ImportModal() {
               }`}
             >
               <input {...getInputProps()} />
-              <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" aria-hidden="true" />
               <div className="space-y-2">
                 <p className="text-lg font-medium">
                   {isDragActive ? 'Solte o arquivo aqui' : 'Arraste o arquivo Excel aqui'}
@@ -160,7 +289,7 @@ export function ImportModal() {
           {file && !isUploading && !result && (
             <div className="space-y-4">
               <div className="flex items-center gap-3 p-4 border border-border/50 rounded-xl">
-                <FileSpreadsheet className="h-8 w-8 text-primary" />
+                <FileSpreadsheet className="h-8 w-8 text-primary" aria-hidden="true" />
                 <div className="flex-1">
                   <p className="font-medium">{file.name}</p>
                   <p className="text-sm text-muted-foreground">
@@ -198,7 +327,7 @@ export function ImportModal() {
           {result && (
             <div className="space-y-4">
               <Alert>
-                <CheckCircle className="h-4 w-4" />
+                <CheckCircle className="h-4 w-4" aria-hidden="true" />
                 <AlertDescription>
                   <div className="space-y-1">
                     <p><strong>Importação concluída com sucesso!</strong></p>
