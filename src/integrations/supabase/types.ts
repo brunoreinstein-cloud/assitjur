@@ -1149,6 +1149,30 @@ export type Database = {
         Args: { name_value: string }
         Returns: string
       }
+      rpc_cleanup_duplicates: {
+        Args: { p_org_id: string }
+        Returns: Json
+      }
+      rpc_cleanup_empty_required_fields: {
+        Args: { p_org_id: string }
+        Returns: Json
+      }
+      rpc_cleanup_hard_delete_old: {
+        Args: { p_org_id: string }
+        Returns: Json
+      }
+      rpc_cleanup_invalid_cnjs: {
+        Args: { p_org_id: string }
+        Returns: Json
+      }
+      rpc_cleanup_normalize_cnjs: {
+        Args: { p_org_id: string }
+        Returns: Json
+      }
+      rpc_get_cleanup_preview: {
+        Args: { p_org_id: string }
+        Returns: Json
+      }
       sanitize_input: {
         Args: { input_text: string }
         Returns: string

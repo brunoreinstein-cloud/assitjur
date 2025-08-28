@@ -13,6 +13,7 @@ import { Eye, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { DatabaseCleanupButton } from '@/components/admin/DatabaseCleanupButton';
 
 interface ProcessoQuality {
   id: string;
@@ -264,15 +265,21 @@ export default function ProcessosTable() {
         hasActiveFilters={hasActiveFilters}
       />
 
-      <BulkActions
-        selectedCount={selectedRows.size}
-        onRevalidate={handleRevalidate}
-        onNormalizeCNJ={handleNormalizeCNJ}
-        onMergeDuplicates={() => {}}
-        onDelete={handleDelete}
-        onExport={() => {}}
-        isLoading={isLoading}
-      />
+      <div className="flex items-center justify-between gap-4">
+        <BulkActions
+          selectedCount={selectedRows.size}
+          onRevalidate={handleRevalidate}
+          onNormalizeCNJ={handleNormalizeCNJ}
+          onMergeDuplicates={() => {}}
+          onDelete={handleDelete}
+          onExport={() => {}}
+          isLoading={isLoading}
+        />
+        
+        <div className="flex items-center gap-2">
+          <DatabaseCleanupButton />
+        </div>
+      </div>
 
       <div className="border rounded-md bg-background">
         <Table>
