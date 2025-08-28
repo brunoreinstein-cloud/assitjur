@@ -37,6 +37,12 @@ import PromptStudio from "./pages/admin/openai/PromptStudio";
 import OpenAIPlayground from "./pages/admin/openai/Playground";
 import Logs from "./pages/admin/Logs";
 
+// Data Explorer components
+import BaseRedirect from "./pages/admin/base/index";
+import BaseLayout from "./pages/admin/base/BaseLayout";
+import ProcessosTable from "./pages/admin/base/ProcessosTable";
+import TestemunhasTable from "./pages/admin/base/TestemunhasTable";
+
 
 // Analytics component import and routes
 const queryClient = new QueryClient({
@@ -87,7 +93,12 @@ const App = () => (
                         <Route path="/admin/ia/modelos" element={<OpenAIModels />} />
                         <Route path="/admin/ia/prompt-studio" element={<PromptStudio />} />
                         <Route path="/admin/ia/testes" element={<OpenAIPlayground />} />
-                        <Route path="/admin/base" element={<ImportBase />} />
+                        <Route path="/admin/base-import" element={<ImportBase />} />
+                        <Route path="/admin/base" element={<BaseRedirect />} />
+                        <Route path="/admin/base/*" element={<BaseLayout />}>
+                          <Route path="processos" element={<ProcessosTable />} />
+                          <Route path="testemunhas" element={<TestemunhasTable />} />
+                        </Route>
                         <Route path="/import" element={<Import />} />
                         <Route path="/admin/versoes" element={<Versions />} />
                         <Route path="/admin/org" element={<Organization />} />
