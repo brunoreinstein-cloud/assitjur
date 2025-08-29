@@ -71,7 +71,15 @@ export function FieldDictionary() {
       <CardHeader>
         <CardTitle>Dicionário de Campos</CardTitle>
         <CardDescription>
-          Especificações técnicas para cada campo nas abas do template com validação rigorosa
+          <div className="space-y-1 text-sm">
+            <p><strong>CONFORMIDADE COM NOVAS ESPECIFICAÇÕES:</strong></p>
+            <p>✅ <strong>Abas obrigatórias:</strong> "Por Processo" + "Por Testemunha"</p>
+            <p>✅ <strong>Campos obrigatórios Por Processo:</strong> cnj, uf, comarca, reclamante_nome, reu_nome, advogados_ativo, todas_testemunhas</p>
+            <p>✅ <strong>Campos obrigatórios Por Testemunha:</strong> nome_testemunha, qtd_depoimentos, cnjs_como_testemunha</p>
+            <p>✅ <strong>Sistema de sinônimos:</strong> Reconhece variações de nomes de colunas automaticamente</p>
+            <p>✅ <strong>Parser de listas:</strong> Suporta formatos JSON-like, separação por ; e ,</p>
+            <p>✅ <strong>CNJ preservado:</strong> Formato original mantido como string</p>
+          </div>
         </CardDescription>
       </CardHeader>
       <CardContent>

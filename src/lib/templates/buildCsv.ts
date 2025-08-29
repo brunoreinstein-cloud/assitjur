@@ -29,7 +29,7 @@ export function buildCsv(sheetName: string): string {
     if (value === null || value === undefined) return '';
     const str = String(value);
     // Se contém separador, quebra de linha ou aspas, envolver em aspas duplas
-    if (str.includes(';') || str.includes('\n') || str.includes('"')) {
+    if (str.includes(',') || str.includes('\n') || str.includes('"')) {
       return `"${str.replace(/"/g, '""')}"`;
     }
     return str;
@@ -39,12 +39,12 @@ export function buildCsv(sheetName: string): string {
   const lines: string[] = [];
   
   // Header
-  lines.push(headers.map(h => escapeCsvValue(h)).join(';'));
+  lines.push(headers.map(h => escapeCsvValue(h)).join(','));
   
   // Dados
   data.forEach(row => {
     const values = headers.map(header => escapeCsvValue(row[header]));
-    lines.push(values.join(';'));
+    lines.push(values.join(','));
   });
 
   return lines.join('\n');

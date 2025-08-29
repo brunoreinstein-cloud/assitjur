@@ -27,27 +27,35 @@ export function Examples() {
             </CardHeader>
             <CardContent>
               <div className="rounded-md border overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>CNJ</TableHead>
-                      <TableHead>Reclamante_Limpo</TableHead>
-                      <TableHead>Reu_Nome</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {processoExamples.map((exemplo, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-mono text-sm">{exemplo.CNJ}</TableCell>
-                        <TableCell>{exemplo.Reclamante_Limpo}</TableCell>
-                        <TableCell>{exemplo.Reu_Nome}</TableCell>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>CNJ</TableHead>
+                        <TableHead>UF</TableHead>
+                        <TableHead>Comarca</TableHead>
+                        <TableHead>Reclamante</TableHead>
+                        <TableHead>Réu</TableHead>
+                        <TableHead>Advogados Ativo</TableHead>
+                        <TableHead>Todas Testemunhas</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {processoExamples.map((exemplo, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-mono text-xs">{exemplo.cnj}</TableCell>
+                          <TableCell>{exemplo.uf}</TableCell>
+                          <TableCell>{exemplo.comarca}</TableCell>
+                          <TableCell>{exemplo.reclamante_nome}</TableCell>
+                          <TableCell>{exemplo.reu_nome}</TableCell>
+                          <TableCell className="text-xs max-w-32 truncate">{exemplo.advogados_ativo}</TableCell>
+                          <TableCell className="text-xs max-w-32 truncate">{exemplo.todas_testemunhas}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Template simplificado contendo apenas campos obrigatórios para facilitar a importação
+                <strong>Campos obrigatórios:</strong> cnj, uf, comarca, reclamante_nome, reu_nome, advogados_ativo, todas_testemunhas
               </p>
             </CardContent>
           </Card>
@@ -62,35 +70,38 @@ export function Examples() {
             </CardHeader>
             <CardContent>
               <div className="rounded-md border overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nome_Testemunha</TableHead>
-                      <TableHead>CNJs_Como_Testemunha</TableHead>
-                      <TableHead className="text-muted-foreground">Reclamante_Nome</TableHead>
-                      <TableHead className="text-muted-foreground">Reu_Nome</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {testemunhaExamples.map((exemplo, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{exemplo.Nome_Testemunha}</TableCell>
-                        <TableCell className="font-mono text-xs max-w-xs truncate">
-                          {exemplo.CNJs_Como_Testemunha}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground italic">
-                          {exemplo.Reclamante_Nome || '(join automático)'}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground italic">
-                          {exemplo.Reu_Nome || '(auto-fill)'}
-                        </TableCell>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nome Testemunha</TableHead>
+                        <TableHead>Qtd Depoimentos</TableHead>
+                        <TableHead>CNJs Como Testemunha</TableHead>
+                        <TableHead className="text-muted-foreground">Reclamante</TableHead>
+                        <TableHead className="text-muted-foreground">Réu</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {testemunhaExamples.map((exemplo, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{exemplo.nome_testemunha}</TableCell>
+                          <TableCell className="text-center">{exemplo.qtd_depoimentos}</TableCell>
+                          <TableCell className="font-mono text-xs max-w-xs truncate">
+                            {exemplo.cnjs_como_testemunha}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground italic">
+                            {exemplo.reclamante_nome || '(join automático)'}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground italic">
+                            {exemplo.reu_nome || '(auto-fill)'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
               </div>
               <div className="space-y-1 text-xs text-muted-foreground mt-2">
-                <p>* Formatos aceitos para CNJs_Como_Testemunha:</p>
+                <p><strong>Campos obrigatórios:</strong> nome_testemunha, qtd_depoimentos, cnjs_como_testemunha</p>
+                <p><strong>Formatos aceitos para cnjs_como_testemunha:</strong></p>
                 <p>• JSON-like: ['CNJ1','CNJ2']</p>
                 <p>• Separado por ;: CNJ1; CNJ2</p>
                 <p>• Separado por ,: CNJ1, CNJ2</p>
