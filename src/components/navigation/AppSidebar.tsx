@@ -1,317 +1,258 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
-  MessageSquare, 
-  Database, 
-  Settings, 
-  BarChart3, 
-  FileText, 
-  Users, 
-  Shield,
-  Bot,
-  Home,
-  LogOut,
-  User,
-  ChevronRight,
-  Upload,
-  History
-} from 'lucide-react';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
+  Sidebar, 
+  SidebarContent, 
+  SidebarFooter, 
+  SidebarGroup, 
+  SidebarGroupContent, 
+  SidebarGroupLabel, 
+  SidebarHeader, 
+  SidebarMenu, 
+  SidebarMenuButton, 
   SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
-  useSidebar,
+  useSidebar
 } from '@/components/ui/sidebar';
+import { useAuth } from '@/hooks/useAuth';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-
-const mainNavItems = [
-  {
-    title: 'Início',
-    url: '/',
-    icon: Home,
-    description: 'Mapa de Testemunhas'
-  },
-  {
-    title: 'Chat Assistente',
-    url: '/chat',
-    icon: MessageSquare,
-    description: 'Análise com IA'
-  }
-];
-
-const adminNavItems = [
-  {
-    title: 'Dashboard Admin',
-    url: '/admin',
-    icon: BarChart3,
-    description: 'Painel administrativo'
-  },
-  {
-    title: 'Analytics Avançado',
-    url: '/admin/analytics',
-    icon: BarChart3,
-    description: 'Relatórios detalhados'
-  },
-  {
-    title: 'Inteligência Artificial',
-    url: '/admin/ia',
-    icon: Bot,
-    description: 'Configurações de IA'
-  },
-  {
-    title: 'Base de Dados',
-    url: '/admin/base',
-    icon: Database,
-    description: 'Visualizar e explorar dados'
-  },
-  {
-    title: 'Importação de Dados',
-    url: '/admin/base-import',
-    icon: Upload,
-    description: 'Upload e importação'
-  },
-  {
-    title: 'Versões',
-    url: '/admin/versoes',
-    icon: History,
-    description: 'Histórico e rollback'
-  },
-  {
-    title: 'Organização',
-    url: '/admin/org',
-    icon: Users,
-    description: 'Usuários e acessos'
-  },
-  {
-    title: 'Logs',
-    url: '/admin/logs',
-    icon: FileText,
-    description: 'Auditoria do sistema'
-  },
-  {
-    title: 'Configurações',
-    url: '/admin/config',
-    icon: Settings,
-    description: 'Parâmetros do sistema'
-  }
-];
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { NAV_GROUPS } from '@/config/sidebar';
+import { ThemeToggle } from './ThemeToggle';
+import { CommandPalette } from './CommandPalette';
+import { 
+  User,
+  LogOut,
+  UserCog
+} from 'lucide-react';
 
 export function AppSidebar() {
-  const { open: sidebarOpen } = useSidebar();
+  const { open, setOpen, openMobile, setOpenMobile, isMobile, state } = useSidebar();
   const location = useLocation();
-  const { user, profile, signOut, hasRole } = useAuth();
+  const { user, signOut } = useAuth();
+  const { canAccess, getPermissionTooltip, hasAnyPermissionInGroup, userRole } = usePermissions();
   const { toast } = useToast();
-  
-  const currentPath = location.pathname;
-  const isAdmin = hasRole('ADMIN');
-
-  const isActive = (path: string) => {
-    if (path === '/') {
-      return currentPath === path;
-    }
-    return currentPath.startsWith(path);
-  };
-
-  const getNavClassName = (path: string) => {
-    return isActive(path) 
-      ? 'bg-primary/10 text-primary font-medium border-r-2 border-primary' 
-      : 'hover:bg-accent hover:text-accent-foreground';
-  };
 
   const handleSignOut = async () => {
     try {
       await signOut();
       toast({
-        title: "Logout realizado",
-        description: "Até logo!"
+        title: "Logout realizado com sucesso",
+        description: "Você foi desconectado da aplicação.",
       });
     } catch (error) {
       toast({
+        title: "Erro ao fazer logout",
+        description: "Ocorreu um erro. Tente novamente.",
         variant: "destructive",
-        title: "Erro no logout",
-        description: "Tente novamente."
       });
     }
   };
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'ADMIN': return 'default';
-      case 'ANALYST': return 'secondary';
-      case 'VIEWER': return 'outline';
-      default: return 'outline';
+      case 'ADMIN':
+        return 'destructive' as const;
+      case 'ANALYST':
+        return 'default' as const;
+      case 'VIEWER':
+        return 'secondary' as const;
+      default:
+        return 'secondary' as const;
     }
   };
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case 'ADMIN': return 'Admin';
-      case 'ANALYST': return 'Analista';  
-      case 'VIEWER': return 'Visualizador';
-      default: return role;
+      case 'ADMIN':
+        return 'Admin';
+      case 'ANALYST':
+        return 'Analyst';
+      case 'VIEWER':
+        return 'Viewer';
+      default:
+        return 'Usuário';
     }
   };
 
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
+  };
+
   return (
-    <Sidebar className={`${!sidebarOpen ? 'w-16' : 'w-64'} border-r`} collapsible="icon">
-      <SidebarHeader className="border-b p-4">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-lg text-primary-foreground font-bold">
-            H
-          </div>
-          {sidebarOpen && (
-            <div className="flex flex-col">
-              <span className="font-bold text-lg">Hubjuria</span>
-              <span className="text-xs text-muted-foreground">Assistente Legal</span>
+    <TooltipProvider>
+      <Sidebar 
+        variant="sidebar" 
+        className={`bg-sidebar border-sidebar-border transition-all duration-300 ${
+          !open ? 'w-[72px]' : 'w-60'
+        }`}
+      >
+        <SidebarHeader className="border-b border-sidebar-border p-4">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+              <span className="text-primary-foreground font-bold text-sm">H</span>
             </div>
-          )}
-        </div>
-      </SidebarHeader>
-
-      <SidebarContent className="py-4">
-        {/* Main Navigation */}
-        <SidebarGroup>
-          <SidebarGroupLabel className={!sidebarOpen ? 'sr-only' : ''}>
-            Navegação
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="w-full">
-                    <NavLink 
-                      to={item.url} 
-                      className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${getNavClassName(item.url)}`}
-                      title={!sidebarOpen ? item.title : undefined}
-                    >
-                      <item.icon className="h-4 w-4 flex-shrink-0" />
-                      {sidebarOpen && (
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">{item.title}</span>
-                          <span className="text-xs text-muted-foreground">{item.description}</span>
-                        </div>
-                      )}
-                      {sidebarOpen && isActive(item.url) && (
-                        <ChevronRight className="h-3 w-3 ml-auto" />
-                      )}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Admin Navigation */}
-        {isAdmin && (
-          <SidebarGroup>
-            <SidebarGroupLabel className={!sidebarOpen ? 'sr-only' : ''}>
-              <div className="flex items-center gap-2">
-                <Shield className="h-3 w-3" />
-                Administração
+            {open && (
+              <div className="min-w-0">
+                <h2 className="text-lg font-semibold text-sidebar-foreground truncate">HubJUR.IA</h2>
+                <p className="text-xs text-sidebar-foreground/60">Legal Intelligence</p>
               </div>
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {adminNavItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild className="w-full">
-                      <NavLink 
-                        to={item.url} 
-                        className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${getNavClassName(item.url)}`}
-                        title={!sidebarOpen ? item.title : undefined}
-                      >
-                        <item.icon className="h-4 w-4 flex-shrink-0" />
-                        {sidebarOpen && (
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium">{item.title}</span>
-                            <span className="text-xs text-muted-foreground">{item.description}</span>
-                          </div>
-                        )}
-                        {sidebarOpen && isActive(item.url) && (
-                          <ChevronRight className="h-3 w-3 ml-auto" />
-                        )}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-      </SidebarContent>
+            )}
+          </div>
+        </SidebarHeader>
 
-      <SidebarFooter className="border-t p-4">
-        {profile && (
+        <SidebarContent className="p-2 space-y-2">
+          {NAV_GROUPS.map((group) => {
+            // Only show group if user has permission to access at least one item
+            const accessibleItems = group.items.filter(canAccess);
+            if (accessibleItems.length === 0) return null;
+
+            return (
+              <SidebarGroup key={group.title}>
+                <SidebarGroupLabel className="text-[11px] uppercase tracking-wider text-muted-foreground/80 px-3 pt-4 pb-1">
+                  {open && group.title}
+                </SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {group.items.map((item) => {
+                      const canAccessItem = canAccess(item);
+                      const active = isActive(item.to);
+                      
+                      if (!canAccessItem) {
+                        // Show disabled item with tooltip for admin visibility
+                        return (
+                          <SidebarMenuItem key={item.to}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground/50 cursor-not-allowed rounded-md">
+                                  <item.icon className="h-4 w-4" />
+                                  {open && <span>{item.label}</span>}
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent side="right">
+                                <p>{getPermissionTooltip(item)}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </SidebarMenuItem>
+                        );
+                      }
+
+                      const MenuButton = (
+                        <NavLink 
+                          to={item.to}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors group ${
+                            active 
+                              ? 'bg-primary/10 text-foreground border-l-2 border-primary' 
+                              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                          }`}
+                          aria-current={active ? 'page' : undefined}
+                        >
+                          <item.icon className="h-4 w-4 flex-shrink-0" />
+                          {open && (
+                            <div className="flex items-center justify-between w-full min-w-0">
+                              <span className="truncate">{item.label}</span>
+                              {item.badge && (
+                                <Badge 
+                                  variant="secondary" 
+                                  className="ml-2 text-xs h-5 px-1.5 bg-primary/20 text-primary border-0"
+                                >
+                                  {item.badge}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                        </NavLink>
+                      );
+
+                      return (
+                        <SidebarMenuItem key={item.to}>
+                          {!open ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                {MenuButton}
+                              </TooltipTrigger>
+                              <TooltipContent side="right">
+                                <p>{getPermissionTooltip(item)}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            MenuButton
+                          )}
+                        </SidebarMenuItem>
+                      );
+                    })}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            );
+          })}
+        </SidebarContent>
+
+        <SidebarFooter className="border-t border-sidebar-border p-4 space-y-3">
+          {/* Theme Toggle and Command Palette */}
+          <div className="flex items-center justify-center gap-2">
+            <ThemeToggle />
+            <CommandPalette />
+          </div>
+
+          {/* User Profile */}
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                className={`w-full justify-start gap-3 p-2 h-auto ${!sidebarOpen ? 'px-2' : ''}`}
-              >
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
-                    {profile.email?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                {sidebarOpen && (
-                  <div className="flex flex-col items-start text-left flex-1 min-w-0">
-                    <span className="text-sm font-medium truncate">
-                      {profile.email}
-                    </span>
+            <DropdownMenuTrigger className="flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent text-left w-full transition-colors">
+              <Avatar className="h-8 w-8 flex-shrink-0">
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                  {user?.email?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              {open && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-sidebar-foreground truncate">
+                    {user?.email}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
                     <Badge 
-                      variant={getRoleBadgeVariant(profile.role)} 
+                      variant={getRoleBadgeVariant(userRole)} 
                       className="text-xs"
                     >
-                      {getRoleLabel(profile.role)}
+                      {getRoleLabel(userRole)}
                     </Badge>
                   </div>
-                )}
-              </Button>
+                </div>
+              )}
             </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              side="top" 
-              align="end" 
-              className="w-56 bg-background border shadow-lg z-50"
-            >
-              <DropdownMenuItem className="flex items-center gap-2">
+            
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
                 <User className="h-4 w-4" />
-                Perfil
+                <span>Perfil</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                Configurações
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                <UserCog className="h-4 w-4" />
+                <span>Configurações</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
-                className="flex items-center gap-2 text-destructive"
                 onClick={handleSignOut}
+                className="flex items-center gap-2 text-destructive focus:text-destructive cursor-pointer"
               >
                 <LogOut className="h-4 w-4" />
-                Sair
+                <span>Sair</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        )}
-      </SidebarFooter>
-    </Sidebar>
+        </SidebarFooter>
+      </Sidebar>
+    </TooltipProvider>
   );
 }

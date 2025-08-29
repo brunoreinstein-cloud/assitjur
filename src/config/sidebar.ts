@@ -1,0 +1,138 @@
+import { 
+  Home, 
+  Users, 
+  MessageSquare, 
+  BarChart3, 
+  LineChart, 
+  Database, 
+  Upload, 
+  History, 
+  Briefcase, 
+  ShieldCheck, 
+  ClipboardList, 
+  Settings,
+  LucideIcon
+} from "lucide-react";
+
+export type NavItem = {
+  label: string;
+  to: string;
+  icon: LucideIcon;
+  badge?: string | number;
+  permission?: string;
+  description?: string;
+};
+
+export type NavGroup = { 
+  title: string; 
+  items: NavItem[];
+};
+
+export const NAV_GROUPS: NavGroup[] = [
+  { 
+    title: "Operação", 
+    items: [
+      { 
+        label: "Início", 
+        to: "/", 
+        icon: Home,
+        description: "Visão geral"
+      },
+      { 
+        label: "Mapa de Testemunhas", 
+        to: "/mapa", 
+        icon: Users,
+        description: "Análise de vínculos e padrões"
+      },
+      { 
+        label: "Chat Assistente", 
+        to: "/chat", 
+        icon: MessageSquare,
+        description: "Assistente jurídico inteligente"
+      },
+    ]
+  },
+  { 
+    title: "Análises", 
+    items: [
+      { 
+        label: "Painel", 
+        to: "/admin/dashboard", 
+        icon: BarChart3,
+        description: "Dashboard executivo",
+        permission: "canViewAnalytics"
+      },
+      { 
+        label: "Relatórios", 
+        to: "/admin/analytics", 
+        icon: LineChart,
+        description: "Análises detalhadas",
+        permission: "canViewAnalytics"
+      },
+    ]
+  },
+  { 
+    title: "Dados", 
+    items: [
+      { 
+        label: "Base de Dados", 
+        to: "/admin/base", 
+        icon: Database,
+        description: "Gestão de dados centralizados",
+        permission: "canManageData"
+      },
+      { 
+        label: "Importação", 
+        to: "/admin/import", 
+        icon: Upload,
+        description: "Upload e validação de planilhas",
+        permission: "canImportData"
+      },
+      { 
+        label: "Versões", 
+        to: "/admin/versions", 
+        icon: History,
+        description: "Histórico e rollback",
+        permission: "canViewVersions",
+        badge: "2" // Example badge
+      },
+    ]
+  },
+  { 
+    title: "Administração", 
+    items: [
+      { 
+        label: "Organização", 
+        to: "/admin/org", 
+        icon: Briefcase,
+        description: "Configurações organizacionais",
+        permission: "canManageOrg"
+      },
+      { 
+        label: "Permissões", 
+        to: "/admin/permissions", 
+        icon: ShieldCheck,
+        description: "Gestão de acesso e funções",
+        permission: "canManagePermissions"
+      },
+      { 
+        label: "Logs", 
+        to: "/admin/logs", 
+        icon: ClipboardList,
+        description: "Auditoria e monitoramento",
+        permission: "canViewLogs",
+        badge: 3 // Example badge
+      },
+      { 
+        label: "Configurações", 
+        to: "/admin/settings", 
+        icon: Settings,
+        description: "Configurações do sistema",
+        permission: "canManageSettings"
+      },
+    ]
+  },
+];
+
+// Flatten all items for search functionality
+export const ALL_NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap(group => group.items);
