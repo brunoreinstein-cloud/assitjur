@@ -8,24 +8,16 @@ import { QualityChips } from '@/components/data-explorer/QualityChips';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Eye, Edit } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Eye, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { PorTestemunha } from '@/types/mapa-testemunhas';
+import { ArrayField } from '@/components/mapa-testemunhas/ArrayField';
+import { applyPIIMask } from '@/utils/pii-mask';
 
-interface PessoaQuality {
-  id: string;
-  org_id: string;
-  nome_civil: string;
-  nome_valid: boolean;
-  cpf_mask: string;
-  apelidos: string[];
-  duplicate_count: number;
-  is_canonical: boolean;
-  quality_score: number;
-  severity: 'OK' | 'WARNING' | 'ERROR' | 'INFO';
-  updated_at: string;
-}
+// Using PorTestemunha from mapa-testemunhas types
 
 export default function TestemunhasTable() {
   const { user, profile } = useAuth();
@@ -34,54 +26,34 @@ export default function TestemunhasTable() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSeverity, setSelectedSeverity] = useState<string[]>([]);
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [limit] = useState(50);
+  const [isPiiMasked, setIsPiiMasked] = useState(false);
 
-  // Query para buscar dados de pessoas/testemunhas
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['pessoas-quality', profile?.organization_id, searchTerm, selectedSeverity, page, limit],
+  // Query testemunhas usando a mesma edge function do Mapa de Testemunhas
+  const { data: testemunhasResponse, isLoading, error, refetch } = useQuery({
+    queryKey: ['admin-testemunhas', profile?.organization_id, searchTerm, page, limit],
     queryFn: async () => {
       if (!profile?.organization_id) throw new Error('Organização não encontrada');
 
-      let query = supabase
-        .from('pessoas')
-        .select(`
-          id,
-          org_id,
-          nome_civil,
-          cpf_mask,
-          apelidos,
-          updated_at
-        `)
-        .eq('org_id', profile.organization_id)
-        .order('updated_at', { ascending: false })
-        .range(page * limit, (page + 1) * limit - 1);
+      const { data, error } = await supabase.functions.invoke('mapa-testemunhas-testemunhas', {
+        body: {
+          filters: {
+            search: searchTerm.trim() || undefined,
+          },
+          page,
+          limit
+        }
+      });
 
-      // Aplicar filtros de busca
-      if (searchTerm.trim()) {
-        query = query.or(`nome_civil.ilike.%${searchTerm}%,cpf_mask.ilike.%${searchTerm}%`);
-      }
-
-      const { data, error } = await query;
       if (error) throw error;
-
-      // Enriquecer com análise de qualidade (temporário até view funcionar)
-      const enrichedData = data?.map(item => ({
-        ...item,
-        nome_valid: !!item.nome_civil?.trim(),
-        duplicate_count: 1, // TODO: calcular duplicatas
-        is_canonical: true,
-        quality_score: item.nome_civil?.trim() ? 100 : 25,
-        severity: !item.nome_civil?.trim() ? 'ERROR' as const : 'OK' as const
-      })) || [];
-
-      // Aplicar filtro de severidade
-      return selectedSeverity.length > 0 
-        ? enrichedData.filter(item => selectedSeverity.includes(item.severity))
-        : enrichedData;
+      return data;
     },
     enabled: !!profile?.organization_id,
   });
+
+  const testemunhasData: PorTestemunha[] = testemunhasResponse?.data || [];
+  const totalCount = testemunhasResponse?.count || 0;
 
   // Ações em massa específicas para testemunhas
   const handleFillDefaultReu = async () => {
@@ -102,31 +74,59 @@ export default function TestemunhasTable() {
     }
   };
 
-  // Controles de seleção
-  const toggleRowSelection = (id: string) => {
+  // Controles de seleção usando nome_testemunha como ID
+  const toggleRowSelection = (nomeTestemunha: string) => {
     const newSelection = new Set(selectedRows);
-    if (newSelection.has(id)) {
-      newSelection.delete(id);
+    if (newSelection.has(nomeTestemunha)) {
+      newSelection.delete(nomeTestemunha);
     } else {
-      newSelection.add(id);
+      newSelection.add(nomeTestemunha);
     }
     setSelectedRows(newSelection);
   };
 
   const toggleAllSelection = () => {
-    if (selectedRows.size === data?.length) {
+    if (selectedRows.size === testemunhasData?.length) {
       setSelectedRows(new Set());
     } else {
-      setSelectedRows(new Set(data?.map(item => item.id)));
+      setSelectedRows(new Set(testemunhasData?.map(item => item.nome_testemunha)));
     }
   };
 
-  const hasActiveFilters = searchTerm.trim() !== '' || selectedSeverity.length > 0;
+  const hasActiveFilters = searchTerm.trim() !== '';
 
   const clearFilters = () => {
     setSearchTerm('');
     setSelectedSeverity([]);
-    setPage(0);
+    setPage(1);
+  };
+
+  // Helper components
+  const BooleanIcon = ({ value }: { value: boolean | null }) => {
+    if (value === null) return <span className="text-muted-foreground">—</span>;
+    return value ? (
+      <CheckCircle className="h-4 w-4 text-success" />
+    ) : (
+      <XCircle className="h-4 w-4 text-muted-foreground" />
+    );
+  };
+
+  const getClassificacaoColor = (classificacao: string | null) => {
+    switch (classificacao?.toLowerCase()) {
+      case 'crítico': return 'destructive';
+      case 'atenção': return 'secondary';
+      case 'observação': return 'outline';
+      default: return 'secondary';
+    }
+  };
+
+  const getSeverityFromClassificacao = (classificacao: string | null) => {
+    switch (classificacao?.toLowerCase()) {
+      case 'crítico': return 'ERROR';
+      case 'atenção': return 'WARNING';
+      case 'observação': return 'INFO';
+      default: return 'OK';
+    }
   };
 
   if (error) {
@@ -140,6 +140,21 @@ export default function TestemunhasTable() {
 
   return (
     <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Gestão de Testemunhas</h2>
+          <p className="text-muted-foreground">
+            Dados extraídos dos {totalCount} processos da organização
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => setIsPiiMasked(!isPiiMasked)}
+        >
+          {isPiiMasked ? 'Mostrar Dados' : 'Mascarar PII'}
+        </Button>
+      </div>
+
       <SearchFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -161,36 +176,38 @@ export default function TestemunhasTable() {
         showTestemunhaActions={true}
       />
 
-      <div className="border rounded-md bg-background">
+      <div className="border border-border/50 rounded-2xl overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="bg-muted/30">
               <TableHead className="w-12">
                 <Checkbox
-                  checked={data?.length > 0 && selectedRows.size === data.length}
+                  checked={testemunhasData?.length > 0 && selectedRows.size === testemunhasData.length}
                   onCheckedChange={toggleAllSelection}
                 />
               </TableHead>
-              <TableHead>Nome</TableHead>
-              <TableHead>CPF</TableHead>
-              <TableHead>Apelidos</TableHead>
-              <TableHead>Qualidade</TableHead>
-              <TableHead>Atualizado</TableHead>
-              <TableHead className="w-20">Ações</TableHead>
+              <TableHead className="font-semibold">Nome da Testemunha</TableHead>
+              <TableHead className="font-semibold text-center">Qtd Depoimentos</TableHead>
+              <TableHead className="font-semibold text-center">Ambos os Polos</TableHead>
+              <TableHead className="font-semibold text-center">Já Foi Reclamante</TableHead>
+              <TableHead className="font-semibold">CNJs como Testemunha</TableHead>
+              <TableHead className="font-semibold">Classificação</TableHead>
+              <TableHead className="font-semibold">Qualidade</TableHead>
+              <TableHead className="font-semibold text-center">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell colSpan={7} className="h-16">
+                  <TableCell colSpan={9} className="h-16">
                     <div className="animate-pulse bg-muted rounded h-4 w-full" />
                   </TableCell>
                 </TableRow>
               ))
-            ) : data?.length === 0 ? (
+            ) : testemunhasData?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8">
+                <TableCell colSpan={9} className="text-center py-8">
                   <p className="text-muted-foreground">Nenhuma testemunha encontrada</p>
                   {hasActiveFilters && (
                     <Button variant="link" onClick={clearFilters}>
@@ -200,62 +217,60 @@ export default function TestemunhasTable() {
                 </TableCell>
               </TableRow>
             ) : (
-              data?.map((pessoa) => (
-                <TableRow key={pessoa.id}>
+              testemunhasData?.map((testemunha) => (
+                <TableRow key={testemunha.nome_testemunha} className="hover:bg-muted/20">
                   <TableCell>
                     <Checkbox
-                      checked={selectedRows.has(pessoa.id)}
-                      onCheckedChange={() => toggleRowSelection(pessoa.id)}
+                      checked={selectedRows.has(testemunha.nome_testemunha)}
+                      onCheckedChange={() => toggleRowSelection(testemunha.nome_testemunha)}
+                    />
+                  </TableCell>
+                  <TableCell className="font-medium max-w-[200px] truncate">
+                    {applyPIIMask(testemunha.nome_testemunha, isPiiMasked)}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant="secondary" className="text-xs">
+                      {testemunha.qtd_depoimentos || 0}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <BooleanIcon value={testemunha.foi_testemunha_em_ambos_polos} />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <BooleanIcon value={testemunha.ja_foi_reclamante} />
+                  </TableCell>
+                  <TableCell>
+                    <ArrayField 
+                      items={testemunha.cnjs_como_testemunha} 
+                      maxVisible={2}
+                      isPiiMasked={isPiiMasked}
                     />
                   </TableCell>
                   <TableCell>
-                    <div className="max-w-64 truncate">
-                      {pessoa.nome_civil || 'N/A'}
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-mono text-sm">
-                    {pessoa.cpf_mask || 'N/A'}
-                  </TableCell>
-                  <TableCell>
-                    <div className="max-w-48">
-                      {pessoa.apelidos && pessoa.apelidos.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {pessoa.apelidos.slice(0, 2).map((apelido, idx) => (
-                            <span key={idx} className="text-xs bg-muted px-2 py-1 rounded">
-                              {apelido}
-                            </span>
-                          ))}
-                          {pessoa.apelidos.length > 2 && (
-                            <span className="text-xs text-muted-foreground">
-                              +{pessoa.apelidos.length - 2}
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">Nenhum</span>
-                      )}
-                    </div>
+                    <Badge 
+                      variant={getClassificacaoColor(testemunha.classificacao_estrategica)}
+                      className="text-xs"
+                    >
+                      {testemunha.classificacao_estrategica || 'Normal'}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <QualityChips 
-                      severity={pessoa.severity} 
-                      score={pessoa.quality_score}
+                      severity={getSeverityFromClassificacao(testemunha.classificacao_estrategica)}
+                      score={testemunha.qtd_depoimentos ? Math.min(100, testemunha.qtd_depoimentos * 20) : 50}
                       size="sm"
                     />
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {pessoa.updated_at 
-                      ? format(new Date(pessoa.updated_at), 'dd/MM/yy HH:mm', { locale: ptBR })
-                      : 'N/A'
-                    }
-                  </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="sm">
+                    <div className="flex items-center justify-center gap-1">
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                         <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive hover:text-destructive">
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -266,11 +281,32 @@ export default function TestemunhasTable() {
         </Table>
       </div>
 
-      {/* Pagination TODO */}
-      <div className="flex items-center justify-center">
+      {/* Pagination */}
+      <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Mostrando {data?.length || 0} registros
+          Mostrando {testemunhasData?.length || 0} de {totalCount} testemunhas
         </p>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setPage(Math.max(1, page - 1))}
+            disabled={page <= 1}
+          >
+            Anterior
+          </Button>
+          <span className="text-sm">
+            Página {page} de {Math.ceil(totalCount / limit)}
+          </span>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setPage(page + 1)}
+            disabled={page >= Math.ceil(totalCount / limit)}
+          >
+            Próxima
+          </Button>
+        </div>
       </div>
     </div>
   );
