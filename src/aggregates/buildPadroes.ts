@@ -429,7 +429,7 @@ function buildTendenciaTemporal(processos: any[]): TendenciaTemporal[] {
  * Salva agregados no banco de dados usando SQL direto
  */
 export async function savePadroesAgregados(agregados: PadroesAgregados): Promise<void> {
-  const { error } = await supabase.rpc('upsert_padroes_agregados', {
+  const { error } = await supabase.rpc('upsert_padroes_agregados' as any, {
     p_org_id: agregados.org_id,
     p_data: {
       total_processos: agregados.total_processos,

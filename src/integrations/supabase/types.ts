@@ -1177,6 +1177,10 @@ export type Database = {
         Args: { input_text: string }
         Returns: string
       }
+      upsert_padroes_agregados: {
+        Args: { p_data: Json; p_org_id: string }
+        Returns: undefined
+      }
       upsert_staging_to_final: {
         Args: { p_import_job_id?: string; p_org_id: string }
         Returns: {
