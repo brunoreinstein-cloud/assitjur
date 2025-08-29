@@ -35,7 +35,7 @@ export const BRAND = {
   },
   
   contact: {
-    demo: "demo@hubjuria.com", // Maintain existing demo email
+    demo: "demo@assistjur.ia", // Updated to new domain
     support: "contato@assistjur.ia",
   }
 } as const;

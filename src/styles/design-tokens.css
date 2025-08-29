@@ -1,0 +1,109 @@
+/**
+ * AssistJur.IA Design System Tokens
+ * Centralized design tokens for consistent branding
+ */
+
+:root {
+  /* Brand Colors - Based on AssistJur.IA Identity */
+  --brand-primary: hsl(258, 69%, 52%);    /* #6E40FF - Violeta tech */
+  --brand-primary-hover: hsl(258, 69%, 47%);
+  --brand-primary-muted: hsl(258, 40%, 85%);
+  
+  --brand-accent: hsl(45, 93%, 58%);      /* #B89A29 - Gold highlights */
+  --brand-accent-hover: hsl(45, 93%, 53%);
+  --brand-accent-muted: hsl(45, 60%, 90%);
+  
+  --brand-ink: hsl(0, 0%, 17%);           /* #2B2B2B - Títulos */
+  --brand-muted: hsl(0, 0%, 40%);          /* #666 - Texto auxiliar */
+  --brand-bg: hsl(0, 0%, 98%);            /* #FAFAFA - Fundos */
+  
+  /* Status Colors - WCAG AA Compliant */
+  --status-critical: hsl(0, 84%, 48%);     /* Crítico - Alto contraste */
+  --status-warning: hsl(38, 92%, 45%);     /* Atenção - Âmbar */
+  --status-info: hsl(221, 83%, 53%);       /* Observação - Azul */
+  --status-success: hsl(142, 76%, 36%);    /* Sucesso - Verde */
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, hsl(var(--brand-primary)), hsl(var(--brand-accent)));
+  --gradient-subtle: linear-gradient(180deg, hsl(var(--brand-bg)), hsl(0, 0%, 96%));
+  --gradient-hero: linear-gradient(135deg, hsl(258, 69%, 52%) 0%, hsl(45, 93%, 58%) 100%);
+  
+  /* Shadows */
+  --shadow-brand: 0 10px 30px -10px hsl(var(--brand-primary) / 0.3);
+  --shadow-accent: 0 4px 20px -4px hsl(var(--brand-accent) / 0.4);
+  --shadow-soft: 0 2px 8px -2px hsl(0 0% 0% / 0.1);
+  
+  /* Typography Scale */
+  --text-hero: 3.5rem;        /* 56px */
+  --text-h1: 2.5rem;          /* 40px */
+  --text-h2: 2rem;            /* 32px */
+  --text-h3: 1.5rem;          /* 24px */
+  --text-h4: 1.25rem;         /* 20px */
+  --text-body: 1rem;          /* 16px */
+  --text-small: 0.875rem;     /* 14px */
+  --text-xs: 0.75rem;         /* 12px */
+  
+  /* Spacing Scale */
+  --space-xs: 0.25rem;        /* 4px */
+  --space-sm: 0.5rem;         /* 8px */
+  --space-md: 0.75rem;        /* 12px */
+  --space-lg: 1rem;           /* 16px */
+  --space-xl: 1.5rem;         /* 24px */
+  --space-2xl: 2rem;          /* 32px */
+  --space-3xl: 3rem;          /* 48px */
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.15s ease-out;
+  --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark Mode Adjustments */
+.dark {
+  --brand-bg: hsl(0, 0%, 7%);             /* Fundo escuro */
+  --brand-ink: hsl(0, 0%, 95%);           /* Texto claro */
+  --brand-muted: hsl(0, 0%, 65%);         /* Texto auxiliar claro */
+  
+  --shadow-brand: 0 10px 30px -10px hsl(var(--brand-primary) / 0.5);
+  --shadow-accent: 0 4px 20px -4px hsl(var(--brand-accent) / 0.6);
+}
+
+/* Utility Classes */
+.brand-gradient {
+  background: var(--gradient-primary);
+}
+
+.brand-shadow {
+  box-shadow: var(--shadow-brand);
+}
+
+.text-brand-primary {
+  color: hsl(var(--brand-primary));
+}
+
+.text-brand-accent {
+  color: hsl(var(--brand-accent));
+}
+
+.text-brand-ink {
+  color: hsl(var(--brand-ink));
+}
+
+.bg-brand-primary {
+  background-color: hsl(var(--brand-primary));
+}
+
+.bg-brand-accent {
+  background-color: hsl(var(--brand-accent));
+}
+
+.border-brand-primary {
+  border-color: hsl(var(--brand-primary));
+}

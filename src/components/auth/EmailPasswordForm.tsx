@@ -74,7 +74,7 @@ export const EmailPasswordForm = ({
     try {
       if (!supabase) {
         // Mock login for development
-        if (data.email === 'demo@hubjuria.com' && data.password === 'demo123') {
+        if (data.email === 'demo@assistjur.ia' && data.password === 'demo123') {
           toast.success("Login realizado!", {
             description: "Bem-vindo ao AssistJur.IA (modo demo)"
           });
@@ -116,7 +116,7 @@ export const EmailPasswordForm = ({
     try {
       if (!supabase) {
         toast.info("Modo demo", {
-          description: "Cadastro simulado. Use demo@hubjuria.com / demo123 para entrar."
+          description: "Cadastro simulado. Use demo@assistjur.ia / demo123 para entrar."
         });
         onModeChange('signin');
         return;

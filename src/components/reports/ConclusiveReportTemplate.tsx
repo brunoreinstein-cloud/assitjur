@@ -24,6 +24,11 @@ import type { AnalysisResult } from '@/types/mapa-testemunhas-analysis';
 import type { ProcessoScore, TestemunhaScore, ScoringMetrics } from '@/types/scoring';
 import { RiskBadge } from '@/components/RiskBadge';
 import { ScoreDisplay } from '@/components/scoring/ScoreDisplay';
+import { BrandHeader } from '@/components/brand/BrandHeader';
+import { LGPDFooter } from '@/components/brand/LGPDFooter';
+import { ExportActions } from '@/components/brand/ExportActions';
+import { ReportSection } from '@/components/templates/ReportSection';
+import { CNJCitation } from '@/components/templates/CNJCitation';
 
 export interface ConclusiveReportData {
   // Metadados do relatório
@@ -111,7 +116,8 @@ export function ConclusiveReportTemplate({
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="space-y-2">
-              <CardTitle className="text-2xl font-bold flex items-center gap-2">
+              <BrandHeader size="lg" />
+              <CardTitle className="text-2xl font-bold flex items-center gap-2 mt-4">
                 <FileText className="h-6 w-6 text-primary" />
                 Relatório Conclusivo de Análise
               </CardTitle>
@@ -123,31 +129,8 @@ export function ConclusiveReportTemplate({
               </div>
             </div>
             
-            <div className="flex items-center gap-2 print:hidden">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrint}
-              >
-                <Printer className="h-4 w-4 mr-1" />
-                Imprimir
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleExport('pdf')}
-              >
-                <Download className="h-4 w-4 mr-1" />
-                PDF
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleExport('docx')}
-              >
-                <Download className="h-4 w-4 mr-1" />
-                DOCX
-              </Button>
+            <div className="print:hidden">
+              <ExportActions onExport={handleExport} />
             </div>
           </div>
         </CardHeader>
@@ -463,10 +446,11 @@ export function ConclusiveReportTemplate({
       </Card>
 
       {/* Rodapé do Relatório */}
-      <Card className="print:shadow-none">
-        <CardContent className="pt-6">
-          <div className="text-center text-xs text-muted-foreground space-y-1">
-            <p>
+      <LGPDFooter 
+        organization={data.organizacao}
+        showTimestamp={true}
+        showVersion={true}
+      />
               Este relatório foi gerado automaticamente pelo sistema AssistJur.IA em {formatDate(data.data_geracao)}
             </p>
             <p>

@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
 
     // For now, create a mock download URL
     // In production, this would upload to storage bucket and return signed URL
-    const mockUrl = `https://hubjuria.app/exports/${filename}`;
+    const mockUrl = `https://assistjur.ia/exports/${filename}`;
 
     // Log audit entry
     try {
