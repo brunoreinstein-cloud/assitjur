@@ -66,7 +66,7 @@ export interface ConclusiveReportData {
 
 interface ConclusiveReportTemplateProps {
   data: ConclusiveReportData;
-  onExport?: (format: 'pdf' | 'docx' | 'json') => void;
+  onExport?: (format: 'pdf' | 'csv' | 'docx' | 'json') => void;
 }
 
 export function ConclusiveReportTemplate({ 
@@ -79,7 +79,7 @@ export function ConclusiveReportTemplate({
     window.print();
   };
   
-  const handleExport = (format: 'pdf' | 'docx' | 'json') => {
+  const handleExport = (format: 'pdf' | 'csv' | 'docx' | 'json') => {
     if (onExport) {
       onExport(format);
     } else {
@@ -451,17 +451,6 @@ export function ConclusiveReportTemplate({
         showTimestamp={true}
         showVersion={true}
       />
-              Este relatório foi gerado automaticamente pelo sistema AssistJur.IA em {formatDate(data.data_geracao)}
-            </p>
-            <p>
-              Confidencial - Uso restrito à organização {data.organizacao}
-            </p>
-            <p>
-              Análise baseada em dados processados até {data.periodo_analise.fim}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

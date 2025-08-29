@@ -4,7 +4,7 @@ import { Download, FileText, FileSpreadsheet, Printer } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ExportActionsProps {
-  onExport: (format: 'pdf' | 'csv' | 'json') => void;
+  onExport: (format: 'pdf' | 'csv' | 'docx' | 'json') => void;
   showPrint?: boolean;
   disabled?: boolean;
   className?: string;
@@ -26,7 +26,7 @@ export function ExportActions({
     });
   };
 
-  const handleExport = (format: 'pdf' | 'csv' | 'json') => {
+  const handleExport = (format: 'pdf' | 'csv' | 'docx' | 'json') => {
     onExport(format);
     toast({
       title: "Exportando",
@@ -69,6 +69,17 @@ export function ExportActions({
       >
         <FileSpreadsheet className="h-4 w-4" />
         Export CSV
+      </Button>
+      
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => handleExport('docx')}
+        disabled={disabled}
+        className="gap-2"
+      >
+        <FileText className="h-4 w-4" />
+        Export DOCX
       </Button>
       
       <Button
