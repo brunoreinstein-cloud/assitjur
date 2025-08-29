@@ -24,6 +24,8 @@ import {
   ComarcaRiskChart,
   TokensChart 
 } from '@/components/analytics/AnalyticsCharts';
+import { ReviewUpdateButton } from '@/components/admin/ReviewUpdateButton';
+import { DatabaseCleanupButton } from '@/components/admin/DatabaseCleanupButton';
 
 interface OverviewData {
   counts: {
@@ -121,6 +123,25 @@ const Dashboard = () => {
           Insights avançados e métricas do sistema
         </p>
       </div>
+
+      {/* Operações de Dados */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Operações de Dados
+          </CardTitle>
+          <CardDescription>
+            Ferramentas administrativas para manutenção e otimização da base
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-3">
+            <ReviewUpdateButton />
+            <DatabaseCleanupButton />
+          </div>
+        </CardContent>
+      </Card>
 
       <Tabs 
         value={activeTab} 

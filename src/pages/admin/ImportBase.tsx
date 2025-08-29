@@ -25,6 +25,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 import ErrorReportGenerator from '@/components/admin/ErrorReportGenerator';
 import ImportWizardSteps from '@/components/admin/ImportWizardSteps';
+import { ReviewUpdateButton } from '@/components/admin/ReviewUpdateButton';
 
 const ImportBase = () => {
   const [currentStep, setCurrentStep] = useState<'upload' | 'validation' | 'preview' | 'publish'>('upload');
@@ -359,6 +360,24 @@ const ImportBase = () => {
                 validationResults={validationResults}
                 fileName={uploadedFile?.name || 'arquivo'}
               />
+            )}
+
+            {/* Revisão e Otimização - disponível após validação bem-sucedida */}
+            {validationResults.errors?.length === 0 && validationResults.validRows > 0 && (
+              <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950">
+                <CardHeader>
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <RefreshCw className="h-4 w-4" />
+                    Otimização Opcional
+                  </CardTitle>
+                  <CardDescription className="text-blue-800 dark:text-blue-200">
+                    Execute uma revisão completa para detectar padrões suspeitos e otimizar a base atual
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ReviewUpdateButton />
+                </CardContent>
+              </Card>
             )}
 
             <div className="flex gap-2 justify-between">
