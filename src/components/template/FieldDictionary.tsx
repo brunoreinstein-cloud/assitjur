@@ -3,13 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { dicionarioFields } from '@/lib/templates/samples';
+import { canonicalDicionarioFields } from '@/lib/templates/canonical-samples';
 
 export function FieldDictionary() {
-  const processoFields = dicionarioFields.filter(f => f.Aba === 'Por Processo');
-  const testemunhaFields = dicionarioFields.filter(f => f.Aba === 'Por Testemunha');
+  const processoFields = canonicalDicionarioFields.filter(f => f.Aba === 'Por Processo');
+  const testemunhaFields = canonicalDicionarioFields.filter(f => f.Aba === 'Por Testemunha');
 
-  const renderFieldTable = (fields: typeof dicionarioFields, title: string, description: string) => (
+  const renderFieldTable = (fields: typeof canonicalDicionarioFields, title: string, description: string) => (
     <Card>
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
@@ -72,13 +72,13 @@ export function FieldDictionary() {
         <CardTitle>Dicionário de Campos</CardTitle>
         <CardDescription>
           <div className="space-y-1 text-sm">
-            <p><strong>CONFORMIDADE COM NOVAS ESPECIFICAÇÕES:</strong></p>
-            <p>✅ <strong>Abas obrigatórias:</strong> "Por Processo" + "Por Testemunha"</p>
-            <p>✅ <strong>Campos obrigatórios Por Processo:</strong> cnj, uf, comarca, reclamante_nome, reu_nome, advogados_ativo, todas_testemunhas</p>
-            <p>✅ <strong>Campos obrigatórios Por Testemunha:</strong> nome_testemunha, qtd_depoimentos, cnjs_como_testemunha</p>
-            <p>✅ <strong>Sistema de sinônimos:</strong> Reconhece variações de nomes de colunas automaticamente</p>
-            <p>✅ <strong>Parser de listas:</strong> Suporta formatos JSON-like, separação por ; e ,</p>
-            <p>✅ <strong>CNJ preservado:</strong> Formato original mantido como string</p>
+            <div><strong>CONFORMIDADE COM NOVAS ESPECIFICAÇÕES:</strong></div>
+            <div>✅ <strong>Abas obrigatórias:</strong> "Por Processo" + "Por Testemunha"</div>
+            <div>✅ <strong>Campos obrigatórios Por Processo:</strong> cnj, uf, comarca, reclamante_nome, reu_nome, advogados_ativo, todas_testemunhas</div>
+            <div>✅ <strong>Campos obrigatórios Por Testemunha:</strong> nome_testemunha, qtd_depoimentos, cnjs_como_testemunha</div>
+            <div>✅ <strong>Sistema de sinônimos:</strong> Reconhece variações de nomes de colunas automaticamente</div>
+            <div>✅ <strong>Parser de listas:</strong> Suporta formatos JSON-like, separação por ; e ,</div>
+            <div>✅ <strong>CNJ preservado:</strong> Formato original mantido como string</div>
           </div>
         </CardDescription>
       </CardHeader>
