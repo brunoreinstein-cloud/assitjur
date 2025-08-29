@@ -1,0 +1,158 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://assistjur.ia/schemas/por_testemunha.schema.json",
+  "title": "AssistJur.IA - Esquema Por Testemunha",
+  "description": "Schema de validação para dados de testemunha no formato canônico AssistJur.IA",
+  "type": "object",
+  "properties": {
+    "Nome_Testemunha": {
+      "type": "string",
+      "description": "Nome completo da testemunha",
+      "minLength": 1,
+      "examples": ["João Pereira", "Maria Santos Silva", "Carlos Eduardo Costa"]
+    },
+    "Qtd_Depoimentos": {
+      "type": "integer",
+      "description": "Quantidade total de depoimentos prestados",
+      "minimum": 1,
+      "examples": [1, 3, 12, 25]
+    },
+    "CNJs_Como_Testemunha": {
+      "type": "string",
+      "description": "Lista de CNJs onde atuou como testemunha, separados por ';'",
+      "minLength": 1,
+      "examples": [
+        "0001234-56.2024.5.01.0001",
+        "0001234-56.2024.5.01.0001; 0009876-12.2023.5.04.0002"
+      ]
+    },
+    "Ja_Foi_Reclamante": {
+      "type": ["boolean", "null"],
+      "description": "Se a testemunha já foi reclamante em algum processo",
+      "examples": [true, false]
+    },
+    "CNJs_Como_Reclamante": {
+      "type": ["string", "null"],
+      "description": "CNJs onde foi reclamante, separados por ';' ou '—' se não aplicável",
+      "examples": [
+        "0007890-12.2023.5.02.0001",
+        "CNJ1; CNJ2",
+        "—"
+      ]
+    },
+    "Foi_Testemunha_Ativo": {
+      "type": ["boolean", "null"],
+      "description": "Se foi testemunha do polo ativo",
+      "examples": [true, false]
+    },
+    "Foi_Testemunha_Passivo": {
+      "type": ["boolean", "null"],
+      "description": "Se foi testemunha do polo passivo",
+      "examples": [true, false]
+    },
+    "CNJs_Passivo": {
+      "type": ["string", "null"],
+      "description": "CNJs onde foi testemunha do polo passivo, separados por ';'",
+      "examples": [
+        "0008888-88.2022.5.01.0001",
+        "CNJ1; CNJ2; CNJ3",
+        "—"
+      ]
+    },
+    "Foi_Ambos_Polos": {
+      "type": ["boolean", "null"],
+      "description": "Se foi testemunha em ambos os polos (ativo e passivo)",
+      "examples": [true, false]
+    },
+    "Participou_Troca_Favor": {
+      "type": ["boolean", "null"],
+      "description": "Se participou de esquema de troca de favores",
+      "examples": [true, false]
+    },
+    "CNJs_Troca_Favor": {
+      "type": ["string", "null"],
+      "description": "CNJs envolvidos na troca de favores (formato CNJ_A↔CNJ_B ou lista separada por ';')",
+      "examples": [
+        "CNJ_A↔CNJ_B",
+        "0001234-56.2024.5.01.0001↔0009876-12.2023.5.04.0002",
+        "CNJ1; CNJ2; CNJ3",
+        "—"
+      ]
+    },
+    "Participou_Triangulacao": {
+      "type": ["boolean", "null"],
+      "description": "Se participou de esquema de triangulação",
+      "examples": [true, false]
+    },
+    "CNJs_Triangulacao": {
+      "type": ["string", "null"],
+      "description": "CNJs envolvidos na triangulação, separados por ';'",
+      "examples": [
+        "0001; 0002; 0003",
+        "CNJ_A; CNJ_B; CNJ_C",
+        "—"
+      ]
+    },
+    "E_Prova_Emprestada": {
+      "type": ["boolean", "null"],
+      "description": "Se a testemunha é considerada prova emprestada",
+      "examples": [true, false]
+    },
+    "Classificacao": {
+      "type": ["string", "null"],
+      "description": "Classificação de risco da testemunha",
+      "enum": ["ALTA", "MÉDIA", "BAIXA", null],
+      "examples": ["ALTA", "MÉDIA", "BAIXA"]
+    },
+    "Classificacao_Estrategica": {
+      "type": ["string", "null"],
+      "description": "Classificação estratégica da testemunha",
+      "enum": ["CRÍTICO", "ATENÇÃO", "NORMAL", null],
+      "examples": ["CRÍTICO", "ATENÇÃO", "NORMAL"]
+    }
+  },
+  "required": [
+    "Nome_Testemunha",
+    "Qtd_Depoimentos",
+    "CNJs_Como_Testemunha"
+  ],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "Nome_Testemunha": "João Pereira",
+      "Qtd_Depoimentos": 12,
+      "CNJs_Como_Testemunha": "0001234-56.2024.5.01.0001; 0009876-12.2023.5.04.0002",
+      "Ja_Foi_Reclamante": false,
+      "CNJs_Como_Reclamante": "—",
+      "Foi_Testemunha_Ativo": true,
+      "Foi_Testemunha_Passivo": false,
+      "CNJs_Passivo": "—",
+      "Foi_Ambos_Polos": false,
+      "Participou_Troca_Favor": true,
+      "CNJs_Troca_Favor": "CNJ_A↔CNJ_B",
+      "Participou_Triangulacao": true,
+      "CNJs_Triangulacao": "0001; 0002; 0003",
+      "E_Prova_Emprestada": true,
+      "Classificacao": "ALTA",
+      "Classificacao_Estrategica": "CRÍTICO"
+    },
+    {
+      "Nome_Testemunha": "Beatriz Nunes",
+      "Qtd_Depoimentos": 3,
+      "CNJs_Como_Testemunha": "0001234-56.2024.5.01.0001; 0002345-67.2024.5.02.0001; 0003456-78.2024.5.03.0001",
+      "Ja_Foi_Reclamante": true,
+      "CNJs_Como_Reclamante": "0007890-12.2023.5.02.0001",
+      "Foi_Testemunha_Ativo": true,
+      "Foi_Testemunha_Passivo": true,
+      "CNJs_Passivo": "0008888-88.2022.5.01.0001",
+      "Foi_Ambos_Polos": true,
+      "Participou_Troca_Favor": false,
+      "CNJs_Troca_Favor": "—",
+      "Participou_Triangulacao": false,
+      "CNJs_Triangulacao": "—",
+      "E_Prova_Emprestada": false,
+      "Classificacao": "MÉDIA",
+      "Classificacao_Estrategica": "ATENÇÃO"
+    }
+  ]
+}
