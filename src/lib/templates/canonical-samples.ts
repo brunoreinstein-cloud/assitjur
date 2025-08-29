@@ -8,7 +8,7 @@ import { generateSequentialCNJs } from '../cnj-generator';
 // ===== CANONICAL HEADERS =====
 
 export const CANONICAL_HEADERS_PROCESSO = [
-  'CNJ', 'Status', 'Fase', 'UF', 'Comarca', 'Reclamantes', 
+  'CNJ', 'reclamante_nome', 'reu_nome', 'Status', 'Fase', 'UF', 'Comarca', 'Reclamantes', 
   'Advogados_Ativo', 'Testemunhas_Ativo', 'Testemunhas_Passivo', 
   'Todas_Testemunhas', 'Reclamante_Foi_Testemunha', 'Qtd_Reclamante_Testemunha',
   'CNJs_Reclamante_Testemunha', 'Reclamante_Testemunha_Polo_Passivo', 'CNJs_Passivo',
@@ -32,6 +32,8 @@ const validCNJs = generateSequentialCNJs(12, 2024);
 
 export interface CanonicalProcessoSample {
   CNJ: string;
+  reclamante_nome: string;
+  reu_nome: string;
   Status: string;
   Fase: string;
   UF: string;
@@ -88,6 +90,8 @@ export interface DicionarioField {
 export const canonicalProcessoSamples: CanonicalProcessoSample[] = [
   {
     CNJ: validCNJs[0],
+    reclamante_nome: 'Ana Lima',
+    reu_nome: 'Empresa XYZ Ltda',
     Status: 'Em andamento',
     Fase: 'Instrução',
     UF: 'RJ',
@@ -112,6 +116,8 @@ export const canonicalProcessoSamples: CanonicalProcessoSample[] = [
   },
   {
     CNJ: validCNJs[1],
+    reclamante_nome: 'Pedro Santos',
+    reu_nome: 'Indústria ABC S/A',
     Status: 'Sentenciado',
     Fase: 'Execução',
     UF: 'SP',
@@ -136,6 +142,8 @@ export const canonicalProcessoSamples: CanonicalProcessoSample[] = [
   },
   {
     CNJ: validCNJs[2],
+    reclamante_nome: 'Julia Martins',
+    reu_nome: 'Comércio DEF ME',
     Status: 'Arquivado',
     Fase: 'Conhecimento',
     UF: 'MG',
@@ -228,6 +236,22 @@ export const canonicalDicionarioFields: DicionarioField[] = [
     Obrigatorio: 'Sim',
     Regra: 'String com 20 dígitos (preserva formato original). Validação interna remove pontuação.',
     Exemplo: validCNJs[0]
+  },
+  {
+    Aba: 'Por Processo',
+    Campo: 'reclamante_nome',
+    Tipo: 'texto',
+    Obrigatorio: 'Sim (legado)',
+    Regra: 'Nome principal do reclamante (campo de compatibilidade)',
+    Exemplo: 'Ana Lima'
+  },
+  {
+    Aba: 'Por Processo',
+    Campo: 'reu_nome',
+    Tipo: 'texto',
+    Obrigatorio: 'Sim (legado)',
+    Regra: 'Nome do réu/empresa (campo de compatibilidade)',
+    Exemplo: 'Empresa XYZ Ltda'
   },
   {
     Aba: 'Por Processo',

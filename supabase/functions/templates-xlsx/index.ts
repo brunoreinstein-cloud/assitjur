@@ -51,6 +51,8 @@ const validCNJs = [
 const canonicalProcessoSamples = [
   {
     CNJ: validCNJs[0],
+    reclamante_nome: 'Ana Lima',
+    reu_nome: 'Empresa XYZ Ltda',
     Status: 'Em andamento',
     Fase: 'Instrução',
     UF: 'RJ',
@@ -75,6 +77,8 @@ const canonicalProcessoSamples = [
   },
   {
     CNJ: validCNJs[1],
+    reclamante_nome: 'Pedro Santos',
+    reu_nome: 'Indústria ABC S/A',
     Status: 'Sentenciado',
     Fase: 'Execução',
     UF: 'SP',
@@ -99,6 +103,8 @@ const canonicalProcessoSamples = [
   },
   {
     CNJ: validCNJs[2],
+    reclamante_nome: 'Julia Martins',
+    reu_nome: 'Comércio DEF ME',
     Status: 'Arquivado',
     Fase: 'Conhecimento',
     UF: 'MG',
@@ -188,6 +194,22 @@ const canonicalDicionarioFields = [
     Obrigatorio: 'Sim',
     Regra: 'String com 20 dígitos (preserva formato original). Validação interna remove pontuação.',
     Exemplo: validCNJs[0]
+  },
+  {
+    Aba: 'Por Processo',
+    Campo: 'reclamante_nome',
+    Tipo: 'texto',
+    Obrigatorio: 'Sim (legado)',
+    Regra: 'Nome principal do reclamante (campo de compatibilidade)',
+    Exemplo: 'Ana Lima'
+  },
+  {
+    Aba: 'Por Processo',
+    Campo: 'reu_nome',
+    Tipo: 'texto',
+    Obrigatorio: 'Sim (legado)',
+    Regra: 'Nome do réu/empresa (campo de compatibilidade)',
+    Exemplo: 'Empresa XYZ Ltda'
   },
   {
     Aba: 'Por Processo',

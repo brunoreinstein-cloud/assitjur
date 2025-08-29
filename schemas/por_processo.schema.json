@@ -34,6 +34,16 @@
       "minLength": 1,
       "examples": ["São Paulo", "Rio de Janeiro", "Belo Horizonte"]
     },
+    "reclamante_nome": {
+      "type": ["string", "null"],
+      "description": "Nome do reclamante principal (campo legado para compatibilidade)",
+      "examples": ["Ana Lima", "Pedro Santos"]
+    },
+    "reu_nome": {
+      "type": ["string", "null"], 
+      "description": "Nome do réu (campo legado para compatibilidade)",
+      "examples": ["Empresa XYZ Ltda", "Indústria ABC S/A"]
+    },
     "Reclamantes": {
       "type": "string",
       "description": "Lista de reclamantes separada por ';' ou nome único",
