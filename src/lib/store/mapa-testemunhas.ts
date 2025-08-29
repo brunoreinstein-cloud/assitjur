@@ -1,5 +1,17 @@
 import { create } from 'zustand';
-import { Processo, Testemunha, FilterProcesso, FilterTestemunha, TabType, ErrorState } from '@/types/mapa';
+import { PorProcesso, PorTestemunha, ProcessoFilters, TestemunhaFilters } from '@/types/mapa-testemunhas';
+
+// Type aliases for the store
+type Processo = PorProcesso;
+type Testemunha = PorTestemunha;
+type FilterProcesso = ProcessoFilters;
+type FilterTestemunha = TestemunhaFilters;
+type TabType = 'processos' | 'testemunhas';
+
+interface ErrorState {
+  hasError: boolean;
+  message?: string;
+}
 
 interface MapaTestemunhasStore {
   // Data

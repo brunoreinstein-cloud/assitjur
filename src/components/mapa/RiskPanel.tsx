@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, ArrowRightLeft, Users, TrendingUp } from "lucide-react";
-import { useMapaStore } from "@/stores/useMapaStore";
+import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
 import { PorProcesso } from "@/types/mapa-testemunhas";
 
 interface RiskStats {
@@ -13,21 +13,15 @@ interface RiskStats {
 }
 
 export const RiskPanel = () => {
-  const { 
-    rows, 
-    tab, 
-    applyTriangulacaoPreset, 
-    applyTrocaDiretaPreset, 
-    applyProvaEmprestadaPreset 
-  } = useMapaStore();
+  const activeTab = useMapaTestemunhasStore(s => s.activeTab);
+  const processos = useMapaTestemunhasStore(s => s.processos);
+  const setProcessoFilters = useMapaTestemunhasStore(s => s.setProcessoFilters);
 
   // Calculate risk statistics from current data
   const getRiskStats = (): RiskStats => {
-    if (tab !== 'por-processo') {
+    if (activeTab !== 'processos') {
       return { triangulacoes: 0, trocas: 0, provas: 0, total: 0 };
     }
-
-    const processos = rows as PorProcesso[];
     
     return {
       triangulacoes: processos.filter(p => p.triangulacao_confirmada).length,
@@ -50,7 +44,7 @@ export const RiskPanel = () => {
       color: 'text-destructive',
       bgColor: 'bg-destructive/5 hover:bg-destructive/10',
       borderColor: 'border-destructive/20',
-      onClick: applyTriangulacaoPreset
+      onClick: () => setProcessoFilters({ temTriangulacao: true })
     },
     {
       id: 'troca',
@@ -62,7 +56,7 @@ export const RiskPanel = () => {
       color: 'text-warning',
       bgColor: 'bg-warning/5 hover:bg-warning/10',
       borderColor: 'border-warning/20',
-      onClick: applyTrocaDiretaPreset
+      onClick: () => setProcessoFilters({ temTroca: true })
     },
     {
       id: 'prova',
@@ -74,7 +68,7 @@ export const RiskPanel = () => {
       color: 'text-orange-600',
       bgColor: 'bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/10 dark:hover:bg-orange-900/20',
       borderColor: 'border-orange-200 dark:border-orange-900/30',
-      onClick: applyProvaEmprestadaPreset
+      onClick: () => setProcessoFilters({ temProvaEmprestada: true })
     }
   ];
 
@@ -88,7 +82,7 @@ export const RiskPanel = () => {
     return 'outline';
   };
 
-  if (tab !== 'por-processo') {
+  if (activeTab !== 'processos') {
     return null;
   }
 

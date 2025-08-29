@@ -9,8 +9,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Download, FileSpreadsheet, Loader2 } from "lucide-react";
 import { exportProcessosToCSV, exportTestemunhasToCSV, validateExportSize, estimateCSVSize } from "@/lib/csv";
-import { Processo, Testemunha, ExportData } from "@/types/mapa";
 import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
+
+// Type aliases for backward compatibility
+type Processo = PorProcesso;
+type Testemunha = PorTestemunha;
+type ExportData = PorProcesso[] | PorTestemunha[];
 import { toast } from "sonner";
 
 interface ExportCsvButtonProps {

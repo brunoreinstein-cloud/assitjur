@@ -62,6 +62,9 @@ export type ProcessoFilters = {
   search?: string;
   qtdDeposMin?: number;
   qtdDeposMax?: number;
+  temTriangulacao?: boolean;
+  temTroca?: boolean;
+  temProvaEmprestada?: boolean;
 };
 
 export type TestemunhaFilters = {

@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
-import { ProcessoFilters, TestemunhaFilters } from "@/stores/useMapaStore";
+import { ProcessoFilters, TestemunhaFilters } from "@/types/mapa-testemunhas";
 
 // Mock data for offline functionality
 const mockProcessos: PorProcesso[] = [
@@ -239,15 +239,11 @@ export const fetchPorProcesso = async (params: {
       filteredData = filteredData.filter(p => params.filters.fase!.includes(p.fase!));
     }
     
-    if (params.filters.triangulacao) {
+    if (params.filters.temTriangulacao) {
       filteredData = filteredData.filter(p => p.triangulacao_confirmada === true);
     }
     
-    if (params.filters.troca_direta) {
-      filteredData = filteredData.filter(p => p.troca_direta === true);
-    }
-    
-    if (params.filters.prova_emprestada) {
+    if (params.filters.temProvaEmprestada) {
       filteredData = filteredData.filter(p => p.contem_prova_emprestada === true);
     }
     
@@ -303,18 +299,20 @@ export const fetchPorTestemunha = async (params: {
       );
     }
     
-    if (params.filters.ambos_polos !== undefined) {
-      filteredData = filteredData.filter(t => t.foi_testemunha_em_ambos_polos === params.filters.ambos_polos);
+    if (params.filters.ambosPolos !== undefined) {
+      filteredData = filteredData.filter(t => t.foi_testemunha_em_ambos_polos === params.filters.ambosPolos);
     }
     
-    if (params.filters.ja_reclamante !== undefined) {
-      filteredData = filteredData.filter(t => t.ja_foi_reclamante === params.filters.ja_reclamante);
+    if (params.filters.jaFoiReclamante !== undefined) {
+      filteredData = filteredData.filter(t => t.ja_foi_reclamante === params.filters.jaFoiReclamante);
     }
     
-    if (params.filters.classificacao_estrategica?.length) {
-      filteredData = filteredData.filter(t => 
-        params.filters.classificacao_estrategica!.includes(t.classificacao_estrategica!)
-      );
+    if (params.filters.temTriangulacao !== undefined) {
+      filteredData = filteredData.filter(t => t.participou_triangulacao === params.filters.temTriangulacao);
+    }
+    
+    if (params.filters.temTroca !== undefined) {
+      filteredData = filteredData.filter(t => t.participou_troca_favor === params.filters.temTroca);
     }
     
     // Mock pagination

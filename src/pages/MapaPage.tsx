@@ -23,7 +23,9 @@ import {
   selectIsPiiMasked,
   selectHasError,
   selectErrorMessage,
-  selectLastUpdate
+  selectLastUpdate,
+  selectProcessoFilters,
+  selectTestemunhaFilters
 } from "@/lib/store/mapa-testemunhas";
 import { ProcessoTable } from "@/components/mapa-testemunhas/ProcessoTable";
 import { TestemunhaTable } from "@/components/mapa-testemunhas/TestemunhaTable";
@@ -37,9 +39,23 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { fetchPorProcesso, fetchPorTestemunha } from "@/lib/supabase";
-import { Processo, Testemunha, StatsData, TabType } from "@/types/mapa";
+import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
 
-const Index = () => {
+// Updated types to match mapa-testemunhas structure
+type Processo = PorProcesso;
+type Testemunha = PorTestemunha;
+type TabType = 'processos' | 'testemunhas';
+
+interface StatsData {
+  totalProcessos: number;
+  totalTestemunhas: number;
+  processosAltoRisco: number;
+  testemunhasAmbosPolos: number;
+  pctProcAlto: number;
+  pctAmbos: number;
+}
+
+const MapaPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading } = useAuth();
@@ -54,6 +70,8 @@ const Index = () => {
   const hasError = useMapaTestemunhasStore(selectHasError);
   const errorMessage = useMapaTestemunhasStore(selectErrorMessage);
   const lastUpdate = useMapaTestemunhasStore(selectLastUpdate);
+  const processoFilters = useMapaTestemunhasStore(selectProcessoFilters);
+  const testemunhaFilters = useMapaTestemunhasStore(selectTestemunhaFilters);
   
   // Individual setters
   const setActiveTab = useMapaTestemunhasStore(s => s.setActiveTab);
@@ -78,12 +96,12 @@ const Index = () => {
     });
   };
 
-  // KPIs calculation with useMemo
+  // KPIs calculation with useMemo - fixed boolean check
   const stats: StatsData = useMemo(() => {
     const totalProcessos = processos.length;
     const totalTestemunhas = testemunhas.length;
     const processosAltoRisco = processos.filter(p => p.classificacao_final === "Risco Alto").length;
-    const testemunhasAmbosPolos = testemunhas.filter(t => t.foi_testemunha_em_ambos_polos).length;
+    const testemunhasAmbosPolos = testemunhas.filter(t => t.foi_testemunha_em_ambos_polos === true).length;
     const pct = (a: number, b: number) => b > 0 ? Math.round((a / b) * 100) : 0;
     
     return { 
@@ -118,7 +136,7 @@ const Index = () => {
     setSearchParams({ tab: newTab });
   };
 
-  // Load real data from Supabase
+  // Load real data from Supabase with filter integration
   useEffect(() => {
     if (!user) return;
 
@@ -127,17 +145,17 @@ const Index = () => {
       setError(false);
       
       try {
-        // Get filters from the store (in real implementation, you'd use filter states)
+        // Apply current filters to the API calls
         const processosParams = {
           page: 1,
-          pageSize: 1000, // Load all data for now
-          filters: {} // Empty filters for initial load
+          pageSize: 1000, // Load all data for now - TODO: implement pagination
+          filters: processoFilters
         };
         
         const testemunhasParams = {
           page: 1,
-          pageSize: 1000, // Load all data for now
-          filters: {} // Empty filters for initial load
+          pageSize: 1000, // Load all data for now - TODO: implement pagination
+          filters: testemunhaFilters
         };
 
         // Fetch both datasets in parallel
@@ -160,7 +178,11 @@ const Index = () => {
         
         console.log('Data loaded successfully:', {
           processos: processosResult.data.length,
-          testemunhas: testemunhasResult.data.length
+          testemunhas: testemunhasResult.data.length,
+          appliedFilters: {
+            processos: processoFilters,
+            testemunhas: testemunhaFilters
+          }
         });
         
       } catch (error) {
@@ -178,7 +200,7 @@ const Index = () => {
 
     loadData();
     
-  }, [user, setProcessos, setTestemunhas, setIsLoading, setError, setLastUpdate, isFirstLoad, toast]);
+  }, [user, setProcessos, setTestemunhas, setIsLoading, setError, setLastUpdate, isFirstLoad, toast, processoFilters, testemunhaFilters]);
 
   // Show loading during auth check
   if (loading) {
@@ -363,7 +385,7 @@ const Index = () => {
                   </CardContent>
                 </Card>
               ) : (
-                <ProcessoTable data={processos as any} />
+                <ProcessoTable data={processos} />
               )}
             </TabsContent>
 
@@ -380,7 +402,7 @@ const Index = () => {
                   </CardContent>
                 </Card>
               ) : (
-                <TestemunhaTable data={testemunhas as any} />
+                <TestemunhaTable data={testemunhas} />
               )}
             </TabsContent>
           </Tabs>
@@ -394,4 +416,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default MapaPage;

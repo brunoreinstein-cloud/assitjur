@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Copy, MoreHorizontal } from "lucide-react";
 import { formatArrayForDisplay } from "@/lib/formatters";
 import { applyPIIMask } from "@/lib/pii";
-import { useMapaStore } from "@/stores/useMapaStore";
+import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
 import { toast } from "sonner";
 
 interface ArrayCellProps {
@@ -15,7 +15,7 @@ interface ArrayCellProps {
 }
 
 export const ArrayCell = ({ items, maxVisible = 3, type = 'generic' }: ArrayCellProps) => {
-  const { maskPII } = useMapaStore();
+  const isPiiMasked = useMapaTestemunhasStore(s => s.isPiiMasked);
   const [isOpen, setIsOpen] = useState(false);
   
   if (!items || items.length === 0) {
@@ -25,7 +25,7 @@ export const ArrayCell = ({ items, maxVisible = 3, type = 'generic' }: ArrayCell
   const { visible, hidden, total } = formatArrayForDisplay(items, maxVisible);
   
   const processItem = (item: string) => {
-    return maskPII ? applyPIIMask(item) : item;
+    return isPiiMasked ? applyPIIMask(item) : item;
   };
 
   const handleCopyAll = () => {

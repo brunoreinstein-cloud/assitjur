@@ -1,10 +1,11 @@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Shield } from "lucide-react";
-import { useMapaStore } from "@/stores/useMapaStore";
+import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
 
 export const MaskPIISwitch = () => {
-  const { maskPII, setMaskPII } = useMapaStore();
+  const isPiiMasked = useMapaTestemunhasStore(s => s.isPiiMasked);
+  const setIsPiiMasked = useMapaTestemunhasStore(s => s.setIsPiiMasked);
 
   return (
     <div className="flex items-center space-x-3">
@@ -12,14 +13,14 @@ export const MaskPIISwitch = () => {
       <div className="flex items-center space-x-2">
         <Switch
           id="mask-pii"
-          checked={maskPII}
-          onCheckedChange={setMaskPII}
+          checked={isPiiMasked}
+          onCheckedChange={setIsPiiMasked}
         />
         <Label 
           htmlFor="mask-pii" 
           className="text-sm font-medium cursor-pointer flex items-center gap-1"
         >
-          {maskPII ? (
+          {isPiiMasked ? (
             <>
               <EyeOff className="h-3 w-3" />
               Mascarar PII

@@ -9,7 +9,7 @@ import AuthGuard from "@/components/AuthGuard";
 import { AppLayout } from "@/components/navigation/AppLayout";
 import { ErrorBoundary } from "@/components/core/ErrorBoundary";
 
-import Index from "./pages/Index";
+import MapaPage from "./pages/MapaPage";
 import PublicHome from "./pages/PublicHome";
 import About from "./pages/About";
 import Beta from "./pages/Beta";
@@ -86,10 +86,11 @@ const App = () => (
                   <AppLayout>
                     <ErrorBoundary>
                       <Routes>
-                        <Route path="/dashboard" element={<Index />} />
+                        <Route path="/dashboard" element={<Navigate to="/mapa" replace />} />
+                        <Route path="/mapa" element={<MapaPage />} />
+                        <Route path="/dados" element={<Navigate to="/mapa" replace />} />
+                        <Route path="/dados/mapa" element={<Navigate to="/mapa" replace />} />
                         <Route path="/chat" element={<Chat />} />
-                        <Route path="/dados" element={<Navigate to="/dados/mapa" replace />} />
-                        <Route path="/dados/mapa" element={<Index />} />
                         <Route path="/app/chat" element={<ChatApp />} />
                         
                         {/* Admin routes */}
