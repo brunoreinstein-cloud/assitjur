@@ -1,19 +1,19 @@
 import React from 'react';
-import { ImporterWizard } from '@/components/importer/ImporterWizard';
+import { AssistJurUploadWizard } from '@/components/assistjur/AssistJurUploadWizard';
 
 const Import = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              Importador de Planilhas - AssistJur.IA
-            </h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            Importador AssistJur.IA
+          </h1>
           <p className="mt-2 text-muted-foreground">
-            Importe e normalize dados de testemunhas e processos
+            Pipeline completo de análise de testemunhas e processos com detecção de padrões
           </p>
         </div>
-        <ImporterWizard />
+        <AssistJurUploadWizard />
       </div>
     </div>
   );

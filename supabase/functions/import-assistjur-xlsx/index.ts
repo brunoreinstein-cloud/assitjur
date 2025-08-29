@@ -327,7 +327,7 @@ function reconcileData(processos: ProcessoRow[], testemunhas: TestemunhaRow[]): 
   return { stubs, issues };
 }
 
-// Engine analítico - flags derivadas
+// Engine analítico avançado - flags derivadas
 function calculateAnalyticFlags(processos: ProcessoRow[], testemunhas: TestemunhaRow[]): {
   processosEnhanced: any[];
   testemunhasEnhanced: any[];
@@ -335,13 +335,47 @@ function calculateAnalyticFlags(processos: ProcessoRow[], testemunhas: Testemunh
 } {
   const issues: ValidationIssue[] = [];
   
-  // Processa testemunhas primeiro - prova emprestada
+  // Cria mapas para otimizar buscas
+  const processoMap = new Map(processos.map(p => [p.cnj, p]));
+  const testemunhaMap = new Map(testemunhas.map(t => [t.nome_testemunha, t]));
+  
+  // Processa testemunhas primeiro - flags avançadas
   const testemunhasEnhanced = testemunhas.map(t => {
     const enhanced = { ...t };
     
     // Prova emprestada: qtd_depoimentos > 10
     enhanced.e_prova_emprestada = t.qtd_depoimentos > 10;
     
+    // Verifica se já foi reclamante em algum processo
+    enhanced.ja_foi_reclamante = false;
+    enhanced.cnjs_como_reclamante = [];
+    
+    // Verifica duplo papel (reclamante e testemunha)
+    processos.forEach(p => {
+      if (p.reclamantes?.some(r => r.toLowerCase().includes(t.nome_testemunha.toLowerCase()))) {
+        enhanced.ja_foi_reclamante = true;
+        enhanced.cnjs_como_reclamante.push(p.cnj);
+      }
+    });
+    
+    // Verifica polos como testemunha
+    enhanced.foi_testemunha_ativo = false;
+    enhanced.foi_testemunha_passivo = false;
+    enhanced.cnjs_passivo = [];
+    
+    processos.forEach(p => {
+      if (p.testemunhas_ativo?.some(ta => ta.toLowerCase().includes(t.nome_testemunha.toLowerCase()))) {
+        enhanced.foi_testemunha_ativo = true;
+      }
+      if (p.testemunhas_passivo?.some(tp => tp.toLowerCase().includes(t.nome_testemunha.toLowerCase()))) {
+        enhanced.foi_testemunha_passivo = true;
+        enhanced.cnjs_passivo.push(p.cnj);
+      }
+    });
+    
+    enhanced.foi_ambos_polos = enhanced.foi_testemunha_ativo && enhanced.foi_testemunha_passivo;
+    
+    // Logs para flags importantes
     if (enhanced.e_prova_emprestada) {
       issues.push({
         sheet: 'Análise',
@@ -352,10 +386,20 @@ function calculateAnalyticFlags(processos: ProcessoRow[], testemunhas: Testemunh
       });
     }
     
+    if (enhanced.ja_foi_reclamante) {
+      issues.push({
+        sheet: 'Análise',
+        row: 0,
+        severity: 'warning',
+        rule: 'duplo_papel',
+        message: `${t.nome_testemunha} teve duplo papel: reclamante em ${enhanced.cnjs_como_reclamante.length} processo(s) e testemunha em ${t.qtd_depoimentos} depoimento(s).`
+      });
+    }
+    
     return enhanced;
   });
   
-  // Detecta trocas diretas e triangulações
+  // Detecta trocas diretas e triangulações nos processos
   const processosEnhanced = processos.map(processo => {
     const enhanced = { ...processo };
     
@@ -367,9 +411,12 @@ function calculateAnalyticFlags(processos: ProcessoRow[], testemunhas: Testemunh
     enhanced.testemunhas_prova_emprestada = [];
     enhanced.troca_direta = false;
     enhanced.cnjs_troca_direta = [];
+    enhanced.reclamante_foi_testemunha = false;
+    enhanced.qtd_reclamante_testemunha = 0;
+    enhanced.cnjs_reclamante_testemunha = [];
     
     // Verifica prova emprestada neste processo
-    const testemunhasComProva = testemunhas
+    const testemunhasComProva = testemunhasEnhanced
       .filter(t => t.e_prova_emprestada && t.cnjs_como_testemunha?.includes(processo.cnj))
       .map(t => t.nome_testemunha);
       
@@ -378,9 +425,69 @@ function calculateAnalyticFlags(processos: ProcessoRow[], testemunhas: Testemunh
       enhanced.testemunhas_prova_emprestada = testemunhasComProva;
     }
     
-    // Detecta trocas diretas simples
-    // TODO: Implementar algoritmo completo de detecção de triangulação
-    // Por ora, marca como básico
+    // Detecta se reclamante foi testemunha em outros processos
+    processo.reclamantes?.forEach(reclamante => {
+      const testemunhaCorrespondente = testemunhasEnhanced.find(t => 
+        t.nome_testemunha.toLowerCase().includes(reclamante.toLowerCase()) ||
+        reclamante.toLowerCase().includes(t.nome_testemunha.toLowerCase())
+      );
+      
+      if (testemunhaCorrespondente && testemunhaCorrespondente.cnjs_como_testemunha.length > 0) {
+        enhanced.reclamante_foi_testemunha = true;
+        enhanced.qtd_reclamante_testemunha++;
+        enhanced.cnjs_reclamante_testemunha = testemunhaCorrespondente.cnjs_como_testemunha;
+      }
+    });
+    
+    // Detecta troca direta: A é testemunha de B e B é testemunha de A
+    const todasTestemunhas = [...(processo.testemunhas_ativo || []), ...(processo.testemunhas_passivo || [])];
+    
+    todasTestemunhas.forEach(testemunha => {
+      // Busca processos onde esta testemunha é reclamante
+      processos.forEach(outroProcesso => {
+        if (outroProcesso.cnj === processo.cnj) return;
+        
+        const ehReclamanteNoOutro = outroProcesso.reclamantes?.some(r => 
+          r.toLowerCase().includes(testemunha.toLowerCase())
+        );
+        
+        const processoTemTestemunhaDoOutro = [...(outroProcesso.testemunhas_ativo || []), ...(outroProcesso.testemunhas_passivo || [])]
+          .some(t => processo.reclamantes?.some(r => r.toLowerCase().includes(t.toLowerCase())));
+        
+        if (ehReclamanteNoOutro && processoTemTestemunhaDoOutro) {
+          enhanced.troca_direta = true;
+          if (!enhanced.cnjs_troca_direta.includes(outroProcesso.cnj)) {
+            enhanced.cnjs_troca_direta.push(outroProcesso.cnj);
+          }
+        }
+      });
+    });
+    
+    // Detecta triangulação simples: A→B→C→A
+    if (enhanced.troca_direta && enhanced.cnjs_troca_direta.length > 1) {
+      enhanced.triangulacao_confirmada = true;
+      enhanced.cnjs_triangulacao = enhanced.cnjs_troca_direta;
+      enhanced.desenho_triangulacao = `${processo.cnj} → ${enhanced.cnjs_troca_direta.join(' → ')} → ${processo.cnj}`;
+      
+      issues.push({
+        sheet: 'Análise',
+        row: 0,
+        severity: 'warning',
+        rule: 'triangulacao',
+        message: `Triangulação detectada: ${enhanced.desenho_triangulacao}`
+      });
+    }
+    
+    // Log para troca direta
+    if (enhanced.troca_direta) {
+      issues.push({
+        sheet: 'Análise',
+        row: 0,
+        severity: 'info',
+        rule: 'troca_direta',
+        message: `Troca direta detectada no processo ${processo.cnj} com ${enhanced.cnjs_troca_direta.length} processo(s): ${enhanced.cnjs_troca_direta.join(', ')}`
+      });
+    }
     
     return enhanced;
   });
