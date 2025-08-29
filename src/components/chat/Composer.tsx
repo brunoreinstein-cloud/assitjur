@@ -223,7 +223,12 @@ export function Composer() {
             { level: 'médio', message: 'Testemunha comum em processos similares', severity: 'warning' }
           ],
           triangulations: 2,
-          directExchanges: 1
+          directExchanges: 1,
+          suspiciousPatterns: [
+            'Testemunhas com endereços próximos',
+            'Depoimentos idênticos ou muito similares',
+            'Cronologia de contratações suspeita'
+          ]
         },
         citations: [
           { source: 'por_processo', ref: isCNJ ? `CNJ:${query}` : 'CNJ:0000456-78.2023.5.02.0002' }
