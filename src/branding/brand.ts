@@ -9,9 +9,9 @@ export const BRAND = {
   fullName: "AssistJur.IA - Assistente de Testemunhas",
   
   logo: {
-    light: "/brand/assistjur-logo.png",
-    dark: "/brand/assistjur-logo.png", // Same logo for both themes
-    mark: "/brand/assistjur-mark.png", // Square icon version
+    light: "/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png",
+    dark: "/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png", // Same logo for both themes
+    mark: "/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png", // Hub icon version
   },
   
   favicon: "/brand/assistjur-favicon.png",

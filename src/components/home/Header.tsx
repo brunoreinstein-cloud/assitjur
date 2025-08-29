@@ -26,9 +26,11 @@ export const Header = () => {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
         {/* Logo */}
         <div className="flex items-center gap-3 min-w-fit">
-          <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center shadow-md">
-            <Scale className="w-6 h-6 text-primary-foreground" />
-          </div>
+          <img 
+            src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png" 
+            alt="AssistJur.IA" 
+            className="w-10 h-10 object-contain"
+          />
           <div>
             <h1 className="text-xl font-bold text-foreground">AssistJur.IA</h1>
             <p className="text-xs text-muted-foreground">Assistente de Testemunhas</p>

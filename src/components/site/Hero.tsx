@@ -30,9 +30,11 @@ export function Hero({ onSignup }: HeroProps) {
           {/* Logo e Tagline */}
           <div className="space-y-4">
             <div className="inline-flex items-center space-x-3 mb-4">
-              <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <div className="w-6 h-6 rounded-full bg-accent" />
-              </div>
+              <img 
+                src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png" 
+                alt="AssistJur.IA" 
+                className="w-12 h-12 object-contain"
+              />
               <span className="text-lg font-medium text-muted-foreground">
                 AssistJur.IA
               </span>

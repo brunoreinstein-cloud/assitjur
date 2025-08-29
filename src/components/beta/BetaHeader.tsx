@@ -12,9 +12,11 @@ export function BetaHeader() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-              <div className="w-4 h-4 rounded-full bg-accent" />
-            </div>
+            <img 
+              src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png" 
+              alt="AssistJur.IA" 
+              className="w-8 h-8 object-contain"
+            />
             <span className="text-xl font-bold">
               Assist<span className="text-accent">Jur</span><span className="text-primary">.IA</span>
             </span>

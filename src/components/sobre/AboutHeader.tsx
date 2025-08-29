@@ -34,8 +34,15 @@ export function AboutHeader({ onOpenBetaModal }: AboutHeaderProps) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <button onClick={() => navigate('/')} className="text-xl font-bold text-foreground">
-              Hub<span className="text-accent">JUR</span><span className="text-primary">.IA</span>
+            <button onClick={() => navigate('/')} className="flex items-center space-x-3">
+              <img 
+                src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png" 
+                alt="AssistJur.IA" 
+                className="w-8 h-8 object-contain"
+              />
+              <span className="text-xl font-bold text-foreground">
+                Assist<span className="text-accent">Jur</span><span className="text-primary">.IA</span>
+              </span>
             </button>
           </div>
 
