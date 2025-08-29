@@ -53,13 +53,10 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
           {/* Logo */}
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => scrollToSection('hero')}>
             <img 
-              src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png" 
+              src="/lovable-uploads/05dd2039-393c-47a2-a126-9f6b816b9476.png" 
               alt="AssistJur.IA" 
-              className="w-8 h-8 object-contain"
+              className="h-8 object-contain"
             />
-            <span className="text-xl font-bold">
-              Assist<span className="text-accent">Jur</span><span className="text-primary">.IA</span>
-            </span>
           </div>
 
           {/* Desktop Navigation */}

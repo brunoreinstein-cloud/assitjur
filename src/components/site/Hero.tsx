@@ -31,13 +31,10 @@ export function Hero({ onSignup }: HeroProps) {
           <div className="space-y-4">
             <div className="inline-flex items-center space-x-3 mb-4">
               <img 
-                src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png" 
+                src="/lovable-uploads/05dd2039-393c-47a2-a126-9f6b816b9476.png" 
                 alt="AssistJur.IA" 
-                className="w-12 h-12 object-contain"
+                className="h-12 object-contain"
               />
-              <span className="text-lg font-medium text-muted-foreground">
-                AssistJur.IA
-              </span>
             </div>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Gestão do contencioso com inovação e olhar estratégico
