@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Scale, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { GlobalSearch } from "./GlobalSearch";
+import { BRAND } from "@/branding/brand";
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -25,16 +26,12 @@ export const Header = () => {
     } border-b border-border`}>
       <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
         {/* Logo */}
-        <div className="flex items-center gap-3 min-w-fit">
+        <div className="flex items-center gap-3 min-w-fit cursor-pointer transition-transform duration-200 hover:scale-105" onClick={() => navigate('/')}>
           <img 
-            src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png" 
-            alt="AssistJur.IA" 
-            className="w-10 h-10 object-contain"
+            src={BRAND.logo.light}
+            alt={BRAND.name} 
+            className="h-10 md:h-12 object-contain"
           />
-          <div>
-            <h1 className="text-xl font-bold text-foreground">AssistJur.IA</h1>
-            <p className="text-xs text-muted-foreground">Assistente de Testemunhas</p>
-          </div>
         </div>
 
         {/* Search */}

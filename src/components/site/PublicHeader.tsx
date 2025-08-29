@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { BRAND } from '@/branding/brand';
 
 interface PublicHeaderProps {
   onBetaClick?: () => void;
@@ -51,11 +52,11 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => scrollToSection('hero')}>
+          <div className="flex items-center space-x-3 cursor-pointer transition-transform duration-200 hover:scale-105" onClick={() => scrollToSection('hero')}>
             <img 
-              src="/lovable-uploads/05dd2039-393c-47a2-a126-9f6b816b9476.png" 
-              alt="AssistJur.IA" 
-              className="h-8 object-contain"
+              src={BRAND.logo.light}
+              alt={BRAND.name} 
+              className="h-10 md:h-12 object-contain"
             />
           </div>
 

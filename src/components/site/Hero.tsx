@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowDown } from 'lucide-react';
 import { NeedsForm } from './NeedsForm';
+import { BRAND } from '@/branding/brand';
 
 interface HeroProps {
   onSignup?: (data: { email: string; needs: string[]; otherNeed?: string }) => void;
@@ -31,9 +32,9 @@ export function Hero({ onSignup }: HeroProps) {
           <div className="space-y-4">
             <div className="inline-flex items-center space-x-3 mb-4">
               <img 
-                src="/lovable-uploads/05dd2039-393c-47a2-a126-9f6b816b9476.png" 
-                alt="AssistJur.IA" 
-                className="h-12 object-contain"
+                src={BRAND.logo.light}
+                alt={BRAND.name} 
+                className="h-16 md:h-20 object-contain"
               />
             </div>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
