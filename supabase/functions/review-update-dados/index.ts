@@ -171,11 +171,9 @@ async function fetchExistingData(orgId: string) {
   
   const [processosResult, testemunhasResult] = await Promise.all([
     supabase
-      .from('hubjuria.por_processo')
-      .select('*')
-      .eq('org_id', orgId),
+      .rpc('get_processos_masked', { org_uuid: orgId }),
     supabase
-      .from('hubjuria.por_testemunha')
+      .from('pessoas')
       .select('*')
       .eq('org_id', orgId)
   ]);
@@ -608,11 +606,11 @@ async function persistUpdatedData(orgId: string, processos: any[], testemunhas: 
   
   const [processosResult, testemunhasResult] = await Promise.all([
     supabase
-      .from('hubjuria.por_processo')
-      .upsert(processosLimpos, { onConflict: 'org_id,cnj' }),
+      .from('processos')
+      .upsert(processosLimpos),
     supabase  
-      .from('hubjuria.por_testemunha')
-      .upsert(testemunhas, { onConflict: 'org_id,nome_testemunha_normalizado' })
+      .from('pessoas')
+      .upsert(testemunhas)
   ]);
 
   if (processosResult.error) {
@@ -653,9 +651,11 @@ async function generateAggregates(orgId: string, processos: any[], testemunhas: 
     updated_at: new Date().toISOString()
   };
   
-  const { error } = await supabase
-    .from('hubjuria.padroes_agregados')
-    .upsert(agregados, { onConflict: 'org_id' });
+  // Usar função RPC existente para salvar agregados
+  const { error } = await supabase.rpc('upsert_padroes_agregados', {
+    p_org_id: orgId,
+    p_data: agregados
+  });
     
   if (error) {
     console.error('Erro ao salvar agregados:', error);

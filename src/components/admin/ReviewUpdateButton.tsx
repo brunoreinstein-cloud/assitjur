@@ -68,10 +68,13 @@ export function ReviewUpdateButton({ orgId, onSuccess }: ReviewUpdateButtonProps
     setIsRunning(true);
     
     try {
-      // Simulação de chamada para Edge Function review-update-dados
-      const response = await fetch('/api/review-update-dados', {
+      // Chamada para Edge Function review-update-dados
+      const response = await fetch(`https://fgjypmlszuzkgvhuszxn.supabase.co/functions/v1/review-update-dados`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnanlwbWxzenV6a2d2aHVzenhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE4MjQsImV4cCI6MjA3MTYwNzgyNH0.lN-Anhn1e-2SCDIAe6megYRHdhofe1VO71D6-Zk70XU`
+        },
         body: JSON.stringify({ orgId, dryRun })
       });
 
