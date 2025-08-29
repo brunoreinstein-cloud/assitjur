@@ -62,7 +62,7 @@ export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps
         const searchLower = filters.search.toLowerCase();
         const matchesMessage = issue.message.toLowerCase().includes(searchLower);
         const matchesColumn = issue.column?.toLowerCase().includes(searchLower);
-        const matchesValue = issue.original_value?.toLowerCase().includes(searchLower);
+        const matchesValue = issue.original?.toString().toLowerCase().includes(searchLower);
         
         if (!matchesMessage && !matchesColumn && !matchesValue) {
           return false;
@@ -106,8 +106,8 @@ export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps
         issue.column || '',
         issue.rule || '',
         `"${issue.message.replace(/"/g, '""')}"`,
-        `"${(issue.original_value || '').replace(/"/g, '""')}"`,
-        `"${(issue.corrected_value || '').replace(/"/g, '""')}"`
+        `"${(issue.original || '').toString().replace(/"/g, '""')}"`,
+        `"${(issue.fixed || '').toString().replace(/"/g, '""')}"`
       ].join(','))
     ].join('\n');
 
@@ -271,16 +271,16 @@ export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps
                       </div>
                     </TableCell>
                     <TableCell className="max-w-xs">
-                      {issue.original_value && (
-                        <div className="truncate bg-muted px-2 py-1 rounded text-xs" title={issue.original_value}>
-                          {issue.original_value}
+                      {issue.original && (
+                        <div className="truncate bg-muted px-2 py-1 rounded text-xs" title={issue.original?.toString()}>
+                          {issue.original?.toString()}
                         </div>
                       )}
                     </TableCell>
                     <TableCell className="max-w-xs">
-                      {issue.corrected_value && (
-                        <div className="truncate bg-success/10 px-2 py-1 rounded text-xs" title={issue.corrected_value}>
-                          {issue.corrected_value}
+                      {issue.fixed && (
+                        <div className="truncate bg-success/10 px-2 py-1 rounded text-xs" title={issue.fixed?.toString()}>
+                          {issue.fixed?.toString()}
                         </div>
                       )}
                     </TableCell>
