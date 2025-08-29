@@ -129,11 +129,21 @@ const MapaPage = () => {
     }
   }, [user, loading, navigate]);
 
-  // URL synchronization with tabs
+  // URL synchronization with tabs and view mode
   useEffect(() => {
     const tab = searchParams.get('tab') as TabType;
+    const view = searchParams.get('view');
+    
     if (tab && (tab === 'processos' || tab === 'testemunhas') && tab !== activeTab) {
       setActiveTab(tab);
+    }
+    
+    // If view=chat is present, scroll to chat section
+    if (view === 'chat') {
+      setTimeout(() => {
+        const chatElement = document.getElementById('chat-assistant-section');
+        chatElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
   }, [searchParams, activeTab, setActiveTab]);
 
@@ -290,12 +300,12 @@ const MapaPage = () => {
           <Card className="rounded-2xl border-border/50 hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Scale className="h-4 w-4 text-blue-500" aria-hidden="true" />
+                <Scale className="h-4 w-4 text-primary" aria-hidden="true" />
                 Total de Processos
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-blue-600">{stats.totalProcessos}</div>
+              <div className="text-3xl font-bold text-primary">{stats.totalProcessos}</div>
               <p className="text-xs text-muted-foreground mt-1">Processos cadastrados</p>
             </CardContent>
           </Card>
@@ -303,12 +313,12 @@ const MapaPage = () => {
           <Card className="rounded-2xl border-border/50 hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Users className="h-4 w-4 text-green-500" aria-hidden="true" />
+                <Users className="h-4 w-4 text-emerald-600" aria-hidden="true" />
                 Total de Testemunhas
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-green-600">{stats.totalTestemunhas}</div>
+              <div className="text-3xl font-bold text-emerald-600">{stats.totalTestemunhas}</div>
               <p className="text-xs text-muted-foreground mt-1">Testemunhas identificadas</p>
             </CardContent>
           </Card>
@@ -334,13 +344,13 @@ const MapaPage = () => {
           <Card className="rounded-2xl border-border/50 hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-amber-500" aria-hidden="true" />
+                <TrendingUp className="h-4 w-4 text-orange-500" aria-hidden="true" />
                 Ambos os Polos
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
-                <div className="text-3xl font-bold text-amber-600">{stats.testemunhasAmbosPolos}</div>
+                <div className="text-3xl font-bold text-orange-600">{stats.testemunhasAmbosPolos}</div>
                 <Badge variant="secondary" className="text-xs">
                   {stats.pctAmbos}%
                 </Badge>
@@ -351,7 +361,14 @@ const MapaPage = () => {
         </div>
 
         {/* Chat Assistant Section */}
-        <div className="mb-8">
+        <div id="chat-assistant-section" className="mb-8 space-y-6">
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-xl font-semibold">Assistente de Análise</h2>
+            <Badge variant="outline" className="text-xs">
+              IA Assistiva • LGPD Compliant
+            </Badge>
+          </div>
+          
           <ChatBar />
           {chatResult && (
             <div className="mt-6">

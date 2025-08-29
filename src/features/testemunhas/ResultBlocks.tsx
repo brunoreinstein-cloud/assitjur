@@ -158,7 +158,7 @@ export function ResultBlocks({ blocks }: ResultBlocksProps) {
                 <Card key={index} className="rounded-2xl border-border/50">
                   <CardHeader>
                     <CardTitle className="text-base font-semibold flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-blue-600" />
+                      <FileText className="h-4 w-4 text-primary" />
                       {block.title}
                     </CardTitle>
                   </CardHeader>
@@ -174,32 +174,32 @@ export function ResultBlocks({ blocks }: ResultBlocksProps) {
 
             case 'alerts':
               return (
-                <Card key={index} className="rounded-2xl border-red-200 bg-red-50/50">
+                <Card key={index} className="rounded-2xl border-destructive/30 bg-destructive/5">
                   <CardHeader>
                     <CardTitle className="text-base font-semibold flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                      <AlertTriangle className="h-4 w-4 text-destructive" />
                       {block.title}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <Alert className="border-red-200 bg-red-50">
-                      <AlertTriangle className="h-4 w-4 text-red-600" />
-                      <AlertDescription className="text-red-800">
+                    <Alert className="border-destructive/30 bg-destructive/10">
+                      <AlertTriangle className="h-4 w-4 text-destructive" />
+                      <AlertDescription className="text-destructive-foreground">
                         <strong>Triangulação Detectada</strong> - Padrões suspeitos identificados entre testemunhas
                       </AlertDescription>
                     </Alert>
 
-                    <Alert className="border-amber-200 bg-amber-50">
-                      <AlertTriangle className="h-4 w-4 text-amber-600" />
-                      <AlertDescription className="text-amber-800">
+                    <Alert className="border-orange-200 bg-orange-50">
+                      <AlertTriangle className="h-4 w-4 text-orange-600" />
+                      <AlertDescription className="text-orange-800">
                         <strong>Depoimentos Repetidos</strong> - Narrativas similares encontradas
                       </AlertDescription>
                     </Alert>
 
                     {block.data.suspiciousPatterns?.map((pattern: string, patternIndex: number) => (
-                      <div key={patternIndex} className="flex items-center gap-2 p-2 bg-red-100 rounded-lg">
-                        <AlertTriangle className="h-3 w-3 text-red-600" />
-                        <span className="text-sm text-red-800">{pattern}</span>
+                      <div key={patternIndex} className="flex items-center gap-2 p-2 bg-destructive/10 rounded-lg">
+                        <AlertTriangle className="h-3 w-3 text-destructive" />
+                        <span className="text-sm text-destructive-foreground">{pattern}</span>
                       </div>
                     ))}
 
@@ -282,20 +282,20 @@ function StrategiesBlock({ block }: StrategiesBlockProps) {
   };
 
   return (
-    <Card className="rounded-2xl border-green-200 bg-green-50/50">
+    <Card className="rounded-2xl border-emerald-200 bg-emerald-50/50">
       <CardHeader>
         <CardTitle className="text-base font-semibold flex items-center gap-2">
-          <Target className="h-4 w-4 text-green-600" />
+          <Target className="h-4 w-4 text-emerald-600" />
           {block.title}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Estratégias Ativas */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <h4 className="font-medium text-green-800">Estratégias Ativas</h4>
-            <Badge variant="secondary" className="text-xs">Polo Ativo</Badge>
-          </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <h4 className="font-medium text-emerald-800">Estratégias Ativas</h4>
+              <Badge variant="secondary" className="text-xs">Polo Ativo</Badge>
+            </div>
           
           {block.data.estrategias?.map((estrategia: any, index: number) => (
             <div key={index} className="flex items-center justify-between p-3 bg-white/70 rounded-lg border">
@@ -320,7 +320,7 @@ function StrategiesBlock({ block }: StrategiesBlockProps) {
         {/* Ações Defensivas (se houver) */}
         {block.data.acoesDefensivas && (
           <div className="space-y-3">
-            <h4 className="font-medium text-green-800">Ações Defensivas</h4>
+            <h4 className="font-medium text-emerald-800">Ações Defensivas</h4>
             {block.data.acoesDefensivas.map((acao: any, index: number) => (
               <div key={index} className="flex items-center justify-between p-3 bg-white/70 rounded-lg border">
                 <div className="flex items-center gap-3">
@@ -345,8 +345,8 @@ function StrategiesBlock({ block }: StrategiesBlockProps) {
         {/* Próximos Passos */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Target className="h-4 w-4 text-green-600" />
-            <h4 className="font-medium text-green-800">Próximos Passos</h4>
+            <Target className="h-4 w-4 text-emerald-600" />
+            <h4 className="font-medium text-emerald-800">Próximos Passos</h4>
           </div>
           
           {block.data.proximosPassos?.map((passo: string, index: number) => (

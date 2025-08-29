@@ -49,7 +49,7 @@ export function ChatBar() {
     }
   }, [chatInput]);
 
-  // Focus input on '/' key press
+  // Focus input on '/' key press and clear on Esc
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === '/' && !e.ctrlKey && !e.altKey && !e.metaKey) {
@@ -58,12 +58,18 @@ export function ChatBar() {
           e.preventDefault();
           textareaRef.current?.focus();
         }
+      } else if (e.key === 'Escape') {
+        const activeElement = document.activeElement;
+        if (activeElement === textareaRef.current) {
+          setChatInput('');
+          textareaRef.current?.blur();
+        }
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [setChatInput]);
 
   const handleSubmit = async () => {
     await runAnalysis(chatInput.trim(), chatKind);
