@@ -24,7 +24,6 @@ import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/admin/Dashboard";
 import Analytics from "./pages/admin/Analytics";
 import ImportBase from "./pages/admin/ImportBase";
-import { Navigate } from 'react-router-dom';
 import TemplatePage from "./pages/TemplatePage";
 import Versions from "./pages/admin/Versions";
 import Organization from "./pages/admin/Organization";

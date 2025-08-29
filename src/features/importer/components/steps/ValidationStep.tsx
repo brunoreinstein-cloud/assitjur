@@ -8,6 +8,7 @@ import { normalizeAndValidate } from '../../validators/validateEnhanced';
 import { IssuesDataTable } from '@/components/assistjur/IssuesDataTable';
 import { ReviewUpdateButton } from '@/components/admin/ReviewUpdateButton';
 import { useImportStore } from '../../store/useImportStore';
+import type { ValidationIssue } from '@/lib/importer/types';
 
 export function ValidationStep() {
   const { 
@@ -176,7 +177,10 @@ export function ValidationStep() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <IssuesDataTable issues={issues} />
+            <IssuesDataTable issues={issues.map(issue => ({
+              ...issue,
+              message: issue.message || issue.rule
+            }))} />
           </CardContent>
         </Card>
       )}

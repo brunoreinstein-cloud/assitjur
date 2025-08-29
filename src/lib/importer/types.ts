@@ -61,6 +61,7 @@ export interface ValidationIssue {
   column: string;
   severity: ValidationSeverity;
   rule: string;
+  message?: string; // Make optional temporarily
   value: any;
   autofilled?: boolean;
   originalColumn?: string; // Nome original da coluna no arquivo
