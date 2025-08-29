@@ -57,7 +57,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { 
         label: "Painel", 
-        to: "/admin/dashboard", 
+        to: "/admin", 
         icon: BarChart3,
         description: "Dashboard executivo",
         permission: "canViewAnalytics"
@@ -83,14 +83,14 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       { 
         label: "Importação", 
-        to: "/admin/import", 
+        to: "/admin/base-import", 
         icon: Upload,
         description: "Upload e validação de planilhas",
         permission: "canImportData"
       },
       { 
         label: "Versões", 
-        to: "/admin/versions", 
+        to: "/admin/versoes", 
         icon: History,
         description: "Histórico e rollback",
         permission: "canViewVersions",
@@ -103,17 +103,10 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { 
         label: "Organização", 
-        to: "/admin/org", 
+        to: "/admin/organization", 
         icon: Briefcase,
         description: "Configurações organizacionais",
         permission: "canManageOrg"
-      },
-      { 
-        label: "Permissões", 
-        to: "/admin/permissions", 
-        icon: ShieldCheck,
-        description: "Gestão de acesso e funções",
-        permission: "canManagePermissions"
       },
       { 
         label: "Logs", 
@@ -125,7 +118,7 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       { 
         label: "Configurações", 
-        to: "/admin/settings", 
+        to: "/admin/config", 
         icon: Settings,
         description: "Configurações do sistema",
         permission: "canManageSettings"
