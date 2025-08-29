@@ -10,6 +10,10 @@ interface ImportState {
   file: File | null;
   validationResult: ValidationResult | null;
   
+  // Versioning state
+  currentVersionId: string | null;
+  versionNumber: number | null;
+  
   // UI state
   isProcessing: boolean;
   uploadProgress: number;
@@ -25,6 +29,11 @@ interface ImportState {
   setError: (error: string | null) => void;
   resetWizard: () => void;
   
+  // Version actions
+  setCurrentVersion: (versionId: string, number: number) => void;
+  createNewVersion: () => Promise<void>;
+  publishCurrentVersion: () => Promise<void>;
+  
   // Step navigation
   nextStep: () => void;
   previousStep: () => void;
@@ -39,6 +48,8 @@ export const useImportStore = create<ImportState>((set, get) => ({
   session: null,
   file: null,
   validationResult: null,
+  currentVersionId: null,
+  versionNumber: null,
   isProcessing: false,
   uploadProgress: 0,
   error: null,
@@ -65,10 +76,74 @@ export const useImportStore = create<ImportState>((set, get) => ({
     session: null,
     file: null,
     validationResult: null,
+    currentVersionId: null,
+    versionNumber: null,
     isProcessing: false,
     uploadProgress: 0,
     error: null,
   }),
+  
+  // Version actions
+  setCurrentVersion: (versionId, number) => set({ 
+    currentVersionId: versionId, 
+    versionNumber: number 
+  }),
+  
+  createNewVersion: async () => {
+    try {
+      set({ isProcessing: true, error: null });
+      
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data, error } = await supabase.functions.invoke('create-version');
+      
+      if (error) throw error;
+      
+      set({ 
+        currentVersionId: data.versionId, 
+        versionNumber: data.number,
+        isProcessing: false
+      });
+      
+      console.log('Created version:', data);
+    } catch (error) {
+      console.error('Failed to create version:', error);
+      set({ 
+        error: 'Falha ao criar nova versão', 
+        isProcessing: false 
+      });
+      throw error;
+    }
+  },
+  
+  publishCurrentVersion: async () => {
+    const state = get();
+    if (!state.currentVersionId) {
+      throw new Error('No version to publish');
+    }
+    
+    try {
+      set({ isProcessing: true, error: null });
+      
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data, error } = await supabase.functions.invoke('publish-version', {
+        body: { versionId: state.currentVersionId }
+      });
+      
+      if (error) throw error;
+      
+      console.log('Published version', data.number, 'at', data.publishedAt);
+      set({ isProcessing: false });
+      
+      return data;
+    } catch (error) {
+      console.error('Failed to publish version:', error);
+      set({ 
+        error: 'Falha ao publicar versão', 
+        isProcessing: false 
+      });
+      throw error;
+    }
+  },
   
   // Step navigation helpers
   nextStep: () => {

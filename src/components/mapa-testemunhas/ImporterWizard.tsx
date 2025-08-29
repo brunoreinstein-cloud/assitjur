@@ -1,44 +1,52 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Circle, ArrowRight } from 'lucide-react';
+import { useImportStore } from '@/features/importer/store/useImportStore';
 import { UploadStep } from '../importer/UploadStep';
 import { ValidationStep } from '../importer/ValidationStep';  
 import { ConfirmStep } from '../importer/ConfirmStep';
 import { TrustNote } from '../importer/TrustNote';
-import type { ImportSession, ValidationResult } from '@/lib/importer/types';
-
-type WizardStep = 'upload' | 'validation' | 'confirm';
 
 export function ImporterWizard() {
-  const [currentStep, setCurrentStep] = useState<WizardStep>('upload');
-  const [session, setSession] = useState<ImportSession | null>(null);
-  const [file, setFile] = useState<File | null>(null);
-  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
+  const { 
+    currentStep,
+    session,
+    file,
+    validationResult,
+    versionNumber,
+    createNewVersion,
+    setCurrentStep,
+    setSession,
+    setFile,
+    setValidationResult
+  } = useImportStore();
+
+  // Criar nova versão quando o wizard inicia
+  useEffect(() => {
+    createNewVersion().catch(console.error);
+  }, [createNewVersion]);
 
   const steps = [
     { id: 'upload', label: 'Upload & Detecção', icon: Circle },
     { id: 'validation', label: 'Validação & Correções', icon: Circle },
-    { id: 'confirm', label: 'Confirmação & Importação', icon: Circle },
+    { id: 'preview', label: 'Prévia & Revisão', icon: Circle },
+    { id: 'publish', label: 'Confirmação & Publicação', icon: Circle },
   ] as const;
 
-  const handleUploadComplete = (newSession: ImportSession, uploadedFile: File) => {
+  const handleUploadComplete = (newSession: any, uploadedFile: File) => {
     setSession(newSession);
     setFile(uploadedFile);
     setCurrentStep('validation');
   };
 
-  const handleValidationComplete = (result: ValidationResult) => {
+  const handleValidationComplete = (result: any) => {
     setValidationResult(result);
-    setCurrentStep('confirm');
+    setCurrentStep('preview');
   };
 
   const handleConfirmComplete = () => {
-    // Reset wizard
-    setSession(null);
-    setFile(null);
-    setValidationResult(null);
-    setCurrentStep('upload');
+    // Wizard completo - será redirecionado
   };
 
   const getStepStatus = (stepId: string) => {
@@ -81,6 +89,9 @@ export function ImporterWizard() {
                         status === 'current' ? 'text-primary' : 'text-muted-foreground'
                       }`}>
                         {step.label}
+                        {step.id === 'upload' && versionNumber && (
+                          <span className="ml-2 text-xs opacity-70">v{versionNumber}</span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -108,7 +119,17 @@ export function ImporterWizard() {
           />
         )}
         
-        {currentStep === 'confirm' && session && validationResult && (
+        {currentStep === 'preview' && session && validationResult && (
+          <div className="text-center p-8">
+            <h3 className="text-lg font-medium mb-2">Prévia dos Dados</h3>
+            <p className="text-muted-foreground mb-4">
+              {validationResult.summary.valid} registros válidos prontos para publicação
+            </p>
+            <Badge variant="secondary">v{versionNumber} (draft)</Badge>
+          </div>
+        )}
+        
+        {currentStep === 'publish' && session && validationResult && (
           <ConfirmStep 
             session={session}
             validationResult={validationResult}

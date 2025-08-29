@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   Table,
   TableBody,
@@ -20,54 +23,126 @@ import {
 } from 'lucide-react';
 
 const Versions = () => {
-  // Mock data - will be replaced with real data from Supabase
-  const versions = [
-    {
-      id: '1',
-      version: 'v1.2.4',
-      hash: 'a1b2c3d4',
-      status: 'DRAFT',
-      rows: 15420,
-      createdAt: '2024-01-15 14:30',
-      createdBy: 'admin@demo.com',
-      isActive: false
-    },
-    {
-      id: '2',
-      version: 'v1.2.3',
-      hash: 'e5f6g7h8',
-      status: 'PUBLISHED',
-      rows: 15380,
-      createdAt: '2024-01-14 10:15',
-      createdBy: 'admin@demo.com',
-      isActive: true
-    },
-    {
-      id: '3',
-      version: 'v1.2.2',
-      hash: 'i9j0k1l2',
-      status: 'PUBLISHED',
-      rows: 14920,
-      createdAt: '2024-01-10 16:45',
-      createdBy: 'admin@demo.com',
-      isActive: false
+  const [versions, setVersions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeVersion, setActiveVersion] = useState<any>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (user) {
+      fetchVersions();
     }
-  ];
+  }, [user]);
+
+  const fetchVersions = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('versions')
+        .select('*')
+        .order('number', { ascending: false });
+
+      if (error) throw error;
+      
+      setVersions(data || []);
+      setActiveVersion(data?.find(v => v.status === 'published') || null);
+    } catch (error) {
+      console.error('Error fetching versions:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao carregar versões",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const handlePublish = async (versionId: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('publish-version', {
+        body: { versionId }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Sucesso",
+        description: "Versão publicada com sucesso"
+      });
+      
+      fetchVersions();
+    } catch (error) {
+      console.error('Error publishing version:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao publicar versão",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRollback = async (versionId: string, versionNumber: number) => {
+    try {
+      const { error } = await supabase.functions.invoke('rollback-version', {
+        body: { toVersionId: versionId }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Sucesso", 
+        description: `Rollback para v${versionNumber} realizado com sucesso`
+      });
+      
+      fetchVersions();
+    } catch (error) {
+      console.error('Error rolling back:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao realizar rollback",
+        variant: "destructive"
+      });
+    }
+  };
 
   const getStatusBadge = (status: string, isActive: boolean) => {
-    if (isActive) {
-      return <Badge variant="default" className="bg-green-500">ATIVA</Badge>;
+    if (isActive && status === 'published') {
+      return <Badge className="bg-success text-success-foreground">ATIVA</Badge>;
     }
     
     switch (status) {
-      case 'DRAFT':
+      case 'draft':
         return <Badge variant="secondary">RASCUNHO</Badge>;
-      case 'PUBLISHED':
-        return <Badge variant="outline">PUBLICADA</Badge>;
+      case 'published':
+      case 'archived':
+        return <Badge variant="outline">ARQUIVADA</Badge>;
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge variant="secondary">{status?.toUpperCase()}</Badge>;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Versões & Rollback</h1>
+          <p className="text-muted-foreground">Carregando versões...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -102,46 +177,64 @@ const Versions = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {versions.map((version) => (
+              {versions.length > 0 ? versions.map((version) => (
                 <TableRow key={version.id}>
                   <TableCell className="font-medium">
-                    {version.version}
+                    v{version.number}
                   </TableCell>
                   <TableCell>
                     <code className="text-sm bg-muted px-2 py-1 rounded">
-                      {version.hash}
+                      {version.file_checksum?.slice(0, 8) || 'N/A'}
                     </code>
                   </TableCell>
                   <TableCell>
-                    {getStatusBadge(version.status, version.isActive)}
+                    {getStatusBadge(version.status, version.status === 'published')}
                   </TableCell>
                   <TableCell>
-                    {version.rows.toLocaleString()}
+                    {version.summary?.imported?.toLocaleString() || 'N/A'}
                   </TableCell>
-                  <TableCell>{version.createdAt}</TableCell>
-                  <TableCell>{version.createdBy}</TableCell>
+                  <TableCell>{formatDateTime(version.created_at)}</TableCell>
+                  <TableCell>{version.summary?.created_by || 'Sistema'}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" title="Visualizar">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" title="Baixar">
                         <Download className="h-4 w-4" />
                       </Button>
-                      {version.status === 'DRAFT' && (
-                        <Button variant="ghost" size="sm" className="text-green-600">
+                      {version.status === 'draft' && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-success hover:text-success/80"
+                          onClick={() => handlePublish(version.id)}
+                          title="Publicar versão"
+                        >
                           <CheckCircle className="h-4 w-4" />
                         </Button>
                       )}
-                      {!version.isActive && version.status === 'PUBLISHED' && (
-                        <Button variant="ghost" size="sm" className="text-blue-600">
+                      {version.status === 'archived' && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-primary hover:text-primary/80"
+                          onClick={() => handleRollback(version.id, version.number)}
+                          title="Fazer rollback"
+                        >
                           <RotateCcw className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              )) : (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center text-muted-foreground">
+                    Nenhuma versão encontrada
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -156,24 +249,32 @@ const Versions = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Versão:</span>
-                <Badge variant="default" className="bg-green-500">v1.2.3</Badge>
+            {activeVersion ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Versão:</span>
+                  <Badge className="bg-success text-success-foreground">v{activeVersion.number}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Hash:</span>
+                  <code className="text-sm bg-muted px-2 py-1 rounded">
+                    {activeVersion.file_checksum?.slice(0, 8) || 'N/A'}
+                  </code>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Registros:</span>
+                  <span className="text-sm">{activeVersion.summary?.imported?.toLocaleString() || 'N/A'}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Publicada em:</span>
+                  <span className="text-sm">{formatDateTime(activeVersion.published_at)}</span>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Hash:</span>
-                <code className="text-sm bg-muted px-2 py-1 rounded">e5f6g7h8</code>
+            ) : (
+              <div className="text-center text-muted-foreground py-4">
+                Nenhuma versão ativa encontrada
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Registros:</span>
-                <span className="text-sm">15,380</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Publicada em:</span>
-                <span className="text-sm">14/01/2024 10:15</span>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
@@ -193,10 +294,21 @@ const Versions = () => {
               <Eye className="h-4 w-4 mr-2" />
               Comparar Versões
             </Button>
-            <Button variant="outline" className="w-full justify-start text-blue-600">
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Rollback para v1.2.2
-            </Button>
+            {versions.find(v => v.status === 'archived') && (
+              <Button 
+                variant="outline" 
+                className="w-full justify-start text-primary hover:text-primary/80"
+                onClick={() => {
+                  const lastArchived = versions.find(v => v.status === 'archived');
+                  if (lastArchived) {
+                    handleRollback(lastArchived.id, lastArchived.number);
+                  }
+                }}
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Rollback Disponível
+              </Button>
+            )}
           </CardContent>
         </Card>
       </div>

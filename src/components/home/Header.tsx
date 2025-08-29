@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Scale, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { GlobalSearch } from "./GlobalSearch";
+import { LastUpdateBadge } from "@/components/ui/LastUpdateBadge";
 import { BRAND } from "@/branding/brand";
 
 export const Header = () => {
@@ -41,6 +42,8 @@ export const Header = () => {
 
         {/* Actions */}
         <div className="flex items-center gap-2 min-w-fit">
+          {user && <LastUpdateBadge />}
+          
           <Button 
             variant="ghost" 
             onClick={() => navigate('/demo')}
