@@ -70,16 +70,20 @@ export function FieldDictionary() {
     <Card>
       <CardHeader>
         <CardTitle>Dicionário de Campos</CardTitle>
-        <CardDescription>
-          <div className="space-y-1 text-sm">
-            <div><strong>CONFORMIDADE COM NOVAS ESPECIFICAÇÕES:</strong></div>
-            <div>✅ <strong>Abas obrigatórias:</strong> "Por Processo" + "Por Testemunha"</div>
-            <div>✅ <strong>Campos obrigatórios Por Processo:</strong> cnj, uf, comarca, reclamante_nome, reu_nome, advogados_ativo, todas_testemunhas</div>
-            <div>✅ <strong>Campos obrigatórios Por Testemunha:</strong> nome_testemunha, qtd_depoimentos, cnjs_como_testemunha</div>
-            <div>✅ <strong>Sistema de sinônimos:</strong> Reconhece variações de nomes de colunas automaticamente</div>
-            <div>✅ <strong>Parser de listas:</strong> Suporta formatos JSON-like, separação por ; e ,</div>
-            <div>✅ <strong>CNJ preservado:</strong> Formato original mantido como string</div>
-          </div>
+        <CardDescription className="text-sm">
+          <strong>CONFORMIDADE COM NOVAS ESPECIFICAÇÕES:</strong>
+          <br />
+          ✅ <strong>Abas obrigatórias:</strong> "Por Processo" + "Por Testemunha"
+          <br />
+          ✅ <strong>Campos obrigatórios Por Processo:</strong> cnj, uf, comarca, reclamante_nome, reu_nome, advogados_ativo, todas_testemunhas
+          <br />
+          ✅ <strong>Campos obrigatórios Por Testemunha:</strong> nome_testemunha, qtd_depoimentos, cnjs_como_testemunha
+          <br />
+          ✅ <strong>Sistema de sinônimos:</strong> Reconhece variações de nomes de colunas automaticamente
+          <br />
+          ✅ <strong>Parser de listas:</strong> Suporta formatos JSON-like, separação por ; e ,
+          <br />
+          ✅ <strong>CNJ preservado:</strong> Formato original mantido como string
         </CardDescription>
       </CardHeader>
       <CardContent>
