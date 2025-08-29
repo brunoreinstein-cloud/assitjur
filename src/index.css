@@ -1,4 +1,4 @@
-import '@/styles/design-tokens.css';
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -8,6 +8,24 @@ All colors MUST be HSL. Professional navy/blue theme for trust and authority.
 
 @layer base {
   :root {
+    /* Brand Colors - Based on AssistJur.IA Identity */
+    --brand-primary: hsl(258, 69%, 52%);    /* #6E40FF - Violeta tech */
+    --brand-primary-hover: hsl(258, 69%, 47%);
+    --brand-primary-muted: hsl(258, 40%, 85%);
+    
+    --brand-accent: hsl(45, 93%, 58%);      /* #B89A29 - Gold highlights */
+    --brand-accent-hover: hsl(45, 93%, 53%);
+    --brand-accent-muted: hsl(45, 60%, 90%);
+    
+    --brand-ink: hsl(0, 0%, 17%);           /* #2B2B2B - Títulos */
+    --brand-muted: hsl(0, 0%, 40%);          /* #666 - Texto auxiliar */
+    --brand-bg: hsl(0, 0%, 98%);            /* #FAFAFA - Fundos */
+    
+    /* Status Colors - WCAG AA Compliant */
+    --status-critical: hsl(0, 84%, 48%);     /* Crítico - Alto contraste */
+    --status-warning: hsl(38, 92%, 45%);     /* Atenção - Âmbar */
+    --status-info: hsl(221, 83%, 53%);       /* Observação - Azul */
+    --status-success: hsl(142, 76%, 36%);    /* Sucesso - Verde */
     /* AssistJur.IA Brand Colors */
     --background: 0 0% 100%;
     --foreground: 0 0% 17%; /* Cinza Chumbo #2C2C2C */
