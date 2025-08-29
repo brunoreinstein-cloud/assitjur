@@ -1053,9 +1053,94 @@ export type Database = {
         }
         Relationships: []
       }
+      versions: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          file_checksum: string | null
+          id: string
+          number: number
+          org_id: string
+          published_at: string | null
+          status: string
+          summary: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          file_checksum?: string | null
+          id?: string
+          number: number
+          org_id: string
+          published_at?: string | null
+          status: string
+          summary?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          file_checksum?: string | null
+          id?: string
+          number?: number
+          org_id?: string
+          published_at?: string | null
+          status?: string
+          summary?: Json | null
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      processos_live: {
+        Row: {
+          advogados_ativo: string[] | null
+          advogados_passivo: string[] | null
+          classificacao_final: string | null
+          cnj: string | null
+          cnj_digits: string | null
+          cnj_normalizado: string | null
+          comarca: string | null
+          created_at: string | null
+          data_audiencia: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          fase: string | null
+          id: string | null
+          observacoes: string | null
+          org_id: string | null
+          prova_emprestada: boolean | null
+          reclamante_cpf_mask: string | null
+          reclamante_foi_testemunha: boolean | null
+          reclamante_nome: string | null
+          reu_nome: string | null
+          score_risco: number | null
+          status: string | null
+          testemunhas_ativo: string[] | null
+          testemunhas_passivo: string[] | null
+          triangulacao_confirmada: boolean | null
+          tribunal: string | null
+          troca_direta: boolean | null
+          updated_at: string | null
+          vara: string | null
+          version_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "processos_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "processos_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "dataset_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       can_access_sensitive_data: {
@@ -1085,6 +1170,10 @@ export type Database = {
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_next_version_number: {
+        Args: { p_org_id: string }
+        Returns: number
       }
       get_pessoas_masked: {
         Args: { org_uuid?: string }
