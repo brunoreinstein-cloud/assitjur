@@ -40,15 +40,9 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       { 
         label: "Mapa de Testemunhas", 
-        to: "/mapa", 
+        to: "/mapa-testemunhas", 
         icon: Users,
-        description: "Análise de vínculos e padrões"
-      },
-      { 
-        label: "Chat Assistente", 
-        to: "/chat", 
-        icon: MessageSquare,
-        description: "Assistente jurídico inteligente"
+        description: "Análise de vínculos e padrões com assistente integrado"
       },
     ]
   },

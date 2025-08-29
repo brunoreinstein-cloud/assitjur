@@ -1,6 +1,35 @@
 import { create } from 'zustand';
 import { PorProcesso, PorTestemunha, ProcessoFilters, TestemunhaFilters } from '@/types/mapa-testemunhas';
 
+// Chat-related types
+export type QueryKind = 'processo' | 'testemunha' | 'reclamante';
+export type MessageRole = 'user' | 'assistant';
+export type BlockType = 'executive' | 'details' | 'alerts' | 'strategies';
+export type ExportType = 'pdf' | 'csv' | 'json';
+export type ChatStatus = 'idle' | 'loading' | 'success' | 'error';
+
+export interface Citation {
+  source: 'por_processo' | 'por_testemunha' | 'outro';
+  ref: string;
+}
+
+export interface ResultBlock {
+  type: BlockType;
+  title: string;
+  icon: string;
+  data: any;
+  citations?: Citation[];
+}
+
+export interface Message {
+  id: string;
+  role: MessageRole;
+  content?: string;
+  blocks?: ResultBlock[];
+  exporting?: boolean;
+  timestamp: Date;
+}
+
 // Type aliases for the store
 type Processo = PorProcesso;
 type Testemunha = PorTestemunha;
@@ -40,6 +69,18 @@ interface MapaTestemunhasStore {
   pageSize: number;
   totalProcessos: number;
   totalTestemunhas: number;
+
+  // Chat State
+  chatKind: QueryKind;
+  chatInput: string;
+  chatMessages: Message[];
+  chatStatus: ChatStatus;
+  agentOnline: boolean;
+  chatResult: ResultBlock[] | null;
+  
+  // Loading hints
+  loadingHints: string[];
+  currentHintIndex: number;
   
   // Actions
   setActiveTab: (tab: TabType) => void;
@@ -60,9 +101,30 @@ interface MapaTestemunhasStore {
   setTotalProcessos: (total: number) => void;
   setTotalTestemunhas: (total: number) => void;
   resetFilters: () => void;
+
+  // Chat Actions
+  setChatKind: (kind: QueryKind) => void;
+  setChatInput: (input: string) => void;
+  addChatMessage: (message: Omit<Message, 'id' | 'timestamp'>) => string;
+  updateChatMessage: (id: string, updates: Partial<Message>) => void;
+  setChatStatus: (status: ChatStatus) => void;
+  setAgentOnline: (online: boolean) => void;
+  setChatResult: (result: ResultBlock[] | null) => void;
+  resetChat: () => void;
+  nextHint: () => void;
 }
 
-export const useMapaTestemunhasStore = create<MapaTestemunhasStore>((set) => ({
+const LOADING_HINTS = [
+  "⏱ Mapeando conexões de testemunhas…",
+  "🔎 Checando histórico probatório…",
+  "⚖️ Analisando padrões de triangulação…",
+  "📋 Identificando riscos processuais…",
+  "👥 Cruzando dados do polo ativo…",
+  "🎯 Gerando insights estratégicos…",
+  "📊 Compilando relatório executivo…"
+];
+
+export const useMapaTestemunhasStore = create<MapaTestemunhasStore>((set, get) => ({
   // Initial state
   processos: [],
   testemunhas: [],
@@ -83,6 +145,16 @@ export const useMapaTestemunhasStore = create<MapaTestemunhasStore>((set) => ({
   pageSize: 10,
   totalProcessos: 0,
   totalTestemunhas: 0,
+
+  // Chat initial state
+  chatKind: 'processo',
+  chatInput: '',
+  chatMessages: [],
+  chatStatus: 'idle',
+  agentOnline: true,
+  chatResult: null,
+  loadingHints: LOADING_HINTS,
+  currentHintIndex: 0,
 
   // Actions
   setActiveTab: (tab) => set({ activeTab: tab }),
@@ -116,6 +188,44 @@ export const useMapaTestemunhasStore = create<MapaTestemunhasStore>((set) => ({
     processosPage: 1,
     testemunhasPage: 1
   }),
+
+  // Chat Actions
+  setChatKind: (kind) => set({ chatKind: kind }),
+  setChatInput: (input) => set({ chatInput: input }),
+
+  addChatMessage: (message) => {
+    const newMessage = {
+      ...message,
+      id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: new Date()
+    };
+    set((state) => ({
+      chatMessages: [...state.chatMessages, newMessage]
+    }));
+    return newMessage.id;
+  },
+
+  updateChatMessage: (id, updates) => set((state) => ({
+    chatMessages: state.chatMessages.map(msg => 
+      msg.id === id ? { ...msg, ...updates } : msg
+    )
+  })),
+
+  setChatStatus: (status) => set({ chatStatus: status }),
+  setAgentOnline: (agentOnline) => set({ agentOnline }),
+  setChatResult: (result) => set({ chatResult: result }),
+
+  resetChat: () => set({
+    chatInput: '',
+    chatMessages: [],
+    chatStatus: 'idle',
+    chatResult: null,
+    currentHintIndex: 0
+  }),
+
+  nextHint: () => set((state) => ({
+    currentHintIndex: (state.currentHintIndex + 1) % state.loadingHints.length
+  }))
 }));
 
 // Selectors for optimized re-rendering

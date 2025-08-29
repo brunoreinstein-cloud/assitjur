@@ -1,6 +1,6 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Citation } from '@/stores/useChatStore';
+import { Citation } from '@/lib/store/mapa-testemunhas';
 import { FileText, User, ExternalLink } from 'lucide-react';
 
 interface CitationsProps {

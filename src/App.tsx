@@ -17,8 +17,6 @@ import Login from "./pages/Login";
 import Reset from "./pages/Reset";
 import ResetConfirm from "./pages/ResetConfirm";
 import VerifyOtp from "./pages/VerifyOtp";
-import Chat from "./pages/Chat";
-import ChatApp from "./pages/ChatApp";
 import NotFound from "./pages/NotFound";
 
 import Dashboard from "./pages/admin/Dashboard";
@@ -87,10 +85,12 @@ const App = () => (
                       <Routes>
                         <Route path="/dashboard" element={<Navigate to="/mapa" replace />} />
                         <Route path="/mapa" element={<MapaPage />} />
+                        <Route path="/mapa-testemunhas" element={<MapaPage />} />
                         <Route path="/dados" element={<Navigate to="/mapa" replace />} />
                         <Route path="/dados/mapa" element={<Navigate to="/mapa" replace />} />
-                        <Route path="/chat" element={<Chat />} />
-                        <Route path="/app/chat" element={<ChatApp />} />
+                         {/* Redirect deprecated chat route to mapa-testemunhas */}
+                         <Route path="/chat" element={<Navigate to="/mapa-testemunhas?view=chat" replace />} />
+                        <Route path="/app/chat" element={<Navigate to="/mapa-testemunhas?view=chat" replace />} />
                         
                         {/* Admin routes */}
                         <Route path="/admin" element={<Dashboard />} />

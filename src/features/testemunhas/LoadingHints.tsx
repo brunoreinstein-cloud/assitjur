@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { useChatStore } from '@/stores/useChatStore';
+import { useMapaTestemunhasStore } from '@/lib/store/mapa-testemunhas';
 import { Bot, Loader2 } from 'lucide-react';
 
 export function LoadingHints() {
-  const { loadingHints, currentHintIndex, nextHint } = useChatStore();
+  const { loadingHints, currentHintIndex, nextHint } = useMapaTestemunhasStore();
 
   // Rotate hints every 800ms
   useEffect(() => {

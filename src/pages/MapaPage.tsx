@@ -40,6 +40,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { fetchPorProcesso, fetchPorTestemunha } from "@/lib/supabase";
 import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
+import { ChatBar } from "@/features/testemunhas/ChatBar";
+import { ResultBlocks } from "@/features/testemunhas/ResultBlocks";
+import { LoadingHints } from "@/features/testemunhas/LoadingHints";
 
 // Updated types to match mapa-testemunhas structure
 type Processo = PorProcesso;
@@ -72,6 +75,10 @@ const MapaPage = () => {
   const lastUpdate = useMapaTestemunhasStore(selectLastUpdate);
   const processoFilters = useMapaTestemunhasStore(selectProcessoFilters);
   const testemunhaFilters = useMapaTestemunhasStore(selectTestemunhaFilters);
+  
+  // Chat selectors
+  const chatResult = useMapaTestemunhasStore(s => s.chatResult);
+  const chatStatus = useMapaTestemunhasStore(s => s.chatStatus);
   
   // Individual setters
   const setActiveTab = useMapaTestemunhasStore(s => s.setActiveTab);
@@ -343,18 +350,20 @@ const MapaPage = () => {
           </Card>
         </div>
 
-        {/* PII Warning */}
-        {!isPiiMasked && (
-          <Card className="rounded-2xl border-amber-500/50 bg-amber-500/5 mb-6">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 text-amber-600">
-                <AlertTriangle className="h-4 w-4" aria-hidden="true" />
-                <span className="font-medium">Conteúdo assistivo. Revisão humana obrigatória.</span>
-                <span className="text-sm">Dados sensíveis visíveis.</span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Chat Assistant Section */}
+        <div className="mb-8">
+          <ChatBar />
+          {chatResult && (
+            <div className="mt-6">
+              <ResultBlocks blocks={chatResult} />
+            </div>
+          )}
+          {chatStatus === 'loading' && (
+            <div className="mt-6">
+              <LoadingHints />
+            </div>
+          )}
+        </div>
 
         {/* Main Content */}
         <div className="mt-8">
