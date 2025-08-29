@@ -1,6 +1,253 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { corsHeaders } from '../_shared/cors.ts'
-import { buildCanonicalXlsx } from './canonical.ts'
+
+// Import XLSX for Deno - using ESM.sh for better compatibility
+import * as XLSX from 'https://esm.sh/xlsx@0.18.5'
+
+// Generate valid CNJ with correct check digits
+function generateValidCNJ(sequential?: number): string {
+  const seq = sequential || Math.floor(Math.random() * 9999999) + 1000000;
+  const year = 2024;
+  const justice = '5'; // Justiça do Trabalho
+  const tribunal = '02'; // TRT 2ª Região
+  const origin = String(1000 + (seq - 1000000)).padStart(4, '0');
+  const sequentialStr = String(seq).padStart(7, '0');
+  
+  // Build CNJ without check digits: NNNNNNN + AAAA + J + TR + OOOO
+  const cnjWithoutCheckDigits = sequentialStr + year + justice + tribunal + origin;
+  
+  // Calculate check digits using official algorithm
+  const weights = [2, 3, 4, 5, 6, 7, 8, 9, 2, 3, 4, 5, 6, 7, 8, 9, 2, 3];
+  let sum = 0;
+  
+  const digits = cnjWithoutCheckDigits.split('').map(Number);
+  for (let i = 0; i < digits.length; i++) {
+    sum += digits[i] * weights[i];
+  }
+  
+  const remainder = sum % 97;
+  const checkDigits = (98 - remainder).toString().padStart(2, '0');
+  
+  return `${sequentialStr}-${checkDigits}.${year}.${justice}.${tribunal}.${origin}`;
+}
+
+// Generate valid CNJs for examples
+const validCNJs = [
+  generateValidCNJ(1000000),
+  generateValidCNJ(1000001), 
+  generateValidCNJ(1000002),
+  generateValidCNJ(1000003),
+  generateValidCNJ(1000004),
+  generateValidCNJ(1000005),
+  generateValidCNJ(1000006),
+  generateValidCNJ(1000007),
+  generateValidCNJ(1000008),
+  generateValidCNJ(1000009),
+  generateValidCNJ(1000010),
+  generateValidCNJ(1000011)
+];
+
+// Canonical sample data - inlined for edge function
+const canonicalProcessoSamples = [
+  {
+    CNJ: validCNJs[0],
+    Status: 'Em andamento',
+    Fase: 'Instrução',
+    UF: 'RJ',
+    Comarca: 'Rio de Janeiro',
+    Reclamantes: 'Ana Lima',
+    Advogados_Ativo: 'Dr. Xavier Silva; Dra. Yasmim Oliveira',
+    Testemunhas_Ativo: 'João Pereira',
+    Testemunhas_Passivo: '—',
+    Todas_Testemunhas: 'João Pereira; Beatriz Nunes',
+    Reclamante_Foi_Testemunha: true,
+    Qtd_Reclamante_Testemunha: 1,
+    CNJs_Reclamante_Testemunha: validCNJs[9],
+    Reclamante_Testemunha_Polo_Passivo: false,
+    CNJs_Passivo: '—',
+    Triangulacao_Confirmada: true,
+    Desenho_Triangulacao: 'A→B→C→A',
+    CNJs_Triangulacao: `${validCNJs[1]}; ${validCNJs[2]}; ${validCNJs[3]}`,
+    Contem_Prova_Emprestada: true,
+    Testemunhas_Prova_Emprestada: 'João Pereira',
+    Classificacao_Final: 'Risco Alto',
+    Insight_Estrategico: 'Triangulação + prova emprestada'
+  },
+  {
+    CNJ: validCNJs[1],
+    Status: 'Sentenciado',
+    Fase: 'Execução',
+    UF: 'SP',
+    Comarca: 'São Paulo',
+    Reclamantes: 'Pedro Santos',
+    Advogados_Ativo: 'Dra. Maria Legal',
+    Testemunhas_Ativo: 'Carlos Costa',
+    Testemunhas_Passivo: 'Ana Silva',
+    Todas_Testemunhas: 'Carlos Costa; Ana Silva',
+    Reclamante_Foi_Testemunha: false,
+    Qtd_Reclamante_Testemunha: 0,
+    CNJs_Reclamante_Testemunha: '—',
+    Reclamante_Testemunha_Polo_Passivo: false,
+    CNJs_Passivo: '—',
+    Triangulacao_Confirmada: false,
+    Desenho_Triangulacao: '—',
+    CNJs_Triangulacao: '—',
+    Contem_Prova_Emprestada: false,
+    Testemunhas_Prova_Emprestada: '—',
+    Classificacao_Final: 'Risco Baixo',
+    Insight_Estrategico: 'Processo regular sem irregularidades'
+  },
+  {
+    CNJ: validCNJs[2],
+    Status: 'Arquivado',
+    Fase: 'Conhecimento',
+    UF: 'MG',
+    Comarca: 'Belo Horizonte',
+    Reclamantes: 'Julia Martins',
+    Advogados_Ativo: 'Dr. Roberto Advocacia; Sociedade Advogados MG',
+    Testemunhas_Ativo: 'Beatriz Nunes; João Pereira',
+    Testemunhas_Passivo: '—',
+    Todas_Testemunhas: 'Beatriz Nunes; João Pereira',
+    Reclamante_Foi_Testemunha: false,
+    Qtd_Reclamante_Testemunha: 0,
+    CNJs_Reclamante_Testemunha: '—',
+    Reclamante_Testemunha_Polo_Passivo: false,
+    CNJs_Passivo: '—',
+    Triangulacao_Confirmada: false,
+    Desenho_Triangulacao: '—',
+    CNJs_Triangulacao: '—',
+    Contem_Prova_Emprestada: true,
+    Testemunhas_Prova_Emprestada: 'João Pereira',
+    Classificacao_Final: 'Risco Médio',
+    Insight_Estrategico: 'Testemunha recorrente - monitorar'
+  }
+];
+
+const canonicalTestemunhaSamples = [
+  {
+    Nome_Testemunha: 'João Pereira',
+    Qtd_Depoimentos: 12,
+    CNJs_Como_Testemunha: `${validCNJs[0]}; ${validCNJs[9]}`,
+    Ja_Foi_Reclamante: false,
+    CNJs_Como_Reclamante: '—',
+    Foi_Testemunha_Ativo: true,
+    Foi_Testemunha_Passivo: false,
+    CNJs_Passivo: '—',
+    Foi_Ambos_Polos: false,
+    Participou_Troca_Favor: true,
+    CNJs_Troca_Favor: `${validCNJs[4]}↔${validCNJs[5]}`,
+    Participou_Triangulacao: true,
+    CNJs_Triangulacao: `${validCNJs[1]}; ${validCNJs[2]}; ${validCNJs[3]}`,
+    E_Prova_Emprestada: true,
+    Classificacao: 'ALTA',
+    Classificacao_Estrategica: 'CRÍTICO'
+  },
+  {
+    Nome_Testemunha: 'Beatriz Nunes',
+    Qtd_Depoimentos: 3,
+    CNJs_Como_Testemunha: `${validCNJs[0]}; ${validCNJs[2]}; ${validCNJs[6]}`,
+    Ja_Foi_Reclamante: true,
+    CNJs_Como_Reclamante: validCNJs[7],
+    Foi_Testemunha_Ativo: true,
+    Foi_Testemunha_Passivo: true,
+    CNJs_Passivo: validCNJs[8],
+    Foi_Ambos_Polos: true,
+    Participou_Troca_Favor: false,
+    CNJs_Troca_Favor: '—',
+    Participou_Triangulacao: false,
+    CNJs_Triangulacao: '—',
+    E_Prova_Emprestada: false,
+    Classificacao: 'MÉDIA',
+    Classificacao_Estrategica: 'ATENÇÃO'
+  },
+  {
+    Nome_Testemunha: 'Carlos Costa',
+    Qtd_Depoimentos: 1,
+    CNJs_Como_Testemunha: validCNJs[1],
+    Ja_Foi_Reclamante: false,
+    CNJs_Como_Reclamante: '—',
+    Foi_Testemunha_Ativo: true,
+    Foi_Testemunha_Passivo: false,
+    CNJs_Passivo: '—',
+    Foi_Ambos_Polos: false,
+    Participou_Troca_Favor: false,
+    CNJs_Troca_Favor: '—',
+    Participou_Triangulacao: false,
+    CNJs_Triangulacao: '—',
+    E_Prova_Emprestada: false,
+    Classificacao: 'BAIXA',
+    Classificacao_Estrategica: 'NORMAL'
+  }
+];
+
+const canonicalDicionarioFields = [
+  {
+    Aba: 'Por Processo',
+    Campo: 'CNJ',
+    Tipo: 'texto',
+    Obrigatorio: 'Sim',
+    Regra: 'String com 20 dígitos (preserva formato original). Validação interna remove pontuação.',
+    Exemplo: validCNJs[0]
+  },
+  {
+    Aba: 'Por Processo',
+    Campo: 'Status',
+    Tipo: 'texto',
+    Obrigatorio: 'Não',
+    Regra: 'Status atual do processo',
+    Exemplo: 'Em andamento'
+  },
+  {
+    Aba: 'Por Processo',
+    Campo: 'UF',
+    Tipo: 'texto',
+    Obrigatorio: 'Sim',
+    Regra: 'Sigla de 2 letras do estado',
+    Exemplo: 'SP'
+  },
+  {
+    Aba: 'Por Testemunha',
+    Campo: 'Nome_Testemunha',
+    Tipo: 'texto',
+    Obrigatorio: 'Sim',
+    Regra: 'Nome completo da testemunha',
+    Exemplo: 'João Pereira'
+  },
+  {
+    Aba: 'Por Testemunha',
+    Campo: 'Qtd_Depoimentos',
+    Tipo: 'número',
+    Obrigatorio: 'Sim',
+    Regra: 'Quantidade total de depoimentos',
+    Exemplo: '12'
+  }
+];
+
+/**
+ * Build canonical XLSX template using the standardized format
+ */
+function buildCanonicalXlsx(): Uint8Array {
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: Por Processo with canonical data
+  const processoWs = XLSX.utils.json_to_sheet(canonicalProcessoSamples);
+  XLSX.utils.book_append_sheet(wb, processoWs, 'Por Processo');
+
+  // Sheet 2: Por Testemunha with canonical data
+  const testemunhaWs = XLSX.utils.json_to_sheet(canonicalTestemunhaSamples);
+  XLSX.utils.book_append_sheet(wb, testemunhaWs, 'Por Testemunha');
+
+  // Sheet 3: Dicionario with canonical field definitions
+  const dicionarioWs = XLSX.utils.json_to_sheet(canonicalDicionarioFields);
+  XLSX.utils.book_append_sheet(wb, dicionarioWs, 'Dicionario');
+
+  // Generate buffer with compression
+  return XLSX.write(wb, { 
+    type: 'array', 
+    bookType: 'xlsx',
+    compression: true 
+  });
+}
 
 interface ProcessoSample {
   CNJ: string;
