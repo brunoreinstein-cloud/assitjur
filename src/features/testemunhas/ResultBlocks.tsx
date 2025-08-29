@@ -8,20 +8,16 @@ import {
   Download, 
   Braces, 
   Copy,
-  Sparkles, 
   FileText, 
   AlertTriangle, 
-  Target,
-  TrendingUp,
-  Link,
-  ChevronDown,
-  ChevronUp
+  Target
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ExecutiveSummaryCard } from './ExecutiveSummaryCard';
 import { AnalysisAccordion } from './AnalysisAccordion';
 import { Citations } from './Citations';
 import { ResultBlock } from '@/lib/store/mapa-testemunhas';
+import { ExportActions } from '@/components/brand/ExportActions';
 import { cn } from '@/lib/utils';
 
 interface ResultBlocksProps {
@@ -96,36 +92,23 @@ export function ResultBlocks({ blocks }: ResultBlocksProps) {
     <div className="space-y-6">
       {/* Export Actions */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Resultado da Análise</h3>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExportPDF}
-            className="gap-2"
-          >
-            <FileDown className="h-4 w-4" />
-            PDF
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExportCSV}
-            className="gap-2"
-          >
-            <Download className="h-4 w-4" />
-            CSV
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExportJSON}
-            className="gap-2"
-          >
-            <Braces className="h-4 w-4" />
-            JSON
-          </Button>
-        </div>
+        <h3 className="text-lg font-semibold text-brand-ink">Resultado da Análise</h3>
+        <ExportActions
+          onExport={(format) => {
+            switch (format) {
+              case 'pdf':
+                handleExportPDF();
+                break;
+              case 'csv':
+                handleExportCSV();
+                break;
+              case 'json':
+                handleExportJSON();
+                break;
+            }
+          }}
+          showPrint={true}
+        />
       </div>
 
       {/* Result Blocks */}
@@ -174,7 +157,7 @@ export function ResultBlocks({ blocks }: ResultBlocksProps) {
 
             case 'alerts':
               return (
-                <Card key={index} className="rounded-2xl border-destructive/30 bg-destructive/5">
+                <Card key={index} className="rounded-2xl border-status-critical/30 bg-status-critical/5">
                   <CardHeader>
                     <CardTitle className="text-base font-semibold flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4 text-destructive" />
@@ -189,9 +172,9 @@ export function ResultBlocks({ blocks }: ResultBlocksProps) {
                       </AlertDescription>
                     </Alert>
 
-                    <Alert className="border-orange-200 bg-orange-50">
-                      <AlertTriangle className="h-4 w-4 text-orange-600" />
-                      <AlertDescription className="text-orange-800">
+                    <Alert className="border-status-warning/30 bg-status-warning/10">
+                      <AlertTriangle className="h-4 w-4 text-status-warning" />
+                      <AlertDescription className="text-status-warning">
                         <strong>Depoimentos Repetidos</strong> - Narrativas similares encontradas
                       </AlertDescription>
                     </Alert>
@@ -274,15 +257,15 @@ function StrategiesBlock({ block }: StrategiesBlockProps) {
 
   const getPriorityColor = (priority: string) => {
     switch (priority?.toUpperCase()) {
-      case 'ALTA': return 'bg-red-100 text-red-800 border-red-200';
-      case 'MÉDIA': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'BAIXA': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'ALTA': return 'bg-status-critical/15 text-status-critical border-status-critical/30';
+      case 'MÉDIA': return 'bg-status-warning/15 text-status-warning border-status-warning/30';
+      case 'BAIXA': return 'bg-status-success/15 text-status-success border-status-success/30';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   return (
-    <Card className="rounded-2xl border-emerald-200 bg-emerald-50/50">
+    <Card className="rounded-2xl border-status-success/30 bg-status-success/10">
       <CardHeader>
         <CardTitle className="text-base font-semibold flex items-center gap-2">
           <Target className="h-4 w-4 text-emerald-600" />

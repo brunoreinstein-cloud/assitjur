@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Scale, Users, User, Zap, Loader2, AlertTriangle, Bot } from 'lucide-react';
+import { Scale, Users, User, Zap, Loader2, AlertTriangle, Bot, CheckCircle, AlertOctagon } from 'lucide-react';
 import { useMapaTestemunhasStore, QueryKind } from '@/lib/store/mapa-testemunhas';
 import { useAssistente } from './chat-engine/useAssistente';
 import { cn } from '@/lib/utils';
@@ -117,12 +117,13 @@ export function ChatBar() {
         {/* Agent Status */}
         <div className="flex items-center gap-2 ml-auto">
           <div className="flex items-center gap-1">
-            <div className={cn(
-              "h-2 w-2 rounded-full",
-              agentOnline ? "bg-green-500" : "bg-amber-500"
-            )} />
+            {agentOnline ? (
+              <CheckCircle className="h-3 w-3 text-status-success" />
+            ) : (
+              <AlertOctagon className="h-3 w-3 text-status-warning" />
+            )}
             <span className="text-xs text-muted-foreground">
-              {agentOnline ? "🟢 Online" : "⚠️ Manutenção"}
+              {agentOnline ? "Online" : "Manutenção"}
             </span>
           </div>
         </div>

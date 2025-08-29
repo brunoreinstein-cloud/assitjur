@@ -367,7 +367,7 @@ async function processFileInChunks(
     // Upload file to storage
     const storagePath = `${orgId}/${Date.now()}_${file.name}`;
     const { error: storageError } = await supabase.storage
-      .from('hubjuria-bases')
+      .from('assistjur-bases')
       .upload(storagePath, file);
 
     if (storageError) {

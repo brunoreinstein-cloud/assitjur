@@ -157,7 +157,7 @@ stream
 BT
 /F1 12 Tf
 72 720 Td
-(HubJUR.IA - Relatório de Análise) Tj
+(AssistJur.IA - Relatório de Análise) Tj
 0 -20 Td
 (Gerado em: ${new Date().toLocaleString('pt-BR')}) Tj
 0 -40 Td
