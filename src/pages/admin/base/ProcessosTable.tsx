@@ -73,12 +73,7 @@ export default function ProcessosTable() {
 
       // Aplicar filtros de busca
       if (searchTerm.trim()) {
-        query = query.or(`
-          cnj.ilike.%${searchTerm}%,
-          cnj_digits.ilike.%${searchTerm}%,
-          reclamante_nome.ilike.%${searchTerm}%,
-          reu_nome.ilike.%${searchTerm}%
-        `);
+        query = query.or(`cnj.ilike.%${searchTerm}%,cnj_digits.ilike.%${searchTerm}%,reclamante_nome.ilike.%${searchTerm}%,reu_nome.ilike.%${searchTerm}%`);
       }
 
       const { data, error } = await query;

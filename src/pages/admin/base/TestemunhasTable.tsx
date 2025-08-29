@@ -59,10 +59,7 @@ export default function TestemunhasTable() {
 
       // Aplicar filtros de busca
       if (searchTerm.trim()) {
-        query = query.or(`
-          nome_civil.ilike.%${searchTerm}%,
-          cpf_mask.ilike.%${searchTerm}%
-        `);
+        query = query.or(`nome_civil.ilike.%${searchTerm}%,cpf_mask.ilike.%${searchTerm}%`);
       }
 
       const { data, error } = await query;
