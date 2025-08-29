@@ -13,6 +13,7 @@ import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, AlertTriangle, XCircle, Download, Upload } from 'lucide-react';
 import { ValidationReport, ValidationIssue } from '@/types/assistjur';
+import { IssuesDataTable } from './IssuesDataTable';
 
 interface ValidationModalProps {
   open: boolean;
@@ -148,46 +149,9 @@ export function ValidationModal({
             </Alert>
           )}
 
-          {/* Issues Table */}
+          {/* Issues Table - Use new DataTable component */}
           {report.issues.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Issues Detectadas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {report.issues.map((issue, index) => (
-                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg border">
-                      {getSeverityIcon(issue.severity)}
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <Badge variant={getSeverityColor(issue.severity)}>
-                            {issue.severity.toUpperCase()}
-                          </Badge>
-                          <span className="text-sm font-medium">{issue.sheet}</span>
-                          {issue.row && (
-                            <span className="text-xs text-muted-foreground">
-                              Linha {issue.row}
-                            </span>
-                          )}
-                          {issue.column && (
-                            <span className="text-xs text-muted-foreground">
-                              Coluna: {issue.column}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">{issue.message}</p>
-                        {issue.rule && (
-                          <span className="text-xs bg-muted px-2 py-1 rounded">
-                            Regra: {issue.rule}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <IssuesDataTable issues={report.issues} />
           )}
 
           {/* Samples Preview */}
