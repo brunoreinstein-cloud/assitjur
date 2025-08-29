@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Message } from '@/stores/useChatStore';
 import { User, Bot } from 'lucide-react';
 import { ResultBlocks } from './ResultBlocks';
-import { ExportBar } from './ExportBar';
+
 
 interface MessageItemProps {
   message: Message;
@@ -41,7 +41,6 @@ export function MessageItem({ message }: MessageItemProps) {
             {message.blocks && (
               <div className="space-y-6">
                 <ResultBlocks blocks={message.blocks} />
-                <ExportBar messageId={message.id} />
               </div>
             )}
 
