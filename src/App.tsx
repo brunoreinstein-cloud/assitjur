@@ -24,7 +24,7 @@ import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/admin/Dashboard";
 import Analytics from "./pages/admin/Analytics";
 import ImportBase from "./pages/admin/ImportBase";
-import Import from "./pages/Import";
+import { Navigate } from 'react-router-dom';
 import TemplatePage from "./pages/TemplatePage";
 import Versions from "./pages/admin/Versions";
 import Organization from "./pages/admin/Organization";
@@ -107,7 +107,7 @@ const App = () => (
                           <Route path="processos" element={<ProcessosTable />} />
                           <Route path="testemunhas" element={<TestemunhasTable />} />
                         </Route>
-                        <Route path="/import" element={<Import />} />
+                        <Route path="/import" element={<Navigate to="/admin/base-import" replace />} />
                         <Route path="/admin/versoes" element={<Versions />} />
                         <Route path="/admin/org" element={<Organization />} />
                         <Route path="/admin/logs" element={<Logs />} />

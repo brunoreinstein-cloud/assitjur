@@ -1,0 +1,195 @@
+import * as XLSX from 'xlsx';
+import Papa from 'papaparse';
+import type { DetectedSheet, SheetModel } from '@/lib/importer/types';
+
+/**
+ * Detecta a estrutura de um arquivo CSV ou Excel
+ */
+export async function detectFileStructure(file: File): Promise<DetectedSheet[]> {
+  const fileType = file.type;
+  
+  if (fileType === 'text/csv' || file.name.endsWith('.csv')) {
+    return detectCsvStructure(file);
+  } else if (fileType.includes('spreadsheet') || file.name.match(/\.(xlsx?|xls)$/i)) {
+    return detectExcelStructure(file);
+  } else {
+    throw new Error('Formato de arquivo não suportado. Use CSV ou Excel (.xlsx, .xls)');
+  }
+}
+
+/**
+ * Detecta estrutura de arquivo CSV
+ */
+async function detectCsvStructure(file: File): Promise<DetectedSheet[]> {
+  return new Promise((resolve, reject) => {
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      preview: 100, // Only analyze first 100 rows for performance
+      complete: (results) => {
+        try {
+          if (results.errors.length > 0) {
+            console.warn('CSV parsing warnings:', results.errors);
+          }
+
+          const headers = results.meta.fields || [];
+          const data = results.data as any[];
+          
+          if (headers.length === 0) {
+            throw new Error('Nenhuma coluna foi detectada no arquivo CSV');
+          }
+
+          const sheet: DetectedSheet = {
+            name: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
+            headers,
+            rows: data.length,
+            model: detectSheetModel(headers),
+            hasListColumn: detectListColumn(headers),
+            sampleData: data.slice(0, 5)
+          };
+
+          resolve([sheet]);
+        } catch (error) {
+          reject(error);
+        }
+      },
+      error: (error) => {
+        reject(new Error(`Erro ao analisar CSV: ${error.message}`));
+      }
+    });
+  });
+}
+
+/**
+ * Detecta estrutura de arquivo Excel
+ */
+async function detectExcelStructure(file: File): Promise<DetectedSheet[]> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        
+        const sheets: DetectedSheet[] = [];
+        
+        workbook.SheetNames.forEach(sheetName => {
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          
+          if (jsonData.length === 0) return;
+          
+          const headers = (jsonData[0] as string[]).filter(Boolean);
+          const dataRows = jsonData.slice(1).filter((row: any) => 
+            row && row.some((cell: any) => cell !== null && cell !== undefined && cell !== '')
+          );
+          
+          if (headers.length === 0) return;
+          
+          const sheet: DetectedSheet = {
+            name: sheetName,
+            headers,
+            rows: dataRows.length,
+            model: detectSheetModel(headers),
+            hasListColumn: detectListColumn(headers),
+            sampleData: dataRows.slice(0, 5).map((row: any) => {
+              const obj: any = {};
+              headers.forEach((header, index) => {
+                obj[header] = row[index] || null;
+              });
+              return obj;
+            })
+          };
+          
+          sheets.push(sheet);
+        });
+        
+        if (sheets.length === 0) {
+          throw new Error('Nenhuma aba com dados válidos foi encontrada');
+        }
+        
+        resolve(sheets);
+      } catch (error) {
+        reject(new Error(`Erro ao analisar Excel: ${error instanceof Error ? error.message : 'Erro desconhecido'}`));
+      }
+    };
+    
+    reader.onerror = () => {
+      reject(new Error('Erro ao ler arquivo'));
+    };
+    
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+/**
+ * Detecta o modelo da aba baseado nos cabeçalhos
+ */
+function detectSheetModel(headers: string[]): SheetModel {
+  const normalizedHeaders = headers.map(h => h.toLowerCase().trim());
+  
+  // Indicators for "testemunha" model
+  const testemunhaIndicators = [
+    'nome_testemunha',
+    'testemunha',
+    'qtd_depoimentos',
+    'cnjs_como_testemunha',
+    'quantidade_depoimentos'
+  ];
+  
+  // Indicators for "processo" model  
+  const processoIndicators = [
+    'reclamante',
+    'reclamante_nome',
+    'reu_nome',
+    'advogados_ativo',
+    'advogados_passivo',
+    'todas_testemunhas',
+    'testemunhas_todas'
+  ];
+  
+  const testemunhaScore = testemunhaIndicators.reduce((score, indicator) => 
+    normalizedHeaders.some(h => h.includes(indicator)) ? score + 1 : score, 0
+  );
+  
+  const processoScore = processoIndicators.reduce((score, indicator) => 
+    normalizedHeaders.some(h => h.includes(indicator)) ? score + 1 : score, 0
+  );
+  
+  // Must have CNJ for any model
+  const hasCNJ = normalizedHeaders.some(h => 
+    h.includes('cnj') || h.includes('numero_processo')
+  );
+  
+  if (!hasCNJ) {
+    return 'ambiguous';
+  }
+  
+  if (testemunhaScore > processoScore && testemunhaScore >= 2) {
+    return 'testemunha';
+  } else if (processoScore > testemunhaScore && processoScore >= 2) {
+    return 'processo';
+  } else {
+    return 'ambiguous';
+  }
+}
+
+/**
+ * Detecta se há colunas com listas que precisam ser expandidas
+ */
+function detectListColumn(headers: string[]): boolean {
+  const listIndicators = [
+    'cnjs_como_testemunha',
+    'todas_testemunhas',
+    'testemunhas_todas',
+    'advogados_ativo',
+    'advogados_passivo'
+  ];
+  
+  return headers.some(header => 
+    listIndicators.some(indicator => 
+      header.toLowerCase().includes(indicator.toLowerCase())
+    )
+  );
+}
