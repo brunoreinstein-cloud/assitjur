@@ -36,6 +36,7 @@ import OpenAIModels from "./pages/admin/openai/Models";
 import PromptStudio from "./pages/admin/openai/PromptStudio";
 import OpenAIPlayground from "./pages/admin/openai/Playground";
 import Logs from "./pages/admin/Logs";
+import { ReportDemo } from "./pages/ReportDemo";
 
 // Data Explorer components
 import BaseRedirect from "./pages/admin/base/index";
@@ -110,6 +111,7 @@ const App = () => (
                         <Route path="/admin/org" element={<Organization />} />
                         <Route path="/admin/logs" element={<Logs />} />
                         <Route path="/admin/config" element={<SystemConfig />} />
+                        <Route path="/relatorio" element={<ReportDemo />} />
                         
                         <Route path="*" element={<NotFound />} />
                       </Routes>
