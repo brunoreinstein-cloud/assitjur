@@ -25,12 +25,12 @@ export default function PublicHome() {
     <div className="min-h-screen bg-background">
       {/* SEO Metadata será adicionado via Helmet ou similar */}
       <head>
-        <title>HubJUR.IA - O primeiro hub de agentes de IA para gestão estratégica do contencioso</title>
+        <title>AssistJur.IA - O primeiro hub de agentes de IA para gestão estratégica do contencioso</title>
         <meta 
           name="description" 
           content="Gestão do contencioso com inovação e olhar estratégico. Hub único de agentes de IA especializados testado em grandes carteiras." 
         />
-        <meta property="og:title" content="HubJUR.IA - Gestão do contencioso com IA" />
+        <meta property="og:title" content="AssistJur.IA - Gestão do contencioso com IA" />
         <meta property="og:description" content="O primeiro hub de agentes de IA especializados em gestão estratégica do contencioso." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
@@ -42,7 +42,7 @@ export default function PublicHome() {
         {/* 1. Hero Section */}
         <ImprovedHero onSignup={handleBetaSignup} />
 
-        {/* 2. Diferencial HubJUR.IA */}
+        {/* 2. Diferencial AssistJur.IA */}
         <ValueProps />
 
         {/* 3. Para Quem */}

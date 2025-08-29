@@ -127,7 +127,7 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
         setIsSuccess(true);
         toast({
           title: 'Sucesso!',
-          description: 'Você foi adicionado à lista Beta do HubJUR.IA',
+          description: 'Você foi adicionado à lista Beta do AssistJur.IA',
         });
       } catch (apiError) {
         // Fallback to mock success
@@ -138,7 +138,7 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
         setIsSuccess(true);
         toast({
           title: 'Sucesso!',
-          description: 'Você foi adicionado à lista Beta do HubJUR.IA',
+          description: 'Você foi adicionado à lista Beta do AssistJur.IA',
         });
       }
     } catch (error) {
@@ -303,7 +303,7 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
 
         {/* LGPD Notice */}
         <p className="text-xs text-muted-foreground text-center leading-relaxed">
-          Seus dados serão usados apenas para contato sobre o HubJUR.IA. Você pode sair da lista a qualquer momento.
+          Seus dados serão usados apenas para contato sobre o AssistJur.IA. Você pode sair da lista a qualquer momento.
         </p>
       </form>
     </div>

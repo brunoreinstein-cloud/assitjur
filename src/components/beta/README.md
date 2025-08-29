@@ -1,6 +1,6 @@
 # BetaSignup Component
 
-Componente reutilizável para captura de leads do HubJUR.IA com formulário inline e funcionalidade completa.
+Componente reutilizável para captura de leads do AssistJur.IA com formulário inline e funcionalidade completa.
 
 ## Uso Básico
 

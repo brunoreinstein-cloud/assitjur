@@ -14,7 +14,7 @@ export function TrustNote() {
                 Validação Jurídica Obrigatória
               </p>
               <p className="text-sm text-orange-700 dark:text-orange-300 mt-2">
-                O HubJUR.IA facilita a organização e análise dos dados, mas a verificação da veracidade das informações nos autos processuais permanece responsabilidade exclusiva do usuário jurídico.
+                O AssistJur.IA facilita a organização e análise dos dados, mas a verificação da veracidade das informações nos autos processuais permanece responsabilidade exclusiva do usuário jurídico.
               </p>
               <p className="text-xs text-orange-600 dark:text-orange-400 mt-2 font-medium">
                 ⚖️ Sempre confira as informações com os documentos oficiais dos processos

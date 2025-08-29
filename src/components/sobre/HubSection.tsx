@@ -34,12 +34,12 @@ export function HubSection() {
           <div className="space-y-8">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-                Sobre o HubJUR.IA
+                Sobre o AssistJur.IA
               </h2>
               
               <div className="space-y-6 text-muted-foreground leading-relaxed">
                 <p>
-                  <strong>O que é:</strong> O HubJUR.IA nasce como um hub de agentes de inteligência artificial especializados na gestão estratégica do contencioso. Diferente de ferramentas jurídicas genéricas, sua proposta é oferecer profundidade técnica, governança e previsibilidade para empresas e escritórios que lidam com grandes carteiras de processos.
+                  <strong>O que é:</strong> O AssistJur.IA nasce como um hub de agentes de inteligência artificial especializados na gestão estratégica do contencioso. Diferente de ferramentas jurídicas genéricas, sua proposta é oferecer profundidade técnica, governança e previsibilidade para empresas e escritórios que lidam com grandes carteiras de processos.
                 </p>
                 
                 <div>

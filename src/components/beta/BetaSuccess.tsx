@@ -23,7 +23,7 @@ export function BetaSuccess({ onReset, className = '' }: BetaSuccessProps) {
           Você está na lista!
         </h3>
         <p className="text-muted-foreground leading-relaxed max-w-md mx-auto">
-          Parabéns! Você agora tem acesso prioritário ao HubJUR.IA. Em breve entraremos em contato com detalhes exclusivos sobre a plataforma.
+          Parabéns! Você agora tem acesso prioritário ao AssistJur.IA. Em breve entraremos em contato com detalhes exclusivos sobre a plataforma.
         </p>
       </div>
 
@@ -44,7 +44,7 @@ export function BetaSuccess({ onReset, className = '' }: BetaSuccessProps) {
           className="flex items-center space-x-2 text-white hover:text-primary bg-primary hover:bg-white transition-colors"
           onClick={() => {
             try {
-              window.open('https://www.linkedin.com/company/hubjuria', '_blank', 'noopener,noreferrer');
+              window.open('https://www.linkedin.com/company/assistjuria', '_blank', 'noopener,noreferrer');
             } catch (error) {
               console.error('Erro ao abrir LinkedIn:', error);
             }
@@ -60,8 +60,8 @@ export function BetaSuccess({ onReset, className = '' }: BetaSuccessProps) {
           onClick={() => {
             try {
               const link = document.createElement('a');
-              link.href = '/whitepaper-hubjuria.pdf';
-              link.download = 'hubjuria-whitepaper.pdf';
+              link.href = '/whitepaper-assistjur.pdf';
+              link.download = 'assistjur-whitepaper.pdf';
               link.target = '_blank';
               link.rel = 'noopener noreferrer';
               document.body.appendChild(link);
@@ -70,7 +70,7 @@ export function BetaSuccess({ onReset, className = '' }: BetaSuccessProps) {
             } catch (error) {
               console.error('Erro ao baixar whitepaper:', error);
               // Fallback para abrir em nova aba
-              window.open('/whitepaper-hubjuria.pdf', '_blank', 'noopener,noreferrer');
+              window.open('/whitepaper-assistjur.pdf', '_blank', 'noopener,noreferrer');
             }
           }}
         >

@@ -9,8 +9,8 @@ import { HelpCircle } from 'lucide-react';
 
 const faqItems = [
   {
-    question: 'O que é o programa Beta do HubJUR.IA?',
-    answer: 'O programa Beta oferece acesso antecipado e gratuito ao HubJUR.IA para um grupo seleto de profissionais jurídicos. Você poderá testar todas as funcionalidades, dar feedback e ajudar a moldar o produto final antes do lançamento oficial.'
+    question: 'O que é o programa Beta do AssistJur.IA?',
+    answer: 'O programa Beta oferece acesso antecipado e gratuito ao AssistJur.IA para um grupo seleto de profissionais jurídicos. Você poderá testar todas as funcionalidades, dar feedback e ajudar a moldar o produto final antes do lançamento oficial.'
   },
   {
     question: 'Quanto custa participar do programa Beta?',
@@ -83,7 +83,7 @@ export function BetaFAQ() {
               Ainda tem dúvidas?
             </h3>
             <p className="text-muted-foreground mb-4">
-              Entre em contato conosco pelo email <strong>contato@hubjur.ia</strong> ou 
+              Entre em contato conosco pelo email <strong>contato@assistjur.ia</strong> ou 
               WhatsApp <strong>(11) 99999-9999</strong>.
             </p>
             <p className="text-sm text-muted-foreground">

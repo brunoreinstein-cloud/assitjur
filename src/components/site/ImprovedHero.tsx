@@ -43,7 +43,7 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
             <div className="inline-flex items-center space-x-3 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
               <Sparkles className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium text-primary">
-                HubJUR.IA - Gestão do contencioso com inovação
+                AssistJur.IA - Gestão do contencioso com inovação
               </span>
             </div>
 
@@ -158,7 +158,7 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
                 Seja o primeiro a experimentar
               </h2>
               <p className="text-muted-foreground">
-                Entre na lista Beta e tenha acesso prioritário ao HubJUR.IA
+                Entre na lista Beta e tenha acesso prioritário ao AssistJur.IA
               </p>
             </div>
             <NeedsForm onSubmit={onSignup} />

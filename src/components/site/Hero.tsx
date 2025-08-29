@@ -34,7 +34,7 @@ export function Hero({ onSignup }: HeroProps) {
                 <div className="w-6 h-6 rounded-full bg-accent" />
               </div>
               <span className="text-lg font-medium text-muted-foreground">
-                HubJUR.IA
+                AssistJur.IA
               </span>
             </div>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">

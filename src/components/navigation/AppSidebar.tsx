@@ -102,11 +102,11 @@ export function AppSidebar() {
         <SidebarHeader className="border-b border-sidebar-border p-4">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-              <span className="text-primary-foreground font-bold text-sm">H</span>
+              <span className="text-primary-foreground font-bold text-sm">A</span>
             </div>
             {open && (
               <div className="min-w-0">
-                <h2 className="text-lg font-semibold text-sidebar-foreground truncate">HubJUR.IA</h2>
+                <h2 className="text-lg font-semibold text-sidebar-foreground truncate">AssistJur.IA</h2>
                 <p className="text-xs text-sidebar-foreground/60">Legal Intelligence</p>
               </div>
             )}

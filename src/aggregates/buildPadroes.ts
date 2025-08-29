@@ -1,6 +1,6 @@
 /**
  * Construtor de agregados para padrões detectados
- * Gera métricas consolidadas para hubjuria.padroes_agregados
+ * Gera métricas consolidadas para assistjuria.padroes_agregados
  */
 
 import { supabase } from '@/integrations/supabase/client';

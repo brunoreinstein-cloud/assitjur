@@ -18,7 +18,7 @@ const testimonials = [
     rating: 5
   },
   {
-    quote: "O HubJUR.IA representa o futuro da advocacia. A experiência da Bianca foi fundamental para entendermos nossas necessidades.",
+    quote: "O AssistJur.IA representa o futuro da advocacia. A experiência da Bianca foi fundamental para entendermos nossas necessidades.",
     author: "Sócio-fundador",
     company: "Escritório de Advocacia Empresarial",
     rating: 5
@@ -47,7 +47,7 @@ export function TrustBlock() {
               </div>
               
               <blockquote className="text-2xl md:text-4xl font-medium text-foreground leading-relaxed mb-8 max-w-4xl mx-auto">
-                "O HubJUR.IA é a tradução prática de duas décadas de experiência em gestão de contencioso, agora 
+                "O AssistJur.IA é a tradução prática de duas décadas de experiência em gestão de contencioso, agora 
                 <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> potencializada pela inteligência artificial</span>."
               </blockquote>
               

@@ -43,7 +43,7 @@ export function BetaHero() {
             </h1>
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Acesso exclusivo ao <strong>HubJUR.IA</strong> antes do lançamento oficial. 
+              Acesso exclusivo ao <strong>AssistJur.IA</strong> antes do lançamento oficial. 
               Ajude a moldar o futuro da advocacia com inteligência artificial.
             </p>
           </div>

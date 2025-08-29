@@ -30,7 +30,7 @@ export function FinalCTA({ onOpenBetaModal }: FinalCTAProps) {
             </h2>
             
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed max-w-3xl mx-auto">
-              Seja um dos primeiros a acessar o HubJUR.IA e transforme a forma como sua empresa ou escritório gerencia passivos judiciais com a experiência de duas décadas no mercado.
+              Seja um dos primeiros a acessar o AssistJur.IA e transforme a forma como sua empresa ou escritório gerencia passivos judiciais com a experiência de duas décadas no mercado.
             </p>
             
             {/* Benefits List */}

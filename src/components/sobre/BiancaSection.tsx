@@ -27,7 +27,7 @@ const timeline = [
     title: 'BT Solutions/Prisma Capital (Consultoria/Startup)',
     description: 'Criou área dedicada à gestão de passivos trabalhistas com tecnologia e inovação, unindo expertise jurídica ao mercado financeiro.',
     impact: 'Inovação em LegalTech',
-    results: 'HubJUR.IA - Plataforma pioneira'
+    results: 'AssistJur.IA - Plataforma pioneira'
   }
 ];
 
@@ -97,7 +97,7 @@ export function BiancaSection() {
             </div>
             
             <p className="text-muted-foreground leading-relaxed max-w-4xl mx-auto">
-              A criadora do HubJUR.IA é referência nacional em gestão estratégica de passivos judiciais e inovação jurídica. 
+              A criadora do AssistJur.IA é referência nacional em gestão estratégica de passivos judiciais e inovação jurídica. 
               Sua trajetória combina advocacia de banca, liderança corporativa e consultoria estratégica, sempre com foco em 
               resultados mensuráveis e transformação digital.
             </p>

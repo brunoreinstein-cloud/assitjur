@@ -467,7 +467,7 @@ export function ConclusiveReportTemplate({
         <CardContent className="pt-6">
           <div className="text-center text-xs text-muted-foreground space-y-1">
             <p>
-              Este relatório foi gerado automaticamente pelo sistema HubJuria em {formatDate(data.data_geracao)}
+              Este relatório foi gerado automaticamente pelo sistema AssistJur.IA em {formatDate(data.data_geracao)}
             </p>
             <p>
               Confidencial - Uso restrito à organização {data.organizacao}

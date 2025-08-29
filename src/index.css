@@ -2,13 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Professional Legal-Tech Design System - Hubjuria
+/* Professional Legal-Tech Design System - AssistJur.IA
 All colors MUST be HSL. Professional navy/blue theme for trust and authority.
 */
 
 @layer base {
   :root {
-    /* HubJUR.IA Brand Colors */
+    /* AssistJur.IA Brand Colors */
     --background: 0 0% 100%;
     --foreground: 0 0% 17%; /* Cinza Chumbo #2C2C2C */
 

@@ -60,7 +60,7 @@ export default function TemplatePage() {
                 description="Arquivo completo com 3 abas: Por Processo, Por Testemunha e Dicionário de Campos"
                 downloadUrl="https://fgjypmlszuzkgvhuszxn.supabase.co/functions/v1/templates-xlsx"
                 icon="xlsx"
-                filename="template-hubjuria.xlsx"
+                filename="template-assistjur.xlsx"
                 recommended={true}
               />
               

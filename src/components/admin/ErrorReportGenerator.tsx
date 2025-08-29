@@ -187,7 +187,7 @@ ${validationResults.headerMapping?.unmappedFields.length > 0 ? '- Considere mape
 ${validationResults.validRows === 0 ? '- Arquivo não contém dados válidos para importação' : ''}
 
 ---
-Relatório gerado automaticamente pelo sistema HubJuris
+Relatório gerado automaticamente pelo sistema AssistJur.IA
       `.trim();
 
       const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8;' });

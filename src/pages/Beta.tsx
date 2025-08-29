@@ -9,12 +9,12 @@ import { Footer } from '@/components/site/Footer';
 export default function Beta() {
   // SEO Meta Tags
   useEffect(() => {
-    document.title = 'Lista Beta HubJUR.IA - Acesso Antecipado ao Hub de IA Jurídica';
+    document.title = 'Lista Beta AssistJur.IA - Acesso Antecipado ao Hub de IA Jurídica';
     
     // Update meta description
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Entre na lista beta do HubJUR.IA e seja um dos primeiros a experimentar o hub de agentes de IA especializados em gestão estratégica do contencioso. Acesso prioritário limitado.');
+      metaDescription.setAttribute('content', 'Entre na lista beta do AssistJur.IA e seja um dos primeiros a experimentar o hub de agentes de IA especializados em gestão estratégica do contencioso. Acesso prioritário limitado.');
     }
     
     // Update meta keywords

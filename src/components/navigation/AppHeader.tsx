@@ -96,7 +96,7 @@ export function AppHeader() {
               <currentRoute.icon className="h-4 w-4" />
             )}
             <h1 className="font-semibold text-sm">
-              {currentRoute?.label || 'Hubjuria'}
+              {currentRoute?.label || 'AssistJur.IA'}
             </h1>
           </div>
 

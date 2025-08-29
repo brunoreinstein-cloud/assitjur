@@ -8,7 +8,7 @@ export interface CacheEntry<T = any> {
 }
 
 class OfflineStorage {
-  private prefix = 'hubjuria_';
+  private prefix = 'assistjur_';
 
   set<T>(key: string, data: T, expiresIn = 24 * 60 * 60 * 1000): void {
     try {

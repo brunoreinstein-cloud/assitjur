@@ -37,7 +37,7 @@ export function HeroAbout() {
               </Badge>
               
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-                HubJUR.IA: o futuro do contencioso jurídico, com 
+                AssistJur.IA: o futuro do contencioso jurídico, com 
                 <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> inovação e experiência real</span>
               </h1>
             </div>

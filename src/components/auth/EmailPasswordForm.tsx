@@ -76,7 +76,7 @@ export const EmailPasswordForm = ({
         // Mock login for development
         if (data.email === 'demo@hubjuria.com' && data.password === 'demo123') {
           toast.success("Login realizado!", {
-            description: "Bem-vindo ao Hubjuria (modo demo)"
+            description: "Bem-vindo ao AssistJur.IA (modo demo)"
           });
           // Redirect would happen here in real app
           return;
@@ -95,7 +95,7 @@ export const EmailPasswordForm = ({
       }
 
       toast.success("Login realizado!", {
-        description: "Bem-vindo ao Hubjuria"
+        description: "Bem-vindo ao AssistJur.IA"
       });
 
       // Redirect will be handled by auth state change

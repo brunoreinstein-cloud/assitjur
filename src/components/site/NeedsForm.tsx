@@ -85,7 +85,7 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
           Qual sua principal necessidade hoje?
         </CardTitle>
         <p className="text-muted-foreground mt-2">
-          Ajude-nos a personalizar sua experiência no HubJUR.IA
+          Ajude-nos a personalizar sua experiência no AssistJur.IA
         </p>
       </CardHeader>
       <CardContent>
@@ -206,7 +206,7 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
 
           {/* LGPD */}
           <p className="text-xs text-muted-foreground text-center">
-            Seus dados serão usados apenas para contato sobre o Beta.
+          Seus dados serão usados apenas para contato sobre o Beta.
           </p>
         </form>
       </CardContent>

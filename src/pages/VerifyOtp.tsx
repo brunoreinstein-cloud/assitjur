@@ -72,8 +72,8 @@ const VerifyOtp = () => {
               <Scale className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Hubjuria</h1>
-              <p className="text-sm text-muted-foreground">Assistente de Testemunhas</p>
+            <h1 className="text-2xl font-bold text-foreground">AssistJur.IA</h1>
+            <p className="text-sm text-muted-foreground">Assistente de Testemunhas</p>
             </div>
           </div>
         </div>

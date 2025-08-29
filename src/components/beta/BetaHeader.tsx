@@ -16,7 +16,7 @@ export function BetaHeader() {
               <div className="w-4 h-4 rounded-full bg-accent" />
             </div>
             <span className="text-xl font-bold">
-              Hub<span className="text-accent">JUR</span><span className="text-primary">.IA</span>
+              Assist<span className="text-accent">Jur</span><span className="text-primary">.IA</span>
             </span>
           </div>
 

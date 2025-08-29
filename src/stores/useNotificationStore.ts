@@ -101,7 +101,7 @@ export const useNotificationStore = create<NotificationStore>()(
       }
     }),
     {
-      name: 'hubjuria-notifications',
+      name: 'assistjur-notifications',
       partialize: (state) => ({
         notifications: state.notifications.slice(0, 50) // Keep only last 50
       })

@@ -54,7 +54,7 @@ const Login = () => {
                 <Scale className="w-6 h-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Hubjuria</h1>
+                <h1 className="text-2xl font-bold text-foreground">AssistJur.IA</h1>
                 <p className="text-sm text-muted-foreground">Assistente de Testemunhas</p>
               </div>
             </div>
@@ -153,7 +153,7 @@ const Login = () => {
                 <Scale className="w-7 h-7 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">Hubjuria</h1>
+                <h1 className="text-2xl font-bold">AssistJur.IA</h1>
                 <p className="text-sm opacity-80">Assistente de Testemunhas</p>
               </div>
             </div>

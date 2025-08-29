@@ -34,7 +34,7 @@ export function Footer() {
           <div className="text-center space-y-6">
             <div className="space-y-3">
               <p className="text-background/90 font-medium">
-                Documento produzido com apoio do HubJUR.IA
+                Documento produzido com apoio do AssistJur.IA
               </p>
               <p className="text-background/70">
                 Gestão do contencioso com inovação e olhar estratégico
@@ -59,7 +59,7 @@ export function Footer() {
             {/* Copyright */}
             <div className="pt-8">
               <p className="text-background/60 text-xs">
-                © {new Date().getFullYear()} HubJUR.IA. Todos os direitos reservados.
+                © {new Date().getFullYear()} AssistJur.IA. Todos os direitos reservados.
               </p>
             </div>
           </div>

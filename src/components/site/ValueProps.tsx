@@ -10,7 +10,7 @@ export function ValueProps() {
           {/* Problema vs Solução */}
           <div className="text-center mb-16 space-y-8">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              Diferencial HubJUR.IA
+              Diferencial AssistJur.IA
             </h2>
             
             <div className="grid md:grid-cols-2 gap-8 items-center">
