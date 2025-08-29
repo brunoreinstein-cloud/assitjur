@@ -133,6 +133,75 @@ export type Database = {
         }
         Relationships: []
       }
+      data_access_logs: {
+        Row: {
+          access_type: string
+          accessed_records: string[] | null
+          accessed_table: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          org_id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          access_type: string
+          accessed_records?: string[] | null
+          accessed_table: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          org_id: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          access_type?: string
+          accessed_records?: string[] | null
+          accessed_table?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          org_id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      data_retention_policies: {
+        Row: {
+          auto_cleanup: boolean
+          created_at: string
+          id: string
+          last_cleanup_at: string | null
+          org_id: string
+          retention_months: number
+          table_name: string
+          updated_at: string
+        }
+        Insert: {
+          auto_cleanup?: boolean
+          created_at?: string
+          id?: string
+          last_cleanup_at?: string | null
+          org_id: string
+          retention_months?: number
+          table_name: string
+          updated_at?: string
+        }
+        Update: {
+          auto_cleanup?: boolean
+          created_at?: string
+          id?: string
+          last_cleanup_at?: string | null
+          org_id?: string
+          retention_months?: number
+          table_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dataset_files: {
         Row: {
           file_size: number | null
@@ -318,6 +387,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lgpd_requests: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          justification: string | null
+          org_id: string
+          request_type: string
+          requested_by_email: string
+          response_data: Json | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          justification?: string | null
+          org_id: string
+          request_type: string
+          requested_by_email: string
+          response_data?: Json | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          justification?: string | null
+          org_id?: string
+          request_type?: string
+          requested_by_email?: string
+          response_data?: Json | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       messages: {
         Row: {
@@ -1220,6 +1331,14 @@ export type Database = {
           vara: string
           version_id: string
         }[]
+      }
+      log_data_access: {
+        Args: {
+          p_access_type?: string
+          p_record_ids?: string[]
+          p_table_name: string
+        }
+        Returns: undefined
       }
       log_user_action: {
         Args: {

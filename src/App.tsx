@@ -17,6 +17,7 @@ import Login from "./pages/Login";
 import Reset from "./pages/Reset";
 import ResetConfirm from "./pages/ResetConfirm";
 import VerifyOtp from "./pages/VerifyOtp";
+import PortalTitular from "./pages/PortalTitular";
 import NotFound from "./pages/NotFound";
 
 import Dashboard from "./pages/admin/Dashboard";
@@ -27,6 +28,7 @@ import Versions from "./pages/admin/Versions";
 import Organization from "./pages/admin/Organization";
 
 import SystemConfig from "./pages/admin/SystemConfig";
+import Compliance from "./pages/admin/Compliance";
 import OpenAI from "./pages/admin/OpenAI";
 import OpenAIKeys from "./pages/admin/openai/Keys";
 import OpenAIModels from "./pages/admin/openai/Models";
@@ -76,6 +78,7 @@ const App = () => (
               <Route path="/reset" element={<Reset />} />
               <Route path="/reset/confirm" element={<ResetConfirm />} />
               <Route path="/verify-otp" element={<VerifyOtp />} />
+              <Route path="/portal-titular" element={<PortalTitular />} />
               <Route path="/import/template" element={<TemplatePage />} />
               
               {/* Protected routes with app layout */}
@@ -112,6 +115,7 @@ const App = () => (
                         <Route path="/admin/versoes" element={<Versions />} />
                         <Route path="/admin/org" element={<Organization />} />
                         <Route path="/admin/logs" element={<Logs />} />
+                        <Route path="/admin/compliance" element={<Compliance />} />
                         <Route path="/admin/config" element={<SystemConfig />} />
                         <Route path="/relatorio" element={<ReportDemo />} />
                         
