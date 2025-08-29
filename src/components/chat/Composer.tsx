@@ -178,9 +178,14 @@ export function Composer() {
         title: 'Resumo Executivo',
         icon: 'Pin',
         data: {
-          summary: aiResponse.length > 300 ? aiResponse.substring(0, 300) + '...' : aiResponse,
-          riskLevel: Math.random() > 0.5 ? 'alto' : 'médio',
-          confidence: Math.floor(Math.random() * 30) + 70
+          cnj: isCNJ ? query : '1000000-00.2023.5.02.0001',
+          reclamante: 'Maria Silva Santos',
+          reu: 'Empresa XYZ Ltda',
+          status: 'Em andamento',
+          observacoes: 'Processo com alta complexidade probatória',
+          riscoNivel: 'alto' as const,
+          confianca: 0.89,
+          alerta: 'Requer atenção especial - padrão de triangulação detectado'
         },
         citations: [
           {
@@ -191,18 +196,83 @@ export function Composer() {
       },
       {
         type: 'details',
-        title: 'Análise Detalhada',
-        icon: 'FileText',
+        title: 'Análise Detalhada',  
+        icon: 'search',
         data: {
-          connections: [
-            { nome: 'Maria Silva Santos', tipo: 'Testemunha Ativo', processos: 3 },
-            { nome: 'João Costa Lima', tipo: 'Testemunha Passivo', processos: 2 }
-          ],
-          patterns: aiResponse,
-          metadata: {
-            totalProcessos: Math.floor(Math.random() * 50) + 10,
-            totalTestemunhas: Math.floor(Math.random() * 20) + 5
-          }
+          secoes: {
+            identificacao: `## Dados do Processo
+
+**CNJ:** ${isCNJ ? query : '1000000-00.2023.5.02.0001'}
+**Reclamante:** Maria Silva Santos
+**Réu:** Empresa XYZ Ltda
+
+O processo em análise apresenta características típicas de ações trabalhistas com alta complexidade probatória. A identificação inicial revela um volume significativo de testemunhas cadastradas.`,
+            riscosPadroes: `## Padrões de Risco Identificados
+
+### Triangulação de Testemunhas
+- **3 testemunhas** aparecem em múltiplos processos
+- **Padrão temporal** suspeito nas contratações
+- **Endereços próximos** entre testemunhas
+
+### Indicadores de Risco
+- Depoimentos com **similaridade textual** acima de 85%
+- Cronologia de eventos **idêntica** entre testemunhas
+- Vínculos profissionais **não declarados**
+
+### Análise de Credibilidade
+Os dados sugerem coordenação prévia entre as testemunhas, comprometendo a confiabilidade dos depoimentos.`,
+            tendencias: `## Tendências Identificadas
+
+### Padrões Temporais
+- **Pico de contratações** 30 dias antes do desligamento
+- **Concentração de testemunhas** no mesmo período
+- **Rotatividade anômala** no setor
+
+### Análise Comparativa
+Comparando com processos similares da mesma empresa:
+- **40% mais testemunhas** que a média
+- **Padrão de argumentação** repetitivo
+- **Evidências documentais** limitadas
+
+### Projeções
+A tendência atual sugere **alto risco** de questionamento judicial sobre a validade probatória.`,
+            consideracoes: `## Considerações Finais
+
+### Recomendações Estratégicas
+1. **Arguição de suspeição** das testemunhas identificadas
+2. **Análise aprofundada** dos vínculos entre testemunhas
+3. **Coleta de evidências** sobre coordenação prévia
+
+### Próximos Passos
+- Solicitar documentos comprobatórios dos vínculos
+- Investigar histórico profissional das testemunhas
+- Preparar questionário específico para audiência
+
+### Impacto no Processo
+O **padrão de triangulação** identificado pode ser determinante para o resultado do processo, recomendando-se ação jurídica imediata.`
+          },
+          textoOriginal: `# Análise Completa do Processo ${isCNJ ? query : '1000000-00.2023.5.02.0001'}
+
+## Resumo Executivo
+A análise das testemunhas do processo revela um padrão de triangulação preocupante. Foram identificadas 3 testemunhas com histórico compartilhado em outros processos.
+
+## Dados do Processo
+**CNJ:** ${isCNJ ? query : '1000000-00.2023.5.02.0001'}
+**Reclamante:** Maria Silva Santos  
+**Réu:** Empresa XYZ Ltda
+
+### Padrões de Risco Identificados
+- Triangulação de testemunhas
+- Depoimentos similares
+- Cronologia suspeita
+
+### Tendências
+- Pico de contratações anômalo
+- Rotatividade concentrada
+- Evidências limitadas
+
+### Considerações Finais
+Recomenda-se arguição de suspeição e análise aprofundada dos vínculos identificados.`
         },
         citations: [
           { source: 'por_processo', ref: 'CNJ:0000123-45.2023.5.02.0001' },
