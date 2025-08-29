@@ -8,6 +8,7 @@ import { intelligentValidateAndCorrect } from '@/lib/importer/intelligent-correc
 import { IssuesDataTable } from '@/components/assistjur/IssuesDataTable';
 import { ReviewUpdateButton } from '@/components/admin/ReviewUpdateButton';
 import { CorrectionInterface } from '@/components/importer/CorrectionInterface';
+import { ValidationTestButton } from '@/components/importer/ValidationTestButton';
 import { useImportStore } from '../../store/useImportStore';
 import type { ValidationIssue } from '@/lib/importer/types';
 
@@ -57,9 +58,11 @@ export function ValidationStep() {
         }
       }
 
-      // Add download URLs (mock for now)
-      const validationWithUrls = {
-        ...result,
+      // Convert to ValidationResult format for store compatibility
+      const validationWithUrls: any = {
+        summary: result.summary,
+        issues: result.issues,
+        normalizedData: result.normalizedData,
         downloadUrls: {
           fixedXlsx: '',
           reportCsv: '',
@@ -87,17 +90,20 @@ export function ValidationStep() {
   };
 
   const handleApplyCorrections = (correctedData: any[]) => {
+    const validProcessos = correctedData.filter(d => d.cnj && d.reclamante_nome && d.reu_nome);
+    const correctionsApplied = corrections.filter(c => c.corrections.length > 0).length;
+    
     // Apply corrections and update validation result
-    const updatedResult = {
+    const updatedResult: any = {
       ...validationResult!,
       normalizedData: {
         ...validationResult!.normalizedData,
-        processos: correctedData.filter(d => d.cnj && d.reclamante_nome && d.reu_nome)
+        processos: validProcessos
       },
       summary: {
         ...validationResult!.summary,
-        valid: correctedData.filter(d => d.cnj && d.reclamante_nome && d.reu_nome).length,
-        errors: Math.max(0, validationResult!.summary.errors - corrections.filter(c => c.corrections.length > 0).length)
+        valid: validProcessos.length,
+        errors: Math.max(0, validationResult!.summary.errors - correctionsApplied)
       }
     };
     
@@ -106,7 +112,7 @@ export function ValidationStep() {
     
     toast({
       title: "Correções aplicadas",
-      description: `${corrections.filter(c => c.corrections.length > 0).length} correções foram aplicadas com sucesso`,
+      description: `${correctionsApplied} correções foram aplicadas com sucesso`,
     });
   };
 
@@ -262,7 +268,29 @@ export function ValidationStep() {
         </Card>
       )}
 
-      {/* Review & Update Section */}
+        {/* Validation Test */}
+        <ValidationTestButton />
+
+        {/* Test Page Link */}
+        <Card className="border-blue-500/20 bg-blue-500/5">
+          <CardContent className="p-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-semibold text-blue-700">Página de Teste Completa</h3>
+                <p className="text-sm text-muted-foreground">
+                  Acesse a página dedicada para testes detalhados do Corretor Inteligente
+                </p>
+              </div>
+              <Button asChild variant="outline" className="border-blue-500/20 text-blue-700">
+                <a href="/admin/base-import/test" target="_blank" rel="noopener noreferrer">
+                  Abrir Teste
+                </a>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Review & Update Section */}
       {canProceed && (
         <Card className="border-primary/20 bg-primary/5">
           <CardHeader>

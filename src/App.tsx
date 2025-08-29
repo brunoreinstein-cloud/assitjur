@@ -34,6 +34,7 @@ import PromptStudio from "./pages/admin/openai/PromptStudio";
 import OpenAIPlayground from "./pages/admin/openai/Playground";
 import Logs from "./pages/admin/Logs";
 import { ReportDemo } from "./pages/ReportDemo";
+import ValidationTest from "./pages/admin/ValidationTest";
 
 // Data Explorer components
 import BaseRedirect from "./pages/admin/base/index";
@@ -101,6 +102,7 @@ const App = () => (
                         <Route path="/admin/ia/prompt-studio" element={<PromptStudio />} />
                         <Route path="/admin/ia/testes" element={<OpenAIPlayground />} />
                         <Route path="/admin/base-import" element={<ImportBase />} />
+                        <Route path="/admin/base-import/test" element={<ValidationTest />} />
                         <Route path="/admin/base" element={<BaseRedirect />} />
                         <Route path="/admin/base/*" element={<BaseLayout />}>
                           <Route path="processos" element={<ProcessosTable />} />
