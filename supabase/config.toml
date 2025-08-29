@@ -23,3 +23,24 @@ verify_jwt = false
 
 [functions.templates-csv]
 verify_jwt = false
+
+[functions.mapa-testemunhas-processos]
+verify_jwt = true
+
+[functions.mapa-testemunhas-testemunhas]
+verify_jwt = true
+
+[functions.mapa-testemunhas-analysis]
+verify_jwt = true
+
+[functions.import-mapa-testemunhas]
+verify_jwt = true
+
+[functions.process-base-upload]
+verify_jwt = true
+
+[functions.beta-signup]
+verify_jwt = false
+
+[functions.admin-analytics]
+verify_jwt = true
