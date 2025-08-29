@@ -41,22 +41,31 @@ export default function PortalTitular() {
 
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('lgpd_requests')
-        .insert({
-          requested_by_email: email,
-          request_type: requestType,
-          justification,
-          user_id: '00000000-0000-0000-0000-000000000000', // Placeholder for public requests
-          org_id: '00000000-0000-0000-0000-000000000000' // Will be determined by email
-        });
+      const { data, error } = await supabase.functions.invoke('lgpd-requests', {
+        body: {
+          email,
+          requestType,
+          justification
+        }
+      });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error submitting request:', error);
+        toast.error(error.message || 'Erro ao enviar solicitação. Tente novamente.');
+        return;
+      }
 
       toast.success('Solicitação enviada com sucesso! Você receberá uma resposta em até 15 dias úteis.');
       setEmail('');
       setRequestType('');
       setJustification('');
+      
+      // Show additional info if available
+      if (data?.processingInfo) {
+        setTimeout(() => {
+          toast.info(data.processingInfo);
+        }, 2000);
+      }
     } catch (error) {
       console.error('Erro ao enviar solicitação:', error);
       toast.error('Erro ao enviar solicitação. Tente novamente.');

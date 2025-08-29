@@ -24,6 +24,9 @@ verify_jwt = false
 [functions.templates-csv]
 verify_jwt = false
 
+[functions.lgpd-requests]
+verify_jwt = false
+
 [functions.mapa-testemunhas-processos]
 verify_jwt = true
 
