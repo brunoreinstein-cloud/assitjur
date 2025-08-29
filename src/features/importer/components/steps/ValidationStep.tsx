@@ -1,12 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { FileCheck, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { FileCheck, RefreshCw, CheckCircle, AlertCircle, Wand2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { normalizeAndValidate } from '../../validators/validateEnhanced';
+import { intelligentValidateAndCorrect } from '@/lib/importer/intelligent-corrector';
 import { IssuesDataTable } from '@/components/assistjur/IssuesDataTable';
 import { ReviewUpdateButton } from '@/components/admin/ReviewUpdateButton';
+import { CorrectionInterface } from '@/components/importer/CorrectionInterface';
 import { useImportStore } from '../../store/useImportStore';
 import type { ValidationIssue } from '@/lib/importer/types';
 
@@ -22,6 +23,9 @@ export function ValidationStep() {
     setError
   } = useImportStore();
 
+  const [showCorrections, setShowCorrections] = useState(false);
+  const [corrections, setCorrections] = useState<any[]>([]);
+
   useEffect(() => {
     if (session && file && !validationResult) {
       performValidation();
@@ -33,7 +37,7 @@ export function ValidationStep() {
 
     setIsProcessing(true);
     try {
-      const result = await normalizeAndValidate(
+      const result = await intelligentValidateAndCorrect(
         session,
         {
           explodeLists: true,
@@ -43,6 +47,15 @@ export function ValidationStep() {
         },
         file
       );
+
+      // Store corrections for UI
+      if (result.intelligentCorrections && result.intelligentCorrections.length > 0) {
+        setCorrections(result.intelligentCorrections);
+        const correctionsWithData = result.intelligentCorrections.filter(c => c.corrections.length > 0);
+        if (correctionsWithData.length > 0) {
+          setShowCorrections(true);
+        }
+      }
 
       // Add download URLs (mock for now)
       const validationWithUrls = {
@@ -57,8 +70,8 @@ export function ValidationStep() {
       setValidationResult(validationWithUrls);
       
       toast({
-        title: "Validação concluída",
-        description: `${result.summary.analyzed} registros analisados, ${result.summary.valid} válidos`,
+        title: "Validação inteligente concluída",
+        description: `${result.summary.analyzed} registros analisados, ${result.summary.valid} válidos, ${result.intelligentCorrections?.filter(c => c.corrections.length > 0).length || 0} correções sugeridas`,
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro na validação';
@@ -71,6 +84,38 @@ export function ValidationStep() {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleApplyCorrections = (correctedData: any[]) => {
+    // Apply corrections and update validation result
+    const updatedResult = {
+      ...validationResult!,
+      normalizedData: {
+        ...validationResult!.normalizedData,
+        processos: correctedData.filter(d => d.cnj && d.reclamante_nome && d.reu_nome)
+      },
+      summary: {
+        ...validationResult!.summary,
+        valid: correctedData.filter(d => d.cnj && d.reclamante_nome && d.reu_nome).length,
+        errors: Math.max(0, validationResult!.summary.errors - corrections.filter(c => c.corrections.length > 0).length)
+      }
+    };
+    
+    setValidationResult(updatedResult);
+    setShowCorrections(false);
+    
+    toast({
+      title: "Correções aplicadas",
+      description: `${corrections.filter(c => c.corrections.length > 0).length} correções foram aplicadas com sucesso`,
+    });
+  };
+
+  const handleRejectCorrections = () => {
+    setShowCorrections(false);
+    toast({
+      title: "Correções rejeitadas",
+      description: "Continuando com os dados originais",
+    });
   };
 
   if (!session || !file) {
@@ -116,6 +161,7 @@ export function ValidationStep() {
   const { summary, issues } = validationResult;
   const hasErrors = summary.errors > 0;
   const canProceed = summary.valid > 0 && !hasErrors;
+  const hasCorrections = corrections.length > 0 && corrections.some(c => c.corrections.length > 0);
 
   return (
     <div className="space-y-6">
@@ -148,24 +194,55 @@ export function ValidationStep() {
         </Card>
       </div>
 
-      {/* Status Alert */}
-      {canProceed && (
-        <Alert className="border-success bg-success/5">
-          <CheckCircle className="h-4 w-4 text-success" />
-          <AlertDescription className="text-success">
-            ✅ Arquivo pronto para publicação! {summary.valid} registros serão importados.
-          </AlertDescription>
-        </Alert>
-      )}
+        {/* Intelligent Corrections */}
+        {showCorrections && hasCorrections && (
+          <CorrectionInterface
+            corrections={corrections}
+            onApplyCorrections={handleApplyCorrections}
+            onReject={handleRejectCorrections}
+          />
+        )}
 
-      {hasErrors && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            ❌ Corrija os erros antes de prosseguir. {summary.errors} problemas impedem a importação.
-          </AlertDescription>
-        </Alert>
-      )}
+        {/* Status Alert */}
+        {canProceed && !showCorrections && (
+          <Alert className="border-success bg-success/5">
+            <CheckCircle className="h-4 w-4 text-success" />
+            <AlertDescription className="text-success">
+              ✅ Arquivo pronto para publicação! {summary.valid} registros serão importados.
+              {hasCorrections && (
+                <Button 
+                  variant="link" 
+                  size="sm" 
+                  className="ml-2 p-0 h-auto text-success"
+                  onClick={() => setShowCorrections(true)}
+                >
+                  <Wand2 className="h-3 w-3 mr-1" />
+                  Ver correções sugeridas
+                </Button>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {hasErrors && !showCorrections && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              ❌ Corrija os erros antes de prosseguir. {summary.errors} problemas impedem a importação.
+              {hasCorrections && (
+                <Button 
+                  variant="link" 
+                  size="sm" 
+                  className="ml-2 p-0 h-auto text-destructive"
+                  onClick={() => setShowCorrections(true)}
+                >
+                  <Wand2 className="h-3 w-3 mr-1" />
+                  Ver correções automáticas
+                </Button>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
 
       {/* Issues Table */}
       {issues.length > 0 && (
