@@ -3,7 +3,12 @@
  * Baseado na documentação do produto
  */
 
-import type { DetectedSheet } from '@/lib/importer/detect'
+import type { DetectedSheet, ValidationResult as ImporterValidationResult, ValidationIssue, ValidationSeverity } from '@/lib/importer/types'
+
+// Extended interface for validation with full data
+export interface ValidationSheet extends DetectedSheet {
+  data: any[][] // Full row data for validation
+}
 
 // Tipos para validação
 export interface ValidationResult {
@@ -162,7 +167,7 @@ export class ValidationEngine {
   /**
    * Validação principal
    */
-  static async validateImportData(sheets: DetectedSheet[]): Promise<ValidationResult> {
+  static async validateImportData(sheets: ValidationSheet[]): Promise<ValidationResult> {
     const errors: ValidationError[] = []
     const warnings: ValidationWarning[] = []
     let processedData: ProcessedValidationData | undefined
@@ -427,7 +432,7 @@ export class ValidationEngine {
   /**
    * Processar e normalizar dados
    */
-  private static processAndNormalizeData(sheets: DetectedSheet[], mappings: ColumnMapping[]) {
+  private static processAndNormalizeData(sheets: ValidationSheet[], mappings: ColumnMapping[]) {
     const errors: ValidationError[] = []
     const warnings: ValidationWarning[] = []
     const processos: ProcessedProcesso[] = []
@@ -467,7 +472,7 @@ export class ValidationEngine {
   /**
    * Processar aba de processos
    */
-  private static processProcessosSheet(sheet: DetectedSheet, mappings: ColumnMapping[]) {
+  private static processProcessosSheet(sheet: ValidationSheet, mappings: ColumnMapping[]) {
     const errors: ValidationError[] = []
     const warnings: ValidationWarning[] = []
     const data: ProcessedProcesso[] = []
@@ -553,7 +558,7 @@ export class ValidationEngine {
   /**
    * Processar aba de testemunhas
    */
-  private static processTestemunhasSheet(sheet: DetectedSheet, mappings: ColumnMapping[]) {
+  private static processTestemunhasSheet(sheet: ValidationSheet, mappings: ColumnMapping[]) {
     const errors: ValidationError[] = []
     const warnings: ValidationWarning[] = []
     const data: ProcessedTestemunha[] = []
@@ -723,7 +728,7 @@ export class ValidationEngine {
   /**
    * Validar conformidade LGPD
    */
-  private static validateLGPDCompliance(sheets: DetectedSheet[], data?: ProcessedValidationData) {
+  private static validateLGPDCompliance(sheets: ValidationSheet[], data?: ProcessedValidationData) {
     const errors: ValidationError[] = []
     const warnings: ValidationWarning[] = []
 
@@ -773,7 +778,7 @@ export class ValidationEngine {
     return null
   }
 
-  private static findSheetByType(sheets: DetectedSheet[], type: string): DetectedSheet | null {
+  private static findSheetByType(sheets: ValidationSheet[], type: string): ValidationSheet | null {
     return sheets.find(s => this.detectSheetType(s.name) === type) || null
   }
 
@@ -877,13 +882,13 @@ export class ValidationEngine {
   }
 
   private static generateSummary(
-    sheets: DetectedSheet[], 
+    sheets: ValidationSheet[], 
     data?: ProcessedValidationData, 
     errors: ValidationError[] = [], 
     warnings: ValidationWarning[] = [],
     mappings: ColumnMapping[] = []
   ): ValidationSummary {
-    const totalRows = sheets.reduce((sum, sheet) => sum + sheet.data.length, 0)
+    const totalRows = sheets.reduce((sum, sheet) => sum + (sheet.data?.length || 0), 0)
     const validRows = data ? data.processos.length + data.testemunhas.length : 0
     const homonymAlerts = warnings.filter(w => w.type === 'HOMONIMO').length
     const lgpdCompliant = !errors.some(e => e.code.includes('LGPD')) && 
@@ -903,7 +908,7 @@ export class ValidationEngine {
     }
   }
 
-  private static createFailedResult(errors: ValidationError[], warnings: ValidationWarning[], sheets: DetectedSheet[]): ValidationResult {
+  private static createFailedResult(errors: ValidationError[], warnings: ValidationWarning[], sheets: ValidationSheet[]): ValidationResult {
     return {
       isValid: false,
       errors,
