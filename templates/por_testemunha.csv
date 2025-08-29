@@ -1,0 +1,4 @@
+Nome_Testemunha,Qtd_Depoimentos,CNJs_Como_Testemunha,Ja_Foi_Reclamante,CNJs_Como_Reclamante,Foi_Testemunha_Ativo,Foi_Testemunha_Passivo,CNJs_Passivo,Foi_Ambos_Polos,Participou_Troca_Favor,CNJs_Troca_Favor,Participou_Triangulacao,CNJs_Triangulacao,E_Prova_Emprestada,Classificacao,Classificacao_Estrategica
+João Pereira,12,"1000000-78.2024.5.02.1001; 1000001-86.2024.5.02.1002",false,—,true,false,—,false,true,1000005-69.2024.5.02.1006↔1000006-77.2024.5.02.1007,true,"1000002-94.2024.5.02.1003; 1000003-43.2024.5.02.1004; 1000004-51.2024.5.02.1005",true,ALTA,CRÍTICO
+Beatriz Nunes,3,"1000000-78.2024.5.02.1001; 1000002-94.2024.5.02.1003; 1000007-35.2024.5.02.1008",true,1000008-01.2024.5.02.1009,true,true,1000009-19.2024.5.02.1010,true,false,—,false,—,false,MÉDIA,ATENÇÃO
+Carlos Costa,1,1000001-86.2024.5.02.1002,false,—,true,false,—,false,false,—,false,—,false,BAIXA,NORMAL

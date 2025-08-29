@@ -1,6 +1,6 @@
 import Papa from 'papaparse';
 import { PorProcesso, PorTestemunha } from '@/types/mapa-testemunhas';
-import { formatProcessoForCSV, formatTestemunhaForCSV } from './formatters';
+import { formatProcessoToCanonical, formatTestemunhaToCanonical } from './formatters-canonical';
 import { applyPIIMask } from './pii';
 
 export interface ExportOptions {
@@ -27,17 +27,17 @@ export const exportProcessosToCSV = (
     exportData = data.filter(item => selectedIds.includes(item.cnj));
   }
 
-  // Convert to CSV format
+  // Convert to CSV format using canonical headers
   const csvData = exportData.map(processo => {
-    const formatted = formatProcessoForCSV(processo);
+    const formatted = formatProcessoToCanonical(processo);
     
     if (maskPII) {
       // Apply PII masking to sensitive fields
       return {
         ...formatted,
-        'Reclamante': applyPIIMask(formatted['Reclamante']),
-        'Todas Testemunhas': applyPIIMask(formatted['Todas Testemunhas']),
-        'Insight Estratégico': applyPIIMask(formatted['Insight Estratégico']),
+        'Reclamantes': applyPIIMask(formatted['Reclamantes']),
+        'Todas_Testemunhas': applyPIIMask(formatted['Todas_Testemunhas']),
+        'Insight_Estrategico': applyPIIMask(formatted['Insight_Estrategico']),
       };
     }
     
@@ -87,17 +87,17 @@ export const exportTestemunhasToCSV = (
     exportData = data.filter(item => selectedIds.includes(item.nome_testemunha));
   }
 
-  // Convert to CSV format
+  // Convert to CSV format using canonical headers
   const csvData = exportData.map(testemunha => {
-    const formatted = formatTestemunhaForCSV(testemunha);
+    const formatted = formatTestemunhaToCanonical(testemunha);
     
     if (maskPII) {
       // Apply PII masking to sensitive fields
       return {
         ...formatted,
-        'Nome Testemunha': applyPIIMask(formatted['Nome Testemunha']),
-        'CNJs como Testemunha': applyPIIMask(formatted['CNJs como Testemunha']),
-        'CNJs como Reclamante': applyPIIMask(formatted['CNJs como Reclamante']),
+        'Nome_Testemunha': applyPIIMask(formatted['Nome_Testemunha']),
+        'CNJs_Como_Testemunha': applyPIIMask(formatted['CNJs_Como_Testemunha']),
+        'CNJs_Como_Reclamante': applyPIIMask(formatted['CNJs_Como_Reclamante']),
       };
     }
     

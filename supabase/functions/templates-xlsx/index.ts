@@ -1,8 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { corsHeaders } from '../_shared/cors.ts'
-
-// Import XLSX for Deno - using ESM.sh for better compatibility
-import * as XLSX from 'https://esm.sh/xlsx@0.18.5'
+import { buildCanonicalXlsx } from './canonical.ts'
 
 interface ProcessoSample {
   CNJ: string;
@@ -214,14 +212,14 @@ serve(async (req) => {
   }
 
   try {
-    const buffer = buildTemplateXlsx()
+    const buffer = buildCanonicalXlsx()
     
     return new Response(buffer, {
       status: 200,
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': 'attachment; filename="template-assistjur.xlsx"',
+        'Content-Disposition': 'attachment; filename="AssistJurIA_Template.xlsx"',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0'

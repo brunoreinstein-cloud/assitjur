@@ -65,8 +65,9 @@ export function buildCanonicalCsv(sheetName: 'Por Processo' | 'Por Testemunha' |
     throw new Error(`Nenhum dado encontrado para a aba "${sheetName}"`);
   }
 
-  // Get headers from data
-  const headers = Object.keys(data[0]);
+  // Get headers from first data row
+  const firstRow = data[0] as Record<string, any>;
+  const headers = Object.keys(firstRow);
   
   // CSV escape function
   const escapeCsvValue = (value: any): string => {
@@ -93,8 +94,9 @@ export function buildCanonicalCsv(sheetName: 'Por Processo' | 'Por Testemunha' |
   lines.push(headers.map(h => escapeCsvValue(h)).join(','));
   
   // Data lines
-  data.forEach(row => {
-    const values = headers.map(header => escapeCsvValue(row[header]));
+  data.forEach((row: any) => {
+    const rowData = row as Record<string, any>;
+    const values = headers.map(header => escapeCsvValue(rowData[header]));
     lines.push(values.join(','));
   });
 
@@ -112,7 +114,7 @@ export function validateCanonicalStructure(): {
 
   // Validate processo headers
   const processoActualHeaders = Object.keys(canonicalProcessoSamples[0] || {});
-  const processoExpectedHeaders = [...CANONICAL_HEADERS_PROCESSO];
+  const processoExpectedHeaders = [...CANONICAL_HEADERS_PROCESSO] as string[];
   
   const processoMissing = processoExpectedHeaders.filter(h => !processoActualHeaders.includes(h));
   const processoExtra = processoActualHeaders.filter(h => !processoExpectedHeaders.includes(h));
@@ -126,7 +128,7 @@ export function validateCanonicalStructure(): {
 
   // Validate testemunha headers
   const testemunhaActualHeaders = Object.keys(canonicalTestemunhaSamples[0] || {});
-  const testemunhaExpectedHeaders = [...CANONICAL_HEADERS_TESTEMUNHA];
+  const testemunhaExpectedHeaders = [...CANONICAL_HEADERS_TESTEMUNHA] as string[];
   
   const testemunhaMissing = testemunhaExpectedHeaders.filter(h => !testemunhaActualHeaders.includes(h));
   const testemunhaExtra = testemunhaActualHeaders.filter(h => !testemunhaExpectedHeaders.includes(h));
@@ -171,12 +173,13 @@ export function formatDataToCanonical(
 ): Record<string, any>[] {
   const canonicalHeaders = getCanonicalHeaders(sheetType);
   
-  return data.map(row => {
+  return data.map((row: any) => {
     const canonicalRow: Record<string, any> = {};
     
     canonicalHeaders.forEach((header: string) => {
-      // Map from current format to canonical format
-      let value = row[header] || row[header.toLowerCase()] || row[header.replace(/_/g, '')] || null;
+      // Map from current format to canonical format - use dynamic access
+      const rowData = row as Record<string, any>;
+      let value = rowData[header] || rowData[header.toLowerCase()] || rowData[header.replace(/_/g, '')] || null;
       
       // Handle special formatting
       if (value === null || value === undefined) {

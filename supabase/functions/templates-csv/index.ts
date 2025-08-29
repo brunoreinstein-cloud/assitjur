@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { corsHeaders } from '../_shared/cors.ts'
+import { buildCanonicalCsv } from './canonical.ts'
 
 interface ProcessoSample {
   CNJ: string;
@@ -261,8 +262,10 @@ serve(async (req) => {
       )
     }
 
-    const csvContent = buildCsv(sheet)
-    const filename = `template-${sheet.toLowerCase().replace(/\s+/g, '-')}.csv`
+    const csvContent = buildCanonicalCsv(sheet as 'Por Processo' | 'Por Testemunha' | 'Dicionario')
+    const filename = sheet === 'Por Processo' ? 'por_processo.csv' : 
+                     sheet === 'Por Testemunha' ? 'por_testemunha.csv' : 
+                     'dicionario.csv'
     
     return new Response(csvContent, {
       status: 200,
