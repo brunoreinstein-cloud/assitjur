@@ -34,6 +34,23 @@ export function ValidationStep() {
     }
   }, [session, file, validationResult]);
 
+  // Add detailed validation stats logging and reporting
+  useEffect(() => {
+    if (validationResult) {
+      const stats = calculateValidationStats(validationResult);
+      console.log('📊 Detailed Validation Stats:', {
+        originalRows: stats.originalRows,
+        processedRows: stats.processedRows, 
+        filteredRows: stats.filteredRows,
+        validRows: stats.validRows,
+        correctedRows: stats.correctedRows,
+        errorRows: stats.errorRows,
+        warningRows: stats.warningRows,
+        report: generateValidationReport(stats)
+      });
+    }
+  }, [validationResult]);
+
   const performValidation = async () => {
     if (!session || !file) return;
 
@@ -76,6 +93,18 @@ export function ValidationStep() {
       toast({
         title: "Validação inteligente concluída",
         description: `${result.summary.analyzed} registros analisados, ${result.summary.valid} válidos, ${result.intelligentCorrections?.filter(c => c.corrections.length > 0).length || 0} correções sugeridas`,
+      });
+      
+      console.log('🔍 Final Validation Summary:', {
+        originalFile: file.name,
+        fileSize: file.size,
+        sheetsDetected: session.sheets.length,
+        analyzed: result.summary.analyzed,
+        valid: result.summary.valid,
+        errors: result.summary.errors,
+        warnings: result.summary.warnings,
+        correctionsAvailable: result.intelligentCorrections?.length || 0,
+        correctionsWithChanges: result.intelligentCorrections?.filter(c => c.corrections.length > 0).length || 0
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro na validação';

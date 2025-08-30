@@ -36,7 +36,7 @@ export function ValidationStep({ session, file, onComplete }: ValidationStepProp
     applyDefaultReu: true,
     intelligentCorrections: true,
   });
-  const [corrections, setCorrections] = useState<Map<string, any>>(new Map());
+  const [appliedCorrections, setAppliedCorrections] = useState<Map<string, any>>(new Map());
 
   useEffect(() => {
     processValidation();
@@ -63,7 +63,7 @@ export function ValidationStep({ session, file, onComplete }: ValidationStepProp
       
       // Armazenar correções aplicadas
       if (validationResult.corrections) {
-        setCorrections(validationResult.corrections);
+        setAppliedCorrections(validationResult.corrections);
       }
       
       // Geração de relatórios
@@ -264,9 +264,9 @@ export function ValidationStep({ session, file, onComplete }: ValidationStepProp
         <Tabs defaultValue="summary" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="summary">Resumo</TabsTrigger>
-            <TabsTrigger value="corrections">
-              Correções ({corrections.size})
-            </TabsTrigger>
+             <TabsTrigger value="corrections">
+               Correções ({appliedCorrections.size})
+             </TabsTrigger>
             <TabsTrigger value="issues">
               Issues ({result.issues.length})
             </TabsTrigger>
@@ -305,13 +305,13 @@ export function ValidationStep({ session, file, onComplete }: ValidationStepProp
                 <CardTitle>Correções Aplicadas Automaticamente</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {corrections.size === 0 ? (
-                    <p className="text-muted-foreground text-center py-8">
-                      Nenhuma correção automática foi aplicada
-                    </p>
-                  ) : (
-                    Array.from(corrections.entries()).map(([key, correction], index) => (
+                 <div className="space-y-2 max-h-96 overflow-y-auto">
+                   {appliedCorrections.size === 0 ? (
+                     <p className="text-muted-foreground text-center py-8">
+                       Nenhuma correção automática foi aplicada
+                     </p>
+                   ) : (
+                     Array.from(appliedCorrections.entries()).map(([key, correction], index) => (
                       <div key={index} className="border rounded-lg p-3 space-y-1">
                         <div className="flex items-center gap-2">
                           <CheckCircle className="h-4 w-4 text-success" />
@@ -397,11 +397,11 @@ export function ValidationStep({ session, file, onComplete }: ValidationStepProp
                         Baixar Arquivo Corrigido (XLSX)
                       </a>
                     </Button>
-                    {corrections.size > 0 && (
-                      <p className="text-xs text-muted-foreground text-center">
-                        ✨ Este arquivo contém {corrections.size} correção(ões) automática(s)
-                      </p>
-                    )}
+                     {appliedCorrections.size > 0 && (
+                       <p className="text-xs text-muted-foreground text-center">
+                         ✨ Este arquivo contém {appliedCorrections.size} correção(ões) automática(s)
+                       </p>
+                     )}
                   </div>
                 )}
                 
