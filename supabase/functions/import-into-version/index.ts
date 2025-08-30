@@ -104,7 +104,7 @@ serve(async (req) => {
       );
     }
 
-    // 1. Limpar dados existentes da versão (otimizado)
+    // 1. Limpeza inteligente de dados (otimizado para duplicatas)
     console.log('🧹 Clearing existing version data...');
     
     const { error: deleteError } = await supabase
@@ -123,13 +123,40 @@ serve(async (req) => {
 
     console.log('✅ Version data cleared successfully');
 
+    // 2. Validação prévia de CNJs únicos
+    if (processos.length > 0) {
+      const cnjsSet = new Set();
+      const validProcessos = [];
+      let duplicatesFound = 0;
+
+      for (const processo of processos) {
+        const cnj = processo.cnj_digits || processo.CNJ_digits || '';
+        if (cnj && cnj.length === 20) {
+          if (!cnjsSet.has(cnj)) {
+            cnjsSet.add(cnj);
+            validProcessos.push(processo);
+          } else {
+            duplicatesFound++;
+          }
+        }
+      }
+
+      if (duplicatesFound > 0) {
+        console.log(`⚠️ Found and removed ${duplicatesFound} duplicate CNJs`);
+      }
+
+      // Substituir array original pelos dados únicos
+      requestBody.processos = validProcessos;
+    }
+
     let imported = 0;
     let errors = 0;
     let warnings = 0;
 
-    // 2. Inserir processos (otimizado para performance)
-    if (processos.length > 0) {
-      console.log(`📊 Preparing to insert ${processos.length} processos...`);
+    // 3. Inserir processos com robustez melhorada
+    const validProcessos = requestBody.processos || [];
+    if (validProcessos.length > 0) {
+      console.log(`📊 Preparing to insert ${validProcessos.length} processos...`);
       
       // Parse array fields function (optimized)
       const parseArrayField = (field: any) => {
@@ -141,7 +168,11 @@ serve(async (req) => {
         return null;
       };
 
-      const processosWithVersion = processos.map((p: any) => ({
+      // Timeout management
+      const startTime = Date.now();
+      const maxExecutionTime = 120000; // 2 minutos
+
+      const processosWithVersion = validProcessos.map((p: any) => ({
         org_id: profile.organization_id,
         version_id: versionId,
         cnj: p.cnj || p.CNJ || '',
@@ -163,42 +194,73 @@ serve(async (req) => {
         observacoes: p.observacoes || null,
       }));
 
-      // Insert em lotes maiores (500) para reduzir tempo total
-      const batchSize = 500;
+      // Batch otimizado para reduzir timeout (250 registros)
+      const batchSize = 250;
       let totalInserted = 0;
       const totalBatches = Math.ceil(processosWithVersion.length / batchSize);
       
       console.log(`🚀 Starting import: ${totalBatches} batches of up to ${batchSize} records`);
       
       for (let i = 0; i < processosWithVersion.length; i += batchSize) {
+        // Timeout check
+        if (Date.now() - startTime > maxExecutionTime) {
+          console.error('⏰ Execution timeout reached, stopping import');
+          break;
+        }
+
         const batch = processosWithVersion.slice(i, i + batchSize);
         const batchNumber = Math.floor(i / batchSize) + 1;
         
         console.log(`📦 Batch ${batchNumber}/${totalBatches}: ${batch.length} records`);
         
-        // Usar insert simples (mais rápido que upsert) já que limpamos os dados
-        const { data: insertedBatch, error: batchError } = await supabase
-          .from('processos')
-          .insert(batch)
-          .select('id');
+        let retries = 0;
+        let batchSuccess = false;
+        
+        // Retry mechanism para falhas temporárias
+        while (retries < 3 && !batchSuccess) {
+          try {
+            const { data: insertedBatch, error: batchError } = await supabase
+              .from('processos')
+              .upsert(batch, {
+                onConflict: 'org_id,cnj_digits'
+              })
+              .select('id');
 
-        if (batchError) {
-          console.error(`❌ Batch ${batchNumber} failed:`, batchError.message);
-          errors += batch.length;
-        } else {
-          const batchInserted = insertedBatch?.length || 0;
-          totalInserted += batchInserted;
-          console.log(`✅ Batch ${batchNumber}: ${batchInserted} records inserted`);
+            if (batchError) {
+              throw batchError;
+            }
+
+            const batchInserted = insertedBatch?.length || 0;
+            totalInserted += batchInserted;
+            console.log(`✅ Batch ${batchNumber}: ${batchInserted} records inserted`);
+            batchSuccess = true;
+
+          } catch (batchError: any) {
+            retries++;
+            console.error(`❌ Batch ${batchNumber} attempt ${retries} failed:`, batchError.message);
+            
+            if (retries >= 3) {
+              console.error(`💥 Batch ${batchNumber} failed after ${retries} attempts`);
+              errors += batch.length;
+            } else {
+              // Wait before retry
+              await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+            }
+          }
         }
       }
 
       imported = totalInserted;
-      console.log(`🎉 Import complete: ${totalInserted}/${processos.length} processos inserted`);
+      console.log(`🎉 Import complete: ${totalInserted}/${validProcessos.length} processos inserted`);
+      
+      if (errors > 0) {
+        console.log(`⚠️ ${errors} records failed to import`);
+      }
     } else {
-      console.log('⚠️ No processos to insert');
+      console.log('⚠️ No valid processos to insert');
     }
 
-    // 3. Atualizar summary da versão
+    // 4. Atualizar summary da versão
     const summary = {
       imported,
       errors,
@@ -207,7 +269,7 @@ serve(async (req) => {
       filename: filename || 'unknown',
       updated_at: new Date().toISOString(),
       updated_by: user.email,
-      total_records: processos.length,
+      total_records: (requestBody.processos || []).length,
       processos_count: imported,
       testemunhas_count: testemunhas.length
     };
@@ -229,7 +291,7 @@ serve(async (req) => {
           errors,
           warnings,
           valid: imported,
-          analyzed: processos.length
+          analyzed: (requestBody.processos || []).length
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

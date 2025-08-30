@@ -23,7 +23,7 @@ export function PublishStep() {
   const [isPublished, setIsPublished] = useState(false);
   const [publishResult, setPublishResult] = useState<any>(null);
 
-  const handlePublish = async () => {
+  const handlePublish = async (retryCount = 0) => {
     if (!file || !validationResult || !session) return;
 
     setIsProcessing(true);
@@ -32,7 +32,9 @@ export function PublishStep() {
     try {
       // Step 1: Create new version
       setUploadProgress(10);
-      const { data: versionData, error: versionError } = await supabase.functions.invoke('create-version');
+      const { data: versionData, error: versionError } = await supabase.functions.invoke('create-version', {
+        headers: { 'x-retry-count': retryCount.toString() }
+      });
       
       if (versionError) {
         throw new Error('Falha ao criar nova versão: ' + versionError.message);
@@ -59,9 +61,10 @@ export function PublishStep() {
         firstTestemunhaSample: testemunhas[0] || 'nenhuma testemunha'
       });
 
-      // Step 3: Import data into the new version
+      // Step 3: Import data with timeout handling
       setUploadProgress(30);
-      const { data: importData, error: importError } = await supabase.functions.invoke('import-into-version', {
+      
+      const importPromise = supabase.functions.invoke('import-into-version', {
         body: {
           versionId: versionData.versionId,
           processos,
@@ -71,11 +74,42 @@ export function PublishStep() {
         }
       });
 
+      // Timeout handling (3 minutos)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout na importação - tente novamente')), 180000)
+      );
+
+      const { data: importData, error: importError } = await Promise.race([
+        importPromise,
+        timeoutPromise
+      ]) as any;
+
       if (importError) {
+        // Check if it's a timeout or network error that might benefit from retry
+        if ((importError.message?.includes('timeout') || 
+             importError.message?.includes('network') || 
+             importError.message?.includes('504') ||
+             importError.message?.includes('502')) && retryCount < 2) {
+          
+          console.log(`🔄 Retrying import (attempt ${retryCount + 1}/3)...`);
+          toast({
+            title: "Conectividade instável",
+            description: `Tentativa ${retryCount + 1}/3 - Tentando novamente...`,
+          });
+          
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          return handlePublish(retryCount + 1);
+        }
+        
         throw new Error('Falha na importação: ' + importError.message);
       }
 
-      // Step 3: Publish the version
+      if (!importData || !importData.summary) {
+        throw new Error('Resposta inválida da importação');
+      }
+
+      // Step 4: Publish the version
       setUploadProgress(80);
       const { data: publishData, error: publishError } = await supabase.functions.invoke('publish-version', {
         body: { versionId: versionData.versionId }
@@ -100,7 +134,7 @@ export function PublishStep() {
 
       toast({
         title: "Versão publicada com sucesso!",
-        description: `Versão v${versionData.number} com ${importData.imported} registros`,
+        description: `Versão v${versionData.number} com ${importData.summary?.imported || 0} registros`,
       });
 
       // Signal that import is complete to refresh other views
@@ -109,9 +143,22 @@ export function PublishStep() {
 
     } catch (error: any) {
       console.error('Publish error:', error);
+      
+      // More specific error messages
+      let errorMessage = error.message || "Falha ao publicar dados";
+      let errorTitle = "Erro na publicação";
+      
+      if (error.message?.includes('timeout')) {
+        errorTitle = "Timeout na operação";
+        errorMessage = "A operação demorou muito para completar. Tente novamente com um arquivo menor ou verifique sua conexão.";
+      } else if (error.message?.includes('504')) {
+        errorTitle = "Servidor sobrecarregado";
+        errorMessage = "O servidor está processando muitos dados. Aguarde um momento e tente novamente.";
+      }
+      
       toast({
-        title: "Erro na publicação",
-        description: error.message || "Falha ao publicar dados",
+        title: errorTitle,
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -293,7 +340,7 @@ export function PublishStep() {
                   Cancelar
                 </Button>
                 <Button 
-                  onClick={handlePublish} 
+                  onClick={() => handlePublish()} 
                   disabled={validationResult.summary.errors > 0 || validationResult.summary.valid === 0}
                   className="bg-success hover:bg-success/90"
                 >
