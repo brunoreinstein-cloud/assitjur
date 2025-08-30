@@ -103,6 +103,10 @@ export function PublishStep() {
         description: `Versão v${versionData.number} com ${importData.imported} registros`,
       });
 
+      // Signal that import is complete to refresh other views
+      localStorage.setItem('import_completed', Date.now().toString());
+      window.dispatchEvent(new Event('storage'));
+
     } catch (error: any) {
       console.error('Publish error:', error);
       toast({

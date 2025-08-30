@@ -890,7 +890,7 @@ export type Database = {
             foreignKeyName: "processos_version_id_fkey"
             columns: ["version_id"]
             isOneToOne: false
-            referencedRelation: "dataset_versions"
+            referencedRelation: "versions"
             referencedColumns: ["id"]
           },
         ]
@@ -1381,7 +1381,7 @@ export type Database = {
             foreignKeyName: "processos_version_id_fkey"
             columns: ["version_id"]
             isOneToOne: false
-            referencedRelation: "dataset_versions"
+            referencedRelation: "versions"
             referencedColumns: ["id"]
           },
         ]

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SearchFilters } from '@/components/data-explorer/SearchFilters';
@@ -38,6 +38,7 @@ interface ProcessoQuality {
 export default function ProcessosTable() {
   const { user, profile } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSeverity, setSelectedSeverity] = useState<string[]>([]);
@@ -99,7 +100,21 @@ export default function ProcessosTable() {
         : enrichedData;
     },
     enabled: !!profile?.organization_id,
+    refetchOnWindowFocus: false,
   });
+
+  // Listen for storage events to invalidate cache when imports complete
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'import_completed') {
+        queryClient.invalidateQueries({ queryKey: ['processos-quality'] });
+        localStorage.removeItem('import_completed');
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [queryClient]);
 
   // Ações em massa
   const handleRevalidate = async () => {
