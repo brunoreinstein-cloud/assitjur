@@ -124,8 +124,8 @@ function correctRowData(row: any, rowIndex: number, sheetType: 'processo' | 'tes
         }
       }
       
-      // Check if required field is missing
-      if (!correctedData[field] || String(correctedData[field]).trim() === '') {
+      // Only reclamante_nome is truly required - reu_nome can be empty in some cases
+      if (field === 'reclamante_nome' && (!correctedData[field] || String(correctedData[field]).trim() === '')) {
         isValid = false;
       }
     });
@@ -353,9 +353,9 @@ export async function intelligentValidateAndCorrect(
                 sheet: sheet.name,
                 row: rowNumber,
                 column: 'reu_nome',
-                severity: 'error',
-                rule: 'Nome do réu é obrigatório',
-                message: 'Campo "reu_nome" é obrigatório mas está vazio',
+                severity: 'warning',
+                rule: 'Nome do réu recomendado',
+                message: 'Campo "reu_nome" está vazio mas pode ser preenchido posteriormente',
                 value: correctedRow.correctedData.reu_nome || 'N/A'
               });
             }

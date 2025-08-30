@@ -46,7 +46,7 @@ export const COLUMN_SYNONYMS: ColumnSynonyms[] = [
       'reu_nome', 'Reu_Nome', 'reu', 'Reu', 'REU',
       'reclamado', 'nome_reclamado', 'requerido', 'nome_requerido'
     ],
-    required: true,
+    required: false,
     sheet: 'processo'
   },
   {
@@ -56,7 +56,7 @@ export const COLUMN_SYNONYMS: ColumnSynonyms[] = [
       'advogado_reclamante', 'advogados_reclamante', 'advogado_autor',
       'advogados_autor', 'representante_legal_ativo'
     ],
-    required: true,
+    required: false,
     sheet: 'processo'
   },
   {

@@ -85,7 +85,7 @@ export const CANONICAL_COLUMN_SYNONYMS: CanonicalColumnSynonym[] = [
       'advogados_reclamante', 'advogado_autor', 'advogados_autor',
       'representante_legal_ativo', 'advogados_parte_ativa'
     ],
-    required: true,
+    required: false,
     sheet: 'processo',
     type: 'list'
   },
