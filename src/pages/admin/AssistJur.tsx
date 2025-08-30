@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProcessosTable } from './ProcessosTable';
+import { ProcessosExplorer } from '@/components/admin/processos/ProcessosExplorer';
 import { AssistJurUploadWizard } from '@/components/assistjur/AssistJurUploadWizard';
 import { ReviewUpdateButton } from '@/components/admin/ReviewUpdateButton';
 import { BarChart3, FileSpreadsheet, RefreshCw, Upload } from 'lucide-react';
@@ -104,7 +104,7 @@ export default function AssistJur() {
         </TabsList>
         
         <TabsContent value="dados">
-          <ProcessosTable />
+          <ProcessosExplorer />
         </TabsContent>
         
         <TabsContent value="upload">

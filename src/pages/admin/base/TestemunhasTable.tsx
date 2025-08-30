@@ -16,6 +16,8 @@ import { ptBR } from 'date-fns/locale';
 import { PorTestemunha } from '@/types/mapa-testemunhas';
 import { ArrayField } from '@/components/mapa-testemunhas/ArrayField';
 import { applyPIIMask } from '@/utils/pii-mask';
+import { BulkDeleteManager } from '@/components/admin/BulkDeleteManager';
+import { Card } from '@/components/ui/card';
 
 // Using PorTestemunha from mapa-testemunhas types
 
@@ -140,20 +142,25 @@ export default function TestemunhasTable() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Gestão de Testemunhas</h2>
-          <p className="text-muted-foreground">
-            Dados extraídos dos {totalCount} processos da organização
-          </p>
+      <Card className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">Gestão de Testemunhas</h2>
+            <p className="text-muted-foreground">
+              Dados extraídos dos {totalCount} processos da organização
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <BulkDeleteManager type="testemunhas" onSuccess={() => refetch()} />
+            <Button
+              variant="outline"
+              onClick={() => setIsPiiMasked(!isPiiMasked)}
+            >
+              {isPiiMasked ? 'Mostrar Dados' : 'Mascarar PII'}
+            </Button>
+          </div>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => setIsPiiMasked(!isPiiMasked)}
-        >
-          {isPiiMasked ? 'Mostrar Dados' : 'Mascarar PII'}
-        </Button>
-      </div>
+      </Card>
 
       <SearchFilters
         searchTerm={searchTerm}

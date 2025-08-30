@@ -1507,6 +1507,10 @@ export type Database = {
         Args: { name_value: string }
         Returns: string
       }
+      rpc_cleanup_derived_data: {
+        Args: { p_org_id: string }
+        Returns: Json
+      }
       rpc_cleanup_duplicates: {
         Args: { p_org_id: string }
         Returns: Json
@@ -1527,7 +1531,19 @@ export type Database = {
         Args: { p_org_id: string }
         Returns: Json
       }
+      rpc_delete_all_processos: {
+        Args: { p_hard_delete?: boolean; p_org_id: string }
+        Returns: Json
+      }
       rpc_get_cleanup_preview: {
+        Args: { p_org_id: string }
+        Returns: Json
+      }
+      rpc_get_deletion_impact: {
+        Args: { p_org_id: string }
+        Returns: Json
+      }
+      rpc_restore_all_processos: {
         Args: { p_org_id: string }
         Returns: Json
       }
