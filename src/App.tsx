@@ -117,6 +117,7 @@ const App = () => (
                         <Route path="/import" element={<Navigate to="/admin/base-import" replace />} />
                         <Route path="/admin/versoes" element={<Versions />} />
                         <Route path="/admin/org" element={<Organization />} />
+                        <Route path="/admin/organization" element={<Organization />} />
                          <Route path="/admin/logs" element={<Logs />} />
           <Route path="/admin/compliance" element={<Compliance />} />
           <Route path="/admin/marketing" element={<MarketingCompliance />} />
