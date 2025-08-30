@@ -34,7 +34,7 @@ interface BulkDeleteManagerProps {
 }
 
 export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteManagerProps) {
-  const { profile } = useAuth();
+  const { profile, isAdmin, user } = useAuth();
   const { toast } = useToast();
   
   const [isOpen, setIsOpen] = useState(false);
@@ -46,15 +46,28 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
     backup: false,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingImpact, setIsLoadingImpact] = useState(false);
   const [progress, setProgress] = useState(0);
   const [step, setStep] = useState<'preview' | 'confirm' | 'executing'>('preview');
   const [operationType, setOperationType] = useState<'soft' | 'hard'>('soft');
   const [cooldownSeconds, setCooldownSeconds] = useState(10);
 
+  // Debug logs
+  console.log('🔍 BulkDeleteManager Debug:', {
+    user: !!user,
+    profile: !!profile,
+    isAdmin,
+    organization_id: profile?.organization_id,
+    role: profile?.role
+  });
+
   const requiredConfirmationText = profile?.organization_id || '';
   const isConfirmationValid = confirmationText === requiredConfirmationText;
   const allConfirmationsChecked = Object.values(confirmations).every(Boolean);
   const canProceed = isConfirmationValid && allConfirmationsChecked && cooldownSeconds === 0;
+
+  // Check if user has permission to use this functionality
+  const hasPermission = isAdmin && profile?.organization_id;
 
   // Cooldown timer
   useEffect(() => {
@@ -66,22 +79,39 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
 
   // Load deletion impact when opening
   useEffect(() => {
-    if (isOpen && !impact && profile?.organization_id) {
+    if (isOpen && !impact && hasPermission) {
       loadDeletionImpact();
     }
-  }, [isOpen, profile?.organization_id]);
+  }, [isOpen, hasPermission]);
 
   const loadDeletionImpact = async () => {
-    if (!profile?.organization_id) return;
+    if (!hasPermission) {
+      toast({
+        title: "Acesso negado",
+        description: "Você precisa ser um administrador para executar esta operação",
+        variant: "destructive"
+      });
+      return;
+    }
 
+    setIsLoadingImpact(true);
+    
     try {
-      console.log('🔍 Loading deletion impact for org:', profile.organization_id);
+      console.log('🔍 Loading deletion impact for org:', profile?.organization_id);
+      console.log('🔍 User permissions:', { isAdmin, role: profile?.role });
+      
       const { data, error } = await supabase.rpc('rpc_get_deletion_impact', {
-        p_org_id: profile.organization_id
+        p_org_id: profile!.organization_id
       });
 
       if (error) {
         console.error('❌ RPC Error:', error);
+        console.error('❌ RPC Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
         throw error;
       }
       
@@ -94,6 +124,8 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
         description: error instanceof Error ? error.message : "Não foi possível carregar o impacto da exclusão",
         variant: "destructive"
       });
+    } finally {
+      setIsLoadingImpact(false);
     }
   };
 
@@ -247,6 +279,8 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
           size="sm"
           className={className}
           onClick={() => setIsOpen(true)}
+          disabled={!hasPermission}
+          title={!hasPermission ? "Acesso negado - apenas administradores" : ""}
         >
           <Trash2 className="h-4 w-4 mr-2" />
           {getButtonText()}
@@ -265,8 +299,35 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
         </AlertDialogHeader>
 
         <div className="space-y-4">
+          {/* Loading Impact */}
+          {step === 'preview' && isLoadingImpact && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <span className="ml-2">Carregando dados...</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Permission Error */}
+          {step === 'preview' && !hasPermission && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-center py-8 text-destructive">
+                  <AlertTriangle className="h-8 w-8 mr-2" />
+                  <div>
+                    <div className="font-semibold">Acesso Negado</div>
+                    <div className="text-sm">Apenas administradores podem executar esta operação</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Impact Preview */}
-          {step === 'preview' && impact && (
+          {step === 'preview' && impact && hasPermission && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
@@ -422,7 +483,7 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
             Cancelar
           </AlertDialogCancel>
           
-          {step === 'preview' && (
+          {step === 'preview' && hasPermission && impact && (
             <AlertDialogAction
               onClick={() => setStep('confirm')}
               className="bg-destructive hover:bg-destructive/90"
