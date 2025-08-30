@@ -117,12 +117,12 @@ const App = () => (
                         <Route path="/import" element={<Navigate to="/admin/base-import" replace />} />
                         <Route path="/admin/versoes" element={<Versions />} />
                         <Route path="/admin/org" element={<Organization />} />
-                        <Route path="/admin/logs" element={<Logs />} />
+                         <Route path="/admin/logs" element={<Logs />} />
           <Route path="/admin/compliance" element={<Compliance />} />
           <Route path="/admin/marketing" element={<MarketingCompliance />} />
-                        <Route path="/admin/retencao" element={<DataRetention />} />
-                        <Route path="/admin/auditoria" element={<AuditPanel />} />
-                        <Route path="/admin/config" element={<SystemConfig />} />
+                         <Route path="/admin/retencao" element={<DataRetention />} />
+                         <Route path="/admin/auditoria" element={<AuditPanel />} />
+                         <Route path="/admin/config" element={<SystemConfig />} />
                         <Route path="/relatorio" element={<ReportDemo />} />
                         
                         <Route path="*" element={<NotFound />} />

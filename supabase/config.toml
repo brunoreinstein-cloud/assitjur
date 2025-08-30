@@ -53,3 +53,15 @@ verify_jwt = false
 
 [functions.admin-analytics]
 verify_jwt = true
+
+[functions.create-version]
+verify_jwt = true
+
+[functions.publish-version]
+verify_jwt = true
+
+[functions.rollback-version]
+verify_jwt = true
+
+[functions.import-into-version]
+verify_jwt = true

@@ -24,44 +24,60 @@ export function PublishStep() {
   const [publishResult, setPublishResult] = useState<any>(null);
 
   const handlePublish = async () => {
-    if (!file || !validationResult) return;
+    if (!file || !validationResult || !session) return;
 
     setIsProcessing(true);
     setUploadProgress(0);
 
     try {
-      // Simulate publish progress for large files
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev: number) => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + Math.random() * 10;
-        });
-      }, 300);
+      // Step 1: Create new version
+      setUploadProgress(10);
+      const { data: versionData, error: versionError } = await supabase.functions.invoke('create-version');
+      
+      if (versionError) {
+        throw new Error('Falha ao criar nova versão: ' + versionError.message);
+      }
 
-      // Call the import function
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('action', 'publish');
-      formData.append('sessionData', JSON.stringify(session));
-
-      const { data, error } = await supabase.functions.invoke('import-mapa-testemunhas', {
-        body: formData,
+      // Step 2: Import data into the new version
+      setUploadProgress(30);
+      const { data: importData, error: importError } = await supabase.functions.invoke('import-into-version', {
+        body: {
+          session,
+          filename: file.name,
+          versionId: versionData.versionId
+        }
       });
 
-      clearInterval(progressInterval);
+      if (importError) {
+        throw new Error('Falha na importação: ' + importError.message);
+      }
+
+      // Step 3: Publish the version
+      setUploadProgress(80);
+      const { data: publishData, error: publishError } = await supabase.functions.invoke('publish-version', {
+        body: { versionId: versionData.versionId }
+      });
+
+      if (publishError) {
+        throw new Error('Falha ao publicar versão: ' + publishError.message);
+      }
+
       setUploadProgress(100);
 
-      if (error) throw error;
-
-      setPublishResult(data);
+      // Set results with version info
+      setPublishResult({
+        ...importData,
+        version: {
+          id: versionData.versionId,
+          number: versionData.number,
+          publishedAt: publishData.publishedAt
+        }
+      });
       setIsPublished(true);
 
       toast({
-        title: "Importação concluída com sucesso!",
-        description: `${data.summary?.valid_rows || validationResult.summary.valid} registros importados`,
+        title: "Versão publicada com sucesso!",
+        description: `Versão v${versionData.number} com ${importData.imported} registros`,
       });
 
     } catch (error: any) {
@@ -141,10 +157,20 @@ export function PublishStep() {
               </div>
             </div>
 
+            {publishResult.version && (
+              <div className="mt-4 p-3 bg-success/10 rounded-lg border border-success/20">
+                <div className="text-sm space-y-1">
+                  <p><strong>Versão:</strong> v{publishResult.version.number}</p>
+                  <p><strong>ID da versão:</strong> {publishResult.version.id}</p>
+                  <p><strong>Publicada em:</strong> {new Date(publishResult.version.publishedAt).toLocaleString('pt-BR')}</p>
+                </div>
+              </div>
+            )}
+
             {publishResult.summary && (
               <div className="mt-4 p-3 bg-primary/10 rounded-lg">
                 <div className="text-sm space-y-1">
-                  <p><strong>Processos:</strong> {publishResult.summary.processos_count || 0}</p>
+                  <p><strong>Processos:</strong> {publishResult.summary.processos_count || publishResult.imported || 0}</p>
                   <p><strong>Testemunhas:</strong> {publishResult.summary.testemunhas_count || 0}</p>
                   <p><strong>Stubs criados:</strong> {publishResult.summary.stubs_created || 0}</p>
                   <p><strong>Flags detectadas:</strong> {publishResult.summary.flags_detected || 0}</p>
@@ -157,13 +183,13 @@ export function PublishStep() {
             <Button onClick={handleStartOver} className="flex-1">
               Nova Importação
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => window.location.href = '/admin/base'}
-              className="flex-1"
-            >
-              Ver Base de Dados
-            </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.href = '/admin/versoes'}
+                className="flex-1"
+              >
+                Ver Versões
+              </Button>
           </div>
         </CardContent>
       </Card>
