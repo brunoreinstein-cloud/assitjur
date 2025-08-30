@@ -106,6 +106,53 @@ export type Database = {
         }
         Relationships: []
       }
+      cleanup_logs: {
+        Row: {
+          completed_at: string | null
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          org_id: string
+          policy_id: string
+          records_affected: number
+          started_at: string
+          status: string
+          table_name: string
+        }
+        Insert: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          org_id: string
+          policy_id: string
+          records_affected?: number
+          started_at?: string
+          status: string
+          table_name: string
+        }
+        Update: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          org_id?: string
+          policy_id?: string
+          records_affected?: number
+          started_at?: string
+          status?: string
+          table_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cleanup_logs_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "retention_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string | null
@@ -1003,6 +1050,48 @@ export type Database = {
         }
         Relationships: []
       }
+      retention_policies: {
+        Row: {
+          auto_cleanup: boolean
+          cleanup_field: string
+          conditions: Json | null
+          created_at: string
+          id: string
+          last_cleanup_at: string | null
+          next_cleanup_at: string | null
+          org_id: string
+          retention_months: number
+          table_name: string
+          updated_at: string
+        }
+        Insert: {
+          auto_cleanup?: boolean
+          cleanup_field?: string
+          conditions?: Json | null
+          created_at?: string
+          id?: string
+          last_cleanup_at?: string | null
+          next_cleanup_at?: string | null
+          org_id: string
+          retention_months?: number
+          table_name: string
+          updated_at?: string
+        }
+        Update: {
+          auto_cleanup?: boolean
+          cleanup_field?: string
+          conditions?: Json | null
+          created_at?: string
+          id?: string
+          last_cleanup_at?: string | null
+          next_cleanup_at?: string | null
+          org_id?: string
+          retention_months?: number
+          table_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       stg_processos: {
         Row: {
           cnj: string | null
@@ -1254,6 +1343,10 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_next_cleanup: {
+        Args: { last_cleanup: string; retention_months: number }
+        Returns: string
+      }
       can_access_sensitive_data: {
         Args: { user_uuid: string }
         Returns: boolean
@@ -1273,6 +1366,10 @@ export type Database = {
       cleanup_staging: {
         Args: { p_import_job_id?: string }
         Returns: undefined
+      }
+      execute_retention_cleanup: {
+        Args: { p_policy_id: string }
+        Returns: Json
       }
       get_current_user_org: {
         Args: Record<PropertyKey, never>
@@ -1384,6 +1481,10 @@ export type Database = {
       sanitize_input: {
         Args: { input_text: string }
         Returns: string
+      }
+      setup_default_retention_policies: {
+        Args: { p_org_id: string }
+        Returns: undefined
       }
       upsert_padroes_agregados: {
         Args: { p_data: Json; p_org_id: string }

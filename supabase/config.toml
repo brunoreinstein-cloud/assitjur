@@ -27,6 +27,12 @@ verify_jwt = false
 [functions.lgpd-requests]
 verify_jwt = false
 
+[functions.data-retention]
+verify_jwt = true
+
+[functions.automated-retention]
+verify_jwt = false
+
 [functions.mapa-testemunhas-processos]
 verify_jwt = true
 
