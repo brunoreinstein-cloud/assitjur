@@ -104,137 +104,98 @@ serve(async (req) => {
       );
     }
 
-    // 1. Limpar TODOS os dados da organização para evitar duplicatas
-    console.log('🧹 Clearing existing data for organization...');
+    // 1. Limpar dados existentes da versão (otimizado)
+    console.log('🧹 Clearing existing version data...');
     
-    // Primeiro, limpar dados da versão específica
-    const { error: versionDeleteError } = await supabase
+    const { error: deleteError } = await supabase
       .from('processos')
       .delete()
       .eq('org_id', profile.organization_id)
       .eq('version_id', versionId);
 
-    if (versionDeleteError) {
-      console.error('❌ Error clearing version data:', versionDeleteError);
+    if (deleteError) {
+      console.error('❌ Error clearing version data:', deleteError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to clear existing data' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Depois, limpar dados draft (não publicados) para evitar conflitos
-    const { error: draftDeleteError } = await supabase
-      .from('processos')
-      .delete()
-      .eq('org_id', profile.organization_id)
-      .is('version_id', null);
-
-    if (draftDeleteError) {
-      console.error('❌ Error clearing draft data:', draftDeleteError);
-    }
-
-    console.log('✅ Existing data cleared successfully');
+    console.log('✅ Version data cleared successfully');
 
     let imported = 0;
     let errors = 0;
     let warnings = 0;
 
-    // 2. Inserir processos com version_id e campos corrigidos
+    // 2. Inserir processos (otimizado para performance)
     if (processos.length > 0) {
-      console.log(`📊 Preparing to insert ${processos.length} processos. Sample data:`, processos[0]);
+      console.log(`📊 Preparing to insert ${processos.length} processos...`);
       
-      const processosWithVersion = processos.map((p: any, index: number) => {
-        // Convert date strings to proper format
-        const dataAudiencia = p.data_audiencia 
-          ? (p.data_audiencia.match(/^\d{4}-\d{2}-\d{2}$/) 
-              ? p.data_audiencia 
-              : null)
-          : null;
-
-        // Parse array fields if they come as strings
-        const parseArrayField = (field: any) => {
-          if (!field) return null;
-          if (Array.isArray(field)) return field;
-          if (typeof field === 'string') {
-            return field.split(/[;,]/).map(s => s.trim()).filter(Boolean);
-          }
-          return null;
-        };
-
-        const mappedData = {
-          org_id: profile.organization_id,
-          version_id: versionId,
-          cnj: p.cnj || p.CNJ || '',
-          cnj_digits: p.cnj_digits || p.CNJ_digits || '',
-          cnj_normalizado: p.cnj_digits || p.CNJ_digits || '',
-          reclamante_nome: p.reclamante_nome || p.reclamante || '',
-          reu_nome: p.reu_nome || p.reu || p.reclamado || '',
-          comarca: p.comarca || null,
-          tribunal: p.tribunal || null,
-          vara: p.vara || null,
-          fase: p.fase || null,
-          status: p.status || null,
-          reclamante_cpf_mask: p.reclamante_cpf_mask || p.reclamante_cpf || null,
-          data_audiencia: dataAudiencia,
-          advogados_ativo: parseArrayField(p.advogados_ativo),
-          advogados_passivo: parseArrayField(p.advogados_passivo),
-          testemunhas_ativo: parseArrayField(p.testemunhas_ativo),
-          testemunhas_passivo: parseArrayField(p.testemunhas_passivo),
-          observacoes: p.observacoes || null,
-        };
-
-        // Log sample of mapped data for first few records
-        if (index < 3) {
-          console.log(`📋 Sample mapped data #${index + 1}:`, mappedData);
+      // Parse array fields function (optimized)
+      const parseArrayField = (field: any) => {
+        if (!field) return null;
+        if (Array.isArray(field)) return field;
+        if (typeof field === 'string') {
+          return field.split(/[;,]/).map(s => s.trim()).filter(Boolean);
         }
+        return null;
+      };
 
-        return mappedData;
-      });
+      const processosWithVersion = processos.map((p: any) => ({
+        org_id: profile.organization_id,
+        version_id: versionId,
+        cnj: p.cnj || p.CNJ || '',
+        cnj_digits: p.cnj_digits || p.CNJ_digits || '',
+        cnj_normalizado: p.cnj_digits || p.CNJ_digits || '',
+        reclamante_nome: p.reclamante_nome || p.reclamante || '',
+        reu_nome: p.reu_nome || p.reu || p.reclamado || '',
+        comarca: p.comarca || null,
+        tribunal: p.tribunal || null,
+        vara: p.vara || null,
+        fase: p.fase || null,
+        status: p.status || null,
+        reclamante_cpf_mask: p.reclamante_cpf_mask || p.reclamante_cpf || null,
+        data_audiencia: p.data_audiencia && p.data_audiencia.match(/^\d{4}-\d{2}-\d{2}$/) ? p.data_audiencia : null,
+        advogados_ativo: parseArrayField(p.advogados_ativo),
+        advogados_passivo: parseArrayField(p.advogados_passivo),
+        testemunhas_ativo: parseArrayField(p.testemunhas_ativo),
+        testemunhas_passivo: parseArrayField(p.testemunhas_passivo),
+        observacoes: p.observacoes || null,
+      }));
 
-      console.log(`Inserting ${processosWithVersion.length} processos into version ${versionId}`);
-      
-      // Insert in batches of 100 to avoid timeouts
-      const batchSize = 100;
+      // Insert em lotes maiores (500) para reduzir tempo total
+      const batchSize = 500;
       let totalInserted = 0;
+      const totalBatches = Math.ceil(processosWithVersion.length / batchSize);
+      
+      console.log(`🚀 Starting import: ${totalBatches} batches of up to ${batchSize} records`);
       
       for (let i = 0; i < processosWithVersion.length; i += batchSize) {
         const batch = processosWithVersion.slice(i, i + batchSize);
-        console.log(`📦 Inserting batch ${Math.floor(i / batchSize) + 1}, records ${i + 1}-${Math.min(i + batchSize, processosWithVersion.length)}`);
+        const batchNumber = Math.floor(i / batchSize) + 1;
         
-        // Use upsert to handle potential duplicates
+        console.log(`📦 Batch ${batchNumber}/${totalBatches}: ${batch.length} records`);
+        
+        // Usar insert simples (mais rápido que upsert) já que limpamos os dados
         const { data: insertedBatch, error: batchError } = await supabase
           .from('processos')
-          .upsert(batch, { 
-            onConflict: 'org_id,cnj_digits',
-            ignoreDuplicates: false 
-          })
+          .insert(batch)
           .select('id');
 
         if (batchError) {
-          console.error(`❌ Error upserting batch ${Math.floor(i / batchSize) + 1}:`, batchError);
-          
-          // Try individual inserts for this batch to identify specific errors
-          console.log('🔍 Trying individual inserts for problematic batch...');
-          for (const record of batch) {
-            const { error: individualError } = await supabase
-              .from('processos')
-              .upsert(record, { onConflict: 'org_id,cnj_digits' })
-              .select('id');
-              
-            if (individualError) {
-              console.error(`❌ Individual error for CNJ ${record.cnj_digits}:`, individualError);
-              errors++;
-            } else {
-              totalInserted++;
-            }
-          }
+          console.error(`❌ Batch ${batchNumber} failed:`, batchError.message);
+          errors += batch.length;
         } else {
           const batchInserted = insertedBatch?.length || 0;
           totalInserted += batchInserted;
-          console.log(`✅ Successfully upserted batch ${Math.floor(i / batchSize) + 1}: ${batchInserted} records`);
+          console.log(`✅ Batch ${batchNumber}: ${batchInserted} records inserted`);
         }
       }
 
       imported = totalInserted;
-      console.log(`🎉 Total processos inserted: ${totalInserted}`);
+      console.log(`🎉 Import complete: ${totalInserted}/${processos.length} processos inserted`);
     } else {
-      console.log('⚠️ No processos to insert - array is empty');
+      console.log('⚠️ No processos to insert');
     }
 
     // 3. Atualizar summary da versão
