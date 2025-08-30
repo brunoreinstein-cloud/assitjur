@@ -52,12 +52,11 @@ serve(async (req) => {
       );
     }
 
-    // Build query for processos table
+    // Build query for processos_live (only published versions)
     let query = supabase
-      .from('processos')
+      .from('processos_live')
       .select('*', { count: 'exact' })
-      .eq('org_id', profile.organization_id)
-      .is('deleted_at', null);
+      .eq('org_id', profile.organization_id);
 
     // Apply filters
     if (filters.uf) {
@@ -73,12 +72,11 @@ serve(async (req) => {
       query = query.or(`cnj.ilike.%${filters.search}%,comarca.ilike.%${filters.search}%,reclamante_nome.ilike.%${filters.search}%`);
     }
 
-    // Get total count first
+    // Get total count first from processos_live
     const { count } = await supabase
-      .from('processos')
+      .from('processos_live')
       .select('*', { count: 'exact', head: true })
-      .eq('org_id', profile.organization_id)
-      .is('deleted_at', null);
+      .eq('org_id', profile.organization_id);
 
     // Apply pagination
     const offset = (page - 1) * limit;
