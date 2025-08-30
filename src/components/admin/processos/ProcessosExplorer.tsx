@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, memo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,7 @@ interface ProcessosExplorerProps {
   className?: string;
 }
 
-export function ProcessosExplorer({ className }: ProcessosExplorerProps) {
+export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: ProcessosExplorerProps) {
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -61,8 +62,11 @@ export function ProcessosExplorer({ className }: ProcessosExplorerProps) {
     localStorage.setItem('processos_pii_masked', isPiiMasked.toString());
   }, [isPiiMasked]);
 
-  // Build query from filters
-  const buildQuery = (): ProcessoQuery => {
+  // Debounce search to avoid excessive queries
+  const debouncedSearch = useDebounce(filters.search, 500);
+
+  // Build query from filters - memoized
+  const buildQuery = useMemo((): ProcessoQuery => {
     const query: ProcessoQuery = {
       page,
       pageSize,
@@ -70,8 +74,8 @@ export function ProcessosExplorer({ className }: ProcessosExplorerProps) {
       orderDir
     };
 
-    if (filters.search.trim()) {
-      query.q = filters.search.trim();
+    if (debouncedSearch.trim()) {
+      query.q = debouncedSearch.trim();
     }
     if (filters.uf.length > 0) query.uf = filters.uf;
     if (filters.comarca.length > 0) query.comarca = filters.comarca;
@@ -93,7 +97,7 @@ export function ProcessosExplorer({ className }: ProcessosExplorerProps) {
     }
 
     return query;
-  };
+  }, [page, pageSize, orderBy, orderDir, debouncedSearch, filters]);
 
   // Fetch version info
   const { data: versionInfo } = useQuery<VersionInfo>({
@@ -129,15 +133,16 @@ export function ProcessosExplorer({ className }: ProcessosExplorerProps) {
     error, 
     refetch 
   } = useQuery({
-    queryKey: ['processos-explorer', profile?.organization_id, buildQuery()],
+    queryKey: ['processos-explorer', profile?.organization_id, buildQuery],
     queryFn: async () => {
       if (!profile?.organization_id) throw new Error('No organization');
 
-      console.log('🔍 Fetching processos with query:', buildQuery());
+      const queryParams = buildQuery;
+      console.log('🔍 Fetching processos with query:', queryParams);
 
       const { data, error } = await supabase.functions.invoke('mapa-testemunhas-processos', {
         body: {
-          filters: buildQuery(),
+          filters: queryParams,
           page,
           limit: pageSize
         }
@@ -358,9 +363,9 @@ export function ProcessosExplorer({ className }: ProcessosExplorerProps) {
         onClose={() => setIsExportOpen(false)}
         data={processosData?.data || []}
         selectedData={processosData?.data?.filter(p => selectedRows.has(p.id)) || []}
-        filters={buildQuery()}
+        filters={buildQuery}
         isPiiMasked={isPiiMasked}
       />
     </div>
   );
-}
+});

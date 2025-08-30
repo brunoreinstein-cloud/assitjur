@@ -75,17 +75,23 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
     if (!profile?.organization_id) return;
 
     try {
+      console.log('🔍 Loading deletion impact for org:', profile.organization_id);
       const { data, error } = await supabase.rpc('rpc_get_deletion_impact', {
         p_org_id: profile.organization_id
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ RPC Error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Deletion impact loaded:', data);
       setImpact(data as unknown as DeletionImpact);
     } catch (error) {
-      console.error('Error loading deletion impact:', error);
+      console.error('❌ Error loading deletion impact:', error);
       toast({
         title: "Erro ao carregar dados",
-        description: "Não foi possível carregar o impacto da exclusão",
+        description: error instanceof Error ? error.message : "Não foi possível carregar o impacto da exclusão",
         variant: "destructive"
       });
     }
@@ -101,12 +107,17 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
     try {
       // Start deletion
       setProgress(25);
+      console.log('🗑️ Starting processos deletion:', { org_id: profile.organization_id, hard_delete: operationType === 'hard' });
+      
       const { data, error } = await supabase.rpc('rpc_delete_all_processos', {
         p_org_id: profile.organization_id,
         p_hard_delete: operationType === 'hard'
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Deletion RPC Error:', error);
+        throw error;
+      }
 
       const result = data as unknown as DeletionResult;
       setProgress(75);
