@@ -90,9 +90,9 @@ export function PublishStep() {
         }
       });
 
-      // Timeout handling (5 minutos para grandes arquivos)
+      // Timeout handling (8 minutos para grandes arquivos)
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout na importação - arquivo muito grande ou conexão lenta')), 300000)
+        setTimeout(() => reject(new Error('Timeout na importação - arquivo muito grande ou conexão lenta')), 480000)
       );
 
       const { data: importData, error: importError } = await Promise.race([

@@ -23,6 +23,7 @@ import { UploadStep } from './steps/UploadStep';
 import { ValidationStep } from './steps/ValidationStep';
 import { PreviewStep } from './steps/PreviewStep';
 import { PublishStep } from './steps/PublishStep';
+import { ImportProgressMonitor } from './ImportProgressMonitor';
 import { useImportStore } from '../store/useImportStore';
 
 const STEPS = [
@@ -40,6 +41,7 @@ export function ImporterWizard() {
     file,
     validationResult,
     isProcessing,
+    uploadProgress,
     resetWizard
   } = useImportStore();
 
@@ -129,6 +131,30 @@ export function ImporterWizard() {
         
         {/* Sidebar - Compliance & Info */}
         <div className="space-y-4">
+          {/* Progress Monitor - Show during processing */}
+          {isProcessing && currentStep === 'publish' && (
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2 text-primary">
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  Progresso da Importação
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ImportProgressMonitor 
+                  progress={uploadProgress} 
+                  stage={uploadProgress < 30 ? 'importing' : uploadProgress < 80 ? 'creating-version' : 'publishing'}
+                  stats={{
+                    total: validationResult?.summary?.analyzed || 0,
+                    processed: Math.floor((uploadProgress / 100) * (validationResult?.summary?.valid || 0)),
+                    errors: validationResult?.summary?.errors || 0,
+                    warnings: validationResult?.summary?.warnings || 0
+                  }}
+                />
+              </CardContent>
+            </Card>
+          )}
+
           <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2 text-amber-800 dark:text-amber-200">

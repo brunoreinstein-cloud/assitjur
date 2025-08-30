@@ -80,6 +80,30 @@ serve(async (req) => {
       firstProcessoSample: requestBody.processos?.[0] || null
     });
     
+    // 🔍 CRITICAL DEBUG: Log detailed data structure
+    if (requestBody.processos && requestBody.processos.length > 0) {
+      const sampleRecord = requestBody.processos[0];
+      console.log('🔍 DETAILED RECORD ANALYSIS:', {
+        totalRecords: requestBody.processos.length,
+        allFields: Object.keys(sampleRecord),
+        fieldValues: {
+          cnj: sampleRecord.cnj,
+          cnj_digits: sampleRecord.cnj_digits,
+          reclamante_nome: sampleRecord.reclamante_nome,
+          reclamante: sampleRecord.reclamante,
+          reclamante_limpo: sampleRecord.reclamante_limpo,
+          reu_nome: sampleRecord.reu_nome,
+          reu: sampleRecord.reu,
+          reclamado: sampleRecord.reclamado
+        },
+        hasRequiredFields: {
+          hasCNJ: !!(sampleRecord.cnj || sampleRecord.cnj_digits),
+          hasReclamante: !!(sampleRecord.reclamante_nome || sampleRecord.reclamante || sampleRecord.reclamante_limpo),
+          hasReu: !!(sampleRecord.reu_nome || sampleRecord.reu || sampleRecord.reclamado)
+        }
+      });
+    }
+    
     const { versionId, processos = [], testemunhas = [], fileChecksum, filename } = requestBody;
 
     // Verificar se a versão existe e é draft
@@ -170,32 +194,48 @@ serve(async (req) => {
 
       // Timeout management (increased for large files)
       const startTime = Date.now();
-      const maxExecutionTime = 300000; // 5 minutos
+      const maxExecutionTime = 480000; // 8 minutos (2500 * 2s cada)
 
-      const processosWithVersion = validProcessos.map((p: any) => ({
-        org_id: profile.organization_id,
-        version_id: versionId,
-        cnj: p.cnj || p.CNJ || '',
-        cnj_digits: p.cnj_digits || p.CNJ_digits || '',
-        cnj_normalizado: p.cnj_digits || p.CNJ_digits || '',
-        reclamante_nome: p.reclamante_nome || p.reclamante || '',
-        reu_nome: p.reu_nome || p.reu || p.reclamado || '',
-        comarca: p.comarca || null,
-        tribunal: p.tribunal || null,
-        vara: p.vara || null,
-        fase: p.fase || null,
-        status: p.status || null,
-        reclamante_cpf_mask: p.reclamante_cpf_mask || p.reclamante_cpf || null,
-        data_audiencia: p.data_audiencia && p.data_audiencia.match(/^\d{4}-\d{2}-\d{2}$/) ? p.data_audiencia : null,
-        advogados_ativo: parseArrayField(p.advogados_ativo),
-        advogados_passivo: parseArrayField(p.advogados_passivo),
-        testemunhas_ativo: parseArrayField(p.testemunhas_ativo),
-        testemunhas_passivo: parseArrayField(p.testemunhas_passivo),
-        observacoes: p.observacoes || null,
-      }));
+      const processosWithVersion = validProcessos.map((p: any, index: number) => {
+        // 🔍 Log field mapping for first few records
+        if (index < 3) {
+          console.log(`🔍 MAPPING RECORD ${index + 1}:`, {
+            originalFields: Object.keys(p),
+            mapping: {
+              cnj: `"${p.cnj || p.CNJ || ''}" (from: ${p.cnj ? 'cnj' : p.CNJ ? 'CNJ' : 'empty'})`,
+              cnj_digits: `"${p.cnj_digits || p.CNJ_digits || ''}" (from: ${p.cnj_digits ? 'cnj_digits' : p.CNJ_digits ? 'CNJ_digits' : 'empty'})`,
+              reclamante_nome: `"${p.reclamante_nome || p.reclamante || p.reclamante_limpo || ''}" (from: ${p.reclamante_nome ? 'reclamante_nome' : p.reclamante ? 'reclamante' : p.reclamante_limpo ? 'reclamante_limpo' : 'empty'})`,
+              reu_nome: `"${p.reu_nome || p.reu || p.reclamado || ''}" (from: ${p.reu_nome ? 'reu_nome' : p.reu ? 'reu' : p.reclamado ? 'reclamado' : 'empty'})`
+            }
+          });
+        }
+        
+        return {
+          org_id: profile.organization_id,
+          version_id: versionId,
+          cnj: p.cnj || p.CNJ || '',
+          cnj_digits: p.cnj_digits || p.CNJ_digits || '',
+          cnj_normalizado: p.cnj_digits || p.CNJ_digits || '',
+          // 🔧 CRITICAL FIX: Corrected field mapping priority
+          reclamante_nome: p.reclamante_nome || p.reclamante_limpo || p.reclamante || '',
+          reu_nome: p.reu_nome || p.reu || p.reclamado || '',
+          comarca: p.comarca || null,
+          tribunal: p.tribunal || null,
+          vara: p.vara || null,
+          fase: p.fase || null,
+          status: p.status || null,
+          reclamante_cpf_mask: p.reclamante_cpf_mask || p.reclamante_cpf || null,
+          data_audiencia: p.data_audiencia && p.data_audiencia.match(/^\d{4}-\d{2}-\d{2}$/) ? p.data_audiencia : null,
+          advogados_ativo: parseArrayField(p.advogados_ativo),
+          advogados_passivo: parseArrayField(p.advogados_passivo),
+          testemunhas_ativo: parseArrayField(p.testemunhas_ativo),
+          testemunhas_passivo: parseArrayField(p.testemunhas_passivo),
+          observacoes: p.observacoes || null,
+        };
+      });
 
-      // Batch otimizado para evitar timeout (50 registros para maior estabilidade)
-      const batchSize = 50;
+      // 🔧 PERFORMANCE OPTIMIZATION: Smaller batch size for better stability
+      const batchSize = 25;
       let totalInserted = 0;
       const totalBatches = Math.ceil(processosWithVersion.length / batchSize);
       
@@ -219,9 +259,29 @@ serve(async (req) => {
         
         for (const record of batch) {
           try {
+            // 🔍 PRE-INSERTION VALIDATION with detailed logging
+            const validation = {
+              hasCNJ: !!record.cnj_digits,
+              cnjLength: record.cnj_digits?.length || 0,
+              hasReclamante: !!record.reclamante_nome,
+              hasReu: !!record.reu_nome,
+              cnjValue: record.cnj_digits
+            };
+            
+            if (batchInserted < 3) {
+              console.log(`🔍 VALIDATION RECORD ${batchInserted + 1}:`, validation);
+            }
+            
             // Validate essential fields before attempting insert
             if (!record.cnj_digits || record.cnj_digits.length !== 20) {
-              console.warn(`⚠️ Skipping invalid CNJ: ${record.cnj_digits}`);
+              console.warn(`⚠️ Skipping invalid CNJ: "${record.cnj_digits}" (length: ${record.cnj_digits?.length || 0})`);
+              errors++;
+              continue;
+            }
+            
+            // Additional validation for required fields
+            if (!record.reclamante_nome && !record.reu_nome) {
+              console.warn(`⚠️ Skipping record without reclamante or reu: CNJ ${record.cnj_digits}`);
               errors++;
               continue;
             }
@@ -261,12 +321,21 @@ serve(async (req) => {
                 .eq('id', existingRecord.id);
 
               if (updateError) {
-                console.error(`❌ Failed to update CNJ ${record.cnj_digits}:`, updateError.message);
+                console.error(`❌ Failed to update CNJ ${record.cnj_digits}:`, {
+                  error: updateError.message,
+                  code: updateError.code,
+                  details: updateError.details,
+                  recordData: {
+                    cnj_digits: record.cnj_digits,
+                    reclamante_nome: record.reclamante_nome,
+                    reu_nome: record.reu_nome
+                  }
+                });
                 errors++;
               } else {
                 batchInserted++;
-                if (batchInserted % 10 === 0) {
-                  console.log(`📝 Updated ${batchInserted} records in batch ${batchNumber}...`);
+                if (batchInserted % 5 === 0 || batchInserted < 5) {
+                  console.log(`📝 Updated record ${batchInserted}: CNJ ${record.cnj_digits}, Reclamante: "${record.reclamante_nome}", Reu: "${record.reu_nome}"`);
                 }
               }
             } else {
@@ -276,17 +345,22 @@ serve(async (req) => {
                 .insert([record]);
 
               if (insertError) {
-                console.error(`❌ Failed to insert CNJ ${record.cnj_digits}:`, insertError.message);
-                console.error(`🔍 Insert error details:`, {
+                console.error(`❌ Failed to insert CNJ ${record.cnj_digits}:`, {
+                  error: insertError.message,
                   code: insertError.code,
                   details: insertError.details,
-                  hint: insertError.hint
+                  hint: insertError.hint,
+                  recordData: {
+                    cnj_digits: record.cnj_digits,
+                    reclamante_nome: record.reclamante_nome,
+                    reu_nome: record.reu_nome
+                  }
                 });
                 errors++;
               } else {
                 batchInserted++;
-                if (batchInserted % 10 === 0) {
-                  console.log(`✅ Inserted ${batchInserted} records in batch ${batchNumber}...`);
+                if (batchInserted % 5 === 0 || batchInserted < 5) {
+                  console.log(`✅ Inserted record ${batchInserted}: CNJ ${record.cnj_digits}, Reclamante: "${record.reclamante_nome}", Reu: "${record.reu_nome}"`);
                 }
               }
             }
