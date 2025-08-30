@@ -168,9 +168,9 @@ serve(async (req) => {
         return null;
       };
 
-      // Timeout management
+      // Timeout management (increased for large files)
       const startTime = Date.now();
-      const maxExecutionTime = 120000; // 2 minutos
+      const maxExecutionTime = 300000; // 5 minutos
 
       const processosWithVersion = validProcessos.map((p: any) => ({
         org_id: profile.organization_id,
@@ -194,12 +194,13 @@ serve(async (req) => {
         observacoes: p.observacoes || null,
       }));
 
-      // Batch otimizado para reduzir timeout (250 registros)
-      const batchSize = 250;
+      // Batch otimizado para evitar timeout (50 registros para maior estabilidade)
+      const batchSize = 50;
       let totalInserted = 0;
       const totalBatches = Math.ceil(processosWithVersion.length / batchSize);
       
-      console.log(`🚀 Starting import: ${totalBatches} batches of up to ${batchSize} records`);
+      console.log(`🚀 Starting import: ${totalBatches} batches of ${batchSize} records each`);
+      console.log(`📊 Processing ${processosWithVersion.length} total records`);
       
       for (let i = 0; i < processosWithVersion.length; i += batchSize) {
         // Timeout check
@@ -211,115 +212,96 @@ serve(async (req) => {
         const batch = processosWithVersion.slice(i, i + batchSize);
         const batchNumber = Math.floor(i / batchSize) + 1;
         
-        console.log(`📦 Batch ${batchNumber}/${totalBatches}: ${batch.length} records`);
+        console.log(`📦 Processing batch ${batchNumber}/${totalBatches} (records ${i + 1}-${Math.min(i + batchSize, processosWithVersion.length)})`);
         
-        let retries = 0;
-        let batchSuccess = false;
+        // Simplified insertion strategy - individual record processing for better error handling
+        let batchInserted = 0;
         
-        // Manual UPSERT para contornar limitação do partial unique index
-        while (retries < 3 && !batchSuccess) {
+        for (const record of batch) {
           try {
-            let batchInserted = 0;
+            // Validate essential fields before attempting insert
+            if (!record.cnj_digits || record.cnj_digits.length !== 20) {
+              console.warn(`⚠️ Skipping invalid CNJ: ${record.cnj_digits}`);
+              errors++;
+              continue;
+            }
             
-            // Primeiro, vamos tentar inserir todos os registros novos
-            const { data: insertedRecords, error: insertError } = await supabase
+            // Check if record already exists
+            const { data: existingRecord } = await supabase
               .from('processos')
-              .insert(batch)
-              .select('id');
+              .select('id')
+              .eq('org_id', record.org_id)
+              .eq('cnj_digits', record.cnj_digits)
+              .is('deleted_at', null)
+              .single();
 
-            if (insertError) {
-              // Se houve erro de conflito (duplicate key), vamos tratar individualmente
-              if (insertError.message?.includes('duplicate key') || insertError.code === '23505') {
-                console.log(`🔄 Batch ${batchNumber}: Handling duplicates individually...`);
-                
-                // Processar cada registro individualmente para duplicatas
-                for (const record of batch) {
-                  try {
-                    // Primeiro tentar inserir
-                    const { data: singleInsert, error: singleError } = await supabase
-                      .from('processos')
-                      .insert([record])
-                      .select('id');
+            if (existingRecord) {
+              // Update existing record
+              const { error: updateError } = await supabase
+                .from('processos')
+                .update({
+                  cnj: record.cnj,
+                  cnj_normalizado: record.cnj_normalizado,
+                  reclamante_nome: record.reclamante_nome,
+                  reu_nome: record.reu_nome,
+                  comarca: record.comarca,
+                  tribunal: record.tribunal,
+                  vara: record.vara,
+                  fase: record.fase,
+                  status: record.status,
+                  reclamante_cpf_mask: record.reclamante_cpf_mask,
+                  data_audiencia: record.data_audiencia,
+                  advogados_ativo: record.advogados_ativo,
+                  advogados_passivo: record.advogados_passivo,
+                  testemunhas_ativo: record.testemunhas_ativo,
+                  testemunhas_passivo: record.testemunhas_passivo,
+                  observacoes: record.observacoes,
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', existingRecord.id);
 
-                    if (singleError) {
-                      if (singleError.message?.includes('duplicate key') || singleError.code === '23505') {
-                        // É uma duplicata, vamos fazer update
-                        const { data: updateData, error: updateError } = await supabase
-                          .from('processos')
-                          .update({
-                            cnj: record.cnj,
-                            reclamante_nome: record.reclamante_nome,
-                            reu_nome: record.reu_nome,
-                            comarca: record.comarca,
-                            tribunal: record.tribunal,
-                            vara: record.vara,
-                            fase: record.fase,
-                            status: record.status,
-                            reclamante_cpf_mask: record.reclamante_cpf_mask,
-                            data_audiencia: record.data_audiencia,
-                            advogados_ativo: record.advogados_ativo,
-                            advogados_passivo: record.advogados_passivo,
-                            testemunhas_ativo: record.testemunhas_ativo,
-                            testemunhas_passivo: record.testemunhas_passivo,
-                            observacoes: record.observacoes,
-                            updated_at: new Date().toISOString()
-                          })
-                          .eq('org_id', record.org_id)
-                          .eq('cnj_digits', record.cnj_digits)
-                          .is('deleted_at', null)
-                          .select('id');
-
-                        if (!updateError && updateData) {
-                          batchInserted++;
-                          console.log(`📝 Updated existing record for CNJ: ${record.cnj_digits}`);
-                        } else {
-                          console.error(`❌ Failed to update CNJ ${record.cnj_digits}:`, updateError?.message);
-                          errors++;
-                        }
-                      } else {
-                        console.error(`❌ Failed to insert CNJ ${record.cnj_digits}:`, singleError.message);
-                        errors++;
-                      }
-                    } else if (singleInsert) {
-                      batchInserted++;
-                    }
-                  } catch (recordError: any) {
-                    console.error(`❌ Error processing CNJ ${record.cnj_digits}:`, recordError.message);
-                    errors++;
-                  }
-                }
+              if (updateError) {
+                console.error(`❌ Failed to update CNJ ${record.cnj_digits}:`, updateError.message);
+                errors++;
               } else {
-                // Erro diferente de duplicata
-                throw insertError;
+                batchInserted++;
+                if (batchInserted % 10 === 0) {
+                  console.log(`📝 Updated ${batchInserted} records in batch ${batchNumber}...`);
+                }
               }
-            } else if (insertedRecords) {
-              // Inserção em lote bem-sucedida
-              batchInserted = insertedRecords.length;
-            }
-
-            totalInserted += batchInserted;
-            console.log(`✅ Batch ${batchNumber}: ${batchInserted} records processed successfully`);
-            batchSuccess = true;
-
-          } catch (batchError: any) {
-            retries++;
-            console.error(`❌ Batch ${batchNumber} attempt ${retries} failed:`, batchError.message);
-            console.error(`🔍 Error details:`, {
-              code: batchError.code,
-              details: batchError.details,
-              hint: batchError.hint
-            });
-            
-            if (retries >= 3) {
-              console.error(`💥 Batch ${batchNumber} failed after ${retries} attempts`);
-              errors += batch.length;
             } else {
-              // Wait before retry (exponential backoff)
-              const waitTime = 1000 * Math.pow(2, retries - 1);
-              console.log(`⏳ Waiting ${waitTime}ms before retry...`);
-              await new Promise(resolve => setTimeout(resolve, waitTime));
+              // Insert new record
+              const { error: insertError } = await supabase
+                .from('processos')
+                .insert([record]);
+
+              if (insertError) {
+                console.error(`❌ Failed to insert CNJ ${record.cnj_digits}:`, insertError.message);
+                console.error(`🔍 Insert error details:`, {
+                  code: insertError.code,
+                  details: insertError.details,
+                  hint: insertError.hint
+                });
+                errors++;
+              } else {
+                batchInserted++;
+                if (batchInserted % 10 === 0) {
+                  console.log(`✅ Inserted ${batchInserted} records in batch ${batchNumber}...`);
+                }
+              }
             }
+          } catch (recordError: any) {
+            console.error(`❌ Error processing CNJ ${record.cnj_digits}:`, recordError.message);
+            errors++;
           }
+        }
+
+        totalInserted += batchInserted;
+        console.log(`✅ Batch ${batchNumber} complete: ${batchInserted}/${batch.length} records processed successfully`);
+        
+        // Small delay between batches to prevent overwhelming the database
+        if (batchNumber < totalBatches) {
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
       }
 

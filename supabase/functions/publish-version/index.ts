@@ -169,22 +169,36 @@ serve(async (req) => {
     if (!processosCount || processosCount === 0) {
       console.error('❌ Cannot publish empty version. Processos count:', processosCount);
       
-      // Verificar se houve tentativa de importação recente
-      const { data: versionSummary } = await supabase
+      // Verificar se houve tentativa de importação recente com dados detalhados
+      const { data: versionWithSummary } = await supabase
         .from('versions')
         .select('summary')
         .eq('id', versionId)
         .single();
       
-      const importErrors = versionSummary?.summary?.errors || 0;
-      const attemptedImport = versionSummary?.summary?.total_records || 0;
+      const summary = versionWithSummary?.summary || {};
+      const importErrors = summary.errors || 0;
+      const attemptedImport = summary.total_records || 0;
+      const imported = summary.imported || 0;
       
-      let errorMessage = 'Cannot publish empty version';
-      let details = `Version has ${processosCount || 0} processos. Import data first.`;
+      console.log('📊 Version summary analysis:', {
+        attempted: attemptedImport,
+        imported: imported,
+        errors: importErrors,
+        hasAttemptedImport: attemptedImport > 0
+      });
+      
+      let errorMessage = 'Não é possível publicar versão vazia';
+      let details = `A versão contém ${processosCount || 0} processos. Importe dados válidos primeiro.`;
       
       if (attemptedImport > 0) {
-        errorMessage = 'Import failed - no data available for publication';
-        details = `Attempted to import ${attemptedImport} records but ${importErrors} failed. Please check the import process and try again.`;
+        if (imported === 0) {
+          errorMessage = 'Falha total na importação - nenhum dado foi importado';
+          details = `Tentativa de importar ${attemptedImport} registros, mas todos falharam (${importErrors} erros). Verifique o formato dos dados e tente novamente.`;
+        } else if (imported < attemptedImport / 2) {
+          errorMessage = 'Importação com alta taxa de falha';
+          details = `Apenas ${imported} de ${attemptedImport} registros foram importados com sucesso (${importErrors} erros). Taxa de sucesso muito baixa.`;
+        }
       }
       
       return new Response(
@@ -193,8 +207,10 @@ serve(async (req) => {
           details: details,
           importStats: {
             attempted: attemptedImport,
+            imported: imported,
             failed: importErrors,
-            successful: processosCount || 0
+            successful: processosCount || 0,
+            successRate: attemptedImport > 0 ? Math.round((imported / attemptedImport) * 100) : 0
           }
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

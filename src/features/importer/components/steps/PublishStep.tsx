@@ -40,25 +40,41 @@ export function PublishStep() {
         throw new Error('Falha ao criar nova versão: ' + versionError.message);
       }
 
-      // Step 2: Extract real data from validation result
+      // Step 2: Extract and validate data from validation result
       console.log('🔍 Debug - Full validationResult:', {
         hasNormalizedData: !!validationResult.normalizedData,
         normalizedDataKeys: validationResult.normalizedData ? Object.keys(validationResult.normalizedData) : [],
         processosLength: validationResult.normalizedData?.processos?.length || 0,
         testemunhasLength: validationResult.normalizedData?.testemunhas?.length || 0,
-        firstProcesso: validationResult.normalizedData?.processos?.[0] || null,
-        firstTestemunha: validationResult.normalizedData?.testemunhas?.[0] || null
+        summaryValid: validationResult.summary?.valid || 0,
+        summaryAnalyzed: validationResult.summary?.analyzed || 0
       });
 
       const processos = validationResult.normalizedData?.processos || [];
       const testemunhas = validationResult.normalizedData?.testemunhas || [];
       
+      // Validate data before sending
+      if (processos.length === 0 && testemunhas.length === 0) {
+        throw new Error(`Nenhum dado válido encontrado para importação. Verifique se o arquivo contém dados no formato correto.`);
+      }
+      
+      // Log sample data for debugging
+      if (processos.length > 0) {
+        console.log('📋 Sample processo data:', {
+          firstProcesso: processos[0],
+          hasRequiredFields: {
+            cnj_digits: !!processos[0]?.cnj_digits,
+            cnj: !!processos[0]?.cnj,
+            reclamante_nome: !!processos[0]?.reclamante_nome
+          }
+        });
+      }
+      
       console.log('📤 Enviando dados para importação:', { 
         processosCount: processos.length, 
         testemunhasCount: testemunhas.length,
         versionId: versionData.versionId,
-        firstProcessoSample: processos[0] || 'nenhum processo',
-        firstTestemunhaSample: testemunhas[0] || 'nenhuma testemunha'
+        totalValidRecords: validationResult.summary?.valid || 0
       });
 
       // Step 3: Import data with timeout handling
@@ -74,9 +90,9 @@ export function PublishStep() {
         }
       });
 
-      // Timeout handling (3 minutos)
+      // Timeout handling (5 minutos para grandes arquivos)
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout na importação - tente novamente')), 180000)
+        setTimeout(() => reject(new Error('Timeout na importação - arquivo muito grande ou conexão lenta')), 300000)
       );
 
       const { data: importData, error: importError } = await Promise.race([
