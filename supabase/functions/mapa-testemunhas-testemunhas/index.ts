@@ -13,66 +13,86 @@ serve(async (req) => {
 
   try {
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+          detectSessionInUrl: false,
+        },
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      }
+    );
 
-    const { filters = {}, page = 1, limit = 10 } = await req.json()
-
-    // Get user's org_id from JWT
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader) {
-      throw new Error('Missing authorization header')
-    }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    )
-
+    // Verificar autenticação
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      throw new Error('Invalid user token')
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Get user's organization
-    const { data: profile, error: profileError } = await supabase
+    // Buscar perfil do usuário
+    const { data: profile } = await supabase
       .from('profiles')
-      .select('organization_id')
+      .select('organization_id, role')
       .eq('user_id', user.id)
-      .single()
+      .single();
 
-    if (profileError || !profile?.organization_id) {
-      throw new Error('User organization not found')
+    if (!profile) {
+      return new Response(
+        JSON.stringify({ error: 'Profile not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    const orgId = profile.organization_id
-
-    // Query all processos to aggregate testemunha data
+    const filters = await req.json();
+    
+    // Buscar todos os processos da organização
     const { data: processos, error: processosError } = await supabase
       .from('processos')
-      .select('*')
-      .eq('org_id', orgId)
-      .is('deleted_at', null)
+      .select('testemunhas_ativo, testemunhas_passivo, cnj, reclamante_nome, reu_nome, triangulacao_confirmada, troca_direta, prova_emprestada')
+      .eq('org_id', profile.organization_id)
+      .is('deleted_at', null);
 
     if (processosError) {
-      console.error('Query error:', processosError)
-      throw processosError
+      console.error('Error fetching processos:', processosError);
+      throw processosError;
     }
 
-    // Aggregate testemunha data from processos
-    const testemunhaMap = new Map()
-    
-    processos?.forEach(processo => {
-      const allTestemunhas = [
+    if (!processos || processos.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          data: [],
+          count: 0,
+          page: filters.page || 1,
+          limit: filters.limit || 50
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Agregação de dados por testemunha
+    const testemunhaMap = new Map();
+
+    processos.forEach(processo => {
+      const allWitnesses = [
         ...(processo.testemunhas_ativo || []),
         ...(processo.testemunhas_passivo || [])
-      ]
-      
-      allTestemunhas.forEach(nomeTestemunha => {
-        if (!nomeTestemunha?.trim()) return
+      ];
+
+      allWitnesses.forEach(witnessName => {
+        if (!witnessName || witnessName.trim() === '') return;
+
+        const cleanName = witnessName.trim();
         
-        if (!testemunhaMap.has(nomeTestemunha)) {
-          testemunhaMap.set(nomeTestemunha, {
-            nome_testemunha: nomeTestemunha,
+        if (!testemunhaMap.has(cleanName)) {
+          testemunhaMap.set(cleanName, {
+            nome_testemunha: cleanName,
             qtd_depoimentos: 0,
             cnjs_como_testemunha: [],
             ja_foi_reclamante: false,
@@ -87,134 +107,125 @@ serve(async (req) => {
             participou_triangulacao: false,
             cnjs_triangulacao: [],
             e_prova_emprestada: false,
-            classificacao: 'Testemunha',
+            classificacao: 'Normal',
             classificacao_estrategica: 'Normal',
-            org_id: orgId,
+            org_id: profile.organization_id,
             created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
+            updated_at: new Date().toISOString()
+          });
+        }
+
+        const testemunha = testemunhaMap.get(cleanName);
+        testemunha.qtd_depoimentos += 1;
+        testemunha.cnjs_como_testemunha.push(processo.cnj);
+
+        // Verificar se foi reclamante
+        if (processo.reclamante_nome && processo.reclamante_nome.toLowerCase().includes(cleanName.toLowerCase())) {
+          testemunha.ja_foi_reclamante = true;
+          testemunha.cnjs_como_reclamante.push(processo.cnj);
+        }
+
+        // Verificar polo ativo/passivo
+        if (processo.testemunhas_ativo?.includes(witnessName)) {
+          testemunha.foi_testemunha_ativo = true;
+          testemunha.cnjs_ativo.push(processo.cnj);
         }
         
-        const testemunha = testemunhaMap.get(nomeTestemunha)
-        testemunha.qtd_depoimentos++
-        testemunha.cnjs_como_testemunha.push(processo.cnj)
-        
-        // Check if was witness in ativo polo
-        if (processo.testemunhas_ativo?.includes(nomeTestemunha)) {
-          testemunha.foi_testemunha_ativo = true
-          testemunha.cnjs_ativo.push(processo.cnj)
+        if (processo.testemunhas_passivo?.includes(witnessName)) {
+          testemunha.foi_testemunha_passivo = true;
+          testemunha.cnjs_passivo.push(processo.cnj);
         }
-        
-        // Check if was witness in passivo polo
-        if (processo.testemunhas_passivo?.includes(nomeTestemunha)) {
-          testemunha.foi_testemunha_passivo = true
-          testemunha.cnjs_passivo.push(processo.cnj)
-        }
-        
-        // Check if was witness in both poles
+
+        // Verificar se foi em ambos os polos
         if (testemunha.foi_testemunha_ativo && testemunha.foi_testemunha_passivo) {
-          testemunha.foi_testemunha_em_ambos_polos = true
+          testemunha.foi_testemunha_em_ambos_polos = true;
         }
-        
-        // Check if participated in triangulation
-        if (processo.triangulacao_confirmada) {
-          testemunha.participou_triangulacao = true
-          testemunha.cnjs_triangulacao.push(processo.cnj)
-        }
-        
-        // Check if participated in direct exchange
+
+        // Verificar participação em padrões
         if (processo.troca_direta) {
-          testemunha.participou_troca_favor = true
-          testemunha.cnjs_troca_favor.push(processo.cnj)
+          testemunha.participou_troca_favor = true;
+          testemunha.cnjs_troca_favor.push(processo.cnj);
         }
         
-        // Check if is borrowed evidence
+        if (processo.triangulacao_confirmada) {
+          testemunha.participou_triangulacao = true;
+          testemunha.cnjs_triangulacao.push(processo.cnj);
+        }
+        
         if (processo.prova_emprestada) {
-          testemunha.e_prova_emprestada = true
+          testemunha.e_prova_emprestada = true;
         }
-        
-        // Check if was ever a claimant (reclamante)
-        if (processo.reclamante_nome === nomeTestemunha) {
-          testemunha.ja_foi_reclamante = true
-          testemunha.cnjs_como_reclamante.push(processo.cnj)
+
+        // Classificação estratégica baseada nos padrões
+        if (testemunha.qtd_depoimentos > 10) {
+          testemunha.classificacao = 'Profissional';
+          testemunha.classificacao_estrategica = 'Crítico';
+        } else if (testemunha.participou_triangulacao || testemunha.participou_troca_favor) {
+          testemunha.classificacao = 'Suspeita';
+          testemunha.classificacao_estrategica = 'Atenção';
+        } else if (testemunha.foi_testemunha_em_ambos_polos) {
+          testemunha.classificacao = 'Observação';
+          testemunha.classificacao_estrategica = 'Observação';
         }
-      })
-    })
+      });
+    });
+
+    // Converter para array e aplicar filtros
+    let testemunhasArray = Array.from(testemunhaMap.values());
     
-    // Convert map to array and calculate strategic classification
-    let testemunhasData = Array.from(testemunhaMap.values()).map(testemunha => {
-      // Calculate strategic classification based on patterns
-      if (testemunha.qtd_depoimentos >= 5) {
-        testemunha.classificacao_estrategica = 'Crítico'
-      } else if (testemunha.foi_testemunha_em_ambos_polos || testemunha.participou_triangulacao) {
-        testemunha.classificacao_estrategica = 'Atenção'
-      } else if (testemunha.ja_foi_reclamante) {
-        testemunha.classificacao_estrategica = 'Observação'
-      }
-      
-      return testemunha
-    })
-
-    // Apply filters
+    // Aplicar filtros
     if (filters.ambosPolos !== undefined) {
-      testemunhasData = testemunhasData.filter(t => t.foi_testemunha_em_ambos_polos === filters.ambosPolos)
+      testemunhasArray = testemunhasArray.filter(t => t.foi_testemunha_em_ambos_polos === filters.ambosPolos);
     }
-
     if (filters.jaFoiReclamante !== undefined) {
-      testemunhasData = testemunhasData.filter(t => t.ja_foi_reclamante === filters.jaFoiReclamante)
+      testemunhasArray = testemunhasArray.filter(t => t.ja_foi_reclamante === filters.jaFoiReclamante);
     }
-
-    if (filters.temTriangulacao !== undefined) {
-      testemunhasData = testemunhasData.filter(t => t.participou_triangulacao === filters.temTriangulacao)
-    }
-
-    if (filters.temTroca !== undefined) {
-      testemunhasData = testemunhasData.filter(t => t.participou_troca_favor === filters.temTroca)
-    }
-
-    if (filters.search) {
-      testemunhasData = testemunhasData.filter(t => 
-        t.nome_testemunha.toLowerCase().includes(filters.search.toLowerCase())
-      )
-    }
-
     if (filters.qtdDeposMin !== undefined) {
-      testemunhasData = testemunhasData.filter(t => t.qtd_depoimentos >= filters.qtdDeposMin)
+      testemunhasArray = testemunhasArray.filter(t => t.qtd_depoimentos >= filters.qtdDeposMin);
     }
-
     if (filters.qtdDeposMax !== undefined) {
-      testemunhasData = testemunhasData.filter(t => t.qtd_depoimentos <= filters.qtdDeposMax)
+      testemunhasArray = testemunhasArray.filter(t => t.qtd_depoimentos <= filters.qtdDeposMax);
+    }
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      testemunhasArray = testemunhasArray.filter(t => 
+        t.nome_testemunha.toLowerCase().includes(searchLower)
+      );
+    }
+    if (filters.temTriangulacao !== undefined) {
+      testemunhasArray = testemunhasArray.filter(t => t.participou_triangulacao === filters.temTriangulacao);
+    }
+    if (filters.temTroca !== undefined) {
+      testemunhasArray = testemunhasArray.filter(t => t.participou_troca_favor === filters.temTroca);
     }
 
-    // Order by qtd_depoimentos descending
-    testemunhasData.sort((a, b) => b.qtd_depoimentos - a.qtd_depoimentos)
+    // Ordenação por quantidade de depoimentos (decrescente)
+    testemunhasArray.sort((a, b) => b.qtd_depoimentos - a.qtd_depoimentos);
+    
+    // Paginação
+    const page = filters.page || 1;
+    const limit = filters.limit || 50;
+    const offset = (page - 1) * limit;
+    const paginatedData = testemunhasArray.slice(offset, offset + limit);
 
-    // Apply pagination
-    const offset = (page - 1) * limit
-    const paginatedData = testemunhasData.slice(offset, offset + limit)
+    console.log(`Aggregated ${testemunhasArray.length} unique witnesses from ${processos.length} processos`);
 
     return new Response(
-      JSON.stringify({
+      JSON.stringify({ 
         data: paginatedData,
-        count: testemunhasData.length,
+        count: testemunhasArray.length,
         page,
         limit,
-        totalPages: Math.ceil(testemunhasData.length / limit)
+        total_witnesses: testemunhasArray.length
       }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      },
-    )
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
 
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error in mapa-testemunhas-testemunhas:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      },
-    )
+      JSON.stringify({ error: 'Internal server error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 })

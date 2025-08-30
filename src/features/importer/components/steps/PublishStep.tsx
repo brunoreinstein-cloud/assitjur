@@ -38,13 +38,25 @@ export function PublishStep() {
         throw new Error('Falha ao criar nova versão: ' + versionError.message);
       }
 
-      // Step 2: Import data into the new version
+      // Step 2: Extract real data from validation result
+      const processos = validationResult.normalizedData?.processos || [];
+      const testemunhas = validationResult.normalizedData?.testemunhas || [];
+      
+      console.log('📤 Enviando dados para importação:', { 
+        processosCount: processos.length, 
+        testemunhasCount: testemunhas.length,
+        versionId: versionData.versionId 
+      });
+
+      // Step 3: Import data into the new version
       setUploadProgress(30);
       const { data: importData, error: importError } = await supabase.functions.invoke('import-into-version', {
         body: {
-          session,
-          filename: file.name,
-          versionId: versionData.versionId
+          versionId: versionData.versionId,
+          processos,
+          testemunhas,
+          fileChecksum: session.sessionId,
+          filename: file.name
         }
       });
 

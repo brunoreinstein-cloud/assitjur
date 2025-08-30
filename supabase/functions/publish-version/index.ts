@@ -109,44 +109,25 @@ serve(async (req) => {
 
     console.log(`Published version v${publishedVersion.number} for org ${profile.organization_id}`);
 
-    // After publishing, process witness data from the imported processos
+    // Process witness data automatically after publication
     try {
-      // Get processos data for this organization
-      const { data: processosData, error: processosError } = await supabase
-        .from('processos')
-        .select('*')
-        .eq('org_id', profile.organization_id)
-        .is('deleted_at', null);
-
-      if (processosError) {
-        console.error('Error fetching processos for witness processing:', processosError);
-      } else if (processosData && processosData.length > 0) {
-        console.log(`Processing witness data for ${processosData.length} processos`);
-        
-        // Extract witness data and update records
-        const updates = processosData
-          .filter(p => p.testemunhas_ativo === null && p.testemunhas_passivo === null)
-          .map(processo => {
-            // Extract witness arrays from raw data if available
-            // This is a placeholder - in real implementation, witness data would come from the import
-            const testemunhasAtivo = []; // Would be extracted from import data
-            const testemunhasPassivo = []; // Would be extracted from import data
-            
-            return {
-              id: processo.id,
-              testemunhas_ativo: testemunhasAtivo,
-              testemunhas_passivo: testemunhasPassivo
-            };
-          });
-
-        if (updates.length > 0) {
-          console.log(`Updating ${updates.length} processos with witness data`);
-          // Note: In a real implementation, we would batch update these records
+      console.log('Starting automatic witness data processing...');
+      
+      const { data: processWitnessData, error: processWitnessError } = await supabase.functions.invoke('process-witness-data', {
+        headers: {
+          Authorization: req.headers.get('Authorization')!,
         }
+      });
+
+      if (processWitnessError) {
+        console.error('Error processing witness data:', processWitnessError);
+        // Don't fail version publication for witness processing errors
+      } else {
+        console.log('Witness data processing completed:', processWitnessData);
       }
     } catch (witnessError) {
-      console.error('Error processing witness data after publication:', witnessError);
-      // Don't fail the publication if witness processing fails
+      console.error('Failed to trigger witness data processing:', witnessError);
+      // Don't fail the version publication for witness processing errors
     }
 
     return new Response(

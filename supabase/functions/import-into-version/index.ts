@@ -50,7 +50,7 @@ serve(async (req) => {
       );
     }
 
-    const { versionId, processos = [], fileChecksum } = await req.json();
+    const { versionId, processos = [], testemunhas = [], fileChecksum, filename } = await req.json();
 
     // Verificar se a versão existe e é draft
     const { data: version } = await supabase
@@ -84,14 +84,41 @@ serve(async (req) => {
     let errors = 0;
     let warnings = 0;
 
-    // 2. Inserir processos com version_id
+    // 2. Inserir processos com version_id e campos corrigidos
     if (processos.length > 0) {
-      const processosWithVersion = processos.map((p: any) => ({
-        ...p,
-        org_id: profile.organization_id,
-        version_id: versionId
-      }));
+      const processosWithVersion = processos.map((p: any) => {
+        // Convert date strings to proper format
+        const dataAudiencia = p.data_audiencia 
+          ? (p.data_audiencia.match(/^\d{4}-\d{2}-\d{2}$/) 
+              ? p.data_audiencia 
+              : null)
+          : null;
 
+        return {
+          org_id: profile.organization_id,
+          version_id: versionId,
+          cnj: p.cnj || '',
+          cnj_digits: p.cnj_digits || '',
+          cnj_normalizado: p.cnj_digits || '',
+          reclamante_nome: p.reclamante_nome || '',
+          reu_nome: p.reu_nome || '',
+          comarca: p.comarca || null,
+          tribunal: p.tribunal || null,
+          vara: p.vara || null,
+          fase: p.fase || null,
+          status: p.status || null,
+          reclamante_cpf_mask: p.reclamante_cpf_mask || null,
+          data_audiencia: dataAudiencia,
+          advogados_ativo: p.advogados_ativo || null,
+          advogados_passivo: p.advogados_passivo || null,
+          testemunhas_ativo: p.testemunhas_ativo || null,
+          testemunhas_passivo: p.testemunhas_passivo || null,
+          observacoes: p.observacoes || null,
+        };
+      });
+
+      console.log(`Inserting ${processosWithVersion.length} processos into version ${versionId}`);
+      
       const { data: insertedProcessos, error: processosError } = await supabase
         .from('processos')
         .insert(processosWithVersion)
@@ -102,6 +129,7 @@ serve(async (req) => {
         errors += processos.length;
       } else {
         imported += insertedProcessos?.length || 0;
+        console.log(`Successfully inserted ${insertedProcessos?.length || 0} processos`);
       }
     }
 
@@ -111,9 +139,12 @@ serve(async (req) => {
       errors,
       warnings,
       file_checksum: fileChecksum,
+      filename: filename || 'unknown',
       updated_at: new Date().toISOString(),
       updated_by: user.email,
-      total_records: processos.length
+      total_records: processos.length,
+      processos_count: imported,
+      testemunhas_count: testemunhas.length
     };
 
     await supabase

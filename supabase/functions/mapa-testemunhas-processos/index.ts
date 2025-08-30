@@ -14,93 +14,101 @@ serve(async (req) => {
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+          detectSessionInUrl: false,
+        },
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      }
+    );
 
-    const { filters = {}, page = 1, limit = 10 } = await req.json()
+    const { filters = {}, page = 1, limit = 10 } = await req.json();
 
-    // Get user's org_id from JWT
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader) {
-      throw new Error('Missing authorization header')
-    }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    )
-
+    // Verificar autenticação
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      throw new Error('Invalid user token')
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Get user's organization
-    const { data: profile, error: profileError } = await supabase
+    // Buscar perfil do usuário
+    const { data: profile } = await supabase
       .from('profiles')
-      .select('organization_id')
+      .select('organization_id, role')
       .eq('user_id', user.id)
-      .single()
+      .single();
 
-    if (profileError || !profile?.organization_id) {
-      throw new Error('User organization not found')
+    if (!profile) {
+      return new Response(
+        JSON.stringify({ error: 'Profile not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
-
-    const orgId = profile.organization_id
 
     // Build query for processos table
     let query = supabase
       .from('processos')
       .select('*', { count: 'exact' })
-      .eq('org_id', orgId)
-      .is('deleted_at', null)
+      .eq('org_id', profile.organization_id)
+      .is('deleted_at', null);
 
     // Apply filters
     if (filters.uf) {
-      // Extract UF from comarca or tribunal field if available
-      query = query.or(`comarca.ilike.%${filters.uf}%,tribunal.ilike.%${filters.uf}%`)
+      query = query.or(`comarca.ilike.%${filters.uf}%,tribunal.ilike.%${filters.uf}%`);
     }
-
     if (filters.status) {
-      query = query.eq('status', filters.status)
+      query = query.eq('status', filters.status);
     }
-
     if (filters.fase) {
-      query = query.eq('fase', filters.fase)
+      query = query.eq('fase', filters.fase);
     }
-
     if (filters.search) {
-      query = query.or(`cnj.ilike.%${filters.search}%,comarca.ilike.%${filters.search}%,reclamante_nome.ilike.%${filters.search}%`)
+      query = query.or(`cnj.ilike.%${filters.search}%,comarca.ilike.%${filters.search}%,reclamante_nome.ilike.%${filters.search}%`);
     }
 
-    // For witness count filters, we'll filter based on array length
-    if (filters.qtdDeposMin !== undefined || filters.qtdDeposMax !== undefined) {
-      // This will be handled in post-processing since PostgreSQL array length filtering is complex
-    }
-
-    // Apply pagination - use proper count query first
+    // Get total count first
     const { count } = await supabase
       .from('processos')
       .select('*', { count: 'exact', head: true })
-      .eq('org_id', orgId)
-      .is('deleted_at', null)
+      .eq('org_id', profile.organization_id)
+      .is('deleted_at', null);
 
-    // Get paginated data
-    const offset = (page - 1) * limit
-    query = query.range(offset, offset + limit - 1)
-    
-    // Order by
-    query = query.order('created_at', { ascending: false })
+    // Apply pagination
+    const offset = (page - 1) * limit;
+    query = query.range(offset, offset + limit - 1);
+    query = query.order('created_at', { ascending: false });
 
-    const { data, error } = await query
+    const { data: processos, error: processosError } = await query;
 
-    if (error) {
-      console.error('Query error:', error)
-      throw error
+    if (processosError) {
+      console.error('Error fetching processos:', processosError);
+      throw processosError;
     }
 
-    console.log(`Found ${data?.length || 0} processos out of ${count || 0} total`)
+    console.log(`Found ${count || 0} processos out of ${processos?.length || 0} returned`);
+
+    if (!processos || processos.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          data: [],
+          count: count || 0,
+          page,
+          limit,
+          totalPages: Math.ceil((count || 0) / limit)
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Transform processos data to match PorProcesso type
-    const transformedData = (data || []).map(processo => ({
+    let transformedData = processos.map(processo => ({
       cnj: processo.cnj,
       status: processo.status,
       uf: extractUFFromField(processo.comarca) || extractUFFromField(processo.tribunal),
@@ -135,55 +143,64 @@ serve(async (req) => {
       org_id: processo.org_id,
       created_at: processo.created_at,
       updated_at: processo.updated_at,
-    }))
+    }));
 
     // Apply post-processing filters
-    let filteredData = transformedData
     if (filters.qtdDeposMin !== undefined) {
-      filteredData = filteredData.filter(p => p.qtd_total_depos_unicos >= filters.qtdDeposMin)
+      transformedData = transformedData.filter(p => p.qtd_total_depos_unicos >= filters.qtdDeposMin);
     }
     if (filters.qtdDeposMax !== undefined) {
-      filteredData = filteredData.filter(p => p.qtd_total_depos_unicos <= filters.qtdDeposMax)
+      transformedData = transformedData.filter(p => p.qtd_total_depos_unicos <= filters.qtdDeposMax);
+    }
+    if (filters.temTriangulacao !== undefined) {
+      transformedData = transformedData.filter(p => p.triangulacao_confirmada === filters.temTriangulacao);
+    }
+    if (filters.temTroca !== undefined) {
+      transformedData = transformedData.filter(p => p.troca_direta === filters.temTroca);
+    }
+    if (filters.temProvaEmprestada !== undefined) {
+      transformedData = transformedData.filter(p => p.contem_prova_emprestada === filters.temProvaEmprestada);
     }
 
     return new Response(
       JSON.stringify({
-        data: filteredData,
+        data: transformedData,
         count: count || 0,
         page,
         limit,
-        totalPages: Math.ceil((count || 0) / limit)
+        totalPages: Math.ceil((count || 0) / limit),
+        total_filtered: transformedData.length
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       },
-    )
-
-// Helper functions
-function extractUFFromField(field) {
-  if (!field) return null
-  // Simple UF extraction - could be improved with better logic
-  const ufMatch = field.match(/\b(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b/i)
-  return ufMatch ? ufMatch[1].toUpperCase() : null
-}
-
-function calculateUniqueDepositions(testemunhasAtivo, testemunhasPassivo) {
-  const allTestemunhas = [
-    ...(testemunhasAtivo || []),
-    ...(testemunhasPassivo || [])
-  ]
-  return new Set(allTestemunhas).size
-}
+    );
 
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       },
-    )
+    );
   }
-})
+});
+
+// Helper functions
+function extractUFFromField(field) {
+  if (!field) return null;
+  // Simple UF extraction - could be improved with better logic
+  const ufMatch = field.match(/\b(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b/i);
+  return ufMatch ? ufMatch[1].toUpperCase() : null;
+}
+
+function calculateUniqueDepositions(testemunhasAtivo, testemunhasPassivo) {
+  const allTestemunhas = [
+    ...(testemunhasAtivo || []),
+    ...(testemunhasPassivo || [])
+  ];
+  return new Set(allTestemunhas).size;
+}
