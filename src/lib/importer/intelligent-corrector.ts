@@ -234,8 +234,9 @@ export async function intelligentValidateAndCorrect(
   let totalAnalyzed = 0;
   let totalValid = 0;
   const allIssues: ValidationIssue[] = [];
-  const allCorrections: CorrectedRow[] = [];
+  const intelligentCorrections: CorrectedRow[] = [];
   const normalizedData: any = { processos: [], testemunhas: [] };
+  const rawDataCount: Record<string, number> = {};
 
   // Process each sheet with real data
   for (const sheet of session.sheets) {
@@ -277,6 +278,7 @@ export async function intelligentValidateAndCorrect(
 
       // Process data with intelligent correction
       const dataToProcess = sheetData.processos || sheetData.testemunhas || [];
+      rawDataCount[sheet.name] = dataToProcess.length;
       
       dataToProcess.forEach((row: any, index: number) => {
         const rowNumber = index + 1;
@@ -287,7 +289,7 @@ export async function intelligentValidateAndCorrect(
           ? correctRowData(row, index, sheetType)
           : { originalData: row, correctedData: row, corrections: [], isValid: true };
         
-        allCorrections.push(correctedRow);
+        intelligentCorrections.push(correctedRow);
         
         // Validate corrected data
         if (correctedRow.isValid) {
@@ -367,9 +369,21 @@ export async function intelligentValidateAndCorrect(
     }
   }
 
+  // Calculate enhanced statistics  
+  const totalOriginal = Object.values(rawDataCount).reduce((acc, count) => acc + count, 0);
+  const totalProcessed = Object.values(normalizedData).flat().length;
+  const correctionsApplied = intelligentCorrections.filter(c => c.corrections.length > 0).length;
+  
+  console.log(`🔍 Validation Summary:
+    - Original rows: ${totalOriginal}
+    - Processed rows: ${totalProcessed}  
+    - Filtered rows: ${totalOriginal - totalProcessed}
+    - Valid rows: ${totalValid}
+    - Corrections applied: ${correctionsApplied}`);
+
   const result: IntelligentValidationResult = {
     summary: {
-      analyzed: totalAnalyzed,
+      analyzed: totalOriginal, // Show original count for transparency
       valid: totalValid,
       errors: allIssues.filter(i => i.severity === 'error').length,
       warnings: allIssues.filter(i => i.severity === 'warning').length,
@@ -377,7 +391,7 @@ export async function intelligentValidateAndCorrect(
     },
     issues: allIssues,
     normalizedData,
-    intelligentCorrections: allCorrections
+    intelligentCorrections
   };
 
   return result;

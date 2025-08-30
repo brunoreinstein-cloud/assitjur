@@ -13,8 +13,8 @@ function mapHeaders(headers: string[], sheetModel: 'processo' | 'testemunha'): R
     // Core fields mapping for processos table
     const processoMappings = {
       'cnj': ['cnj', 'numero_processo', 'processo', 'num_processo'],
-      'reclamante_nome': ['reclamante', 'reclamante_nome', 'nome_reclamante', 'autor'],
-      'reu_nome': ['reu', 'reu_nome', 'nome_reu', 'reclamado', 'requerido'],
+      'reclamante_nome': ['reclamante', 'reclamante_nome', 'nome_reclamante', 'autor', 'nome_autor'],
+      'reu_nome': ['reu', 'reu_nome', 'nome_reu', 'reclamado', 'requerido', 'nome_reclamado'],
       'comarca': ['comarca', 'foro'],
       'tribunal': ['tribunal', 'trt', 'instancia'], 
       'vara': ['vara', 'orgao_julgador'],
@@ -24,7 +24,7 @@ function mapHeaders(headers: string[], sheetModel: 'processo' | 'testemunha'): R
       'data_audiencia': ['data_audiencia', 'audiencia', 'data'],
       'advogados_ativo': ['advogados_ativo', 'advogado_autor', 'advogados'],
       'advogados_passivo': ['advogados_passivo', 'advogado_reu'],
-      'testemunhas_ativo': ['testemunhas_ativo', 'testemunhas_autor'],
+      'testemunhas_ativo': ['testemunhas_ativo', 'testemunhas_autor', 'todas_testemunhas'],
       'testemunhas_passivo': ['testemunhas_passivo', 'testemunhas_reu'],
       'observacoes': ['observacoes', 'obs', 'comentarios', 'notas']
     };
@@ -113,8 +113,16 @@ function normalizeProcessoData(
       }
     });
     
+    // Add metadata for tracking
+    mappedRow.__source_row = index + 1;
+    mappedRow.__has_cnj = !!mappedRow.cnj;
+    
     return mappedRow;
-  }).filter(row => row.cnj && row.reclamante_nome && row.reu_nome); // Only keep valid rows
+  }).filter(row => {
+    // Only require CNJ as mandatory field - let intelligent corrector handle the rest
+    const cnjDigits = String(row.cnj || '').replace(/[^\d]/g, '');
+    return cnjDigits.length === 20 || cnjDigits.length >= 15; // Accept partial CNJs for correction
+  });
 }
 
 /**

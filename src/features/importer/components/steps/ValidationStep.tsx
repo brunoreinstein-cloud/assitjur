@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { FileCheck, RefreshCw, CheckCircle, AlertCircle, Wand2 } from 'lucide-react';
+import { FileCheck, RefreshCw, CheckCircle, AlertCircle, Wand2, Info } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { intelligentValidateAndCorrect } from '@/lib/importer/intelligent-corrector';
 import { IssuesDataTable } from '@/components/assistjur/IssuesDataTable';
@@ -10,6 +10,7 @@ import { ReviewUpdateButton } from '@/components/admin/ReviewUpdateButton';
 import { CorrectionInterface } from '@/components/importer/CorrectionInterface';
 import { ValidationTestButton } from '@/components/importer/ValidationTestButton';
 import { useImportStore } from '../../store/useImportStore';
+import { calculateValidationStats, generateValidationReport } from '@/lib/importer/validation-stats';
 import type { ValidationIssue } from '@/lib/importer/types';
 
 export function ValidationStep() {
