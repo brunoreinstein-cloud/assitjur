@@ -29,6 +29,7 @@ import Organization from "./pages/admin/Organization";
 
 import SystemConfig from "./pages/admin/SystemConfig";
 import Compliance from "./pages/admin/Compliance";
+import { MarketingCompliance } from "./pages/admin/MarketingCompliance";
 import DataRetention from "./pages/admin/DataRetention";
 import AuditPanel from "./pages/admin/AuditPanel";
 import OpenAI from "./pages/admin/OpenAI";
@@ -117,7 +118,8 @@ const App = () => (
                         <Route path="/admin/versoes" element={<Versions />} />
                         <Route path="/admin/org" element={<Organization />} />
                         <Route path="/admin/logs" element={<Logs />} />
-                        <Route path="/admin/compliance" element={<Compliance />} />
+          <Route path="/admin/compliance" element={<Compliance />} />
+          <Route path="/admin/marketing" element={<MarketingCompliance />} />
                         <Route path="/admin/retencao" element={<DataRetention />} />
                         <Route path="/admin/auditoria" element={<AuditPanel />} />
                         <Route path="/admin/config" element={<SystemConfig />} />
