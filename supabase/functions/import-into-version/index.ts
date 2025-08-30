@@ -104,16 +104,17 @@ serve(async (req) => {
       );
     }
 
-    // 1. Limpar dados existentes da organização (idempotência - resolve duplicatas)
-    console.log('🧹 Clearing existing data for organization...');
+    // 1. Limpar dados existentes da versão (idempotência - resolve duplicatas)
+    console.log('🧹 Clearing existing data for version...');
     const { error: deleteError } = await supabase
       .from('processos')
       .delete()
-      .eq('org_id', profile.organization_id);
+      .eq('org_id', profile.organization_id)
+      .eq('version_id', versionId);
 
     if (deleteError) {
       console.error('❌ Error clearing existing data:', deleteError);
-      // Continue anyway - we'll handle duplicates with UPSERT
+      // Continue anyway - we'll handle duplicates in insert
     } else {
       console.log('✅ Existing data cleared successfully');
     }
@@ -186,10 +187,7 @@ serve(async (req) => {
         
         const { data: insertedBatch, error: batchError } = await supabase
           .from('processos')
-          .upsert(batch, { 
-            onConflict: 'org_id,cnj_digits',
-            ignoreDuplicates: false 
-          })
+          .insert(batch)
           .select('id');
 
         if (batchError) {
