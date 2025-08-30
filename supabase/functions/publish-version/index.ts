@@ -151,6 +151,34 @@ serve(async (req) => {
       );
     }
 
+    // Verificar se a versão tem dados antes de publicar
+    console.log('📊 Checking if version has data...');
+    const { count: processosCount, error: countError } = await supabase
+      .from('processos')
+      .select('*', { count: 'exact', head: true })
+      .eq('version_id', versionId);
+
+    if (countError) {
+      console.error('❌ Error counting processos:', countError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to validate version data', details: countError.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!processosCount || processosCount === 0) {
+      console.error('❌ Cannot publish empty version. Processos count:', processosCount);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Cannot publish empty version',
+          details: `Version has ${processosCount || 0} processos. Import data first.`
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`✅ Version has ${processosCount} processos, proceeding with publication`);
+
     const now = new Date().toISOString();
 
     // 1. Marcar versões anteriores como archived
@@ -201,12 +229,27 @@ serve(async (req) => {
       );
     }
 
-    console.log(`✅ Published version v${publishedVersion.number} for org ${profile.organization_id}`);
+    console.log(`Published version v${publishedVersion.number} for org ${profile.organization_id}`);
+
+    // Iniciar processamento automatico de testemunhas em background
+    console.log('Starting automatic witness data processing...');
+    try {
+      supabase.functions.invoke('process-witness-data', {
+        body: { org_id: profile.organization_id }
+      }).then(() => {
+        console.log('✅ Witness processing initiated successfully');
+      }).catch((err) => {
+        console.error('⚠️ Non-critical: Failed to start witness processing:', err);
+      });
+    } catch (bgError) {
+      console.error('⚠️ Non-critical: Background process error:', bgError);
+    }
 
     return new Response(
       JSON.stringify({ 
         number: publishedVersion.number, 
-        publishedAt: publishedVersion.published_at 
+        publishedAt: publishedVersion.published_at,
+        processosCount: processosCount
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
