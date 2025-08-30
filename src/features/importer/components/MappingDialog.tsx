@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,11 @@ interface MappingDialogProps {
 export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDialogProps) {
   const [mappedSheets, setMappedSheets] = useState<DetectedSheet[]>(sheets);
 
+  // Sincronizar com as props sheets quando elas mudarem
+  useEffect(() => {
+    setMappedSheets(sheets);
+  }, [sheets]);
+
   const handleModelChange = (sheetIndex: number, newModel: SheetModel) => {
     const updated = [...mappedSheets];
     updated[sheetIndex] = { ...updated[sheetIndex], model: newModel };
@@ -28,13 +33,16 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
   );
 
   const hasRequiredSheets = () => {
-    // More flexible - just need at least one valid sheet
-    return mappedSheets.some(s => s.model === 'processo' || s.model === 'testemunha');
+    // Considerar apenas abas que não foram ignoradas
+    const validSheets = mappedSheets.filter(sheet => sheet.model !== 'ignore');
+    return validSheets.some(s => s.model === 'processo' || s.model === 'testemunha');
   };
 
   const handleComplete = () => {
     if (canComplete && hasRequiredSheets()) {
-      onComplete(mappedSheets);
+      // Filtrar abas ignoradas antes de passar para o próximo passo
+      const validSheets = mappedSheets.filter(sheet => sheet.model !== 'ignore');
+      onComplete(validSheets);
     }
   };
 
@@ -50,7 +58,7 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
 
         <div className="space-y-4">
           {mappedSheets.map((sheet, index) => (
-            <Card key={index} className={sheet.model === 'ambiguous' ? 'border-warning' : ''}>
+            <Card key={index} className={sheet.model === 'ambiguous' ? 'border-warning' : sheet.model === 'ignore' ? 'border-muted opacity-75' : ''}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
                   {sheet.name}
@@ -59,10 +67,14 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
                       <AlertCircle className="h-3 w-3 mr-1" />
                       Requer mapeamento
                     </Badge>
+                  ) : sheet.model === 'ignore' ? (
+                    <Badge variant="outline" className="text-muted-foreground border-muted">
+                      Ignorada
+                    </Badge>
                   ) : (
                     <Badge variant="outline" className="text-success border-success">
                       <CheckCircle className="h-3 w-3 mr-1" />
-                      Mapeado
+                      Mapeada
                     </Badge>
                   )}
                 </CardTitle>
@@ -85,6 +97,7 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
                       <SelectContent>
                         <SelectItem value="processo">Por Processo</SelectItem>
                         <SelectItem value="testemunha">Por Testemunha</SelectItem>
+                        <SelectItem value="ignore">Ignorar esta aba</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

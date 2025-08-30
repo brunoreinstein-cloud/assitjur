@@ -61,6 +61,42 @@ async function detectCsvStructure(file: File): Promise<DetectedSheet[]> {
 }
 
 /**
+ * Lista de nomes de abas que devem ser ignoradas automaticamente
+ */
+const IGNORED_SHEET_NAMES = [
+  'dicionario', 'dictionary', 'docs', 'documentação', 'documentacao', 
+  'info', 'instructions', 'instrucoes', 'readme', 'help', 'ajuda',
+  'template', 'exemplo', 'sample', 'metadata', 'config', 'configuracao'
+];
+
+/**
+ * Verifica se uma aba deve ser ignorada automaticamente
+ */
+function shouldIgnoreSheet(sheetName: string, headers: string[], dataRows: any[]): boolean {
+  const normalizedName = sheetName.toLowerCase().trim();
+  
+  // Ignora abas com nomes conhecidos de documentação
+  if (IGNORED_SHEET_NAMES.some(ignored => normalizedName.includes(ignored))) {
+    console.log(`Ignoring sheet '${sheetName}' - matches documentation pattern`);
+    return true;
+  }
+  
+  // Ignora abas com muito poucos dados (menos de 2 linhas de dados)
+  if (dataRows.length < 2) {
+    console.log(`Ignoring sheet '${sheetName}' - insufficient data (${dataRows.length} rows)`);
+    return true;
+  }
+  
+  // Ignora abas com muito poucas colunas (menos de 3 colunas)
+  if (headers.length < 3) {
+    console.log(`Ignoring sheet '${sheetName}' - insufficient columns (${headers.length} columns)`);
+    return true;
+  }
+  
+  return false;
+}
+
+/**
  * Detecta estrutura de arquivo Excel
  */
 async function detectExcelStructure(file: File): Promise<DetectedSheet[]> {
@@ -73,19 +109,32 @@ async function detectExcelStructure(file: File): Promise<DetectedSheet[]> {
         const workbook = XLSX.read(data, { type: 'array' });
         
         const sheets: DetectedSheet[] = [];
+        const ignoredSheets: string[] = [];
         
         workbook.SheetNames.forEach(sheetName => {
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
           
-          if (jsonData.length === 0) return;
+          if (jsonData.length === 0) {
+            console.log(`Skipping empty sheet: ${sheetName}`);
+            return;
+          }
           
           const headers = (jsonData[0] as string[]).filter(Boolean);
           const dataRows = jsonData.slice(1).filter((row: any) => 
             row && row.some((cell: any) => cell !== null && cell !== undefined && cell !== '')
           );
           
-          if (headers.length === 0) return;
+          if (headers.length === 0) {
+            console.log(`Skipping sheet with no headers: ${sheetName}`);
+            return;
+          }
+          
+          // Verifica se a aba deve ser ignorada automaticamente
+          if (shouldIgnoreSheet(sheetName, headers, dataRows)) {
+            ignoredSheets.push(sheetName);
+            return;
+          }
           
           const sheet: DetectedSheet = {
             name: sheetName,
@@ -105,8 +154,10 @@ async function detectExcelStructure(file: File): Promise<DetectedSheet[]> {
           sheets.push(sheet);
         });
         
+        console.log(`Processed ${sheets.length} sheets, ignored ${ignoredSheets.length} sheets:`, ignoredSheets);
+        
         if (sheets.length === 0) {
-          throw new Error('Nenhuma aba com dados válidos foi encontrada');
+          throw new Error('Nenhuma aba com dados válidos foi encontrada. Todas as abas foram ignoradas ou estão vazias.');
         }
         
         resolve(sheets);

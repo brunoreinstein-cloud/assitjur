@@ -21,16 +21,22 @@ interface MappingDialogProps {
 }
 
 export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDialogProps) {
-  const [sheetModels, setSheetModels] = useState<Record<string, 'testemunha' | 'processo'>>(
+  const [sheetModels, setSheetModels] = useState<Record<string, 'testemunha' | 'processo' | 'ignore'>>(
     sheets.reduce((acc, sheet) => {
-      acc[sheet.name] = sheet.model === 'ambiguous' ? 'testemunha' : sheet.model;
+      if (sheet.model === 'ambiguous') {
+        acc[sheet.name] = 'testemunha'; // Default para ambiguous
+      } else if (sheet.model === 'ignore') {
+        acc[sheet.name] = 'ignore';
+      } else {
+        acc[sheet.name] = sheet.model;
+      }
       return acc;
-    }, {} as Record<string, 'testemunha' | 'processo'>)
+    }, {} as Record<string, 'testemunha' | 'processo' | 'ignore'>)
   );
 
   const ambiguousSheets = sheets.filter(s => s.model === 'ambiguous');
 
-  const handleModelChange = (sheetName: string, model: 'testemunha' | 'processo') => {
+  const handleModelChange = (sheetName: string, model: 'testemunha' | 'processo' | 'ignore') => {
     setSheetModels(prev => ({
       ...prev,
       [sheetName]: model
@@ -77,7 +83,7 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
                 </Label>
                 <Select
                   value={sheetModels[sheet.name]}
-                  onValueChange={(value: 'testemunha' | 'processo') => 
+                  onValueChange={(value: 'testemunha' | 'processo' | 'ignore') => 
                     handleModelChange(sheet.name, value)
                   }
                 >
@@ -98,6 +104,14 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
                         <span>Por Processo</span>
                         <span className="text-xs text-muted-foreground">
                           Usar CNJ individual por linha
+                        </span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="ignore">
+                      <div className="flex flex-col">
+                        <span>Ignorar Aba</span>
+                        <span className="text-xs text-muted-foreground">
+                          Não processar esta aba
                         </span>
                       </div>
                     </SelectItem>

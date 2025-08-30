@@ -33,7 +33,7 @@ export type ProcessoRow = z.infer<typeof ProcessoRowSchema>;
 export type TestemunhaRow = z.infer<typeof TestemunhaRowSchema>;
 
 // Tipos para detecção e mapeamento  
-export type SheetModel = 'processo' | 'testemunha' | 'ambiguous';
+export type SheetModel = 'processo' | 'testemunha' | 'ambiguous' | 'ignore';
 
 export interface DetectedSheet {
   name: string;
