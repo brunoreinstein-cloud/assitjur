@@ -120,33 +120,58 @@ export function ValidationStep() {
   };
 
   const handleApplyCorrections = async (correctedData: any[]) => {
-    const validProcessos = correctedData.filter(d => d.cnj && d.reclamante_nome && d.reu_nome);
     const correctionsApplied = corrections.filter(c => c.corrections.length > 0).length;
     
     try {
       // Import generateReports function
       const { generateReports } = await import('@/lib/importer/report');
       
-      // Generate updated result with corrected data
+      // Separate corrected data by type, preserving all valid data
+      const processos = correctedData.filter(d => {
+        const cnjDigits = String(d.cnj || '').replace(/[^\d]/g, '');
+        return cnjDigits.length === 20 && d.reclamante_nome && d.reu_nome;
+      });
+
+      const testemunhas = correctedData.filter(d => {
+        const cnjDigits = String(d.cnj || '').replace(/[^\d]/g, '');
+        return cnjDigits.length === 20 && d.nome_testemunha;
+      });
+
+      // Build corrections map for visual formatting in Excel
+      const correctionsMap = new Map<string, any>();
+      corrections.forEach((row, rowIndex) => {
+        row.corrections.forEach((correction, correctionIndex) => {
+          const address = `Linha${rowIndex + 2}!${correction.field}${correctionIndex}`;
+          correctionsMap.set(address, {
+            address,
+            original: correction.originalValue,
+            corrected: correction.correctedValue,
+            reason: correction.reason
+          });
+        });
+      });
+      
+      // Generate updated result with ALL corrected data preserved
       const updatedResult: any = {
         ...validationResult!,
         normalizedData: {
-          ...validationResult!.normalizedData,
-          processos: validProcessos
+          // Preserve both processos and testemunhas data
+          processos: processos.length > 0 ? processos : undefined,
+          testemunhas: testemunhas.length > 0 ? testemunhas : undefined
         },
         summary: {
           ...validationResult!.summary,
-          valid: validProcessos.length,
+          valid: processos.length + testemunhas.length,
           errors: Math.max(0, validationResult!.summary.errors - correctionsApplied)
         }
       };
       
-      // Generate reports and download URLs for corrected data
+      // Generate reports and download URLs with proper corrections map
       const downloadUrls = await generateReports(
         updatedResult,
         file?.name || 'arquivo_corrigido',
         undefined, // originalData not needed for corrected version
-        new Map() // corrections map not needed here as corrections are already applied
+        correctionsMap // Pass real corrections map for visual formatting
       );
       
       // Update result with download URLs
@@ -155,15 +180,19 @@ export function ValidationStep() {
       setValidationResult(updatedResult);
       setShowCorrections(false);
       
+      const totalCorrectedRows = processos.length + testemunhas.length;
+      
       toast({
-        title: "Correções aplicadas",
-        description: `${correctionsApplied} correções aplicadas. Downloads disponíveis.`,
+        title: "Correções aplicadas com sucesso",
+        description: `${correctionsApplied} correções aplicadas. ${totalCorrectedRows} registros válidos prontos para importação. Downloads disponíveis.`,
       });
       
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      console.error('Erro ao aplicar correções:', error);
       toast({
-        title: "Erro ao gerar relatórios",
-        description: "Correções aplicadas, mas falha ao gerar downloads",
+        title: "Erro ao aplicar correções",
+        description: `Falha no processamento: ${errorMessage}`,
         variant: "destructive"
       });
     }

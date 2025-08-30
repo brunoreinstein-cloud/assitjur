@@ -63,40 +63,70 @@ async function generateCorrectedXlsx(
 ): Promise<string> {
   const wb = XLSX.utils.book_new();
   
-  // Adiciona aba "Por Processo" se houver dados
-  if (normalizedData.processos && normalizedData.processos.length > 0) {
-    const ws = XLSX.utils.json_to_sheet(normalizedData.processos);
-    
-    // Aplica formatação para células corrigidas
-    if (corrections) {
-      applyCorrectionFormatting(ws, corrections, 'Por Processo');
-    }
-    
-    XLSX.utils.book_append_sheet(wb, ws, 'Por Processo');
+  console.log('📊 Generating corrected XLSX with data:', {
+    processos: normalizedData.processos?.length || 0,
+    testemunhas: normalizedData.testemunhas?.length || 0,
+    corrections: corrections?.size || 0
+  });
+  
+  // ALWAYS add "Por Processo" sheet - create empty structure if no data
+  const processosData = normalizedData.processos?.length > 0 
+    ? normalizedData.processos 
+    : [{
+        cnj: '',
+        reclamante_nome: '',
+        reu_nome: '',
+        comarca: '',
+        tribunal: '',
+        vara: '',
+        fase: '',
+        status: '',
+        observacoes: 'Nenhum processo válido encontrado - utilize este template para adicionar dados'
+      }];
+  
+  const wsProcessos = XLSX.utils.json_to_sheet(processosData);
+  
+  // Apply corrections formatting to processos sheet
+  if (corrections && normalizedData.processos?.length > 0) {
+    applyCorrectionFormatting(wsProcessos, corrections, 'Por Processo');
   }
   
-  // Adiciona aba "Por Testemunha" se houver dados
-  if (normalizedData.testemunhas && normalizedData.testemunhas.length > 0) {
-    const ws = XLSX.utils.json_to_sheet(normalizedData.testemunhas);
-    
-    // Aplica formatação para células corrigidas
-    if (corrections) {
-      applyCorrectionFormatting(ws, corrections, 'Por Testemunha');
-    }
-    
-    XLSX.utils.book_append_sheet(wb, ws, 'Por Testemunha');
+  XLSX.utils.book_append_sheet(wb, wsProcessos, 'Por Processo');
+  
+  // ALWAYS add "Por Testemunha" sheet - create empty structure if no data
+  const testemunhasData = normalizedData.testemunhas?.length > 0 
+    ? normalizedData.testemunhas 
+    : [{
+        cnj: '',
+        nome_testemunha: '',
+        reclamante_nome: '',
+        reu_nome: '',
+        observacoes: 'Nenhuma testemunha válida encontrada - utilize este template para adicionar dados'
+      }];
+  
+  const wsTestemunhas = XLSX.utils.json_to_sheet(testemunhasData);
+  
+  // Apply corrections formatting to testemunhas sheet
+  if (corrections && normalizedData.testemunhas?.length > 0) {
+    applyCorrectionFormatting(wsTestemunhas, corrections, 'Por Testemunha');
   }
   
-  // Se não há dados normalizados, cria planilha com mensagem
-  if (wb.SheetNames.length === 0) {
-    const emptyData = [{
-      'Mensagem': 'Nenhum dado válido encontrado para gerar arquivo corrigido',
-      'Arquivo_Original': fileName || 'Desconhecido',
-      'Data_Processamento': new Date().toISOString()
-    }];
-    const ws = XLSX.utils.json_to_sheet(emptyData);
-    XLSX.utils.book_append_sheet(wb, ws, 'Informações');
-  }
+  XLSX.utils.book_append_sheet(wb, wsTestemunhas, 'Por Testemunha');
+  
+  // Add summary sheet with processing information
+  const summaryData = [{
+    'Arquivo_Original': fileName || 'Desconhecido',
+    'Data_Processamento': new Date().toISOString(),
+    'Processos_Válidos': normalizedData.processos?.length || 0,
+    'Testemunhas_Válidas': normalizedData.testemunhas?.length || 0,
+    'Correções_Aplicadas': corrections?.size || 0,
+    'Status': (normalizedData.processos?.length > 0 || normalizedData.testemunhas?.length > 0) 
+      ? 'Dados válidos encontrados' 
+      : 'Apenas estrutura template - adicione dados válidos'
+  }];
+  
+  const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumo');
   
   // Gera buffer e cria URL
   const buffer = XLSX.write(wb, { 

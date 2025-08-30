@@ -295,10 +295,13 @@ export async function intelligentValidateAndCorrect(
         if (correctedRow.isValid) {
           totalValid++;
           
-          // Add corrected data to normalized result
-          if (sheetType === 'processo') {
+          // Add corrected data to normalized result - preserve original structure
+          if (sheetType === 'processo' || sheetData.processos) {
+            if (!normalizedData.processos) normalizedData.processos = [];
             normalizedData.processos.push(correctedRow.correctedData);
-          } else {
+          } 
+          if (sheetType === 'testemunha' || sheetData.testemunhas) {
+            if (!normalizedData.testemunhas) normalizedData.testemunhas = [];
             normalizedData.testemunhas.push(correctedRow.correctedData);
           }
           
@@ -376,13 +379,20 @@ export async function intelligentValidateAndCorrect(
   const correctionsApplied = intelligentCorrections.filter(c => c.corrections.length > 0).length;
   const totalCorrectionsMade = intelligentCorrections.reduce((acc, c) => acc + c.corrections.length, 0);
   
-  console.log(`🔍 Validation Summary:
-    - Original rows: ${totalOriginal}
-    - Processed rows: ${totalProcessed}  
-    - Filtered rows: ${totalFiltered}
-    - Valid rows: ${totalValid}
+  console.log(`🔍 Enhanced Validation Summary:
+    📊 File Processing:
+    - Original rows loaded: ${totalOriginal}
+    - Successfully processed: ${totalProcessed}  
+    - Filtered out (invalid): ${totalFiltered}
+    - Final valid rows: ${totalValid}
+    
+    🔧 Corrections Applied:
     - Rows with corrections: ${correctionsApplied}
-    - Total corrections made: ${totalCorrectionsMade}`);
+    - Individual corrections made: ${totalCorrectionsMade}
+    
+    📈 Data Breakdown:
+    - Processos: ${normalizedData.processos?.length || 0}
+    - Testemunhas: ${normalizedData.testemunhas?.length || 0}`);
 
   const result: IntelligentValidationResult = {
     summary: {
