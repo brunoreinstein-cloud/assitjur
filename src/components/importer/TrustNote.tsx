@@ -1,6 +1,6 @@
 import React from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, Lock, Eye, FileCheck } from 'lucide-react';
+import { Shield, Lock, Eye, CheckCircle2 } from 'lucide-react';
 
 export function TrustNote() {
   return (
@@ -35,7 +35,7 @@ export function TrustNote() {
         </div>
 
         <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg">
-          <FileCheck className="h-5 w-5 text-muted-foreground mt-0.5" />
+          <CheckCircle2 className="h-5 w-5 text-muted-foreground mt-0.5" />
           <div>
             <h4 className="font-medium">Validação Obrigatória</h4>
             <p className="text-muted-foreground">

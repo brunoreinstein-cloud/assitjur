@@ -8,7 +8,7 @@ import {
   CheckCircle, 
   Upload, 
   AlertCircle, 
-  FileCheck,
+  CheckCircle2,
   Zap,
   Database
 } from 'lucide-react';

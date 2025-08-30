@@ -3,7 +3,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, AlertTriangle, Info, Download, FileSpreadsheet, AlertCircle, FileCheck, RefreshCw, Wand2 } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, Info, Download, FileSpreadsheet, AlertCircle, CheckCircle2, RefreshCw, Wand2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useImportStore } from '../../store/useImportStore';
 import type { ImportSession } from '@/lib/importer/types';
@@ -235,7 +235,7 @@ export function ValidationStep() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileCheck className="h-5 w-5" />
+            <CheckCircle2 className="h-5 w-5" />
             Validação e Normalização
           </CardTitle>
           <CardDescription>
@@ -327,7 +327,7 @@ export function ValidationStep() {
                 {validationResult.downloadUrls?.fixedXlsx && (
                   <Button asChild variant="outline" className="justify-start">
                     <a href={validationResult.downloadUrls.fixedXlsx} download="arquivo_corrigido.xlsx">
-                      <FileCheck className="h-4 w-4 mr-2" />
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
                       Arquivo Corrigido
                     </a>
                   </Button>

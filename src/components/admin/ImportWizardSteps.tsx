@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   Upload, 
-  FileCheck, 
+  CheckCircle2, 
   Eye, 
   CheckCircle,
   Clock,
@@ -30,7 +30,7 @@ const ImportWizardSteps: React.FC<ImportWizardStepsProps> = ({
     {
       id: 'validation',
       title: 'Validação',
-      icon: FileCheck,
+      icon: CheckCircle2,
       description: 'Verificação da qualidade dos dados'
     },
     {

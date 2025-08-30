@@ -8,9 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
   Upload, 
-  FileCheck, 
+  CheckCircle2, 
   Eye, 
-  CheckCircle, 
+  CheckCircle,
   AlertCircle, 
   Download,
   RefreshCw,
@@ -101,7 +101,7 @@ const WizardSteps: React.FC<WizardStepsProps> = ({
     {
       id: 'validation',
       title: 'Validação',
-      icon: FileCheck,
+      icon: CheckCircle2,
       description: 'Verificação da qualidade dos dados'
     },
     {
@@ -689,7 +689,7 @@ export function ImportModal() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <FileCheck className="h-5 w-5" />
+          <CheckCircle2 className="h-5 w-5" />
           Validação e Normalização
         </CardTitle>
         <CardDescription>

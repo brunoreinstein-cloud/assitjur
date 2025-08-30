@@ -2,10 +2,10 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Quote, Shield, FileCheck, Globe, Star, Users, TrendingUp, Linkedin, ExternalLink } from 'lucide-react';
+import { Quote, Shield, CheckCircle2, Globe, Star, Users, TrendingUp, Linkedin, ExternalLink } from 'lucide-react';
 
 const certifications = [
-  { label: 'LGPD', icon: FileCheck, description: 'Conformidade total com proteção de dados' },
+  { label: 'LGPD', icon: CheckCircle2, description: 'Conformidade total com proteção de dados' },
   { label: 'ISO 27001', icon: Shield, description: 'Segurança da informação certificada' },
   { label: 'SOC 2', icon: Globe, description: 'Auditoria de controles organizacionais' }
 ];

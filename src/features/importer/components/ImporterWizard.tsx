@@ -7,9 +7,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   Upload, 
-  FileCheck, 
+  CheckCircle2, 
   Eye, 
-  CheckCircle, 
+  CheckCircle,
   AlertCircle, 
   Download,
   RefreshCw,
@@ -27,7 +27,7 @@ import { useImportStore } from '../store/useImportStore';
 
 const STEPS = [
   { id: 'upload', label: 'Upload', icon: Upload },
-  { id: 'validation', label: 'Validação', icon: FileCheck },
+  { id: 'validation', label: 'Validação', icon: CheckCircle2 },
   { id: 'preview', label: 'Prévia', icon: Eye },
   { id: 'publish', label: 'Publicação', icon: CheckCircle },
 ] as const;

@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Database, 
-  FileCheck, 
+  CheckCircle2, 
   Upload, 
-  AlertTriangle, 
+  AlertTriangle,
   TrendingUp, 
   Users, 
   MessageSquare,

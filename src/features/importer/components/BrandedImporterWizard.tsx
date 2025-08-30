@@ -7,9 +7,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   Upload, 
-  FileCheck, 
+  CheckCircle2, 
   Eye, 
-  CheckCircle, 
+  CheckCircle,
   AlertCircle, 
   Download,
   RefreshCw,
@@ -30,7 +30,7 @@ import { strings, getString } from '@/i18n/pt-BR';
 
 const STEPS = [
   { id: 'upload', label: getString('import.steps.upload'), icon: Upload },
-  { id: 'validation', label: getString('import.steps.validation'), icon: FileCheck },
+  { id: 'validation', label: getString('import.steps.validation'), icon: CheckCircle2 },
   { id: 'preview', label: getString('import.steps.preview'), icon: Eye },
   { id: 'publish', label: getString('import.steps.publish'), icon: CheckCircle },
 ] as const;

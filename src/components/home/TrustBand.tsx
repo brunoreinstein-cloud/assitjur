@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Shield, FileCheck, Eye, AlertTriangle } from "lucide-react";
+import { Shield, CheckCircle2, Eye, AlertTriangle } from "lucide-react";
 
 export const TrustBand = () => {
   const badges = [
@@ -9,7 +9,7 @@ export const TrustBand = () => {
       variant: "secondary" as const
     },
     {
-      icon: FileCheck,
+      icon: CheckCircle2,
       text: "Auditoria de acesso",
       variant: "secondary" as const
     },
