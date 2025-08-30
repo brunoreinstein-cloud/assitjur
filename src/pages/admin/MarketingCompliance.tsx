@@ -354,3 +354,5 @@ export function MarketingCompliance() {
     </AppLayout>
   );
 }
+
+export default MarketingCompliance;

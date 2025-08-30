@@ -29,7 +29,7 @@ import Organization from "./pages/admin/Organization";
 
 import SystemConfig from "./pages/admin/SystemConfig";
 import Compliance from "./pages/admin/Compliance";
-import { MarketingCompliance } from "./pages/admin/MarketingCompliance";
+import MarketingCompliance from "./pages/admin/MarketingCompliance";
 import DataRetention from "./pages/admin/DataRetention";
 import AuditPanel from "./pages/admin/AuditPanel";
 import OpenAI from "./pages/admin/OpenAI";
