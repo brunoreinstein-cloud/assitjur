@@ -26,6 +26,7 @@ import {
 } from '@/components/analytics/AnalyticsCharts';
 import { ReviewUpdateButton } from '@/components/admin/ReviewUpdateButton';
 import { DatabaseCleanupButton } from '@/components/admin/DatabaseCleanupButton';
+import { WitnessDataProcessor } from '@/components/admin/WitnessDataProcessor';
 
 interface OverviewData {
   counts: {
@@ -142,6 +143,9 @@ const Dashboard = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Processamento de Testemunhas */}
+      <WitnessDataProcessor />
 
       <Tabs 
         value={activeTab} 

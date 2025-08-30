@@ -193,6 +193,7 @@ export const fetchPorProcesso = async (params: {
 }): Promise<{ data: PorProcesso[], total: number }> => {
   try {
     if (!isSupabaseConfigured()) {
+      console.log('⚠️ Supabase not configured, using mock data');
       throw new Error('Supabase not configured');
     }
 
@@ -206,14 +207,28 @@ export const fetchPorProcesso = async (params: {
       }
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error in fetchPorProcesso:', error);
+      throw error;
+    }
+
+    // If no data returned, fallback to mock
+    if (!data?.data || data.data.length === 0) {
+      console.log('📊 No data returned from API, falling back to mock data');
+      throw new Error('No data returned');
+    }
+
+    console.log('📊 Fetched processos from API:', { 
+      count: data.data.length, 
+      total: data.count || data.total || 0 
+    });
 
     return {
       data: data.data || [],
-      total: data.total || 0
+      total: data.count || data.total || 0
     };
   } catch (error) {
-    console.warn('Falling back to mock data:', error);
+    console.warn('📊 Falling back to mock processos data:', error);
     
     // Mock filtering logic
     let filteredData = [...mockProcessos];
@@ -267,6 +282,7 @@ export const fetchPorTestemunha = async (params: {
 }): Promise<{ data: PorTestemunha[], total: number }> => {
   try {
     if (!isSupabaseConfigured()) {
+      console.log('⚠️ Supabase not configured, using mock data');
       throw new Error('Supabase not configured');
     }
 
@@ -280,14 +296,28 @@ export const fetchPorTestemunha = async (params: {
       }
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error in fetchPorTestemunha:', error);
+      throw error;
+    }
+
+    // If no data returned, fallback to mock
+    if (!data?.data || data.data.length === 0) {
+      console.log('📊 No testemunhas data returned from API, falling back to mock data');
+      throw new Error('No data returned');
+    }
+
+    console.log('📊 Fetched testemunhas from API:', { 
+      count: data.data.length, 
+      total: data.count || data.total || 0 
+    });
 
     return {
       data: data.data || [],
-      total: data.total || 0
+      total: data.count || data.total || 0
     };
   } catch (error) {
-    console.warn('Falling back to mock data:', error);
+    console.warn('📊 Falling back to mock testemunhas data:', error);
     
     // Mock filtering logic
     let filteredData = [...mockTestemunhas];

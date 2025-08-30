@@ -76,19 +76,28 @@ serve(async (req) => {
       // This will be handled in post-processing since PostgreSQL array length filtering is complex
     }
 
-    // Apply pagination
+    // Apply pagination - use proper count query first
+    const { count } = await supabase
+      .from('processos')
+      .select('*', { count: 'exact', head: true })
+      .eq('org_id', orgId)
+      .is('deleted_at', null)
+
+    // Get paginated data
     const offset = (page - 1) * limit
     query = query.range(offset, offset + limit - 1)
-
+    
     // Order by
     query = query.order('created_at', { ascending: false })
 
-    const { data, error, count } = await query
+    const { data, error } = await query
 
     if (error) {
       console.error('Query error:', error)
       throw error
     }
+
+    console.log(`Found ${data?.length || 0} processos out of ${count || 0} total`)
 
     // Transform processos data to match PorProcesso type
     const transformedData = (data || []).map(processo => ({
@@ -140,10 +149,10 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         data: filteredData,
-        count: filteredData.length,
+        count: count || 0,
         page,
         limit,
-        totalPages: Math.ceil(filteredData.length / limit)
+        totalPages: Math.ceil((count || 0) / limit)
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
