@@ -39,13 +39,24 @@ export function PublishStep() {
       }
 
       // Step 2: Extract real data from validation result
+      console.log('🔍 Debug - Full validationResult:', {
+        hasNormalizedData: !!validationResult.normalizedData,
+        normalizedDataKeys: validationResult.normalizedData ? Object.keys(validationResult.normalizedData) : [],
+        processosLength: validationResult.normalizedData?.processos?.length || 0,
+        testemunhasLength: validationResult.normalizedData?.testemunhas?.length || 0,
+        firstProcesso: validationResult.normalizedData?.processos?.[0] || null,
+        firstTestemunha: validationResult.normalizedData?.testemunhas?.[0] || null
+      });
+
       const processos = validationResult.normalizedData?.processos || [];
       const testemunhas = validationResult.normalizedData?.testemunhas || [];
       
       console.log('📤 Enviando dados para importação:', { 
         processosCount: processos.length, 
         testemunhasCount: testemunhas.length,
-        versionId: versionData.versionId 
+        versionId: versionData.versionId,
+        firstProcessoSample: processos[0] || 'nenhum processo',
+        firstTestemunhaSample: testemunhas[0] || 'nenhuma testemunha'
       });
 
       // Step 3: Import data into the new version

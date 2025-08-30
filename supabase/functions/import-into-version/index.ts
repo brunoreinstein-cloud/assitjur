@@ -50,7 +50,17 @@ serve(async (req) => {
       );
     }
 
-    const { versionId, processos = [], testemunhas = [], fileChecksum, filename } = await req.json();
+    const requestBody = await req.json();
+    console.log('📥 Received import request:', {
+      versionId: requestBody.versionId,
+      processosCount: requestBody.processos?.length || 0,
+      testemunhasCount: requestBody.testemunhas?.length || 0,
+      hasFileChecksum: !!requestBody.fileChecksum,
+      firstProcessoFields: requestBody.processos?.[0] ? Object.keys(requestBody.processos[0]) : [],
+      firstProcessoSample: requestBody.processos?.[0] || null
+    });
+    
+    const { versionId, processos = [], testemunhas = [], fileChecksum, filename } = requestBody;
 
     // Verificar se a versão existe e é draft
     const { data: version } = await supabase
@@ -86,7 +96,9 @@ serve(async (req) => {
 
     // 2. Inserir processos com version_id e campos corrigidos
     if (processos.length > 0) {
-      const processosWithVersion = processos.map((p: any) => {
+      console.log(`📊 Preparing to insert ${processos.length} processos. Sample data:`, processos[0]);
+      
+      const processosWithVersion = processos.map((p: any, index: number) => {
         // Convert date strings to proper format
         const dataAudiencia = p.data_audiencia 
           ? (p.data_audiencia.match(/^\d{4}-\d{2}-\d{2}$/) 
@@ -94,43 +106,75 @@ serve(async (req) => {
               : null)
           : null;
 
-        return {
+        // Parse array fields if they come as strings
+        const parseArrayField = (field: any) => {
+          if (!field) return null;
+          if (Array.isArray(field)) return field;
+          if (typeof field === 'string') {
+            return field.split(/[;,]/).map(s => s.trim()).filter(Boolean);
+          }
+          return null;
+        };
+
+        const mappedData = {
           org_id: profile.organization_id,
           version_id: versionId,
-          cnj: p.cnj || '',
-          cnj_digits: p.cnj_digits || '',
-          cnj_normalizado: p.cnj_digits || '',
-          reclamante_nome: p.reclamante_nome || '',
-          reu_nome: p.reu_nome || '',
+          cnj: p.cnj || p.CNJ || '',
+          cnj_digits: p.cnj_digits || p.CNJ_digits || '',
+          cnj_normalizado: p.cnj_digits || p.CNJ_digits || '',
+          reclamante_nome: p.reclamante_nome || p.reclamante || '',
+          reu_nome: p.reu_nome || p.reu || p.reclamado || '',
           comarca: p.comarca || null,
           tribunal: p.tribunal || null,
           vara: p.vara || null,
           fase: p.fase || null,
           status: p.status || null,
-          reclamante_cpf_mask: p.reclamante_cpf_mask || null,
+          reclamante_cpf_mask: p.reclamante_cpf_mask || p.reclamante_cpf || null,
           data_audiencia: dataAudiencia,
-          advogados_ativo: p.advogados_ativo || null,
-          advogados_passivo: p.advogados_passivo || null,
-          testemunhas_ativo: p.testemunhas_ativo || null,
-          testemunhas_passivo: p.testemunhas_passivo || null,
+          advogados_ativo: parseArrayField(p.advogados_ativo),
+          advogados_passivo: parseArrayField(p.advogados_passivo),
+          testemunhas_ativo: parseArrayField(p.testemunhas_ativo),
+          testemunhas_passivo: parseArrayField(p.testemunhas_passivo),
           observacoes: p.observacoes || null,
         };
+
+        // Log sample of mapped data for first few records
+        if (index < 3) {
+          console.log(`📋 Sample mapped data #${index + 1}:`, mappedData);
+        }
+
+        return mappedData;
       });
 
       console.log(`Inserting ${processosWithVersion.length} processos into version ${versionId}`);
       
-      const { data: insertedProcessos, error: processosError } = await supabase
-        .from('processos')
-        .insert(processosWithVersion)
-        .select('id');
+      // Insert in batches of 100 to avoid timeouts
+      const batchSize = 100;
+      let totalInserted = 0;
+      
+      for (let i = 0; i < processosWithVersion.length; i += batchSize) {
+        const batch = processosWithVersion.slice(i, i + batchSize);
+        console.log(`📦 Inserting batch ${Math.floor(i / batchSize) + 1}, records ${i + 1}-${Math.min(i + batchSize, processosWithVersion.length)}`);
+        
+        const { data: insertedBatch, error: batchError } = await supabase
+          .from('processos')
+          .insert(batch)
+          .select('id');
 
-      if (processosError) {
-        console.error('Error inserting processos:', processosError);
-        errors += processos.length;
-      } else {
-        imported += insertedProcessos?.length || 0;
-        console.log(`Successfully inserted ${insertedProcessos?.length || 0} processos`);
+        if (batchError) {
+          console.error(`❌ Error inserting batch ${Math.floor(i / batchSize) + 1}:`, batchError);
+          errors += batch.length;
+        } else {
+          const batchInserted = insertedBatch?.length || 0;
+          totalInserted += batchInserted;
+          console.log(`✅ Successfully inserted batch ${Math.floor(i / batchSize) + 1}: ${batchInserted} records`);
+        }
       }
+
+      imported = totalInserted;
+      console.log(`🎉 Total processos inserted: ${totalInserted}`);
+    } else {
+      console.log('⚠️ No processos to insert - array is empty');
     }
 
     // 3. Atualizar summary da versão
