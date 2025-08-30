@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import type { ValidationResult } from './types';
+import { getExcelAddress, isValidExcelAddress } from '@/lib/excel/cell-addressing';
 
 export interface CorrectedCell {
   address: string;
@@ -142,17 +143,7 @@ async function generateCorrectedXlsx(
   return URL.createObjectURL(blob);
 }
 
-/**
- * Converte índice numérico em coordenada de coluna Excel (A, B, C, ..., AA, AB, etc.)
- */
-function getExcelColumn(index: number): string {
-  let column = '';
-  while (index >= 0) {
-    column = String.fromCharCode(65 + (index % 26)) + column;
-    index = Math.floor(index / 26) - 1;
-  }
-  return column;
-}
+// Excel column conversion moved to dedicated module
 
 /**
  * Aplica formatação visual para células corrigidas
@@ -167,10 +158,11 @@ function applyCorrectionFormatting(
   
   // Adiciona comentários e formatação para células corrigidas
   corrections.forEach((correction, address) => {
-    // Address format: "SheetName!A2" or just "A2"
+    // Valida e normaliza o endereço da célula
     const cellAddress = address.includes('!') ? address.split('!')[1] : address;
     
-    if (ws[cellAddress]) {
+    // Verifica se é um endereço Excel válido
+    if (isValidExcelAddress(cellAddress) && ws[cellAddress]) {
       // Adiciona comentário explicando a correção
       ws['!comments'].push({
         ref: cellAddress,

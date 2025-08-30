@@ -1,10 +1,9 @@
 import type { DetectedSheet, ImportSession, ValidationResult, ValidationIssue } from './types';
 import { normalizeSheetData } from './normalize';
 import { findNormalizedColumnName, applyColumnMapping } from '@/features/importer/etl/synonyms';
+import { validateCNJ, correctCNJ, cleanCNJ } from '@/lib/validation/unified-cnj';
 
-// Field correction utilities
-const onlyDigits = (s = '') => s.replace(/\D/g, '');
-const isCNJ20 = (s: string) => onlyDigits(s).length === 20;
+// Using unified CNJ validation - remove local utilities
 
 interface FieldCorrection {
   field: string;
@@ -74,42 +73,25 @@ function correctRowData(row: any, rowIndex: number, sheetType: 'processo' | 'tes
   let isValid = true;
 
   if (sheetType === 'processo') {
-    // CNJ correction
-    if (correctedData.cnj) {
-      const original = correctedData.cnj;
-      const digits = onlyDigits(String(original));
-      
-      if (digits.length < 20) {
-        // Try to complete CNJ if it's partially filled
-        if (digits.length >= 15) {
-          const completed = digits.padEnd(20, '0');
-          correctedData.cnj = completed;
+      // CNJ correction using unified system  
+      if (correctedData.cnj) {
+        const original = correctedData.cnj;
+        const cnjCorrection = correctCNJ(original);
+        
+        if (cnjCorrection.needsCorrection) {
           corrections.push({
             field: 'cnj',
             originalValue: original,
-            correctedValue: completed,
+            correctedValue: cnjCorrection.corrected,
             correctionType: 'auto_complete',
             confidence: 0.7
           });
-        } else {
-          isValid = false;
         }
-      } else if (digits.length > 20) {
-        // Truncate if too long
-        const truncated = digits.substring(0, 20);
-        correctedData.cnj = truncated;
-        corrections.push({
-          field: 'cnj',
-          originalValue: original,
-          correctedValue: truncated,
-          correctionType: 'format',
-          confidence: 0.8
-        });
+        
+        correctedData.cnj = cnjCorrection.corrected;
+        // Store normalized version
+        correctedData.cnj_digits = cleanCNJ(correctedData.cnj);
       }
-      
-      // Store normalized version
-      correctedData.cnj_digits = onlyDigits(correctedData.cnj);
-    }
 
     // Name corrections
     ['reclamante_nome', 'reu_nome'].forEach(field => {
@@ -192,13 +174,17 @@ function correctRowData(row: any, rowIndex: number, sheetType: 'processo' | 'tes
       isValid = false;
     }
     
-    // CNJ validation
+    // CNJ validation using unified system
     if (correctedData.cnjs_como_testemunha) {
       const cnjs = Array.isArray(correctedData.cnjs_como_testemunha) 
         ? correctedData.cnjs_como_testemunha 
         : String(correctedData.cnjs_como_testemunha).split(/[;,]/).map(s => s.trim());
       
-      const validCnjs = cnjs.filter(cnj => isCNJ20(cnj));
+      const validCnjs = cnjs.filter(cnj => {
+        const validation = validateCNJ(cnj, 'final');
+        return validation.isValid;
+      });
+      
       if (validCnjs.length === 0) {
         isValid = false;
       }
@@ -291,9 +277,9 @@ export async function intelligentValidateAndCorrect(
         
         intelligentCorrections.push(correctedRow);
         
-        // Validate corrected data with more permissive criteria
-        const cnjDigits = String(correctedRow.correctedData.cnj || '').replace(/[^\d]/g, '');
-        const hasMinimalCNJ = cnjDigits.length >= 15;
+        // Validate corrected data with unified CNJ system
+        const cnjValidation = validateCNJ(correctedRow.correctedData.cnj, 'correction');
+        const hasMinimalCNJ = cnjValidation.isValid;
         
         if (correctedRow.isValid || hasMinimalCNJ) {
           totalValid++;
@@ -322,6 +308,7 @@ export async function intelligentValidateAndCorrect(
           }
           
           // Add warnings for incomplete but preserved data
+          const cnjDigits = cleanCNJ(correctedRow.correctedData.cnj);
           if (hasMinimalCNJ && cnjDigits.length < 20) {
             allIssues.push({
               sheet: sheet.name,
@@ -373,7 +360,7 @@ export async function intelligentValidateAndCorrect(
               });
             }
             
-            if (!correctedRow.correctedData.cnj || !isCNJ20(correctedRow.correctedData.cnj)) {
+            if (!correctedRow.correctedData.cnj || !validateCNJ(correctedRow.correctedData.cnj, 'final').isValid) {
               allIssues.push({
                 sheet: sheet.name,
                 row: rowNumber,

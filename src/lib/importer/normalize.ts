@@ -1,60 +1,26 @@
-import * as XLSX from 'xlsx';
+import { ProcessoRow, TestemunhaRow, DetectedSheet, OrgSettings } from './types';
 import Papa from 'papaparse';
-import type { DetectedSheet, TestemunhaRow, ProcessoRow, OrgSettings } from './types';
+import * as XLSX from 'xlsx';
+import { validateCNJ, cleanCNJ } from '@/lib/validation/unified-cnj';
+import { resolveFieldName } from '@/etl/synonyms';
 
 /**
- * Maps raw headers from a sheet to standardized format 
- * Aligned with processos table structure
+ * Maps raw headers to expected field names using synonym mapping
  */
 function mapHeaders(headers: string[], sheetModel: 'processo' | 'testemunha'): Record<string, string> {
-  const headerMap: Record<string, string> = {};
+  const mapping: Record<string, string> = {};
   
-  if (sheetModel === 'processo') {
-    // Core fields mapping for processos table
-    const processoMappings = {
-      'cnj': ['cnj', 'numero_processo', 'processo', 'num_processo'],
-      'reclamante_nome': ['reclamante', 'reclamante_nome', 'nome_reclamante', 'autor', 'nome_autor'],
-      'reu_nome': ['reu', 'reu_nome', 'nome_reu', 'reclamado', 'requerido', 'nome_reclamado'],
-      'comarca': ['comarca', 'foro'],
-      'tribunal': ['tribunal', 'trt', 'instancia'], 
-      'vara': ['vara', 'orgao_julgador'],
-      'fase': ['fase', 'situacao_processo'],
-      'status': ['status', 'situacao'],
-      'reclamante_cpf_mask': ['cpf', 'cpf_reclamante', 'documento'],
-      'data_audiencia': ['data_audiencia', 'audiencia', 'data'],
-      'advogados_ativo': ['advogados_ativo', 'advogado_autor', 'advogados'],
-      'advogados_passivo': ['advogados_passivo', 'advogado_reu'],
-      'testemunhas_ativo': ['testemunhas_ativo', 'testemunhas_autor', 'todas_testemunhas'],
-      'testemunhas_passivo': ['testemunhas_passivo', 'testemunhas_reu'],
-      'observacoes': ['observacoes', 'obs', 'comentarios', 'notas']
-    };
-
-    for (const [normalized, variants] of Object.entries(processoMappings)) {
-      const found = headers.find(h => 
-        variants.some(v => h.toLowerCase().includes(v.toLowerCase()))
-      );
-      if (found) headerMap[found] = normalized;
+  headers.forEach(header => {
+    const canonicalField = resolveFieldName(header);
+    if (canonicalField) {
+      mapping[canonicalField] = header;
+    } else {
+      // Keep original header for unmapped fields
+      mapping[header] = header;
     }
-  }
-  
-  // Legacy testemunha support  
-  if (sheetModel === 'testemunha') {
-    const testemunhaMappings = {
-      'cnj': ['cnj', 'numero_processo'],
-      'nome_testemunha': ['nome', 'testemunha', 'nome_testemunha'],
-      'reclamante_nome': ['reclamante', 'autor'],
-      'reu_nome': ['reu', 'reclamado']
-    };
+  });
 
-    for (const [normalized, variants] of Object.entries(testemunhaMappings)) {
-      const found = headers.find(h => 
-        variants.some(v => h.toLowerCase().includes(v.toLowerCase()))
-      );
-      if (found) headerMap[found] = normalized;
-    }
-  }
-  
-  return headerMap;
+  return mapping;
 }
 
 /**
@@ -88,45 +54,48 @@ function normalizeProcessoData(
   const headerMap = mapHeaders(sheet.headers, 'processo');
   
   return rawData.map((row, index) => {
-    const mappedRow: any = {};
+    const mapped: any = {};
     
-    // Map headers to normalized names
-    for (const [original, normalized] of Object.entries(headerMap)) {
-      mappedRow[normalized] = row[original];
-    }
-    
-    // Normalize CNJ
-    const rawCnj = mappedRow.cnj || '';
-    const cnjDigits = String(rawCnj).replace(/[^\d]/g, '');
-    mappedRow.cnj_digits = cnjDigits.length === 20 ? cnjDigits : null;
-    
-    // Apply org defaults if configured
-    if (orgSettings?.applyDefaultReuOnTestemunha && !mappedRow.reu_nome && orgSettings.defaultReuNome) {
-      mappedRow.reu_nome = orgSettings.defaultReuNome;
-      mappedRow.__autofill = { reu_nome: true };
-    }
-    
-    // Handle array fields (convert strings to arrays if needed)
-    ['advogados_ativo', 'advogados_passivo', 'testemunhas_ativo', 'testemunhas_passivo'].forEach(field => {
-      if (mappedRow[field] && typeof mappedRow[field] === 'string') {
-        mappedRow[field] = mappedRow[field].split(',').map((s: string) => s.trim()).filter(Boolean);
-      }
+    // Map all available fields
+    Object.entries(headerMap).forEach(([canonical, original]) => {
+      mapped[canonical] = row[original];
     });
     
-    // Add metadata for tracking
-    mappedRow.__source_row = index + 1;
-    mappedRow.__has_cnj = !!mappedRow.cnj;
+    // Apply org defaults
+    applyOrgDefaults(mapped, orgSettings);
     
-    return mappedRow;
-  }).filter(row => {
-    // Only require CNJ as mandatory field - let intelligent corrector handle the rest
-    const cnjDigits = String(row.cnj || '').replace(/[^\d]/g, '');
-    return cnjDigits.length === 20 || cnjDigits.length >= 15; // Accept partial CNJs for correction
+    // Clean and format CNJ using unified validation
+    const cnjRaw = mapped.cnj || '';
+    const cnjValidation = validateCNJ(cnjRaw, 'correction');
+    const processedCNJ = cnjValidation.cleaned;
+    
+    // Build ProcessoRow object
+    const processo: ProcessoRow = {
+      cnj: processedCNJ,
+      cnj_digits: cleanCNJ(processedCNJ),
+      reclamante_nome: mapped.reclamante_nome || '',
+      reu_nome: mapped.reu_nome || '',
+      comarca: mapped.comarca || '',
+      tribunal: mapped.tribunal || '', 
+      vara: mapped.vara || '',
+      fase: mapped.fase || '',
+      status: mapped.status || '',
+      observacoes: mapped.observacoes || ''
+    };
+    
+    return processo;
+  }).filter(processo => {
+    // Filter using unified CNJ validation - preserve more data
+    const cnjValidation = validateCNJ(processo.cnj, 'correction');
+    const hasEssentialData = processo.reclamante_nome || processo.reu_nome;
+    
+    return cnjValidation.isValid || hasEssentialData;
   });
 }
 
 /**
- * Normalizes testemunha data (legacy support)
+ * Normalizes testemunha data from detected sheet
+ * Maps to testemunhas table structure - legacy support
  */
 function normalizeTestemunhaData(
   sheet: DetectedSheet, 
@@ -134,69 +103,75 @@ function normalizeTestemunhaData(
   orgSettings: OrgSettings | null
 ): TestemunhaRow[] {
   const headerMap = mapHeaders(sheet.headers, 'testemunha');
-  const result: TestemunhaRow[] = [];
   
-  for (let i = 0; i < rawData.length; i++) {
-    const row = rawData[i];
-    const normalizedRow: Record<string, any> = {};
+  return rawData.map((row) => {
+    const mapped: any = {};
     
-    // Map headers
-    for (const [originalHeader, normalizedHeader] of Object.entries(headerMap)) {
-      normalizedRow[normalizedHeader] = row[originalHeader];
-    }
+    // Map available fields
+    Object.entries(headerMap).forEach(([canonical, original]) => {
+      mapped[canonical] = row[original];
+    });
     
-    if (normalizedRow.cnj && normalizedRow.nome_testemunha) {
-      const cnjDigits = String(normalizedRow.cnj).replace(/[^\d]/g, '');
-      if (cnjDigits.length === 20) {
-        const testemunhaRow: any = {
-          cnj: normalizedRow.cnj,
-          cnj_digits: cnjDigits,
-          nome_testemunha: normalizedRow.nome_testemunha,
-          reclamante_nome: normalizedRow.reclamante_nome || null,
-          reu_nome: normalizedRow.reu_nome || null,
-        };
-        
-        const finalRow = applyOrgDefaults(testemunhaRow, orgSettings);
-        result.push(finalRow);
-      }
-    }
-  }
-  
-  return result;
+    // Apply org defaults
+    applyOrgDefaults(mapped, orgSettings);
+    
+    return {
+      cnj: mapped.cnj || '',
+      cnj_digits: cleanCNJ(mapped.cnj || ''),
+      nome_testemunha: mapped.nome_testemunha || '',
+      reclamante_nome: mapped.reclamante_nome || '',
+      reu_nome: mapped.reu_nome || '',
+      observacoes: mapped.observacoes || ''
+    };
+  });
 }
 
 /**
- * Carrega dados brutos do arquivo
+ * Loads raw data from file for a specific sheet
  */
 async function loadRawData(file: File, sheet: DetectedSheet): Promise<any[]> {
   return new Promise((resolve, reject) => {
-    if (file.name.toLowerCase().endsWith('.csv')) {
-      // CSV
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result as string;
-        Papa.parse(text, {
-          header: true,
-          skipEmptyLines: true,
-          complete: (results) => resolve(results.data as any[]),
-          error: (error) => reject(error)
-        });
-      };
-      reader.readAsText(file);
+    if (file.name.endsWith('.csv')) {
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          resolve(results.data);
+        },
+        error: reject
+      });
     } else {
-      // Excel
+      // Excel file
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
           const data = new Uint8Array(e.target?.result as ArrayBuffer);
           const workbook = XLSX.read(data, { type: 'array' });
           const worksheet = workbook.Sheets[sheet.name];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[];
-          resolve(jsonData);
+          
+          if (!worksheet) {
+            reject(new Error(`Sheet "${sheet.name}" not found`));
+            return;
+          }
+          
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          const headers = jsonData[0] as string[];
+          const rows = jsonData.slice(1);
+          
+          const objectData = rows.map(row => {
+            const obj: any = {};
+            headers.forEach((header, index) => {
+              obj[header] = row[index];
+            });
+            return obj;
+          });
+          
+          resolve(objectData);
         } catch (error) {
           reject(error);
         }
       };
+      reader.onerror = reject;
       reader.readAsArrayBuffer(file);
     }
   });

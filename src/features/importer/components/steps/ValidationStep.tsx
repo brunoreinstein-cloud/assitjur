@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { FileCheck, RefreshCw, CheckCircle, AlertCircle, Wand2, Info, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, XCircle, AlertTriangle, Info, Download, FileSpreadsheet, AlertCircle, FileCheck, RefreshCw, Wand2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { intelligentValidateAndCorrect } from '@/lib/importer/intelligent-corrector';
-import { IssuesDataTable } from '@/components/assistjur/IssuesDataTable';
-import { ReviewUpdateButton } from '@/components/admin/ReviewUpdateButton';
-import { CorrectionInterface } from '@/components/importer/CorrectionInterface';
-import { ValidationTestButton } from '@/components/importer/ValidationTestButton';
 import { useImportStore } from '../../store/useImportStore';
-import { calculateValidationStats, generateValidationReport } from '@/lib/importer/validation-stats';
-import type { ValidationIssue } from '@/lib/importer/types';
+import type { ImportSession } from '@/lib/importer/types';
+import { CorrectionInterface } from '@/components/importer/CorrectionInterface';
+import { IssuesDataTable } from '@/components/assistjur/IssuesDataTable';
+import { getExcelAddress } from '@/lib/excel/cell-addressing';
+import { validateCNJ } from '@/lib/validation/unified-cnj';
+import { intelligentValidateAndCorrect } from '@/lib/importer/intelligent-corrector';
+import { ReviewUpdateButton } from '@/components/admin/ReviewUpdateButton';
+import { ValidationTestButton } from '@/components/importer/ValidationTestButton';
 
 export function ValidationStep() {
   const { 
@@ -34,22 +36,21 @@ export function ValidationStep() {
     }
   }, [session, file, validationResult]);
 
-  // Add detailed validation stats logging and reporting
+  // Simple validation stats calculation
   useEffect(() => {
     if (validationResult) {
-      const stats = calculateValidationStats(validationResult);
-      console.log('📊 Detailed Validation Stats:', {
-        originalRows: stats.originalRows,
-        processedRows: stats.processedRows, 
-        filteredRows: stats.filteredRows,
-        validRows: stats.validRows,
-        correctedRows: stats.correctedRows,
-        errorRows: stats.errorRows,
-        warningRows: stats.warningRows,
-        report: generateValidationReport(stats)
-      });
+      const stats = {
+        originalRows: validationResult.summary.analyzed,
+        processedRows: validationResult.summary.valid,
+        filteredRows: validationResult.summary.analyzed - validationResult.summary.valid,
+        validRows: validationResult.summary.valid,
+        correctedRows: corrections.length,
+        errorRows: validationResult.summary.errors,
+        warningRows: validationResult.summary.warnings
+      };
+      console.log('📊 Detailed Validation Stats:', stats);
     }
-  }, [validationResult]);
+  }, [validationResult, corrections]);
 
   const performValidation = async () => {
     if (!session || !file) return;
@@ -126,48 +127,38 @@ export function ValidationStep() {
       // Import generateReports function
       const { generateReports } = await import('@/lib/importer/report');
       
-      // Separate corrected data by type, using permissive criteria to preserve data
+      // Separate corrected data by type using unified CNJ validation
       const processos = correctedData.filter(d => {
-        const cnjDigits = String(d.cnj || '').replace(/[^\d]/g, '');
+        const cnjValidation = validateCNJ(d.cnj, 'correction');
         const hasEssentialFields = d.reclamante_nome || d.reu_nome;
-        return cnjDigits.length >= 15 || hasEssentialFields;
+        return cnjValidation.isValid || hasEssentialFields;
       });
 
       const testemunhas = correctedData.filter(d => {
-        const cnjDigits = String(d.cnj || '').replace(/[^\d]/g, '');
-        return cnjDigits.length >= 15 || d.nome_testemunha;
+        const cnjValidation = validateCNJ(d.cnj, 'correction');
+        const hasTestemunhaData = d.nome_testemunha;
+        return cnjValidation.isValid || hasTestemunhaData;
       });
 
-      // Build corrections map for visual formatting in Excel
+      // Build corrections map using unified Excel addressing
       const correctionsMap = new Map<string, any>();
       
-      // Helper function to convert column index to Excel column (A, B, C...)
-      const getExcelColumn = (index: number): string => {
-        let column = '';
-        while (index >= 0) {
-          column = String.fromCharCode(65 + (index % 26)) + column;
-          index = Math.floor(index / 26) - 1;
-        }
-        return column;
-      };
-
       corrections.forEach((row, rowIndex) => {
-        row.corrections.forEach((correction, correctionIndex) => {
+        row.corrections.forEach((correction) => {
           // Find field index in the data structure for correct column mapping
           const sampleData = correctedData[0] || {};
           const fieldNames = Object.keys(sampleData);
           const fieldIndex = fieldNames.indexOf(correction.field);
           
           if (fieldIndex >= 0) {
-            const excelColumn = getExcelColumn(fieldIndex);
-            const excelRow = rowIndex + 2; // +2 because row 1 is header, start from row 2
-            const address = `${excelColumn}${excelRow}`;
+            // Use unified Excel addressing system
+            const address = getExcelAddress(rowIndex + 1, fieldIndex); // +1 for header row
             
             correctionsMap.set(address, {
               address,
               original: correction.originalValue,
               corrected: correction.correctedValue,
-              reason: correction.reason
+              reason: `${correction.correctionType}: ${correction.reason || 'Correção automática'}`
             });
           }
         });
