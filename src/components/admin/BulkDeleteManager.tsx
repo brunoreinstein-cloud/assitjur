@@ -52,14 +52,16 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
   const [operationType, setOperationType] = useState<'soft' | 'hard'>('soft');
   const [cooldownSeconds, setCooldownSeconds] = useState(10);
 
-  // Debug logs
-  console.log('🔍 BulkDeleteManager Debug:', {
-    user: !!user,
-    profile: !!profile,
-    isAdmin,
-    organization_id: profile?.organization_id,
-    role: profile?.role
-  });
+  // Only log on mount or permission changes
+  useEffect(() => {
+    console.log('🔍 BulkDeleteManager Permission Check:', {
+      user: !!user,
+      profile: !!profile,
+      isAdmin,
+      organization_id: profile?.organization_id,
+      role: profile?.role
+    });
+  }, [isAdmin, profile?.organization_id]); // Only log when permissions change
 
   const requiredConfirmationText = profile?.organization_id || '';
   const isConfirmationValid = confirmationText === requiredConfirmationText;
@@ -79,7 +81,15 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
 
   // Load deletion impact when opening
   useEffect(() => {
+    console.log('🔍 BulkDeleteManager useEffect triggered:', {
+      isOpen,
+      hasImpact: !!impact,
+      hasPermission,
+      organizationId: profile?.organization_id
+    });
+    
     if (isOpen && !impact && hasPermission) {
+      console.log('🔍 Starting loadDeletionImpact...');
       loadDeletionImpact();
     }
   }, [isOpen, hasPermission]);
@@ -278,7 +288,14 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
           variant="destructive" 
           size="sm"
           className={className}
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            console.log('🔍 Delete button clicked!', {
+              hasPermission,
+              isAdmin,
+              organizationId: profile?.organization_id
+            });
+            setIsOpen(true);
+          }}
           disabled={!hasPermission}
           title={!hasPermission ? "Acesso negado - apenas administradores" : ""}
         >
