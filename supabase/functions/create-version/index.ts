@@ -51,8 +51,15 @@ serve(async (req) => {
       );
     }
 
-    const { orgId } = await req.json();
-    const targetOrgId = orgId || profile.organization_id;
+    // Handle empty body gracefully
+    let orgId = profile.organization_id;
+    try {
+      const body = await req.json();
+      orgId = body.orgId || profile.organization_id;
+    } catch {
+      // Empty body is acceptable, use default orgId
+    }
+    const targetOrgId = orgId;
 
     // Verificar se é admin da organização
     if (profile.role !== 'ADMIN' || profile.organization_id !== targetOrgId) {

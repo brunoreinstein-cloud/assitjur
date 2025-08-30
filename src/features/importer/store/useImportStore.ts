@@ -94,7 +94,9 @@ export const useImportStore = create<ImportState>((set, get) => ({
       set({ isProcessing: true, error: null });
       
       const { supabase } = await import('@/integrations/supabase/client');
-      const { data, error } = await supabase.functions.invoke('create-version');
+      const { data, error } = await supabase.functions.invoke('create-version', {
+        body: {}
+      });
       
       if (error) throw error;
       
