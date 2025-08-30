@@ -168,10 +168,34 @@ serve(async (req) => {
 
     if (!processosCount || processosCount === 0) {
       console.error('❌ Cannot publish empty version. Processos count:', processosCount);
+      
+      // Verificar se houve tentativa de importação recente
+      const { data: versionSummary } = await supabase
+        .from('versions')
+        .select('summary')
+        .eq('id', versionId)
+        .single();
+      
+      const importErrors = versionSummary?.summary?.errors || 0;
+      const attemptedImport = versionSummary?.summary?.total_records || 0;
+      
+      let errorMessage = 'Cannot publish empty version';
+      let details = `Version has ${processosCount || 0} processos. Import data first.`;
+      
+      if (attemptedImport > 0) {
+        errorMessage = 'Import failed - no data available for publication';
+        details = `Attempted to import ${attemptedImport} records but ${importErrors} failed. Please check the import process and try again.`;
+      }
+      
       return new Response(
         JSON.stringify({ 
-          error: 'Cannot publish empty version',
-          details: `Version has ${processosCount || 0} processos. Import data first.`
+          error: errorMessage,
+          details: details,
+          importStats: {
+            attempted: attemptedImport,
+            failed: importErrors,
+            successful: processosCount || 0
+          }
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

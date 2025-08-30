@@ -216,45 +216,137 @@ serve(async (req) => {
         let retries = 0;
         let batchSuccess = false;
         
-        // Retry mechanism para falhas temporárias
+        // Manual UPSERT para contornar limitação do partial unique index
         while (retries < 3 && !batchSuccess) {
           try {
-            const { data: insertedBatch, error: batchError } = await supabase
+            let batchInserted = 0;
+            
+            // Primeiro, vamos tentar inserir todos os registros novos
+            const { data: insertedRecords, error: insertError } = await supabase
               .from('processos')
-              .upsert(batch, {
-                onConflict: 'org_id,cnj_digits'
-              })
+              .insert(batch)
               .select('id');
 
-            if (batchError) {
-              throw batchError;
+            if (insertError) {
+              // Se houve erro de conflito (duplicate key), vamos tratar individualmente
+              if (insertError.message?.includes('duplicate key') || insertError.code === '23505') {
+                console.log(`🔄 Batch ${batchNumber}: Handling duplicates individually...`);
+                
+                // Processar cada registro individualmente para duplicatas
+                for (const record of batch) {
+                  try {
+                    // Primeiro tentar inserir
+                    const { data: singleInsert, error: singleError } = await supabase
+                      .from('processos')
+                      .insert([record])
+                      .select('id');
+
+                    if (singleError) {
+                      if (singleError.message?.includes('duplicate key') || singleError.code === '23505') {
+                        // É uma duplicata, vamos fazer update
+                        const { data: updateData, error: updateError } = await supabase
+                          .from('processos')
+                          .update({
+                            cnj: record.cnj,
+                            reclamante_nome: record.reclamante_nome,
+                            reu_nome: record.reu_nome,
+                            comarca: record.comarca,
+                            tribunal: record.tribunal,
+                            vara: record.vara,
+                            fase: record.fase,
+                            status: record.status,
+                            reclamante_cpf_mask: record.reclamante_cpf_mask,
+                            data_audiencia: record.data_audiencia,
+                            advogados_ativo: record.advogados_ativo,
+                            advogados_passivo: record.advogados_passivo,
+                            testemunhas_ativo: record.testemunhas_ativo,
+                            testemunhas_passivo: record.testemunhas_passivo,
+                            observacoes: record.observacoes,
+                            updated_at: new Date().toISOString()
+                          })
+                          .eq('org_id', record.org_id)
+                          .eq('cnj_digits', record.cnj_digits)
+                          .is('deleted_at', null)
+                          .select('id');
+
+                        if (!updateError && updateData) {
+                          batchInserted++;
+                          console.log(`📝 Updated existing record for CNJ: ${record.cnj_digits}`);
+                        } else {
+                          console.error(`❌ Failed to update CNJ ${record.cnj_digits}:`, updateError?.message);
+                          errors++;
+                        }
+                      } else {
+                        console.error(`❌ Failed to insert CNJ ${record.cnj_digits}:`, singleError.message);
+                        errors++;
+                      }
+                    } else if (singleInsert) {
+                      batchInserted++;
+                    }
+                  } catch (recordError: any) {
+                    console.error(`❌ Error processing CNJ ${record.cnj_digits}:`, recordError.message);
+                    errors++;
+                  }
+                }
+              } else {
+                // Erro diferente de duplicata
+                throw insertError;
+              }
+            } else if (insertedRecords) {
+              // Inserção em lote bem-sucedida
+              batchInserted = insertedRecords.length;
             }
 
-            const batchInserted = insertedBatch?.length || 0;
             totalInserted += batchInserted;
-            console.log(`✅ Batch ${batchNumber}: ${batchInserted} records inserted`);
+            console.log(`✅ Batch ${batchNumber}: ${batchInserted} records processed successfully`);
             batchSuccess = true;
 
           } catch (batchError: any) {
             retries++;
             console.error(`❌ Batch ${batchNumber} attempt ${retries} failed:`, batchError.message);
+            console.error(`🔍 Error details:`, {
+              code: batchError.code,
+              details: batchError.details,
+              hint: batchError.hint
+            });
             
             if (retries >= 3) {
               console.error(`💥 Batch ${batchNumber} failed after ${retries} attempts`);
               errors += batch.length;
             } else {
-              // Wait before retry
-              await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+              // Wait before retry (exponential backoff)
+              const waitTime = 1000 * Math.pow(2, retries - 1);
+              console.log(`⏳ Waiting ${waitTime}ms before retry...`);
+              await new Promise(resolve => setTimeout(resolve, waitTime));
             }
           }
         }
       }
 
       imported = totalInserted;
-      console.log(`🎉 Import complete: ${totalInserted}/${validProcessos.length} processos inserted`);
+      console.log(`🎉 Import complete: ${totalInserted}/${validProcessos.length} processos processed`);
+      console.log(`📊 Final stats: ${totalInserted} successful, ${errors} failed`);
       
       if (errors > 0) {
         console.log(`⚠️ ${errors} records failed to import`);
+        
+        // Se mais de 50% falharam, considerar como erro crítico
+        const failureRate = errors / validProcessos.length;
+        if (failureRate > 0.5) {
+          console.error(`🚨 High failure rate: ${Math.round(failureRate * 100)}% of records failed`);
+        }
+      }
+      
+      if (totalInserted === 0 && validProcessos.length > 0) {
+        console.error('🚨 CRITICAL: No records were imported despite having valid data');
+        return new Response(
+          JSON.stringify({ 
+            error: 'Import failed - no records were imported',
+            details: `Attempted to import ${validProcessos.length} records but all failed`,
+            errors: errors
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
     } else {
       console.log('⚠️ No valid processos to insert');
