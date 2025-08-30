@@ -104,20 +104,32 @@ serve(async (req) => {
       );
     }
 
-    // 1. Limpar dados existentes da versão (idempotência - resolve duplicatas)
-    console.log('🧹 Clearing existing data for version...');
-    const { error: deleteError } = await supabase
+    // 1. Limpar TODOS os dados da organização para evitar duplicatas
+    console.log('🧹 Clearing existing data for organization...');
+    
+    // Primeiro, limpar dados da versão específica
+    const { error: versionDeleteError } = await supabase
       .from('processos')
       .delete()
       .eq('org_id', profile.organization_id)
       .eq('version_id', versionId);
 
-    if (deleteError) {
-      console.error('❌ Error clearing existing data:', deleteError);
-      // Continue anyway - we'll handle duplicates in insert
-    } else {
-      console.log('✅ Existing data cleared successfully');
+    if (versionDeleteError) {
+      console.error('❌ Error clearing version data:', versionDeleteError);
     }
+
+    // Depois, limpar dados draft (não publicados) para evitar conflitos
+    const { error: draftDeleteError } = await supabase
+      .from('processos')
+      .delete()
+      .eq('org_id', profile.organization_id)
+      .is('version_id', null);
+
+    if (draftDeleteError) {
+      console.error('❌ Error clearing draft data:', draftDeleteError);
+    }
+
+    console.log('✅ Existing data cleared successfully');
 
     let imported = 0;
     let errors = 0;
@@ -185,18 +197,37 @@ serve(async (req) => {
         const batch = processosWithVersion.slice(i, i + batchSize);
         console.log(`📦 Inserting batch ${Math.floor(i / batchSize) + 1}, records ${i + 1}-${Math.min(i + batchSize, processosWithVersion.length)}`);
         
+        // Use upsert to handle potential duplicates
         const { data: insertedBatch, error: batchError } = await supabase
           .from('processos')
-          .insert(batch)
+          .upsert(batch, { 
+            onConflict: 'org_id,cnj_digits',
+            ignoreDuplicates: false 
+          })
           .select('id');
 
         if (batchError) {
-          console.error(`❌ Error inserting batch ${Math.floor(i / batchSize) + 1}:`, batchError);
-          errors += batch.length;
+          console.error(`❌ Error upserting batch ${Math.floor(i / batchSize) + 1}:`, batchError);
+          
+          // Try individual inserts for this batch to identify specific errors
+          console.log('🔍 Trying individual inserts for problematic batch...');
+          for (const record of batch) {
+            const { error: individualError } = await supabase
+              .from('processos')
+              .upsert(record, { onConflict: 'org_id,cnj_digits' })
+              .select('id');
+              
+            if (individualError) {
+              console.error(`❌ Individual error for CNJ ${record.cnj_digits}:`, individualError);
+              errors++;
+            } else {
+              totalInserted++;
+            }
+          }
         } else {
           const batchInserted = insertedBatch?.length || 0;
           totalInserted += batchInserted;
-          console.log(`✅ Successfully inserted batch ${Math.floor(i / batchSize) + 1}: ${batchInserted} records`);
+          console.log(`✅ Successfully upserted batch ${Math.floor(i / batchSize) + 1}: ${batchInserted} records`);
         }
       }
 

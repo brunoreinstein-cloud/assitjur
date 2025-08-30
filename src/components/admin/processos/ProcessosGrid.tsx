@@ -303,25 +303,25 @@ export function ProcessosGrid({
                   <TableCell>
                     <div className="flex items-center gap-1 flex-wrap">
                       {processo.triangulacao_confirmada && (
-                        <Badge variant="outline" className="text-xs gap-1 bg-purple-50 text-purple-700 border-purple-200">
+                        <Badge key="triangulacao" variant="outline" className="text-xs gap-1 bg-purple-50 text-purple-700 border-purple-200">
                           <Triangle className="h-3 w-3" />
                           Triang.
                         </Badge>
                       )}
                       {processo.troca_direta && (
-                        <Badge variant="outline" className="text-xs gap-1 bg-amber-50 text-amber-700 border-amber-200">
+                        <Badge key="troca" variant="outline" className="text-xs gap-1 bg-amber-50 text-amber-700 border-amber-200">
                           <ArrowRightLeft className="h-3 w-3" />
                           Troca
                         </Badge>
                       )}
                       {processo.prova_emprestada && (
-                        <Badge variant="destructive" className="text-xs gap-1">
+                        <Badge key="prova" variant="destructive" className="text-xs gap-1">
                           <FileX className="h-3 w-3" />
                           Prova
                         </Badge>
                       )}
                       {processo.reclamante_foi_testemunha && (
-                        <Badge variant="outline" className="text-xs gap-1 bg-sky-50 text-sky-700 border-sky-200">
+                        <Badge key="duplo" variant="outline" className="text-xs gap-1 bg-sky-50 text-sky-700 border-sky-200">
                           <Users className="h-3 w-3" />
                           Duplo
                         </Badge>
