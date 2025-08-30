@@ -372,14 +372,17 @@ export async function intelligentValidateAndCorrect(
   // Calculate enhanced statistics  
   const totalOriginal = Object.values(rawDataCount).reduce((acc, count) => acc + count, 0);
   const totalProcessed = Object.values(normalizedData).flat().length;
+  const totalFiltered = totalOriginal - totalProcessed;
   const correctionsApplied = intelligentCorrections.filter(c => c.corrections.length > 0).length;
+  const totalCorrectionsMade = intelligentCorrections.reduce((acc, c) => acc + c.corrections.length, 0);
   
   console.log(`🔍 Validation Summary:
     - Original rows: ${totalOriginal}
     - Processed rows: ${totalProcessed}  
-    - Filtered rows: ${totalOriginal - totalProcessed}
+    - Filtered rows: ${totalFiltered}
     - Valid rows: ${totalValid}
-    - Corrections applied: ${correctionsApplied}`);
+    - Rows with corrections: ${correctionsApplied}
+    - Total corrections made: ${totalCorrectionsMade}`);
 
   const result: IntelligentValidationResult = {
     summary: {

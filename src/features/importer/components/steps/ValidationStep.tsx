@@ -219,8 +219,9 @@ export function ValidationStep() {
 
   const { summary, issues } = validationResult;
   const hasErrors = summary.errors > 0;
-  const canProceed = summary.valid > 0 && (!hasErrors || showCorrections === false);
   const hasCorrections = corrections.length > 0 && corrections.some(c => c.corrections.length > 0);
+  const correctionsApplied = !showCorrections && hasCorrections;
+  const canProceed = summary.valid > 0 && (!hasErrors || correctionsApplied);
   const hasDownloads = validationResult.downloadUrls && (
     validationResult.downloadUrls.fixedXlsx || 
     validationResult.downloadUrls.reportCsv || 
@@ -316,7 +317,12 @@ export function ValidationStep() {
             <CheckCircle className="h-4 w-4 text-success" />
             <AlertDescription className="text-success">
               ✅ Arquivo pronto para publicação! {summary.valid} registros serão importados.
-              {hasCorrections && (
+              {hasCorrections && correctionsApplied && (
+                <div className="mt-1 text-sm">
+                  Correções automáticas aplicadas com sucesso.
+                </div>
+              )}
+              {hasCorrections && !correctionsApplied && (
                 <Button 
                   variant="link" 
                   size="sm" 
@@ -345,6 +351,26 @@ export function ValidationStep() {
                 >
                   <Wand2 className="h-3 w-3 mr-1" />
                   Ver correções automáticas
+                </Button>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {hasErrors && !showCorrections && !correctionsApplied && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              ❌ {summary.errors} problemas impedem a importação.
+              {hasCorrections && (
+                <Button 
+                  variant="link" 
+                  size="sm" 
+                  className="ml-2 p-0 h-auto text-destructive"
+                  onClick={() => setShowCorrections(true)}
+                >
+                  <Wand2 className="h-3 w-3 mr-1" />
+                  Aplicar correções automáticas
                 </Button>
               )}
             </AlertDescription>
@@ -430,7 +456,7 @@ export function ValidationStep() {
             onClick={() => setCurrentStep('preview')}
             disabled={!canProceed}
           >
-            {hasErrors ? 'Corrigir Erros Primeiro' : 'Continuar para Prévia'}
+            {hasErrors && !correctionsApplied ? 'Corrigir Erros Primeiro' : 'Continuar para Prévia'}
           </Button>
         </div>
       </div>
