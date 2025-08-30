@@ -279,12 +279,13 @@ serve(async (req) => {
               continue;
             }
             
-            // Additional validation for required fields
-            if (!record.reclamante_nome && !record.reu_nome) {
-              console.warn(`⚠️ Skipping record without reclamante or reu: CNJ ${record.cnj_digits}`);
-              errors++;
-              continue;
-            }
+            // ✅ FLEXIBLE VALIDATION: Accept records with valid CNJ even if names are missing
+            // This allows importing "stub" records that can be completed later
+            console.log(`✅ Processing record with CNJ ${record.cnj_digits}: reclamante="${record.reclamante_nome || 'NULL'}", reu="${record.reu_nome || 'NULL'}"`);
+            
+            // Convert empty strings to null for cleaner data
+            if (record.reclamante_nome === '') record.reclamante_nome = null;
+            if (record.reu_nome === '') record.reu_nome = null;
             
             // Check if record already exists
             const { data: existingRecord } = await supabase
