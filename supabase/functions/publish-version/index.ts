@@ -1,17 +1,37 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders } from '../_shared/cors.ts'
 
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
+  console.log(`📞 publish-version called with method: ${req.method}`);
+
   try {
+    // Validate request method
+    if (req.method !== 'POST') {
+      console.error('❌ Invalid method:', req.method);
+      return new Response(
+        JSON.stringify({ error: 'Method not allowed' }),
+        { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate Authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('❌ Missing Authorization header');
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('✅ Authorization header present');
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
@@ -22,52 +42,109 @@ serve(async (req) => {
           detectSessionInUrl: false,
         },
         global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
+          headers: { Authorization: authHeader },
         },
       }
     );
 
     // Verificar autenticação
+    console.log('🔐 Checking authentication...');
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    if (authError) {
+      console.error('❌ Auth error:', authError);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Authentication failed', details: authError.message }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    if (!user) {
+      console.error('❌ No user found');
+      return new Response(
+        JSON.stringify({ error: 'No user found' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    console.log('✅ User authenticated:', user.email);
+
     // Buscar perfil do usuário
-    const { data: profile } = await supabase
+    console.log('👤 Fetching user profile...');
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('organization_id, role')
       .eq('user_id', user.id)
       .single();
 
+    if (profileError) {
+      console.error('❌ Profile fetch error:', profileError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch user profile', details: profileError.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     if (!profile || profile.role !== 'ADMIN') {
+      console.error('❌ Insufficient permissions. Profile:', profile);
       return new Response(
         JSON.stringify({ error: 'Insufficient permissions' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const { versionId } = await req.json();
+    console.log('✅ Profile validated:', { role: profile.role, org: profile.organization_id });
+
+    // Parse request body with error handling
+    let requestBody;
+    try {
+      requestBody = await req.json();
+      console.log('📦 Request body parsed:', requestBody);
+    } catch (parseError) {
+      console.error('❌ JSON parse error:', parseError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { versionId } = requestBody;
+    if (!versionId) {
+      console.error('❌ Missing versionId in request');
+      return new Response(
+        JSON.stringify({ error: 'Missing versionId' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Verificar se a versão existe e pertence à organização
-    const { data: versionToPublish } = await supabase
+    console.log('📋 Checking version:', versionId);
+    const { data: versionToPublish, error: versionError } = await supabase
       .from('versions')
       .select('id, number, org_id, status')
       .eq('id', versionId)
       .eq('org_id', profile.organization_id)
       .single();
 
+    if (versionError) {
+      console.error('❌ Version fetch error:', versionError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch version', details: versionError.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     if (!versionToPublish) {
+      console.error('❌ Version not found or access denied');
       return new Response(
         JSON.stringify({ error: 'Version not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    console.log('✅ Version found:', { number: versionToPublish.number, status: versionToPublish.status });
+
     if (versionToPublish.status !== 'draft') {
+      console.error('❌ Invalid status for publication:', versionToPublish.status);
       return new Response(
         JSON.stringify({ error: 'Only draft versions can be published' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -77,20 +154,29 @@ serve(async (req) => {
     const now = new Date().toISOString();
 
     // 1. Marcar versões anteriores como archived
-    await supabase
+    console.log('📚 Archiving previous published versions...');
+    const { error: archiveError } = await supabase
       .from('versions')
       .update({ status: 'archived' })
       .eq('org_id', profile.organization_id)
       .eq('status', 'published');
 
+    if (archiveError) {
+      console.error('❌ Error archiving previous versions:', archiveError);
+      // Continue anyway, this is not critical
+    } else {
+      console.log('✅ Previous versions archived');
+    }
+
     // 2. Publicar nova versão
+    console.log('🚀 Publishing version...');
     const { data: publishedVersion, error } = await supabase
       .from('versions')
       .update({ 
         status: 'published', 
         published_at: now,
         summary: {
-          ...versionToPublish.summary,
+          ...(versionToPublish.summary || {}),
           published_at: now,
           published_by: user.email
         }
@@ -100,35 +186,22 @@ serve(async (req) => {
       .single();
 
     if (error) {
-      console.error('Error publishing version:', error);
+      console.error('❌ Error publishing version:', error);
       return new Response(
-        JSON.stringify({ error: 'Failed to publish version' }),
+        JSON.stringify({ error: 'Failed to publish version', details: error.message }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Published version v${publishedVersion.number} for org ${profile.organization_id}`);
-
-    // Process witness data automatically after publication
-    try {
-      console.log('Starting automatic witness data processing...');
-      
-      const { data: processWitnessData, error: processWitnessError } = await supabase.functions.invoke('process-witness-data', {
-        headers: {
-          Authorization: req.headers.get('Authorization')!,
-        }
-      });
-
-      if (processWitnessError) {
-        console.error('Error processing witness data:', processWitnessError);
-        // Don't fail version publication for witness processing errors
-      } else {
-        console.log('Witness data processing completed:', processWitnessData);
-      }
-    } catch (witnessError) {
-      console.error('Failed to trigger witness data processing:', witnessError);
-      // Don't fail the version publication for witness processing errors
+    if (!publishedVersion) {
+      console.error('❌ No version data returned after publish');
+      return new Response(
+        JSON.stringify({ error: 'Failed to publish version - no data returned' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+
+    console.log(`✅ Published version v${publishedVersion.number} for org ${profile.organization_id}`);
 
     return new Response(
       JSON.stringify({ 
@@ -139,9 +212,16 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in publish-version:', error);
+    console.error('💥 CRITICAL ERROR in publish-version:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error message:', error.message);
+    
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ 
+        error: 'Internal server error',
+        message: error.message,
+        timestamp: new Date().toISOString()
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
