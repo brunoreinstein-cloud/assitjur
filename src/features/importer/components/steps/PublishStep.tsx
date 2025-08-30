@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import { EdgeFunctionTester } from '@/components/admin/EdgeFunctionTester';
 import { CheckCircle, AlertCircle, RefreshCw, PartyPopper } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,12 +71,28 @@ export function PublishStep() {
         });
       }
       
+      // Step 3: Import data with enhanced diagnostics and retry logic
       console.log('📤 Enviando dados para importação:', { 
         processosCount: processos.length, 
         testemunhasCount: testemunhas.length,
         versionId: versionData.versionId,
         totalValidRecords: validationResult.summary?.valid || 0
       });
+
+      // Diagnostic: Test function availability first
+      console.log('🔍 Testing Edge Function connectivity...');
+      try {
+        const testResponse = await fetch(`https://fgjypmlszuzkgvhuszxn.supabase.co/functions/v1/import-into-version`, {
+          method: 'OPTIONS',
+          headers: {
+            'Access-Control-Request-Method': 'POST',
+            'Access-Control-Request-Headers': 'authorization, content-type, apikey'
+          }
+        });
+        console.log('✅ CORS preflight test:', testResponse.status, testResponse.headers.get('access-control-allow-origin'));
+      } catch (testError) {
+        console.error('❌ CORS preflight failed:', testError);
+      }
 
       // Step 3: Import data with timeout handling
       setUploadProgress(30);
