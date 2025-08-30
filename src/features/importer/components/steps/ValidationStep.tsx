@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { FileCheck, RefreshCw, CheckCircle, AlertCircle, Wand2, Info } from 'lucide-react';
+import { FileCheck, RefreshCw, CheckCircle, AlertCircle, Wand2, Info, Download } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { intelligentValidateAndCorrect } from '@/lib/importer/intelligent-corrector';
 import { IssuesDataTable } from '@/components/assistjur/IssuesDataTable';
@@ -119,31 +119,54 @@ export function ValidationStep() {
     }
   };
 
-  const handleApplyCorrections = (correctedData: any[]) => {
+  const handleApplyCorrections = async (correctedData: any[]) => {
     const validProcessos = correctedData.filter(d => d.cnj && d.reclamante_nome && d.reu_nome);
     const correctionsApplied = corrections.filter(c => c.corrections.length > 0).length;
     
-    // Apply corrections and update validation result
-    const updatedResult: any = {
-      ...validationResult!,
-      normalizedData: {
-        ...validationResult!.normalizedData,
-        processos: validProcessos
-      },
-      summary: {
-        ...validationResult!.summary,
-        valid: validProcessos.length,
-        errors: Math.max(0, validationResult!.summary.errors - correctionsApplied)
-      }
-    };
-    
-    setValidationResult(updatedResult);
-    setShowCorrections(false);
-    
-    toast({
-      title: "Correções aplicadas",
-      description: `${correctionsApplied} correções foram aplicadas com sucesso`,
-    });
+    try {
+      // Import generateReports function
+      const { generateReports } = await import('@/lib/importer/report');
+      
+      // Generate updated result with corrected data
+      const updatedResult: any = {
+        ...validationResult!,
+        normalizedData: {
+          ...validationResult!.normalizedData,
+          processos: validProcessos
+        },
+        summary: {
+          ...validationResult!.summary,
+          valid: validProcessos.length,
+          errors: Math.max(0, validationResult!.summary.errors - correctionsApplied)
+        }
+      };
+      
+      // Generate reports and download URLs for corrected data
+      const downloadUrls = await generateReports(
+        updatedResult,
+        file?.name || 'arquivo_corrigido',
+        undefined, // originalData not needed for corrected version
+        new Map() // corrections map not needed here as corrections are already applied
+      );
+      
+      // Update result with download URLs
+      updatedResult.downloadUrls = downloadUrls;
+      
+      setValidationResult(updatedResult);
+      setShowCorrections(false);
+      
+      toast({
+        title: "Correções aplicadas",
+        description: `${correctionsApplied} correções aplicadas. Downloads disponíveis.`,
+      });
+      
+    } catch (error) {
+      toast({
+        title: "Erro ao gerar relatórios",
+        description: "Correções aplicadas, mas falha ao gerar downloads",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleRejectCorrections = () => {
@@ -196,8 +219,13 @@ export function ValidationStep() {
 
   const { summary, issues } = validationResult;
   const hasErrors = summary.errors > 0;
-  const canProceed = summary.valid > 0 && !hasErrors;
+  const canProceed = summary.valid > 0 && (!hasErrors || showCorrections === false);
   const hasCorrections = corrections.length > 0 && corrections.some(c => c.corrections.length > 0);
+  const hasDownloads = validationResult.downloadUrls && (
+    validationResult.downloadUrls.fixedXlsx || 
+    validationResult.downloadUrls.reportCsv || 
+    validationResult.downloadUrls.reportJson
+  );
 
   return (
     <div className="space-y-6">
@@ -239,6 +267,49 @@ export function ValidationStep() {
           />
         )}
 
+        {/* Downloads Section */}
+        {hasDownloads && (
+          <Card className="border-blue-500/20 bg-blue-500/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Download className="h-5 w-5" />
+                Downloads Disponíveis
+              </CardTitle>
+              <CardDescription>
+                Baixe os arquivos processados e relatórios de correção
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {validationResult.downloadUrls?.fixedXlsx && (
+                  <Button asChild variant="outline" className="justify-start">
+                    <a href={validationResult.downloadUrls.fixedXlsx} download="arquivo_corrigido.xlsx">
+                      <FileCheck className="h-4 w-4 mr-2" />
+                      Arquivo Corrigido
+                    </a>
+                  </Button>
+                )}
+                {validationResult.downloadUrls?.reportCsv && (
+                  <Button asChild variant="outline" className="justify-start">
+                    <a href={validationResult.downloadUrls.reportCsv} download="relatorio_erros.csv">
+                      <AlertCircle className="h-4 w-4 mr-2" />
+                      Relatório CSV
+                    </a>
+                  </Button>
+                )}
+                {validationResult.downloadUrls?.reportJson && (
+                  <Button asChild variant="outline" className="justify-start">
+                    <a href={validationResult.downloadUrls.reportJson} download="relatorio_completo.json">
+                      <Info className="h-4 w-4 mr-2" />
+                      Relatório JSON
+                    </a>
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Status Alert */}
         {canProceed && !showCorrections && (
           <Alert className="border-success bg-success/5">
@@ -260,7 +331,7 @@ export function ValidationStep() {
           </Alert>
         )}
 
-        {hasErrors && !showCorrections && (
+        {hasErrors && showCorrections && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
