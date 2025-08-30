@@ -129,18 +129,23 @@ async function detectExcelStructure(file: File): Promise<DetectedSheet[]> {
 function detectSheetModel(headers: string[]): SheetModel {
   const normalizedHeaders = headers.map(h => h.toLowerCase().trim());
   
-  // Indicators for "testemunha" model
-  const testemunhaIndicators = [
+  // Strong indicators for "testemunha" model
+  const strongTestemunhaIndicators = [
     'nome_testemunha',
-    'testemunha',
-    'qtd_depoimentos',
     'cnjs_como_testemunha',
+    'qtd_depoimentos',
     'quantidade_depoimentos'
   ];
   
-  // Indicators for "processo" model  
-  const processoIndicators = [
-    'reclamante',
+  // Weak indicators for "testemunha" model
+  const weakTestemunhaIndicators = [
+    'testemunha',
+    'depoimentos',
+    'como_testemunha'
+  ];
+  
+  // Strong indicators for "processo" model  
+  const strongProcessoIndicators = [
     'reclamante_nome',
     'reu_nome',
     'advogados_ativo',
@@ -149,30 +154,67 @@ function detectSheetModel(headers: string[]): SheetModel {
     'testemunhas_todas'
   ];
   
-  const testemunhaScore = testemunhaIndicators.reduce((score, indicator) => 
+  // Weak indicators for "processo" model
+  const weakProcessoIndicators = [
+    'reclamante',
+    'reu',
+    'advogado',
+    'comarca',
+    'tribunal',
+    'vara',
+    'fase',
+    'status'
+  ];
+  
+  // Calculate scores with weights
+  const strongTestemunhaScore = strongTestemunhaIndicators.reduce((score, indicator) => 
+    normalizedHeaders.some(h => h.includes(indicator)) ? score + 3 : score, 0
+  );
+  
+  const weakTestemunhaScore = weakTestemunhaIndicators.reduce((score, indicator) => 
     normalizedHeaders.some(h => h.includes(indicator)) ? score + 1 : score, 0
   );
   
-  const processoScore = processoIndicators.reduce((score, indicator) => 
+  const strongProcessoScore = strongProcessoIndicators.reduce((score, indicator) => 
+    normalizedHeaders.some(h => h.includes(indicator)) ? score + 3 : score, 0
+  );
+  
+  const weakProcessoScore = weakProcessoIndicators.reduce((score, indicator) => 
     normalizedHeaders.some(h => h.includes(indicator)) ? score + 1 : score, 0
   );
+  
+  const totalTestemunhaScore = strongTestemunhaScore + weakTestemunhaScore;
+  const totalProcessoScore = strongProcessoScore + weakProcessoScore;
   
   // Must have CNJ for any model
   const hasCNJ = normalizedHeaders.some(h => 
-    h.includes('cnj') || h.includes('numero_processo')
+    h.includes('cnj') || h.includes('numero_processo') || h.includes('processo')
   );
   
   if (!hasCNJ) {
+    console.log('No CNJ column detected, marking as ambiguous');
     return 'ambiguous';
   }
   
-  if (testemunhaScore > processoScore && testemunhaScore >= 2) {
+  console.log(`Detection scores - Testemunha: ${totalTestemunhaScore} (strong: ${strongTestemunhaScore}), Processo: ${totalProcessoScore} (strong: ${strongProcessoScore})`);
+  
+  // If we have strong indicators, prefer them
+  if (strongTestemunhaScore > 0 && strongTestemunhaScore >= strongProcessoScore) {
     return 'testemunha';
-  } else if (processoScore > testemunhaScore && processoScore >= 2) {
+  } else if (strongProcessoScore > 0 && strongProcessoScore > strongTestemunhaScore) {
     return 'processo';
-  } else {
-    return 'ambiguous';
   }
+  
+  // Fall back to total scores with lower threshold
+  if (totalTestemunhaScore > totalProcessoScore && totalTestemunhaScore >= 1) {
+    return 'testemunha';
+  } else if (totalProcessoScore > totalTestemunhaScore && totalProcessoScore >= 1) {
+    return 'processo';
+  } 
+  
+  // Default fallback - if we have CNJ but can't determine type, assume processo
+  console.log('Could not determine sheet type, defaulting to processo');
+  return 'processo';
 }
 
 /**

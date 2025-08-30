@@ -51,43 +51,75 @@ export function UploadStep() {
     setIsProcessing(true);
     setUploadProgress(0);
 
-    try {
-      // Simulate upload progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev: number) => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
+    // Add debouncing to prevent rate limiting
+    const debounceTimeout = setTimeout(async () => {
+      try {
+        // Simulate upload progress
+        const progressInterval = setInterval(() => {
+          setUploadProgress((prev: number) => {
+            if (prev >= 90) {
+              clearInterval(progressInterval);
+              return 90;
+            }
+            return prev + Math.random() * 15; // Slower progress to reduce pressure
+          });
+        }, 150); // Slower interval
+
+        console.log('Starting file structure detection for:', file.name);
+        
+        // Detect file structure with retry logic
+        let sheets: any[] = [];
+        let retryCount = 0;
+        const maxRetries = 3;
+        
+        while (retryCount < maxRetries) {
+          try {
+            sheets = await detectFileStructure(file);
+            break;
+          } catch (err) {
+            retryCount++;
+            if (retryCount === maxRetries) {
+              throw err;
+            }
+            
+            console.log(`Retry ${retryCount}/${maxRetries} for file detection`);
+            // Exponential backoff
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
           }
-          return prev + Math.random() * 20;
+        }
+        
+        clearInterval(progressInterval);
+        setUploadProgress(100);
+        setDetectedSheets(sheets);
+
+        console.log('Detected sheets:', sheets.map(s => ({ name: s.name, model: s.model })));
+
+        // Check if manual mapping is needed
+        const hasAmbiguous = sheets.some(s => s.model === 'ambiguous');
+        
+        if (hasAmbiguous) {
+          console.log('Ambiguous sheets detected, showing mapping dialog');
+          setShowMapping(true);
+        } else {
+          handleContinue(sheets, file);
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Erro ao processar arquivo';
+        console.error('File processing error:', errorMessage);
+        
+        setError(errorMessage);
+        toast({
+          title: "Erro no processamento",
+          description: errorMessage,
+          variant: "destructive"
         });
-      }, 100);
-
-      // Detect file structure
-      const sheets = await detectFileStructure(file);
-      
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-      setDetectedSheets(sheets);
-
-      // Check if manual mapping is needed
-      const hasAmbiguous = sheets.some(s => s.model === 'ambiguous');
-      
-      if (hasAmbiguous) {
-        setShowMapping(true);
-      } else {
-        handleContinue(sheets, file);
+      } finally {
+        setIsProcessing(false);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao processar arquivo');
-      toast({
-        title: "Erro no processamento",
-        description: err instanceof Error ? err.message : 'Erro desconhecido',
-        variant: "destructive"
-      });
-    } finally {
-      setIsProcessing(false);
-    }
+    }, 300); // 300ms debounce
+
+    // Cleanup timeout if component unmounts
+    return () => clearTimeout(debounceTimeout);
   }, [setError, setIsProcessing, setUploadProgress]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -102,15 +134,14 @@ export function UploadStep() {
   });
 
   const handleContinue = (sheets: DetectedSheet[], file: File) => {
-    // Validate required sheets
-    const hasProcesso = sheets.some(s => s.model === 'processo');
-    const hasTestemunha = sheets.some(s => s.model === 'testemunha');
+    // Validate at least one valid sheet
+    const hasValidSheet = sheets.some(s => s.model === 'processo' || s.model === 'testemunha');
     
-    if (!hasProcesso || !hasTestemunha) {
-      setError('Arquivo deve conter abas "Por Processo" e "Por Testemunha"');
+    if (!hasValidSheet) {
+      setError('Arquivo deve conter pelo menos uma aba válida');
       toast({
         title: "Estrutura inválida",
-        description: 'É necessário ter as abas "Por Processo" e "Por Testemunha"',
+        description: 'É necessário ter pelo menos uma aba com estrutura válida',
         variant: "destructive"
       });
       return;

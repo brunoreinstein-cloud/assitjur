@@ -28,9 +28,8 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
   );
 
   const hasRequiredSheets = () => {
-    const hasProcesso = mappedSheets.some(s => s.model === 'processo');
-    const hasTestemunha = mappedSheets.some(s => s.model === 'testemunha');
-    return hasProcesso && hasTestemunha;
+    // More flexible - just need at least one valid sheet
+    return mappedSheets.some(s => s.model === 'processo' || s.model === 'testemunha');
   };
 
   const handleComplete = () => {
@@ -105,7 +104,7 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
                 <div className="flex items-center gap-2 text-destructive">
                   <AlertCircle className="h-4 w-4" />
                   <span className="text-sm font-medium">
-                    É necessário ter pelo menos uma aba "Por Processo" e uma "Por Testemunha"
+                    É necessário ter pelo menos uma aba mapeada como "Por Processo" ou "Por Testemunha"
                   </span>
                 </div>
               </CardContent>
