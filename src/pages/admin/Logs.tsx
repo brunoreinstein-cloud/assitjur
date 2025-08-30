@@ -62,6 +62,23 @@ interface OpenAILog {
   created_at: string;
 }
 
+interface DatabaseLog {
+  id: string;
+  identifier: string;
+  timestamp: number;
+  event_message: string;
+  error_severity?: string;
+}
+
+interface SystemLog {
+  id: string;
+  function_id: string;
+  timestamp: number;
+  event_message: string;
+  event_type: string;
+  level: string;
+}
+
 const Logs = () => {
   const { profile } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -70,6 +87,8 @@ const Logs = () => {
   const [activeTab, setActiveTab] = useState('audit');
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [openaiLogs, setOpenaiLogs] = useState<OpenAILog[]>([]);
+  const [databaseLogs, setDatabaseLogs] = useState<DatabaseLog[]>([]);
+  const [systemLogs, setSystemLogs] = useState<SystemLog[]>([]);
   const [filterPeriod, setFilterPeriod] = useState('today');
 
   useEffect(() => {
@@ -87,6 +106,10 @@ const Logs = () => {
         await fetchAuditLogs();
       } else if (activeTab === 'openai') {
         await fetchOpenAILogs();
+      } else if (activeTab === 'database') {
+        await fetchDatabaseLogs();
+      } else if (activeTab === 'system') {
+        await fetchSystemLogs();
       }
     } catch (error) {
       toast({
@@ -127,6 +150,52 @@ const Logs = () => {
 
     if (error) throw error;
     setOpenaiLogs(data || []);
+  };
+
+  const fetchDatabaseLogs = async () => {
+    try {
+      const query = `
+        select identifier, postgres_logs.timestamp, id, event_message, parsed.error_severity 
+        from postgres_logs
+        cross join unnest(metadata) as m
+        cross join unnest(m.parsed) as parsed
+        order by timestamp desc
+        limit 100
+      `;
+
+      const { data, error } = await supabase.functions.invoke('admin-analytics', {
+        body: { query }
+      });
+
+      if (error) throw error;
+      setDatabaseLogs(data?.data || []);
+    } catch (error) {
+      console.error('Error fetching database logs:', error);
+      setDatabaseLogs([]);
+    }
+  };
+
+  const fetchSystemLogs = async () => {
+    try {
+      const query = `
+        select id, function_edge_logs.timestamp, event_message, 
+               m.function_id, m.deployment_id, 'edge_function' as event_type, 'info' as level
+        from function_edge_logs
+        cross join unnest(metadata) as m
+        order by timestamp desc
+        limit 100
+      `;
+
+      const { data, error } = await supabase.functions.invoke('admin-analytics', {
+        body: { query }
+      });
+
+      if (error) throw error;
+      setSystemLogs(data?.data || []);
+    } catch (error) {
+      console.error('Error fetching system logs:', error);
+      setSystemLogs([]);
+    }
   };
 
   const getDateFilter = () => {
@@ -199,6 +268,20 @@ const Logs = () => {
     log.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
     log.request_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
     log.error_code?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredDatabaseLogs = databaseLogs.filter(log => 
+    searchTerm === '' || 
+    log.event_message.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    log.identifier.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    log.error_severity?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredSystemLogs = systemLogs.filter(log => 
+    searchTerm === '' || 
+    log.event_message.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    log.function_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    log.event_type.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -395,11 +478,45 @@ const Logs = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <Database className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Logs de database em desenvolvimento</p>
-                <p className="text-sm">Conexões, queries e performance serão monitorados aqui</p>
-              </div>
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Data/Hora</TableHead>
+                      <TableHead>Severidade</TableHead>
+                      <TableHead>Identificador</TableHead>
+                      <TableHead>Mensagem</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredDatabaseLogs.map((log) => (
+                      <TableRow key={log.id}>
+                        <TableCell className="font-mono text-sm">
+                          {formatDateTime(new Date(log.timestamp / 1000).toISOString())}
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={log.error_severity === 'ERROR' ? 'destructive' : 
+                                   log.error_severity === 'WARNING' ? 'secondary' : 'outline'}
+                          >
+                            {log.error_severity || 'LOG'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs">
+                          {log.identifier}
+                        </TableCell>
+                        <TableCell className="max-w-md truncate">
+                          {log.event_message}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -413,11 +530,49 @@ const Logs = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Logs gerais do sistema em desenvolvimento</p>
-                <p className="text-sm">Edge functions, uploads e processamentos serão monitorados aqui</p>
-              </div>
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Data/Hora</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Função</TableHead>
+                      <TableHead>Nível</TableHead>
+                      <TableHead>Mensagem</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSystemLogs.map((log) => (
+                      <TableRow key={log.id}>
+                        <TableCell className="font-mono text-sm">
+                          {formatDateTime(new Date(log.timestamp / 1000).toISOString())}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{log.event_type}</Badge>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs">
+                          {log.function_id}
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={log.level === 'error' ? 'destructive' : 
+                                   log.level === 'warn' ? 'secondary' : 'outline'}
+                          >
+                            {log.level}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="max-w-md truncate">
+                          {log.event_message}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
