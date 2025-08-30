@@ -143,6 +143,18 @@ async function generateCorrectedXlsx(
 }
 
 /**
+ * Converte índice numérico em coordenada de coluna Excel (A, B, C, ..., AA, AB, etc.)
+ */
+function getExcelColumn(index: number): string {
+  let column = '';
+  while (index >= 0) {
+    column = String.fromCharCode(65 + (index % 26)) + column;
+    index = Math.floor(index / 26) - 1;
+  }
+  return column;
+}
+
+/**
  * Aplica formatação visual para células corrigidas
  */
 function applyCorrectionFormatting(
@@ -151,29 +163,27 @@ function applyCorrectionFormatting(
   sheetName: string
 ) {
   if (!ws['!cols']) ws['!cols'] = [];
+  if (!ws['!comments']) ws['!comments'] = [];
   
-  // Adiciona comentários para células corrigidas
+  // Adiciona comentários e formatação para células corrigidas
   corrections.forEach((correction, address) => {
-    if (address.startsWith(sheetName + '!')) {
-      const cellAddress = address.substring(sheetName.length + 1);
+    // Address format: "SheetName!A2" or just "A2"
+    const cellAddress = address.includes('!') ? address.split('!')[1] : address;
+    
+    if (ws[cellAddress]) {
+      // Adiciona comentário explicando a correção
+      ws['!comments'].push({
+        ref: cellAddress,
+        a: 'Sistema',
+        t: `Corrigido automaticamente: ${correction.reason}\nOriginal: ${correction.original}\nNovo: ${correction.corrected}`
+      });
       
-      if (ws[cellAddress]) {
-        // Adiciona comentário explicando a correção
-        if (!ws['!comments']) ws['!comments'] = [];
-        
-        ws['!comments'].push({
-          ref: cellAddress,
-          a: 'Sistema',
-          t: `Corrigido automaticamente: ${correction.reason}\nOriginal: ${correction.original}\nNovo: ${correction.corrected}`
-        });
-        
-        // Marca célula como modificada (cor de fundo)
-        if (!ws[cellAddress].s) ws[cellAddress].s = {};
-        ws[cellAddress].s.fill = {
-          fgColor: { rgb: 'FFFACD' }, // Cor amarelo claro
-          patternType: 'solid'
-        };
-      }
+      // Marca célula como modificada (cor de fundo amarelo claro)
+      if (!ws[cellAddress].s) ws[cellAddress].s = {};
+      ws[cellAddress].s.fill = {
+        fgColor: { rgb: 'FFFACD' },
+        patternType: 'solid'
+      };
     }
   });
 }

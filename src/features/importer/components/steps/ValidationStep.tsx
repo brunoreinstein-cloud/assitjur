@@ -126,28 +126,50 @@ export function ValidationStep() {
       // Import generateReports function
       const { generateReports } = await import('@/lib/importer/report');
       
-      // Separate corrected data by type, preserving all valid data
+      // Separate corrected data by type, using permissive criteria to preserve data
       const processos = correctedData.filter(d => {
         const cnjDigits = String(d.cnj || '').replace(/[^\d]/g, '');
-        return cnjDigits.length === 20 && d.reclamante_nome && d.reu_nome;
+        const hasEssentialFields = d.reclamante_nome || d.reu_nome;
+        return cnjDigits.length >= 15 || hasEssentialFields;
       });
 
       const testemunhas = correctedData.filter(d => {
         const cnjDigits = String(d.cnj || '').replace(/[^\d]/g, '');
-        return cnjDigits.length === 20 && d.nome_testemunha;
+        return cnjDigits.length >= 15 || d.nome_testemunha;
       });
 
       // Build corrections map for visual formatting in Excel
       const correctionsMap = new Map<string, any>();
+      
+      // Helper function to convert column index to Excel column (A, B, C...)
+      const getExcelColumn = (index: number): string => {
+        let column = '';
+        while (index >= 0) {
+          column = String.fromCharCode(65 + (index % 26)) + column;
+          index = Math.floor(index / 26) - 1;
+        }
+        return column;
+      };
+
       corrections.forEach((row, rowIndex) => {
         row.corrections.forEach((correction, correctionIndex) => {
-          const address = `Linha${rowIndex + 2}!${correction.field}${correctionIndex}`;
-          correctionsMap.set(address, {
-            address,
-            original: correction.originalValue,
-            corrected: correction.correctedValue,
-            reason: correction.reason
-          });
+          // Find field index in the data structure for correct column mapping
+          const sampleData = correctedData[0] || {};
+          const fieldNames = Object.keys(sampleData);
+          const fieldIndex = fieldNames.indexOf(correction.field);
+          
+          if (fieldIndex >= 0) {
+            const excelColumn = getExcelColumn(fieldIndex);
+            const excelRow = rowIndex + 2; // +2 because row 1 is header, start from row 2
+            const address = `${excelColumn}${excelRow}`;
+            
+            correctionsMap.set(address, {
+              address,
+              original: correction.originalValue,
+              corrected: correction.correctedValue,
+              reason: correction.reason
+            });
+          }
         });
       });
       

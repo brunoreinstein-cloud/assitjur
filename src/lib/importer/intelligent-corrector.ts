@@ -291,18 +291,47 @@ export async function intelligentValidateAndCorrect(
         
         intelligentCorrections.push(correctedRow);
         
-        // Validate corrected data
-        if (correctedRow.isValid) {
+        // Validate corrected data with more permissive criteria
+        const cnjDigits = String(correctedRow.correctedData.cnj || '').replace(/[^\d]/g, '');
+        const hasMinimalCNJ = cnjDigits.length >= 15;
+        
+        if (correctedRow.isValid || hasMinimalCNJ) {
           totalValid++;
           
-          // Add corrected data to normalized result - preserve original structure
-          if (sheetType === 'processo' || sheetData.processos) {
+          // Determine data type based on available fields, not just sheet type
+          const hasProcessoFields = correctedRow.correctedData.reclamante_nome || correctedRow.correctedData.reu_nome;
+          const hasTestemunhaFields = correctedRow.correctedData.nome_testemunha;
+          
+          if (hasProcessoFields && (sheetType === 'processo' || !hasTestemunhaFields)) {
             if (!normalizedData.processos) normalizedData.processos = [];
             normalizedData.processos.push(correctedRow.correctedData);
           } 
-          if (sheetType === 'testemunha' || sheetData.testemunhas) {
+          else if (hasTestemunhaFields && (sheetType === 'testemunha' || !hasProcessoFields)) {
             if (!normalizedData.testemunhas) normalizedData.testemunhas = [];
             normalizedData.testemunhas.push(correctedRow.correctedData);
+          }
+          else if (hasMinimalCNJ) {
+            // Fallback: include based on sheet type even with minimal data
+            if (sheetType === 'processo') {
+              if (!normalizedData.processos) normalizedData.processos = [];
+              normalizedData.processos.push(correctedRow.correctedData);
+            } else {
+              if (!normalizedData.testemunhas) normalizedData.testemunhas = [];
+              normalizedData.testemunhas.push(correctedRow.correctedData);
+            }
+          }
+          
+          // Add warnings for incomplete but preserved data
+          if (hasMinimalCNJ && cnjDigits.length < 20) {
+            allIssues.push({
+              sheet: sheet.name,
+              row: rowNumber,
+              column: 'cnj',
+              severity: 'warning',
+              rule: 'CNJ incompleto mas preservado',
+              message: `CNJ tem ${cnjDigits.length} dígitos (recomendado: 20). Dados preservados para revisão.`,
+              value: correctedRow.correctedData.cnj || 'N/A'
+            });
           }
           
           // Add info messages for corrections made
