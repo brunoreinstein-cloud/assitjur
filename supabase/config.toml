@@ -1,5 +1,11 @@
 project_id = "fgjypmlszuzkgvhuszxn"
 
+[functions.user-invitations]
+verify_jwt = true
+
+[functions.manage-user-roles]
+verify_jwt = true
+
 [functions.chat-legal]
 verify_jwt = true
 

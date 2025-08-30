@@ -904,6 +904,7 @@ export type Database = {
           email: string
           id: string
           is_active: boolean
+          last_login_at: string | null
           organization_id: string | null
           role: Database["public"]["Enums"]["user_role"]
           terms_accepted_at: string | null
@@ -918,6 +919,7 @@ export type Database = {
           email: string
           id?: string
           is_active?: boolean
+          last_login_at?: string | null
           organization_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           terms_accepted_at?: string | null
@@ -932,6 +934,7 @@ export type Database = {
           email?: string
           id?: string
           is_active?: boolean
+          last_login_at?: string | null
           organization_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           terms_accepted_at?: string | null
@@ -1181,6 +1184,48 @@ export type Database = {
           },
         ]
       }
+      user_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          data_access_level: Database["public"]["Enums"]["data_access_level"]
+          email: string
+          expires_at: string
+          id: string
+          invitation_token: string
+          invited_by: string
+          org_id: string
+          role: Database["public"]["Enums"]["user_role"]
+          status: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          data_access_level?: Database["public"]["Enums"]["data_access_level"]
+          email: string
+          expires_at?: string
+          id?: string
+          invitation_token: string
+          invited_by: string
+          org_id: string
+          role?: Database["public"]["Enums"]["user_role"]
+          status?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          data_access_level?: Database["public"]["Enums"]["data_access_level"]
+          email?: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          invited_by?: string
+          org_id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          status?: string
+        }
+        Relationships: []
+      }
       user_sessions: {
         Row: {
           created_at: string | null
@@ -1343,6 +1388,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_invitation: {
+        Args: { p_token: string; p_user_id: string }
+        Returns: Json
+      }
       calculate_next_cleanup: {
         Args: { last_cleanup: string; retention_months: number }
         Returns: string
@@ -1370,6 +1419,10 @@ export type Database = {
       execute_retention_cleanup: {
         Args: { p_policy_id: string }
         Returns: Json
+      }
+      generate_invitation_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       get_current_user_org: {
         Args: Record<PropertyKey, never>
