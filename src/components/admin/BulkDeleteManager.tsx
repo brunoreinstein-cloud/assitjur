@@ -69,7 +69,7 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
   const canProceed = isConfirmationValid && allConfirmationsChecked && cooldownSeconds === 0;
 
   // Check if user has permission to use this functionality
-  const hasPermission = isAdmin && profile?.organization_id;
+  const hasPermission = !!(isAdmin && profile?.organization_id);
 
   // Cooldown timer
   useEffect(() => {
@@ -79,17 +79,10 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
     }
   }, [step, cooldownSeconds]);
 
-  // Load deletion impact when opening
+  // Load deletion impact when opening modal
   useEffect(() => {
-    console.log('🔍 BulkDeleteManager useEffect triggered:', {
-      isOpen,
-      hasImpact: !!impact,
-      hasPermission,
-      organizationId: profile?.organization_id
-    });
-    
     if (isOpen && !impact && hasPermission) {
-      console.log('🔍 Starting loadDeletionImpact...');
+      console.log('🔍 Loading deletion impact for modal...');
       loadDeletionImpact();
     }
   }, [isOpen, hasPermission]);
