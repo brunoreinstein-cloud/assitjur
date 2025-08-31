@@ -200,9 +200,9 @@ serve(async (req) => {
         return null;
       };
 
-      // Timeout management (increased for large files)
+      // Timeout management (extended for very large datasets)
       const startTime = Date.now();
-      const maxExecutionTime = 480000; // 8 minutos (2500 * 2s cada)
+      const maxExecutionTime = 900000; // 15 minutes for large datasets (was 8 minutes)
 
       const processosWithVersion = validProcessos.map((p: any, index: number) => {
         // 🔍 Log field mapping for first few records
@@ -242,16 +242,18 @@ serve(async (req) => {
         };
       });
 
-      // 🔧 PERFORMANCE OPTIMIZATION: Smaller batch size for better stability
-      const batchSize = 25;
+      // 🔧 PERFORMANCE OPTIMIZATION: Reduced batch size for large dataset stability
+      const batchSize = 10; // Reduced from 25 to 10 for better reliability with large datasets
       let totalInserted = 0;
+      let totalRetried = 0;
       const totalBatches = Math.ceil(processosWithVersion.length / batchSize);
       
-      console.log(`🚀 Starting import: ${totalBatches} batches of ${batchSize} records each`);
-      console.log(`📊 Processing ${processosWithVersion.length} total records`);
+      console.log(`🚀 Starting optimized import: ${totalBatches} batches of ${batchSize} records each`);
+      console.log(`📊 Processing ${processosWithVersion.length} total records with retry mechanism`);
       
+      // Process batches with retry mechanism
       for (let i = 0; i < processosWithVersion.length; i += batchSize) {
-        // Timeout check
+        // Timeout check with extended time for large datasets
         if (Date.now() - startTime > maxExecutionTime) {
           console.error('⏰ Execution timeout reached, stopping import');
           break;
@@ -259,156 +261,210 @@ serve(async (req) => {
 
         const batch = processosWithVersion.slice(i, i + batchSize);
         const batchNumber = Math.floor(i / batchSize) + 1;
+        let retryCount = 0;
+        const maxRetries = 2;
+        let batchSuccess = false;
         
         console.log(`📦 Processing batch ${batchNumber}/${totalBatches} (records ${i + 1}-${Math.min(i + batchSize, processosWithVersion.length)})`);
         
-        // Simplified insertion strategy - individual record processing for better error handling
-        let batchInserted = 0;
-        
-        for (const record of batch) {
+        // Retry mechanism for failed batches
+        while (!batchSuccess && retryCount <= maxRetries) {
+          if (retryCount > 0) {
+            console.log(`🔄 Retrying batch ${batchNumber} (attempt ${retryCount + 1}/${maxRetries + 1})`);
+            totalRetried++;
+            // Wait before retry
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          }
+          
           try {
-            // 🔍 PRE-INSERTION VALIDATION with detailed logging
-            const validation = {
-              hasCNJ: !!record.cnj_digits,
-              cnjLength: record.cnj_digits?.length || 0,
-              hasReclamante: !!record.reclamante_nome,
-              hasReu: !!record.reu_nome,
-              cnjValue: record.cnj_digits
-            };
+            // Process individual records in batch
+            let batchInserted = 0;
+            let batchErrors = 0;
             
-            if (batchInserted < 3) {
-              console.log(`🔍 VALIDATION RECORD ${batchInserted + 1}:`, validation);
-            }
-            
-            // Validate essential fields before attempting insert
-            if (!record.cnj_digits || record.cnj_digits.length !== 20) {
-              console.warn(`⚠️ Skipping invalid CNJ: "${record.cnj_digits}" (length: ${record.cnj_digits?.length || 0})`);
-              errors++;
-              continue;
-            }
-            
-            // ✅ FLEXIBLE VALIDATION: Accept records with valid CNJ even if names are missing
-            // This allows importing "stub" records that can be completed later
-            console.log(`✅ Processing record with CNJ ${record.cnj_digits}: reclamante="${record.reclamante_nome || 'NULL'}", reu="${record.reu_nome || 'NULL'}"`);
-            
-            // Convert empty strings to null for cleaner data
-            if (record.reclamante_nome === '') record.reclamante_nome = null;
-            if (record.reu_nome === '') record.reu_nome = null;
-            
-            // Check if record already exists
-            const { data: existingRecord } = await supabase
-              .from('processos')
-              .select('id')
-              .eq('org_id', record.org_id)
-              .eq('cnj_digits', record.cnj_digits)
-              .is('deleted_at', null)
-              .single();
-
-            if (existingRecord) {
-              // Update existing record
-              const { error: updateError } = await supabase
-                .from('processos')
-                .update({
-                  cnj: record.cnj,
-                  cnj_normalizado: record.cnj_normalizado,
-                  reclamante_nome: record.reclamante_nome,
-                  reu_nome: record.reu_nome,
-                  comarca: record.comarca,
-                  tribunal: record.tribunal,
-                  vara: record.vara,
-                  fase: record.fase,
-                  status: record.status,
-                  reclamante_cpf_mask: record.reclamante_cpf_mask,
-                  data_audiencia: record.data_audiencia,
-                  advogados_ativo: record.advogados_ativo,
-                  advogados_passivo: record.advogados_passivo,
-                  testemunhas_ativo: record.testemunhas_ativo,
-                  testemunhas_passivo: record.testemunhas_passivo,
-                  observacoes: record.observacoes,
-                  updated_at: new Date().toISOString()
-                })
-                .eq('id', existingRecord.id);
-
-              if (updateError) {
-                console.error(`❌ Failed to update CNJ ${record.cnj_digits}:`, {
-                  error: updateError.message,
-                  code: updateError.code,
-                  details: updateError.details,
-                  recordData: {
-                    cnj_digits: record.cnj_digits,
-                    reclamante_nome: record.reclamante_nome,
-                    reu_nome: record.reu_nome
-                  }
-                });
-                errors++;
-              } else {
-                batchInserted++;
-                if (batchInserted % 5 === 0 || batchInserted < 5) {
-                  console.log(`📝 Updated record ${batchInserted}: CNJ ${record.cnj_digits}, Reclamante: "${record.reclamante_nome}", Reu: "${record.reu_nome}"`);
+            for (const record of batch) {
+              try {
+                // 🔍 PRE-INSERTION VALIDATION with detailed logging
+                const validation = {
+                  hasCNJ: !!record.cnj_digits,
+                  cnjLength: record.cnj_digits?.length || 0,
+                  hasReclamante: !!record.reclamante_nome,
+                  hasReu: !!record.reu_nome,
+                  cnjValue: record.cnj_digits
+                };
+                
+                if (batchInserted < 3) {
+                  console.log(`🔍 VALIDATION RECORD ${batchInserted + 1}:`, validation);
                 }
-              }
-            } else {
-              // Insert new record
-              const { error: insertError } = await supabase
-                .from('processos')
-                .insert([record]);
-
-              if (insertError) {
-                console.error(`❌ Failed to insert CNJ ${record.cnj_digits}:`, {
-                  error: insertError.message,
-                  code: insertError.code,
-                  details: insertError.details,
-                  hint: insertError.hint,
-                  recordData: {
-                    cnj_digits: record.cnj_digits,
-                    reclamante_nome: record.reclamante_nome,
-                    reu_nome: record.reu_nome
-                  }
-                });
-                errors++;
-              } else {
-                batchInserted++;
-                if (batchInserted % 5 === 0 || batchInserted < 5) {
-                  console.log(`✅ Inserted record ${batchInserted}: CNJ ${record.cnj_digits}, Reclamante: "${record.reclamante_nome}", Reu: "${record.reu_nome}"`);
+                
+                // Validate essential fields before attempting insert
+                if (!record.cnj_digits || record.cnj_digits.length !== 20) {
+                  console.warn(`⚠️ Skipping invalid CNJ: "${record.cnj_digits}" (length: ${record.cnj_digits?.length || 0})`);
+                  batchErrors++;
+                  continue;
                 }
+                
+                // ✅ FLEXIBLE VALIDATION: Accept records with valid CNJ even if names are missing
+                // This allows importing "stub" records that can be completed later
+                console.log(`✅ Processing record with CNJ ${record.cnj_digits}: reclamante="${record.reclamante_nome || 'NULL'}", reu="${record.reu_nome || 'NULL'}"`);
+                
+                // Convert empty strings to null for cleaner data
+                if (record.reclamante_nome === '') record.reclamante_nome = null;
+                if (record.reu_nome === '') record.reu_nome = null;
+                
+                // Check if record already exists
+                const { data: existingRecord } = await supabase
+                  .from('processos')
+                  .select('id')
+                  .eq('org_id', record.org_id)
+                  .eq('cnj_digits', record.cnj_digits)
+                  .is('deleted_at', null)
+                  .single();
+
+                if (existingRecord) {
+                  // Update existing record
+                  const { error: updateError } = await supabase
+                    .from('processos')
+                    .update({
+                      cnj: record.cnj,
+                      cnj_normalizado: record.cnj_normalizado,
+                      reclamante_nome: record.reclamante_nome,
+                      reu_nome: record.reu_nome,
+                      comarca: record.comarca,
+                      tribunal: record.tribunal,
+                      vara: record.vara,
+                      fase: record.fase,
+                      status: record.status,
+                      reclamante_cpf_mask: record.reclamante_cpf_mask,
+                      data_audiencia: record.data_audiencia,
+                      advogados_ativo: record.advogados_ativo,
+                      advogados_passivo: record.advogados_passivo,
+                      testemunhas_ativo: record.testemunhas_ativo,
+                      testemunhas_passivo: record.testemunhas_passivo,
+                      observacoes: record.observacoes,
+                      updated_at: new Date().toISOString()
+                    })
+                    .eq('id', existingRecord.id);
+
+                  if (updateError) {
+                    console.error(`❌ Failed to update CNJ ${record.cnj_digits}:`, {
+                      error: updateError.message,
+                      code: updateError.code,
+                      details: updateError.details,
+                      recordData: {
+                        cnj_digits: record.cnj_digits,
+                        reclamante_nome: record.reclamante_nome,
+                        reu_nome: record.reu_nome
+                      }
+                    });
+                    batchErrors++;
+                  } else {
+                    batchInserted++;
+                    if (batchInserted % 5 === 0 || batchInserted < 5) {
+                      console.log(`📝 Updated record ${batchInserted}: CNJ ${record.cnj_digits}, Reclamante: "${record.reclamante_nome}", Reu: "${record.reu_nome}"`);
+                    }
+                  }
+                } else {
+                  // Insert new record
+                  const { error: insertError } = await supabase
+                    .from('processos')
+                    .insert([record]);
+
+                  if (insertError) {
+                    console.error(`❌ Failed to insert CNJ ${record.cnj_digits}:`, {
+                      error: insertError.message,
+                      code: insertError.code,
+                      details: insertError.details,
+                      hint: insertError.hint,
+                      recordData: {
+                        cnj_digits: record.cnj_digits,
+                        reclamante_nome: record.reclamante_nome,
+                        reu_nome: record.reu_nome
+                      }
+                    });
+                    batchErrors++;
+                  } else {
+                    batchInserted++;
+                    if (batchInserted % 5 === 0 || batchInserted < 5) {
+                      console.log(`✅ Inserted record ${batchInserted}: CNJ ${record.cnj_digits}, Reclamante: "${record.reclamante_nome}", Reu: "${record.reu_nome}"`);
+                    }
+                  }
+                }
+              } catch (recordError: any) {
+                console.error(`❌ Error processing CNJ ${record.cnj_digits}:`, recordError.message);
+                batchErrors++;
               }
             }
-          } catch (recordError: any) {
-            console.error(`❌ Error processing CNJ ${record.cnj_digits}:`, recordError.message);
-            errors++;
+
+            // Batch completed successfully
+            totalInserted += batchInserted;
+            errors += batchErrors;
+            batchSuccess = true;
+            
+            console.log(`✅ Batch ${batchNumber} complete: ${batchInserted}/${batch.length} records processed successfully (${batchErrors} errors)`);
+            
+          } catch (batchError: any) {
+            console.error(`❌ Batch ${batchNumber} failed (attempt ${retryCount + 1}):`, batchError.message);
+            retryCount++;
+            
+            if (retryCount > maxRetries) {
+              console.error(`🚨 Batch ${batchNumber} failed after ${maxRetries + 1} attempts, skipping batch`);
+              errors += batch.length; // Count all records in failed batch as errors
+              break;
+            }
           }
         }
-
-        totalInserted += batchInserted;
-        console.log(`✅ Batch ${batchNumber} complete: ${batchInserted}/${batch.length} records processed successfully`);
         
-        // Small delay between batches to prevent overwhelming the database
+        // Small delay between batches to prevent database overload
         if (batchNumber < totalBatches) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, 300)); // Increased delay for large datasets
+        }
+        
+        // Log progress every 10 batches or if significant milestone
+        if (batchNumber % 10 === 0 || batchNumber === totalBatches) {
+          const progressPercent = Math.round((batchNumber / totalBatches) * 100);
+          console.log(`📊 Progress: ${progressPercent}% complete (${totalInserted} imported, ${errors} errors, ${totalRetried} retries)`);
         }
       }
 
       imported = totalInserted;
       console.log(`🎉 Import complete: ${totalInserted}/${validProcessos.length} processos processed`);
-      console.log(`📊 Final stats: ${totalInserted} successful, ${errors} failed`);
+      console.log(`📊 Final stats: ${totalInserted} successful, ${errors} failed, ${totalRetried} batch retries`);
       
       if (errors > 0) {
         console.log(`⚠️ ${errors} records failed to import`);
         
-        // Se mais de 50% falharam, considerar como erro crítico
+        // Calculate failure rate with retry context
         const failureRate = errors / validProcessos.length;
         if (failureRate > 0.5) {
-          console.error(`🚨 High failure rate: ${Math.round(failureRate * 100)}% of records failed`);
+          console.error(`🚨 High failure rate: ${Math.round(failureRate * 100)}% of records failed (after ${totalRetried} retries)`);
         }
       }
       
+      // More lenient validation - allow partial success for large imports
       if (totalInserted === 0 && validProcessos.length > 0) {
         console.error('🚨 CRITICAL: No records were imported despite having valid data');
         return new Response(
           JSON.stringify({ 
             error: 'Import failed - no records were imported',
             details: `Attempted to import ${validProcessos.length} records but all failed`,
-            errors: errors
+            errors: errors,
+            retries_attempted: totalRetried
+          }),
+          { status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      // Success criteria: At least 25% of records imported for large datasets
+      const successRate = totalInserted / validProcessos.length;
+      if (validProcessos.length > 1000 && successRate < 0.25) {
+        console.error(`🚨 Large dataset import with low success rate: ${Math.round(successRate * 100)}%`);
+        return new Response(
+          JSON.stringify({ 
+            error: 'Import partially failed - success rate too low for large dataset',
+            details: `Only ${totalInserted}/${validProcessos.length} records imported (${Math.round(successRate * 100)}%)`,
+            imported: totalInserted,
+            errors: errors,
+            retries_attempted: totalRetried
           }),
           { status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
         );
@@ -417,18 +473,25 @@ serve(async (req) => {
       console.log('⚠️ No valid processos to insert');
     }
 
-    // 4. Atualizar summary da versão
+    // 4. Atualizar summary da versão com estatísticas detalhadas
     const summary = {
       imported,
       errors,
       warnings,
+      retries_attempted: totalRetried || 0,
+      success_rate: validProcessos.length > 0 ? Math.round((imported / validProcessos.length) * 100) : 0,
       file_checksum: fileChecksum,
       filename: filename || 'unknown',
       updated_at: new Date().toISOString(),
       updated_by: user.email,
       total_records: (requestBody.processos || []).length,
       processos_count: imported,
-      testemunhas_count: testemunhas.length
+      testemunhas_count: testemunhas.length,
+      performance_stats: {
+        batch_size: 10,
+        total_batches: Math.ceil(validProcessos.length / 10),
+        processing_time_ms: Date.now() - startTime
+      }
     };
 
     await supabase
@@ -443,9 +506,12 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
+        success: true,
         summary: {
           imported,
           errors,
+          retries_attempted: totalRetried || 0,
+          success_rate: validProcessos.length > 0 ? Math.round((imported / validProcessos.length) * 100) : 0,
           warnings,
           valid: imported,
           analyzed: (requestBody.processos || []).length
