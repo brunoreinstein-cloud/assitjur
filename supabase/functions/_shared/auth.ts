@@ -1,0 +1,31 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+export function adminClient(req: Request) {
+  return createClient(SUPABASE_URL, SERVICE_ROLE, {
+    global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
+    auth: { autoRefreshToken: false, persistSession: false }
+  });
+}
+
+export async function getAuth(req: Request) {
+  const supa = adminClient(req);
+  const { data: { user }, error } = await supa.auth.getUser();
+  if (error || !user) return { user: null, supa, error: "unauthorized" } as const;
+
+  // Get user profile with correct column names
+  const { data: profile } = await supa
+    .from("profiles")
+    .select("organization_id, role")
+    .eq("user_id", user.id)
+    .single();
+
+  return { 
+    user, 
+    organization_id: profile?.organization_id ?? null, 
+    role: profile?.role ?? null, 
+    supa 
+  } as const;
+}

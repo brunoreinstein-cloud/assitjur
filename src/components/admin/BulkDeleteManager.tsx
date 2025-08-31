@@ -140,25 +140,52 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
     setProgress(0);
 
     try {
-      // Start deletion
       setProgress(25);
-      console.log('🗑️ Starting processos deletion:', { org_id: profile.organization_id, hard_delete: operationType === 'hard' });
-      
-      const { data, error } = await supabase.rpc('rpc_delete_all_processos', {
-        p_org_id: profile.organization_id,
-        p_hard_delete: operationType === 'hard'
+      console.log('🗑️ Starting processos deletion:', { 
+        organization_id: profile.organization_id, 
+        hard_delete: operationType === 'hard' 
       });
+      
+      // Try new edge function first, fallback to RPC
+      let result: DeletionResult | null = null;
+      
+      try {
+        const { data, error } = await supabase.functions.invoke('processes-delete-all', {
+          body: {
+            confirm: profile.organization_id,
+            hard_delete: operationType === 'hard'
+          }
+        });
 
-      if (error) {
-        console.error('❌ Deletion RPC Error:', error);
-        throw error;
+        if (error) throw error;
+        if (data?.error) throw new Error(data.message || data.error);
+        
+        result = {
+          success: data.success,
+          deleted_count: data.deleted_count,
+          operation_type: data.operation_type,
+          message: data.message
+        };
+        console.log('✅ Edge function deletion successful:', result);
+        
+      } catch (edgeFunctionError) {
+        console.warn('⚠️ Edge function failed, falling back to RPC:', edgeFunctionError);
+        
+        // Fallback to existing RPC method
+        const { data: rpcData, error: rpcError } = await supabase.rpc('rpc_delete_all_processos', {
+          p_org_id: profile.organization_id,
+          p_hard_delete: operationType === 'hard'
+        });
+
+        if (rpcError) throw rpcError;
+        result = rpcData as unknown as DeletionResult;
+        console.log('✅ RPC deletion successful:', result);
       }
 
-      const result = data as unknown as DeletionResult;
       setProgress(75);
 
       // Cleanup derived data if requested
-      if (type === 'processos') {
+      if (type === 'processos' && result) {
         const { error: cleanupError } = await supabase.rpc('rpc_cleanup_derived_data', {
           p_org_id: profile.organization_id
         });
@@ -170,14 +197,16 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
 
       setProgress(100);
 
-      toast({
-        title: "Exclusão concluída",
-        description: `${result.deleted_count} registros foram ${operationType === 'hard' ? 'permanentemente excluídos' : 'marcados para exclusão'}`,
-      });
+      if (result) {
+        toast({
+          title: "Exclusão concluída",
+          description: `${result.deleted_count} registros foram ${operationType === 'hard' ? 'permanentemente excluídos' : 'marcados para exclusão'}`,
+        });
 
-      onSuccess?.();
-      setIsOpen(false);
-      resetState();
+        onSuccess?.();
+        setIsOpen(false);
+        resetState();
+      }
 
     } catch (error) {
       console.error('Error during deletion:', error);
