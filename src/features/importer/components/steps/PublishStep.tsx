@@ -31,14 +31,50 @@ export function PublishStep() {
     setUploadProgress(0);
 
     try {
-      // Step 1: Create new version
+      console.log('🔍 Testing Edge Function connectivity...');
+      
+      // Test direct connectivity to create-version
+      try {
+        const testResponse = await fetch(`https://fgjypmlszuzkgvhuszxn.supabase.co/functions/v1/create-version`, {
+          method: 'OPTIONS',
+          headers: {
+            'Origin': window.location.origin,
+            'Access-Control-Request-Method': 'POST',
+            'Access-Control-Request-Headers': 'authorization, content-type, apikey, x-retry-count'
+          }
+        });
+        console.log('✅ Direct CORS preflight test:', {
+          status: testResponse.status,
+          statusText: testResponse.statusText,
+          origin: testResponse.headers.get('access-control-allow-origin'),
+          methods: testResponse.headers.get('access-control-allow-methods'),
+          headers: testResponse.headers.get('access-control-allow-headers')
+        });
+      } catch (testError) {
+        console.error('❌ Direct CORS preflight failed:', testError);
+      }
+
+      // Step 1: Create new version with improved error handling
       setUploadProgress(10);
+      console.log('📞 Calling create-version Edge Function...');
+      
       const { data: versionData, error: versionError } = await supabase.functions.invoke('create-version', {
         headers: { 'x-retry-count': retryCount.toString() }
       });
       
+      console.log('🔍 create-version response:', { versionData, versionError });
+      
       if (versionError) {
+        console.error('❌ Version creation failed:', {
+          message: versionError.message,
+          status: versionError.status,
+          details: versionError.details || 'No additional details'
+        });
         throw new Error('Falha ao criar nova versão: ' + versionError.message);
+      }
+
+      if (!versionData || !versionData.versionId) {
+        throw new Error('Resposta inválida da criação de versão: ' + JSON.stringify(versionData));
       }
 
       // Step 2: Extract and validate data from validation result
