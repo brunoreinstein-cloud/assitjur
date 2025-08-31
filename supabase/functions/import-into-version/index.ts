@@ -12,7 +12,7 @@ serve(async (req) => {
     console.log('✅ CORS preflight request received');
     return new Response(null, { 
       status: 200,
-      headers: corsHeaders 
+      headers: corsHeaders(req) 
     });
   }
 
@@ -24,7 +24,7 @@ serve(async (req) => {
       console.error('❌ Invalid method:', req.method);
       return new Response(
         JSON.stringify({ error: 'Method not allowed' }),
-        { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 405, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -34,7 +34,7 @@ serve(async (req) => {
       console.error('❌ Missing Authorization header');
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -60,7 +60,7 @@ serve(async (req) => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -74,7 +74,7 @@ serve(async (req) => {
     if (!profile || profile.role !== 'ADMIN') {
       return new Response(
         JSON.stringify({ error: 'Insufficient permissions' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 403, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -125,14 +125,14 @@ serve(async (req) => {
     if (!version) {
       return new Response(
         JSON.stringify({ error: 'Version not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 404, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     if (version.status !== 'draft') {
       return new Response(
         JSON.stringify({ error: 'Can only import into draft versions' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -149,7 +149,7 @@ serve(async (req) => {
       console.error('❌ Error clearing version data:', deleteError);
       return new Response(
         JSON.stringify({ error: 'Failed to clear existing data' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -410,7 +410,7 @@ serve(async (req) => {
             details: `Attempted to import ${validProcessos.length} records but all failed`,
             errors: errors
           }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
     } else {
@@ -451,7 +451,7 @@ serve(async (req) => {
           analyzed: (requestBody.processos || []).length
         }
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
@@ -465,7 +465,7 @@ serve(async (req) => {
         message: error.message,
         timestamp: new Date().toISOString()
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

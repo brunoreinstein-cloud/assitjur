@@ -5,7 +5,7 @@ import { corsHeaders } from '../_shared/cors.ts'
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders(req) });
   }
 
   console.log(`📞 publish-version called with method: ${req.method}`);
@@ -16,7 +16,7 @@ serve(async (req) => {
       console.error('❌ Invalid method:', req.method);
       return new Response(
         JSON.stringify({ error: 'Method not allowed' }),
-        { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 405, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -26,7 +26,7 @@ serve(async (req) => {
       console.error('❌ Missing Authorization header');
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -54,7 +54,7 @@ serve(async (req) => {
       console.error('❌ Auth error:', authError);
       return new Response(
         JSON.stringify({ error: 'Authentication failed', details: authError.message }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
     
@@ -62,7 +62,7 @@ serve(async (req) => {
       console.error('❌ No user found');
       return new Response(
         JSON.stringify({ error: 'No user found' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -80,7 +80,7 @@ serve(async (req) => {
       console.error('❌ Profile fetch error:', profileError);
       return new Response(
         JSON.stringify({ error: 'Failed to fetch user profile', details: profileError.message }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -88,7 +88,7 @@ serve(async (req) => {
       console.error('❌ Insufficient permissions. Profile:', profile);
       return new Response(
         JSON.stringify({ error: 'Insufficient permissions' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 403, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -103,7 +103,7 @@ serve(async (req) => {
       console.error('❌ JSON parse error:', parseError);
       return new Response(
         JSON.stringify({ error: 'Invalid JSON in request body' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -112,7 +112,7 @@ serve(async (req) => {
       console.error('❌ Missing versionId in request');
       return new Response(
         JSON.stringify({ error: 'Missing versionId' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -129,7 +129,7 @@ serve(async (req) => {
       console.error('❌ Version fetch error:', versionError);
       return new Response(
         JSON.stringify({ error: 'Failed to fetch version', details: versionError.message }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -137,7 +137,7 @@ serve(async (req) => {
       console.error('❌ Version not found or access denied');
       return new Response(
         JSON.stringify({ error: 'Version not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 404, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -147,7 +147,7 @@ serve(async (req) => {
       console.error('❌ Invalid status for publication:', versionToPublish.status);
       return new Response(
         JSON.stringify({ error: 'Only draft versions can be published' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -162,7 +162,7 @@ serve(async (req) => {
       console.error('❌ Error counting processos:', countError);
       return new Response(
         JSON.stringify({ error: 'Failed to validate version data', details: countError.message }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -213,7 +213,7 @@ serve(async (req) => {
             successRate: attemptedImport > 0 ? Math.round((imported / attemptedImport) * 100) : 0
           }
         }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -257,7 +257,7 @@ serve(async (req) => {
       console.error('❌ Error publishing version:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to publish version', details: error.message }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -265,7 +265,7 @@ serve(async (req) => {
       console.error('❌ No version data returned after publish');
       return new Response(
         JSON.stringify({ error: 'Failed to publish version - no data returned' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -291,7 +291,7 @@ serve(async (req) => {
         publishedAt: publishedVersion.published_at,
         processosCount: processosCount
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
@@ -305,7 +305,7 @@ serve(async (req) => {
         message: error.message,
         timestamp: new Date().toISOString()
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });
