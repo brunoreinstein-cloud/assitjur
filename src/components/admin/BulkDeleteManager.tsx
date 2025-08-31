@@ -310,14 +310,7 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
           variant="destructive" 
           size="sm"
           className={className}
-          onClick={() => {
-            console.log('🔍 Delete button clicked!', {
-              hasPermission,
-              isAdmin,
-              organizationId: profile?.organization_id
-            });
-            setIsOpen(true);
-          }}
+          onClick={() => setIsOpen(true)}
           disabled={!hasPermission}
           title={!hasPermission ? "Acesso negado - apenas administradores" : ""}
         >

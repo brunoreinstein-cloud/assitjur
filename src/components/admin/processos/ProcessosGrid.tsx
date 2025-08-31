@@ -354,9 +354,9 @@ export const ProcessosGrid = memo(function ProcessosGrid({
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
             className="border rounded px-2 py-1 text-sm"
           >
-            <option value={25}>25 por página</option>
-            <option value={50}>50 por página</option>
-            <option value={100}>100 por página</option>
+            <option key="25" value={25}>25 por página</option>
+            <option key="50" value={50}>50 por página</option>
+            <option key="100" value={100}>100 por página</option>
           </select>
         </div>
 
