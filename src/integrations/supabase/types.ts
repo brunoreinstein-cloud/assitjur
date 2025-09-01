@@ -1584,6 +1584,22 @@ export type Database = {
         Args: { p_hard_delete?: boolean; p_org_id: string }
         Returns: Json
       }
+      rpc_get_assistjur_processos: {
+        Args: {
+          p_filters?: Json
+          p_limit?: number
+          p_org_id: string
+          p_page?: number
+        }
+        Returns: {
+          data: Json
+          total_count: number
+        }[]
+      }
+      rpc_get_assistjur_stats: {
+        Args: { p_org_id: string }
+        Returns: Json
+      }
       rpc_get_cleanup_preview: {
         Args: { p_org_id: string }
         Returns: Json

@@ -37,72 +37,28 @@ serve(async (req) => {
 
     const { filters = {}, page = 1, limit = 50 } = await req.json();
 
-    // Base query
-    let query = supa
-      .from('assistjur.por_processo_staging')
-      .select(`
-        cnj,
-        reclamante_limpo,
-        reu_nome,
-        testemunhas_ativo_limpo,
-        testemunhas_passivo_limpo,
-        classificacao_final,
-        insight_estrategico,
-        created_at
-      `, { count: 'exact' })
-      .eq('org_id', organization_id);
-
-    // Aplicar filtros
-    if (filters.search) {
-      query = query.or(`cnj.ilike.%${filters.search}%,reclamante_limpo.ilike.%${filters.search}%,reu_nome.ilike.%${filters.search}%`);
-    }
-
-    if (filters.classificacao && filters.classificacao.length > 0) {
-      query = query.in('classificacao_final', filters.classificacao);
-    }
-
-    // Paginação
-    const offset = (page - 1) * limit;
-    query = query
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
-
-    const { data: processos, error, count } = await query;
+    // Call RPC function to get processos data
+    const { data: result, error } = await supa.rpc('rpc_get_assistjur_processos', {
+      p_org_id: organization_id,
+      p_filters: filters,
+      p_page: page,
+      p_limit: limit
+    });
 
     if (error) {
-      console.error('Database error:', error);
+      console.error('RPC error:', error);
       throw error;
     }
 
-    // Transformar dados para o formato esperado
-    const processosTransformados = (processos || []).map((processo: any) => {
-      const testemunhasAtivas = Array.isArray(processo.testemunhas_ativo_limpo) 
-        ? processo.testemunhas_ativo_limpo.filter((t: string) => t && t !== 'nan' && t.trim() !== '')
-        : [];
-      
-      const testemunhasPassivas = Array.isArray(processo.testemunhas_passivo_limpo)
-        ? processo.testemunhas_passivo_limpo.filter((t: string) => t && t !== 'nan' && t.trim() !== '')
-        : [];
-
-      return {
-        cnj: processo.cnj || '',
-        reclamante: processo.reclamante_limpo || '',
-        reclamada: processo.reu_nome || '',
-        testemunhas_ativas: testemunhasAtivas,
-        testemunhas_passivas: testemunhasPassivas,
-        qtd_testemunhas: testemunhasAtivas.length + testemunhasPassivas.length,
-        classificacao: processo.classificacao_final || 'Normal',
-        classificacao_estrategica: processo.insight_estrategico || 'Normal',
-        created_at: processo.created_at || new Date().toISOString()
-      };
-    });
+    const processos = result?.[0]?.data || [];
+    const totalCount = result?.[0]?.total_count || 0;
 
     return new Response(
       JSON.stringify({
-        data: processosTransformados,
-        count: count || 0,
+        data: processos,
+        count: totalCount,
         page,
-        totalPages: Math.ceil((count || 0) / limit)
+        totalPages: Math.ceil(totalCount / limit)
       }),
       { 
         status: 200,

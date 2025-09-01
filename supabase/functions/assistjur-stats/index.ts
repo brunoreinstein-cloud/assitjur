@@ -35,31 +35,15 @@ serve(async (req) => {
       );
     }
 
-    // Buscar estatísticas
-    const { data, error } = await supa
-      .from('assistjur.por_processo_staging')
-      .select('classificacao_final')
-      .eq('org_id', organization_id);
+    // Call RPC function to get statistics
+    const { data: stats, error } = await supa.rpc('rpc_get_assistjur_stats', {
+      p_org_id: organization_id
+    });
 
     if (error) {
-      console.error('Database error:', error);
+      console.error('RPC error:', error);
       throw error;
     }
-
-    const total = data.length;
-    const criticos = data.filter(p => p.classificacao_final?.toLowerCase() === 'crítico').length;
-    const atencao = data.filter(p => p.classificacao_final?.toLowerCase() === 'atenção').length;
-    const observacao = data.filter(p => p.classificacao_final?.toLowerCase() === 'observação').length;
-    const normais = total - criticos - atencao - observacao;
-
-    const stats = {
-      total,
-      criticos,
-      atencao,
-      observacao,
-      normais,
-      percentualCritico: total > 0 ? (criticos / total * 100).toFixed(1) : '0'
-    };
 
     return new Response(
       JSON.stringify(stats),
