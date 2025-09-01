@@ -1,5 +1,5 @@
 import React from 'react';
-import { ProcessosExplorer } from '@/components/admin/processos/ProcessosExplorer';
+import { ProcessosDataTable } from '@/components/assistjur/ProcessosDataTable';
 import { BulkDeleteManager } from '@/components/admin/BulkDeleteManager';
 import { RestoreButton } from '@/components/admin/RestoreButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,9 +11,9 @@ export default function ProcessosTable() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Gestão de Processos</CardTitle>
+              <CardTitle>Gestão de Processos - AssistJur.IA</CardTitle>
               <p className="text-muted-foreground text-sm">
-                Visualizar e gerenciar todos os processos da organização
+                Visualizar e gerenciar processos do pipeline AssistJur.IA
               </p>
             </div>
             <div className="flex gap-2">
@@ -24,7 +24,7 @@ export default function ProcessosTable() {
         </CardHeader>
       </Card>
       
-      <ProcessosExplorer />
+      <ProcessosDataTable />
     </div>
   );
 }
