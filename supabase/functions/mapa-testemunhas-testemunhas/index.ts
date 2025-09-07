@@ -203,10 +203,10 @@ serve(async (req) => {
     testemunhasArray.sort((a, b) => b.qtd_depoimentos - a.qtd_depoimentos);
     
     // Paginação
-    const page = filters.page || 1;
-    const limit = filters.limit || 50;
-    const offset = (page - 1) * limit;
-    const paginatedData = testemunhasArray.slice(offset, offset + limit);
+    const currentPage = filters.page || 1;
+    const currentLimit = filters.limit || 50;
+    const offset = (currentPage - 1) * currentLimit;
+    const paginatedData = testemunhasArray.slice(offset, offset + currentLimit);
 
     console.log(`Aggregated ${testemunhasArray.length} unique witnesses from ${processos.length} processos`);
 
@@ -214,10 +214,10 @@ serve(async (req) => {
       JSON.stringify({
         data: paginatedData,
         count: testemunhasArray.length,
-        page,
-        limit,
+        page: currentPage,
+        limit: currentLimit,
         total_witnesses: testemunhasArray.length,
-        total_processos: processos.length
+        total_processos: processos.length,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
