@@ -3,8 +3,15 @@ export function corsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("Origin") || "";
   const configuredOrigins = (Deno.env.get("SITE_URL") || "").split(",").map(s => s.trim()).filter(Boolean);
   
+  // Specific Lovable domains
+  const allowedLovableDomains = [
+    "c19fd3c7-1955-4ba3-bf12-37fcb264235a.sandbox.lovable.dev"
+  ];
+  
   // Auto-detect Lovable preview domains
-  const isLovablePreview = origin.includes('.lovable.app') || origin.includes('.sandbox.lovable.dev');
+  const isLovablePreview = origin.includes('.lovable.app') || 
+                          origin.includes('.sandbox.lovable.dev') ||
+                          allowedLovableDomains.includes(origin);
   
   // Determine allowed origin
   let allowOrigin = "*"; // Default fallback for development
@@ -26,7 +33,7 @@ export function corsHeaders(req: Request): Record<string, string> {
     "Access-Control-Allow-Origin": allowOrigin,
     "Vary": "Origin",
     "Access-Control-Allow-Methods": "POST, OPTIONS, GET",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-retry-count",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-retry-count, x-correlation-id",
     "Content-Type": "application/json"
   };
 }

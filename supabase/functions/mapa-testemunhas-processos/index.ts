@@ -1,23 +1,23 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const allowOrigins = [ Deno.env.get("APP_ORIGIN") ?? "*" ];
-const cors = (origin: string | null) => ({
-  "access-control-allow-origin": origin && allowOrigins.includes(origin) ? origin : allowOrigins[0],
-  "access-control-allow-headers": "authorization, content-type, x-client-info, x-correlation-id",
-  "access-control-allow-methods": "GET,POST,OPTIONS",
-  "vary": "origin",
-});
+import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 
 serve(async (req) => {
-  const origin = req.headers.get("origin");
-  const headers = { "content-type": "application/json; charset=utf-8", ...cors(origin) };
-
   console.log(`[mapa-testemunhas-processos] ${req.method} ${req.url}`);
 
-  // CORS
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers });
-  if (req.method === "GET") return new Response(JSON.stringify({ ok: true, service: "mapa-testemunhas-processos" }), { status: 200, headers });
+  // Handle CORS preflight
+  const preflightResponse = handlePreflight(req);
+  if (preflightResponse) return preflightResponse;
+
+  const headers = corsHeaders(req);
+  
+  // Health check
+  if (req.method === "GET") {
+    return new Response(JSON.stringify({ ok: true, service: "mapa-testemunhas-processos" }), { 
+      status: 200, 
+      headers 
+    });
+  }
 
   // Auth
   const auth = req.headers.get("authorization") ?? "";
