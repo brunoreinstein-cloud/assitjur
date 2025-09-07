@@ -4,6 +4,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.56.0";
 import { getSystemPrompt } from "../_shared/prompt-registry.ts";
+import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 
 /**
  * =========================
@@ -27,13 +28,6 @@ const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   console.error("❌ Missing Supabase env (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY)");
 }
-
-const corsHeaders: Record<string, string> = {
-  "Access-Control-Allow-Origin": ALLOWED_ORIGINS.join(","),
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Vary": "Origin",
-};
 
 function isOriginAllowed(req: Request) {
   const origin = req.headers.get("origin") ?? "";
@@ -136,16 +130,20 @@ async function openAIChat({
  * =========================
  */
 serve(async (request: Request) => {
-  // Preflight
-  if (request.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders, status: 204 });
+  const preflight = handlePreflight(request);
+  if (preflight) return preflight;
+
+  const cors = corsHeaders(request);
+  const origin = request.headers.get("origin") ?? "";
+  const originAllowed = isOriginAllowed(request);
+  if (originAllowed) {
+    cors["Access-Control-Allow-Origin"] = origin;
   }
 
-  // CORS
-  if (!isOriginAllowed(request)) {
+  if (!originAllowed) {
     return new Response(JSON.stringify({ error: "Origin not allowed" }), {
       status: 403,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...cors },
     });
   }
 
@@ -154,7 +152,7 @@ serve(async (request: Request) => {
     if (!token) {
       return new Response(JSON.stringify({ error: "Authentication required" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...cors },
       });
     }
 
@@ -163,7 +161,7 @@ serve(async (request: Request) => {
     if (!userId) {
       return new Response(JSON.stringify({ error: "Invalid token" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...cors },
       });
     }
 
@@ -181,13 +179,13 @@ serve(async (request: Request) => {
     if (!message || typeof message !== "string") {
       return new Response(JSON.stringify({ error: "Invalid payload" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...cors },
       });
     }
     if (message.length > MAX_MESSAGE_LENGTH) {
       return new Response(JSON.stringify({ error: "Message too long" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...cors },
       });
     }
 
@@ -201,7 +199,7 @@ serve(async (request: Request) => {
     if (profileErr || !profile?.organization_id) {
       return new Response(JSON.stringify({ error: "User profile not found" }), {
         status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...cors },
       });
     }
 
@@ -212,7 +210,7 @@ serve(async (request: Request) => {
     if (!rateLimit(rlKey)) {
       return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
         status: 429,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...cors },
       });
     }
 
@@ -241,13 +239,13 @@ serve(async (request: Request) => {
     // Retornar JSON
     return new Response(JSON.stringify({ ok: true, data: completion }), {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...cors },
     });
   } catch (err) {
     console.error("chat-legal error:", err);
     return new Response(JSON.stringify({ error: String(err?.message ?? err) }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...cors },
     });
   }
 });
