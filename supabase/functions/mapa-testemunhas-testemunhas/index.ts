@@ -78,7 +78,20 @@ serve(async (req) => {
 
     if (vinculosError) {
       console.error('Error fetching processos_testemunhas:', vinculosError);
-      throw vinculosError;
+
+      const { code, message } = vinculosError as { code?: string; message?: string };
+      let status = 500;
+
+      if (code === '42501') {
+        status = 403;
+      } else if (/^(42|22|23)/.test(code ?? '')) {
+        status = 400;
+      }
+
+      return new Response(
+        JSON.stringify({ error: { code, message } }),
+        { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     if (!vinculos || vinculos.length === 0) {
@@ -202,8 +215,9 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in mapa-testemunhas-testemunhas:', error);
+    const { code, message } = error as { code?: string; message?: string };
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: { code, message } }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
