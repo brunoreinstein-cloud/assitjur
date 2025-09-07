@@ -46,43 +46,40 @@ export function useAssistJurProcessos(filters: ProcessosFilters = {}, limit = 50
       });
 
       try {
-        const { data, error } = await supabase.functions.invoke('assistjur-processos', {
-          body: {
+        // Get session for Bearer token
+        const { data: { session } } = await supabase.auth.getSession();
+        const jwt = session?.access_token;
+        if (!jwt) {
+          throw new Error('Sessão expirada. Faça login novamente.');
+        }
+
+        const URL = "https://fgjypmlszuzkgvhuszxn.functions.supabase.co/assistjur-processos";
+        
+        const response = await fetch(URL, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${jwt}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ 
             filters,
             page,
             limit
-          }
+          })
         });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
 
         // Log detalhado do resultado
         console.log('📊 AssistJur Processos: Resposta recebida', {
           data,
-          error,
-          status: data ? 'success' : 'error'
+          status: 'success'
         });
-
-        if (error) {
-          console.error('❌ AssistJur Processos: Erro na Edge Function', {
-            error,
-            code: error.code || 'UNKNOWN',
-            message: error.message || 'Erro desconhecido'
-          });
-
-          // Tratamento diferenciado de erros HTTP
-          if (error.status === 401 || error.code === '401') {
-            toast.error('Sessão expirada. Faça login novamente.');
-            throw new Error('Sessão expirada. Faça login novamente.');
-          } else if (error.status === 403 || error.code === '403') {
-            toast.error('Acesso negado. Verifique suas permissões.');
-            throw new Error('Acesso negado. Verifique suas permissões.');
-          } else if (error.status === 500 || error.code === '500') {
-            toast.error('Erro interno do servidor. Tente novamente em alguns minutos.');
-            throw new Error('Erro interno do servidor. Tente novamente em alguns minutos.');
-          } else {
-            toast.error(`Erro na requisição: ${error.message || 'Erro desconhecido'}`);
-            throw error;
-          }
-        }
 
         // Sistema de fallback inteligente - usar mock apenas se status 200 mas data vazio
         if (!data || !data.data || data.data.length === 0) {
@@ -112,13 +109,25 @@ export function useAssistJurProcessos(filters: ProcessosFilters = {}, limit = 50
           message: err.message,
           stack: err.stack
         });
+        
+        // Tratamento de erros específicos
+        if (err.message?.includes('Sessão expirada')) {
+          toast.error('Sessão expirada. Faça login novamente.');
+        } else if (err.message?.includes('Acesso negado')) {
+          toast.error('Acesso negado. Verifique suas permissões.');
+        } else if (err.message?.includes('HTTP 500')) {
+          toast.error('Erro interno do servidor. Tente novamente em alguns minutos.');
+        } else {
+          toast.error(`Erro na requisição: ${err.message || 'Erro desconhecido'}`);
+        }
+        
         throw err;
       }
     },
     enabled: !!profile?.organization_id,
     retry: (failureCount, error: any) => {
       // Não fazer retry em erros de autenticação/autorização
-      if (error?.status === 401 || error?.status === 403) {
+      if (error?.message?.includes('Sessão expirada') || error?.message?.includes('Acesso negado')) {
         return false;
       }
       return failureCount < 2;

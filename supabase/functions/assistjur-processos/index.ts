@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const allowOrigins = [ Deno.env.get("APP_ORIGIN") ?? "*" ];
 const cors = (origin: string | null) => ({
   "access-control-allow-origin": origin && allowOrigins.includes(origin) ? origin : allowOrigins[0],
-  "access-control-allow-headers": "authorization, content-type, x-client-info, x-correlation-id",
+  "access-control-allow-headers": "authorization, content-type, x-client-info, x-correlation-id, apikey",
   "access-control-allow-methods": "GET,POST,OPTIONS",
   "vary": "origin",
 });
