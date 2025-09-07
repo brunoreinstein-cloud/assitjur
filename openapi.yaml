@@ -1,0 +1,158 @@
+openapi: 3.0.0
+info:
+  title: AssistJur API
+  version: '1.0.0'
+servers:
+  - url: https://assistjur.ia
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Application is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '500':
+          description: Application is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthError'
+  /api/export:
+    post:
+      summary: Export message blocks
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+      responses:
+        '200':
+          description: Export generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResponse'
+        '400':
+          description: Invalid export type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Export failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    options:
+      summary: CORS preflight
+      responses:
+        '200':
+          description: Successful response
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy]
+        timestamp:
+          type: string
+          format: date-time
+        services:
+          type: object
+          properties:
+            api:
+              type: string
+            database:
+              type: string
+          required: [api, database]
+      required: [status, timestamp, services]
+    HealthError:
+      type: object
+      properties:
+        status:
+          type: string
+        error:
+          type: string
+      required: [status, error]
+    ExportRequest:
+      type: object
+      properties:
+        messageId:
+          type: string
+        type:
+          type: string
+          enum: [pdf, csv, json]
+        blocks:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              title:
+                type: string
+              data:
+                type: object
+                additionalProperties: true
+              citations:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    source:
+                      type: string
+                    ref:
+                      type: string
+                  required: [source, ref]
+            required: [type, title]
+      required: [messageId, type, blocks]
+    ExportResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        filename:
+          type: string
+        type:
+          type: string
+          enum: [pdf, csv, json]
+        size:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required: [url, filename, type, size, createdAt]
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
