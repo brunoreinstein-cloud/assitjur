@@ -70,10 +70,16 @@ serve(async (req) => {
 
     const tenantId = profile.organization_id;
 
-    // Buscar vínculos de processos e testemunhas no esquema assistjur
-    const { data: vinculos, error: vinculosError } = await supabase
+    // Paginação e filtros diretamente na consulta
+    const currentPage = filters.page || 1;
+    const currentLimit = filters.limit || 50;
+    const from = (currentPage - 1) * currentLimit;
+    const to = from + currentLimit - 1;
+
+    let query = supabase
       .from('assistjur.processos_testemunhas')
-      .select(`
+      .select(
+        `
         id,
         processo_id,
         status_oitiva,
@@ -81,6 +87,11 @@ serve(async (req) => {
         risco,
         proxima_movimentacao,
         tags,
+        foi_testemunha_em_ambos_polos,
+        ja_foi_reclamante,
+        participou_triangulacao,
+        participou_troca_favor,
+        qtd_depoimentos,
         processo:assistjur.processos!inner (
           id,
           numero
@@ -89,8 +100,34 @@ serve(async (req) => {
           id,
           nome
         )
-      `)
+      `,
+        { count: 'exact' }
+      )
       .eq('tenant_id', tenantId);
+
+    if (filters.ambosPolos !== undefined) {
+      query = query.eq('foi_testemunha_em_ambos_polos', filters.ambosPolos);
+    }
+    if (filters.jaFoiReclamante !== undefined) {
+      query = query.eq('ja_foi_reclamante', filters.jaFoiReclamante);
+    }
+    if (filters.qtdDeposMin !== undefined) {
+      query = query.gte('qtd_depoimentos', filters.qtdDeposMin);
+    }
+    if (filters.qtdDeposMax !== undefined) {
+      query = query.lte('qtd_depoimentos', filters.qtdDeposMax);
+    }
+    if (filters.temTriangulacao !== undefined) {
+      query = query.eq('participou_triangulacao', filters.temTriangulacao);
+    }
+    if (filters.temTroca !== undefined) {
+      query = query.eq('participou_troca_favor', filters.temTroca);
+    }
+    if (filters.search) {
+      query = query.ilike('testemunha.nome', `%${filters.search}%`);
+    }
+
+    const { data: vinculos, error: vinculosError, count } = await query.range(from, to);
 
     if (vinculosError) {
       console.error('Error fetching processos_testemunhas:', vinculosError);
@@ -115,8 +152,8 @@ serve(async (req) => {
         JSON.stringify({
           data: [],
           count: 0,
-          page: filters.page || 1,
-          limit: filters.limit || 50
+          page: currentPage,
+          limit: currentLimit
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -176,51 +213,20 @@ serve(async (req) => {
       }
     });
 
-    // Converter para array e aplicar filtros
-    let testemunhasArray = Array.from(testemunhaMap.values());
-    
-    // Aplicar filtros
-    if (filters.ambosPolos !== undefined) {
-      testemunhasArray = testemunhasArray.filter(t => t.foi_testemunha_em_ambos_polos === filters.ambosPolos);
-    }
-    if (filters.jaFoiReclamante !== undefined) {
-      testemunhasArray = testemunhasArray.filter(t => t.ja_foi_reclamante === filters.jaFoiReclamante);
-    }
-    if (filters.qtdDeposMin !== undefined) {
-      testemunhasArray = testemunhasArray.filter(t => t.qtd_depoimentos >= filters.qtdDeposMin);
-    }
-    if (filters.qtdDeposMax !== undefined) {
-      testemunhasArray = testemunhasArray.filter(t => t.qtd_depoimentos <= filters.qtdDeposMax);
-    }
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      testemunhasArray = testemunhasArray.filter(t => 
-        t.nome_testemunha.toLowerCase().includes(searchLower)
-      );
-    }
-    if (filters.temTriangulacao !== undefined) {
-      testemunhasArray = testemunhasArray.filter(t => t.participou_triangulacao === filters.temTriangulacao);
-    }
-    if (filters.temTroca !== undefined) {
-      testemunhasArray = testemunhasArray.filter(t => t.participou_troca_favor === filters.temTroca);
-    }
-
-    // Ordenação por quantidade de depoimentos (decrescente)
-    testemunhasArray.sort((a, b) => b.qtd_depoimentos - a.qtd_depoimentos);
-    
-    // Paginação
-    const currentPage = filters.page || 1;
-    const currentLimit = filters.limit || 50;
-    const offset = (currentPage - 1) * currentLimit;
-    const paginatedData = testemunhasArray.slice(offset, offset + currentLimit);
+    // Converter para array e ordenar por quantidade de depoimentos (decrescente)
+    const testemunhasArray = Array.from(testemunhaMap.values()).sort(
+      (a, b) => b.qtd_depoimentos - a.qtd_depoimentos
+    );
 
     const totalProcessos = new Set(vinculos.map(v => v.processo_id)).size;
-    console.log(`Aggregated ${testemunhasArray.length} unique witnesses from ${totalProcessos} processos`);
+    console.log(
+      `Aggregated ${testemunhasArray.length} unique witnesses from ${totalProcessos} processos`
+    );
 
     return new Response(
       JSON.stringify({
-        data: paginatedData,
-        count: testemunhasArray.length,
+        data: testemunhasArray,
+        count: count ?? testemunhasArray.length,
         page: currentPage,
         limit: currentLimit,
         total_witnesses: testemunhasArray.length,
