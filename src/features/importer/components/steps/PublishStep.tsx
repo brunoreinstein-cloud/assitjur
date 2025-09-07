@@ -33,12 +33,18 @@ export function PublishStep() {
     try {
       console.log('🔍 Testing Edge Function connectivity...');
       
+      // Get session token for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      const jwt = session?.access_token;
+      if (!jwt) throw new Error("Sem sessão");
+      
       // Test direct connectivity to create-version
       try {
-        const testResponse = await fetch(`https://fgjypmlszuzkgvhuszxn.supabase.co/functions/v1/create-version`, {
+        const testResponse = await fetch(`https://fgjypmlszuzkgvhuszxn.functions.supabase.co/create-version`, {
           method: 'OPTIONS',
           headers: {
             'Origin': window.location.origin,
+            'Authorization': `Bearer ${jwt}`,
             'Access-Control-Request-Method': 'POST',
             'Access-Control-Request-Headers': 'authorization, content-type, apikey, x-retry-count'
           }
@@ -118,9 +124,10 @@ export function PublishStep() {
       // Diagnostic: Test function availability first
       console.log('🔍 Testing Edge Function connectivity...');
       try {
-        const testResponse = await fetch(`https://fgjypmlszuzkgvhuszxn.supabase.co/functions/v1/import-into-version`, {
+        const testResponse = await fetch(`https://fgjypmlszuzkgvhuszxn.functions.supabase.co/import-into-version`, {
           method: 'OPTIONS',
           headers: {
+            'Authorization': `Bearer ${jwt}`,
             'Access-Control-Request-Method': 'POST',
             'Access-Control-Request-Headers': 'authorization, content-type, apikey'
           }
@@ -138,7 +145,7 @@ export function PublishStep() {
           versionId: versionData.versionId,
           processos,
           testemunhas,
-          fileChecksum: session.sessionId,
+          fileChecksum: session?.user?.id || 'unknown',
           filename: file.name
         }
       });

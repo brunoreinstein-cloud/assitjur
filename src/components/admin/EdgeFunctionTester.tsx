@@ -24,11 +24,30 @@ export const EdgeFunctionTester = () => {
     const newResults: TestResult[] = [];
 
     try {
+      // Get session token for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      const jwt = session?.access_token;
+      
+      if (!jwt) {
+        newResults.push({
+          test: 'Authorization',
+          status: 'error',
+          message: 'Sem sessão ativa. Faça login.',
+          details: 'No JWT token available'
+        });
+        setResults(newResults);
+        setTesting(false);
+        return;
+      }
+
       // Test 1: Basic connectivity
       console.log('🔍 Testing basic connectivity...');
       try {
-        const response = await fetch('https://fgjypmlszuzkgvhuszxn.supabase.co/functions/v1/import-into-version', {
-          method: 'OPTIONS'
+        const response = await fetch('https://fgjypmlszuzkgvhuszxn.functions.supabase.co/import-into-version', {
+          method: 'OPTIONS',
+          headers: {
+            'Authorization': `Bearer ${jwt}`
+          }
         });
         
         newResults.push({
@@ -52,9 +71,10 @@ export const EdgeFunctionTester = () => {
       // Test 2: CORS Preflight
       console.log('🔍 Testing CORS preflight...');
       try {
-        const response = await fetch('https://fgjypmlszuzkgvhuszxn.supabase.co/functions/v1/import-into-version', {
+        const response = await fetch('https://fgjypmlszuzkgvhuszxn.functions.supabase.co/import-into-version', {
           method: 'OPTIONS',
           headers: {
+            'Authorization': `Bearer ${jwt}`,
             'Access-Control-Request-Method': 'POST',
             'Access-Control-Request-Headers': 'authorization, content-type, apikey'
           }
