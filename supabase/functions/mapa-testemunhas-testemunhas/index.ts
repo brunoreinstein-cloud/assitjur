@@ -95,17 +95,17 @@ serve(async (req) => {
     if (vinculosError) {
       console.error('Error fetching processos_testemunhas:', vinculosError);
 
-      const { code, message } = vinculosError as { code?: string; message?: string };
+      const { code } = vinculosError as { code?: string };
       let status = 500;
 
       if (code === '42501') {
         status = 403;
-      } else if (/^(42|22|23)/.test(code ?? '')) {
+      } else if (code?.startsWith('PGRST')) {
         status = 400;
       }
 
       return new Response(
-        JSON.stringify({ error: { code, message } }),
+        JSON.stringify({ error: vinculosError.message }),
         { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
