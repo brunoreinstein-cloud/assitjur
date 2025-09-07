@@ -1,6 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
-import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
-import { ProcessoFilters, TestemunhaFilters } from "@/types/mapa-testemunhas";
+import {
+  PorProcesso,
+  PorTestemunha,
+  ProcessoFilters,
+  TestemunhaFilters,
+  MapaTestemunhasRequest,
+} from "@/types/mapa-testemunhas";
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { mapFunctionsError } from './functions-errors';
 
@@ -186,13 +191,9 @@ const isSupabaseConfigured = () => {
 };
 
 // Fetch functions with Supabase fallback to mocks
-export const fetchPorProcesso = async (params: {
-  page: number;
-  pageSize: number;
-  sortBy?: string;
-  sortDir?: 'asc' | 'desc';
-  filters: ProcessoFilters;
-}): Promise<{ data: PorProcesso[], total: number }> => {
+export const fetchPorProcesso = async (
+  params: MapaTestemunhasRequest<ProcessoFilters>
+): Promise<{ data: PorProcesso[]; total: number }> => {
   try {
     if (!isSupabaseConfigured()) {
       console.log('⚠️ Supabase not configured, using mock data');
@@ -200,13 +201,7 @@ export const fetchPorProcesso = async (params: {
     }
 
     const { data, error } = await supabase.functions.invoke('mapa-testemunhas-processos', {
-      body: {
-        page: params.page,
-        limit: params.pageSize,
-        sortBy: params.sortBy,
-        sortDir: params.sortDir,
-        filters: params.filters
-      }
+      body: params
     });
 
     if (error) {
@@ -277,37 +272,17 @@ export const fetchPorProcesso = async (params: {
   }
 };
 
-export const fetchPorTestemunha = async (params: {
-  page: number;
-  pageSize: number;
-  sortBy?: string;
-  sortDir?: 'asc' | 'desc';
-  filters: TestemunhaFilters;
-}): Promise<{ data: PorTestemunha[], total: number }> => {
+export const fetchPorTestemunha = async (
+  params: MapaTestemunhasRequest<TestemunhaFilters>
+): Promise<{ data: PorTestemunha[]; total: number }> => {
   try {
     if (!isSupabaseConfigured()) {
       console.log('⚠️ Supabase not configured, using mock data');
       throw new Error('Supabase not configured');
     }
 
-    const validFilters: Record<string, string | number | boolean> = {};
-    const f = params.filters;
-    if (typeof f.ambosPolos === 'boolean') validFilters.ambosPolos = f.ambosPolos;
-    if (typeof f.jaFoiReclamante === 'boolean') validFilters.jaFoiReclamante = f.jaFoiReclamante;
-    if (typeof f.qtdDeposMin === 'number') validFilters.qtdDeposMin = f.qtdDeposMin;
-    if (typeof f.qtdDeposMax === 'number') validFilters.qtdDeposMax = f.qtdDeposMax;
-    if (typeof f.search === 'string') validFilters.search = f.search;
-    if (typeof f.temTriangulacao === 'boolean') validFilters.temTriangulacao = f.temTriangulacao;
-    if (typeof f.temTroca === 'boolean') validFilters.temTroca = f.temTroca;
-
     const { data, error } = await supabase.functions.invoke('mapa-testemunhas-testemunhas', {
-      body: {
-        page: params.page,
-        limit: params.pageSize,
-        sortBy: params.sortBy,
-        sortDir: params.sortDir,
-        ...validFilters,
-      },
+      body: params,
       headers: { 'Content-Type': 'application/json' }
     });
 
