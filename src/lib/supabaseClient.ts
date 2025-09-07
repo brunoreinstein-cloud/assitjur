@@ -1,8 +1,8 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/integrations/supabase/types'
 
-const SUPABASE_URL = 'https://fgjypmlszuzkgvhuszxn.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnanlwbWxzenV6a2d2aHVzenhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE4MjQsImV4cCI6MjA3MTYwNzgyNH0.lN-Anhn1e-2SCDIAe6megYRHdhofe1VO71D6-Zk70XU'
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL!
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY!
 
 let client: SupabaseClient<Database>
 
