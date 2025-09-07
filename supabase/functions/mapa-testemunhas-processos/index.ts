@@ -134,6 +134,34 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: "unauthorized", detail: "authentication failed" }), { status: 401, headers });
   }
 
+  // Validar filtros para evitar cláusulas malformadas
+  const UF_LIST = [
+    "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+    "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
+    "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+  ];
+  const STATUS_LIST = ["Ativo", "Arquivado", "Suspenso", "Baixado", "Cancelado"];
+  const FASE_LIST = ["Conhecimento", "Execução", "Recursal", "Liquidação"];
+  const SAFE_SEARCH = /^[\w\s.\/\-]{1,100}$/; // apenas caracteres seguros
+
+  const ufFilter = typeof filters.uf === "string" ? filters.uf.toUpperCase() : undefined;
+  const statusFilter = typeof filters.status === "string" ? filters.status : undefined;
+  const faseFilter = typeof filters.fase === "string" ? filters.fase : undefined;
+  const searchFilter = typeof filters.search === "string" ? filters.search.trim() : undefined;
+
+  if (ufFilter && !UF_LIST.includes(ufFilter)) {
+    return new Response(JSON.stringify({ error: "bad_request", detail: "invalid uf filter" }), { status: 400, headers });
+  }
+  if (statusFilter && !STATUS_LIST.includes(statusFilter)) {
+    return new Response(JSON.stringify({ error: "bad_request", detail: "invalid status filter" }), { status: 400, headers });
+  }
+  if (faseFilter && !FASE_LIST.includes(faseFilter)) {
+    return new Response(JSON.stringify({ error: "bad_request", detail: "invalid fase filter" }), { status: 400, headers });
+  }
+  if (searchFilter && !SAFE_SEARCH.test(searchFilter)) {
+    return new Response(JSON.stringify({ error: "bad_request", detail: "invalid search filter" }), { status: 400, headers });
+  }
+
   try {
     // Usar tabela processos (substituindo processos_live que foi removida)
     let query = supabase
