@@ -292,11 +292,11 @@ export default function TestemunhasTable() {
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Mostrando {testemunhasData?.length || 0} de {totalCount} testemunhas
+          Mostrando {testemunhasData?.length || 0} de {totalWitnesses} testemunhas
         </p>
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => setPage(Math.max(1, page - 1))}
             disabled={page <= 1}
@@ -304,13 +304,13 @@ export default function TestemunhasTable() {
             Anterior
           </Button>
           <span className="text-sm">
-            Página {page} de {Math.ceil(totalCount / limit)}
+            Página {page} de {Math.ceil(totalWitnesses / limit)}
           </span>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => setPage(page + 1)}
-            disabled={page >= Math.ceil(totalCount / limit)}
+            disabled={page >= Math.ceil(totalWitnesses / limit)}
           >
             Próxima
           </Button>
