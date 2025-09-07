@@ -212,24 +212,23 @@ export const fetchPorProcesso = async (params: {
       throw error;
     }
 
-    // If no data returned, fallback to mock
-    if (!data?.data || data.data.length === 0) {
-      console.log('📊 No data returned from API, falling back to mock data');
-      throw new Error('No data returned');
+    const payload = data as { data?: PorProcesso[]; count?: number; total?: number };
+    if (!payload?.data || payload.data.length === 0) {
+      console.log('📊 Supabase returned empty processos dataset');
+    } else {
+      console.log('📊 Fetched processos from API:', {
+        count: payload.data.length,
+        total: payload.count || payload.total || 0
+      });
     }
 
-    console.log('📊 Fetched processos from API:', { 
-      count: data.data.length, 
-      total: data.count || data.total || 0 
-    });
-
     return {
-      data: data.data || [],
-      total: data.count || data.total || 0
+      data: payload.data || [],
+      total: payload.count || payload.total || 0
     };
   } catch (error) {
-    console.warn('📊 Falling back to mock processos data:', error);
-    
+    console.warn('📊 Request failed, using mock processos data:', error);
+
     // Mock filtering logic
     let filteredData = [...mockProcessos];
     
@@ -301,24 +300,23 @@ export const fetchPorTestemunha = async (params: {
       throw error;
     }
 
-    // If no data returned, fallback to mock
-    if (!data?.data || data.data.length === 0) {
-      console.log('📊 No testemunhas data returned from API, falling back to mock data');
-      throw new Error('No data returned');
+    const payload = data as { data?: PorTestemunha[]; count?: number; total?: number };
+    if (!payload?.data || payload.data.length === 0) {
+      console.log('📊 Supabase returned empty testemunhas dataset');
+    } else {
+      console.log('📊 Fetched testemunhas from API:', {
+        count: payload.data.length,
+        total: payload.count || payload.total || 0
+      });
     }
 
-    console.log('📊 Fetched testemunhas from API:', { 
-      count: data.data.length, 
-      total: data.count || data.total || 0 
-    });
-
     return {
-      data: data.data || [],
-      total: data.count || data.total || 0
+      data: payload.data || [],
+      total: payload.count || payload.total || 0
     };
   } catch (error) {
-    console.warn('📊 Falling back to mock testemunhas data:', error);
-    
+    console.warn('📊 Request failed, using mock testemunhas data:', error);
+
     // Mock filtering logic
     let filteredData = [...mockTestemunhas];
     
