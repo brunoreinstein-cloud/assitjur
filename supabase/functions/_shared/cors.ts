@@ -1,7 +1,24 @@
 // CORS with domain restriction for security
 export function corsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("Origin") || "";
-  const configuredOrigins = (Deno.env.get("SITE_URL") || "").split(",").map(s => s.trim()).filter(Boolean);
+  let hostname = "";
+  try {
+    hostname = origin ? new URL(origin).host : "";
+  } catch {
+    hostname = "";
+  }
+
+  const configuredOrigins = (Deno.env.get("SITE_URL") || "")
+    .split(",")
+    .map(s => s.trim())
+    .filter(Boolean);
+  const configuredHostnames = configuredOrigins.map(url => {
+    try {
+      return new URL(url).host;
+    } catch {
+      return url;
+    }
+  });
   
   // Specific Lovable domains
   const allowedLovableDomains = [
@@ -9,20 +26,20 @@ export function corsHeaders(req: Request): Record<string, string> {
   ];
   
   // Auto-detect Lovable preview domains
-  const isLovablePreview = origin.includes('.lovable.app') || 
-                          origin.includes('.sandbox.lovable.dev') ||
-                          allowedLovableDomains.includes(origin);
+  const isLovablePreview = hostname.endsWith('.lovable.app') ||
+                          hostname.endsWith('.sandbox.lovable.dev') ||
+                          allowedLovableDomains.includes(hostname);
   
   // Determine allowed origin
   let allowOrigin = "*"; // Default fallback for development
   
-  if (configuredOrigins.length > 0) {
+  if (configuredHostnames.length > 0) {
     // Use configured origins if available
-    allowOrigin = configuredOrigins.includes(origin) ? origin : configuredOrigins[0];
+    allowOrigin = configuredHostnames.includes(hostname) ? origin : configuredOrigins[0];
   } else if (isLovablePreview) {
     // Allow Lovable preview domains automatically
     allowOrigin = origin;
-  } else if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+  } else if (hostname === 'localhost' || hostname === '127.0.0.1') {
     // Allow localhost for development
     allowOrigin = origin;
   }
