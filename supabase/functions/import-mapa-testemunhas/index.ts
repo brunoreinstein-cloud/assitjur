@@ -1,211 +1,219 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
 
-    const { processos, testemunhas } = await req.json()
+    const body = await req.json();
+    const processos = body?.processos as any[] | undefined;
+    const testemunhas = body?.testemunhas as any[] | undefined;
 
-    if (!processos && !testemunhas) {
-      throw new Error('Missing required data: processos or testemunhas array')
+    if ((!processos || !Array.isArray(processos)) && (!testemunhas || !Array.isArray(testemunhas))) {
+      throw new Error("Missing required data: processos or testemunhas array");
     }
 
-    // Get user's org_id from JWT
-    const authHeader = req.headers.get('authorization')
+    // Get user's tenant_id from JWT
+    const authHeader = req.headers.get("authorization");
     if (!authHeader) {
-      throw new Error('Missing authorization header')
+      throw new Error("Missing authorization header");
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    )
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
 
     if (authError || !user) {
-      throw new Error('Invalid user token')
+      throw new Error("Invalid user token");
     }
 
     // Get user's organization
     const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('organization_id')
-      .eq('user_id', user.id)
-      .single()
+      .from("profiles")
+      .select("organization_id")
+      .eq("user_id", user.id)
+      .single();
 
     if (profileError || !profile?.organization_id) {
-      throw new Error('User organization not found')
+      throw new Error("User organization not found");
     }
 
-    const orgId = profile.organization_id
+    const tenantId = profile.organization_id;
 
-    console.log(`Processing import for org ${orgId}`)
-    console.log(`Processos: ${processos?.length || 0} rows`)
-    console.log(`Testemunhas: ${testemunhas?.length || 0} rows`)
+    console.log(`Processing import for tenant ${tenantId}`);
+    console.log(`Processos: ${processos?.length || 0} rows`);
+    console.log(`Testemunhas: ${testemunhas?.length || 0} rows`);
 
-    let allProcessedData: any[] = [];
+    // Collect unique process numbers and witness names
+    const processNumbers = new Set<string>();
+    const witnessNames = new Set<string>();
+    const links: { cnj: string; witness: string }[] = [];
 
-    // Process processos data
-    if (processos && Array.isArray(processos)) {
-      const processedProcessos = processos.map((row: any) => {
-        // Normalize CNJ
-        const cnjDigits = String(row.cnj || '').replace(/[^\d]/g, '')
-        
-        return {
-          org_id: orgId,
-          cnj: row.cnj,
-          cnj_digits: cnjDigits.length === 20 ? cnjDigits : null,
-          cnj_normalizado: cnjDigits,
-          reclamante_nome: row.reclamante_limpo || row.reclamante_nome,
-          reu_nome: row.reu_nome,
-          comarca: row.comarca || "",
-          tribunal: row.tribunal || "",
-          vara: row.vara || "",
-          fase: row.fase || "",
-          status: row.status || "",
-          reclamante_cpf_mask: row.reclamante_cpf_mask || "",
-          data_audiencia: row.data_audiencia || null,
-          advogados_ativo: null,
-          advogados_passivo: null,
-          testemunhas_ativo: null,
-          testemunhas_passivo: null,
-          observacoes: row.observacoes || "",
-          // Set computed fields as false by default - will be calculated later
-          reclamante_foi_testemunha: false,
-          troca_direta: false,
-          triangulacao_confirmada: false,
-          prova_emprestada: false,
-          score_risco: null,
-          classificacao_final: 'Pendente'
-        }
+    if (Array.isArray(processos)) {
+      processos.forEach((row) => {
+        const cnjDigits = String(row.cnj || "").replace(/[^\d]/g, "");
+        if (cnjDigits.length !== 20) return;
+        processNumbers.add(cnjDigits);
+
+        const ativo: string[] = Array.isArray(row.testemunhas_ativo) ? row.testemunhas_ativo : [];
+        const passivo: string[] = Array.isArray(row.testemunhas_passivo) ? row.testemunhas_passivo : [];
+
+        [...ativo, ...passivo].forEach((name) => {
+          if (!name || typeof name !== "string") return;
+          const clean = name.trim();
+          if (!clean) return;
+          witnessNames.add(clean);
+          links.push({ cnj: cnjDigits, witness: clean });
+        });
+      });
+    }
+
+    if (Array.isArray(testemunhas)) {
+      testemunhas.forEach((row) => {
+        const cnjDigits = String(row.cnj || row.cnj_digits || "").replace(/[^\d]/g, "");
+        const name = (row.nome_testemunha || row.nome || "").trim();
+        if (cnjDigits.length !== 20 || !name) return;
+        processNumbers.add(cnjDigits);
+        witnessNames.add(name);
+        links.push({ cnj: cnjDigits, witness: name });
+      });
+    }
+
+    if (processNumbers.size === 0 || links.length === 0) {
+      throw new Error("No valid records found. Check CNJ format and witness names.");
+    }
+
+    // Upsert processes
+    const processosToUpsert = Array.from(processNumbers).map((numero) => ({
+      numero,
+      tenant_id: tenantId,
+    }));
+
+    const { data: upsertedProcessos, error: processosError } = await supabase
+      .from("assistjur.processos")
+      .upsert(processosToUpsert, {
+        onConflict: "tenant_id,numero",
+        ignoreDuplicates: false,
       })
-      
-      allProcessedData = allProcessedData.concat(processedProcessos)
+      .select();
+
+    if (processosError) {
+      throw processosError;
     }
 
-    // Process testemunhas data - convert to processos format
-    if (testemunhas && Array.isArray(testemunhas)) {
-      const processedTestemunhas = testemunhas.map((row: any) => {
-        const cnjDigits = String(row.cnj_digits || '').replace(/[^\d]/g, '')
-        
-        return {
-          org_id: orgId,
-          cnj: row.cnj || "",
-          cnj_digits: cnjDigits.length === 20 ? cnjDigits : null,
-          cnj_normalizado: cnjDigits,
-          reclamante_nome: "Testemunha: " + (row.nome_testemunha || ""),
-          reu_nome: "Não informado",
-          comarca: "",
-          tribunal: "",
-          vara: "",
-          fase: "",
-          status: "",
-          reclamante_cpf_mask: "",
-          data_audiencia: null,
-          advogados_ativo: null,
-          advogados_passivo: null,
-          testemunhas_ativo: [row.nome_testemunha || ""],
-          testemunhas_passivo: null,
-          observacoes: `Importado como testemunha no CNJ: ${row.cnj}`,
-          // Set computed fields as false by default - will be calculated later
-          reclamante_foi_testemunha: true,
-          troca_direta: false,
-          triangulacao_confirmada: false,
-          prova_emprestada: false,
-          score_risco: null,
-          classificacao_final: 'Testemunha'
-        }
-      })
-      
-      allProcessedData = allProcessedData.concat(processedTestemunhas)
-    }
+    const processoIdMap = new Map<string, string>();
+    upsertedProcessos?.forEach((p: any) => processoIdMap.set(p.numero, p.id));
 
-    // Filter valid data (must have CNJ and required fields)
-    const validData = allProcessedData.filter(row => 
-      row.cnj_digits && 
-      row.cnj_digits.length === 20 && 
-      row.reclamante_nome && 
-      row.reu_nome
-    )
-
-    if (validData.length === 0) {
-      throw new Error('No valid records found. Check CNJ format and required fields.')
-    }
-
-    console.log(`Filtered to ${validData.length} valid records out of ${allProcessedData.length}`)
-
-    // Insert/update records in batches
-    const batchSize = 100
-    let insertedCount = 0
-    let updatedCount = 0
-    const errors = []
-
-    for (let i = 0; i < validData.length; i += batchSize) {
-      const batch = validData.slice(i, i + batchSize)
-      
-      const { error } = await supabase
-        .from('processos')
-        .upsert(batch, { 
-          onConflict: 'org_id,cnj_digits',
-          ignoreDuplicates: false 
-        })
-
-      if (error) {
-        console.error(`Error in batch ${Math.floor(i / batchSize)}:`, error)
-        errors.push(error.message)
-      } else {
-        insertedCount += batch.length
+    if (processoIdMap.size < processNumbers.size) {
+      const missing = Array.from(processNumbers).filter((n) => !processoIdMap.has(n));
+      if (missing.length) {
+        const { data: fetched } = await supabase
+          .from("assistjur.processos")
+          .select("id,numero")
+          .eq("tenant_id", tenantId)
+          .in("numero", missing);
+        fetched?.forEach((p: any) => processoIdMap.set(p.numero, p.id));
       }
     }
 
-    // Get final count
-    const { count: finalCount } = await supabase
-      .from('processos')
-      .select('*', { count: 'exact', head: true })
-      .eq('org_id', orgId)
+    // Upsert testemunhas
+    const testemunhasToUpsert = Array.from(witnessNames).map((nome) => ({
+      nome,
+      tenant_id: tenantId,
+    }));
 
-    const result = {
-      stagingRows: allProcessedData.length,
-      validRows: validData.length,
-      upserts: insertedCount,
-      finalCount: finalCount || 0,
-      errors: errors
+    const { data: upsertedTestemunhas, error: testemunhasError } = await supabase
+      .from("assistjur.testemunhas")
+      .upsert(testemunhasToUpsert, {
+        onConflict: "tenant_id,nome",
+        ignoreDuplicates: false,
+      })
+      .select();
+
+    if (testemunhasError) {
+      throw testemunhasError;
     }
 
-    console.log('Import completed:', result)
+    const testemunhaIdMap = new Map<string, string>();
+    upsertedTestemunhas?.forEach((t: any) => testemunhaIdMap.set(t.nome, t.id));
 
-    return new Response(
-      JSON.stringify(result),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      },
-    )
+    if (testemunhaIdMap.size < witnessNames.size) {
+      const missing = Array.from(witnessNames).filter((n) => !testemunhaIdMap.has(n));
+      if (missing.length) {
+        const { data: fetched } = await supabase
+          .from("assistjur.testemunhas")
+          .select("id,nome")
+          .eq("tenant_id", tenantId)
+          .in("nome", missing);
+        fetched?.forEach((t: any) => testemunhaIdMap.set(t.nome, t.id));
+      }
+    }
 
-  } catch (error) {
-    console.error('Import error:', error)
+    // Build relationships
+    const joinData = links
+      .map(({ cnj, witness }) => {
+        const processo_id = processoIdMap.get(cnj);
+        const testemunha_id = testemunhaIdMap.get(witness);
+        if (processo_id && testemunha_id) {
+          return {
+            processo_id,
+            testemunha_id,
+            tenant_id: tenantId,
+          };
+        }
+        return null;
+      })
+      .filter((r): r is { processo_id: string; testemunha_id: string; tenant_id: string } => r !== null);
+
+    if (joinData.length === 0) {
+      throw new Error("No valid process-witness relationships found.");
+    }
+
+    const { error: joinError } = await supabase
+      .from("assistjur.processos_testemunhas")
+      .upsert(joinData, {
+        onConflict: "processo_id,testemunha_id",
+        ignoreDuplicates: true,
+      });
+
+    if (joinError) {
+      throw joinError;
+    }
+
+    const result = {
+      processos: processosToUpsert.length,
+      testemunhas: testemunhasToUpsert.length,
+      vinculacoes: joinData.length,
+    };
+
+    console.log("Import completed:", result);
+
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
+  } catch (error: any) {
+    console.error("Import error:", error);
     return new Response(
-      JSON.stringify({
-        error: error.message,
-        stagingRows: 0,
-        upserts: 0,
-        errors: [error.message]
-      }),
+      JSON.stringify({ error: error.message }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,
       },
-    )
+    );
   }
-})
+});
+
