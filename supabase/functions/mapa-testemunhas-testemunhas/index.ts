@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts"
+import { normalizeMapaRequest } from "../../../src/contracts/mapaTestemunhas.ts"
 
 serve(async (req) => {
   const preflight = handlePreflight(req)
@@ -55,40 +56,25 @@ serve(async (req) => {
       );
     }
 
-    let filters: Record<string, unknown>;
+    let dto: ReturnType<typeof normalizeMapaRequest>;
     try {
-      filters = await req.json();
-    } catch {
+      const payload = await req.json();
+      dto = normalizeMapaRequest(payload);
+    } catch (e) {
+      const issues = (e as any)?.issues ?? e;
       return new Response(
-        JSON.stringify({ error: 'Invalid JSON payload' }),
+        JSON.stringify({ error: "Invalid request", issues }),
         { status: 400, headers }
       );
-    }
-
-    if (typeof filters !== 'object' || filters === null) {
-      return new Response(
-        JSON.stringify({ error: 'Request body must be a JSON object' }),
-        { status: 400, headers }
-      );
-    }
-
-    const requiredFields: Array<keyof typeof filters> = ['page', 'limit'];
-    for (const field of requiredFields) {
-      if (typeof filters[field] !== 'number') {
-        return new Response(
-          JSON.stringify({ error: `Missing or invalid '${String(field)}'` }),
-          { status: 400, headers }
-        );
-      }
     }
 
     const tenantId = profile.organization_id;
 
-    // Paginação e filtros diretamente na consulta
-    const currentPage = filters.page || 1;
-    const currentLimit = filters.limit || 50;
-    const from = (currentPage - 1) * currentLimit;
-    const to = from + currentLimit - 1;
+    const { filters, page, limit, sortBy, sortDir } = dto;
+
+    // Paginação
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
     let query = supabase
       .from('assistjur.processos_testemunhas')
@@ -141,6 +127,10 @@ serve(async (req) => {
       query = query.ilike('testemunha.nome', `%${filters.search}%`);
     }
 
+    if (sortBy) {
+      query = query.order(sortBy, { ascending: sortDir !== 'desc' });
+    }
+
     const { data: vinculos, error: vinculosError, count } = await query.range(from, to);
 
     if (vinculosError) {
@@ -166,8 +156,8 @@ serve(async (req) => {
         JSON.stringify({
           data: [],
           count: 0,
-          page: currentPage,
-          limit: currentLimit
+          page,
+          limit
         }),
         { headers }
       );
@@ -227,10 +217,22 @@ serve(async (req) => {
       }
     });
 
-    // Converter para array e ordenar por quantidade de depoimentos (decrescente)
-    const testemunhasArray = Array.from(testemunhaMap.values()).sort(
-      (a, b) => b.qtd_depoimentos - a.qtd_depoimentos
-    );
+    // Converter para array e aplicar ordenação
+    const testemunhasArray = Array.from(testemunhaMap.values());
+    if (sortBy) {
+      testemunhasArray.sort((a, b) => {
+        const aVal = (a as any)[sortBy];
+        const bVal = (b as any)[sortBy];
+        if (aVal === bVal) return 0;
+        if (aVal === undefined || aVal === null) return 1;
+        if (bVal === undefined || bVal === null) return -1;
+        return sortDir === 'desc'
+          ? (aVal < bVal ? 1 : -1)
+          : (aVal > bVal ? 1 : -1);
+      });
+    } else {
+      testemunhasArray.sort((a, b) => b.qtd_depoimentos - a.qtd_depoimentos);
+    }
 
     const totalProcessos = new Set(vinculos.map(v => v.processo_id)).size;
     console.log(
@@ -241,8 +243,8 @@ serve(async (req) => {
       JSON.stringify({
         data: testemunhasArray,
         count: count ?? testemunhasArray.length,
-        page: currentPage,
-        limit: currentLimit,
+        page,
+        limit,
         total_witnesses: testemunhasArray.length,
         total_processos: totalProcessos,
       }),

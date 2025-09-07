@@ -26,7 +26,7 @@ serve(async (req: Request) => {
       return json({ error: "Validação falhou", issues }, 400);
     }
 
-    // TODO: query real no banco com dto.filtros/pagina/limite
+    // TODO: query real no banco com dto.filters/page/limit
     const result = { data: [], total: 0 };
 
     // opcional: validar resposta
