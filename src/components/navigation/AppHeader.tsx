@@ -40,7 +40,6 @@ const routeConfig = {
   '/admin/org': { label: 'Organização', icon: Users },
   '/admin/config': { label: 'Configurações', icon: Settings },
   '/admin/analytics': { label: 'Analytics', icon: BarChart3 },
-  '/admin/dados': { label: 'Explorador de Dados', icon: Database },
   '/admin/logs': { label: 'Logs', icon: FileText },
   '/admin/versoes': { label: 'Versões', icon: FileText }
 };
