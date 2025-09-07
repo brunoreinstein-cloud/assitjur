@@ -94,7 +94,24 @@ serve(async (req) => {
 
     if (vinculosError) {
       console.error('Error fetching processos_testemunhas:', vinculosError);
-      throw vinculosError;
+      let status = 500;
+      if (vinculosError.code === '42501') {
+        status = 403;
+      } else if (vinculosError.code) {
+        status = 400;
+      }
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: vinculosError.code,
+            message: vinculosError.message,
+          },
+        }),
+        {
+          status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      );
     }
 
     if (!vinculos || vinculos.length === 0) {
