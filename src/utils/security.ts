@@ -1,4 +1,99 @@
 // Security utilities for input sanitization and validation
+import { scryptSync, randomBytes, timingSafeEqual } from "crypto";
+
+/**
+ * Masks an email leaving only first character and domain visible.
+ * @example
+ * maskEmail('john@example.com'); //=> 'j***@example.com'
+ */
+export const maskEmail = (email: string) =>
+  email.replace(/(.).+(@.+)/, (_m, a, b) => `${a}***${b}`);
+
+/**
+ * Masks a CPF string preserving first three and last two digits.
+ * Expects only numbers.
+ * @example
+ * maskCPF('12345678901'); //=> '123******01'
+ */
+export const maskCPF = (cpf: string) =>
+  cpf.replace(/^(\d{3})\d{6}(\d{2})$/, (_m, a, b) => `${a}******${b}`);
+
+/**
+ * Hashes a value using the scrypt algorithm with a random salt.
+ * Returns a string containing salt and hash separated by ':'
+ * @example
+ * const stored = hashValue('secret');
+ */
+export const hashValue = (value: string) => {
+  const salt = randomBytes(16);
+  const hash = scryptSync(value, salt, 64);
+  return `${salt.toString("hex")}:${hash.toString("hex")}`;
+};
+
+/**
+ * Verifies a value against a previously generated hash.
+ * @example
+ * const stored = hashValue('secret');
+ * verifyHash('secret', stored); //=> true
+ */
+export const verifyHash = (value: string, stored: string) => {
+  const [saltHex, hashHex] = stored.split(":");
+  const hash = scryptSync(value, Buffer.from(saltHex, "hex"), 64);
+  return timingSafeEqual(hash, Buffer.from(hashHex, "hex"));
+};
+
+/**
+ * Recursively removes known PII fields from an object.
+ * Keys removed: cpf, cnpj, email, password.
+ * @example
+ * stripPII({ name: 'Ana', email: 'ana@test.com', cpf: '12345678901' });
+ * //=> { name: 'Ana' }
+ */
+export const stripPII = <T>(obj: T): T => {
+  const piiKeys = ["cpf", "cnpj", "email", "password"];
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => stripPII(item)) as unknown as T;
+  }
+
+  if (obj && typeof obj === "object") {
+    const clean: Record<string, any> = {};
+    for (const [key, value] of Object.entries(obj as Record<string, any>)) {
+      if (piiKeys.includes(key.toLowerCase())) continue;
+      clean[key] = stripPII(value);
+    }
+    return clean as unknown as T;
+  }
+
+  return obj;
+};
+
+export interface PrivilegedUser {
+  role: string;
+  permissions?: string[];
+}
+
+export interface ProtectedResource {
+  allowedRoles: string[];
+}
+
+/**
+ * Ensures the user has at least one of the roles permitted for the resource.
+ * Throws an error if the user lacks privilege.
+ * @example
+ * assertLeastPrivilege({ role: 'admin' }, { allowedRoles: ['admin'] });
+ */
+export const assertLeastPrivilege = (
+  user: PrivilegedUser,
+  resource: ProtectedResource
+): true => {
+  const userRoles = [user.role, ...(user.permissions ?? [])];
+  const allowed = resource.allowedRoles.some(r => userRoles.includes(r));
+  if (!allowed) {
+    throw new Error("Access denied: insufficient privileges");
+  }
+  return true;
+};
 
 export const sanitizeInput = (input: string): string => {
   if (!input) return '';
