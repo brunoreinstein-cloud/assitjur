@@ -285,14 +285,25 @@ export const fetchPorTestemunha = async (params: {
       throw new Error('Supabase not configured');
     }
 
+    const validFilters: Record<string, string | number | boolean> = {};
+    const f = params.filters;
+    if (typeof f.ambosPolos === 'boolean') validFilters.ambosPolos = f.ambosPolos;
+    if (typeof f.jaFoiReclamante === 'boolean') validFilters.jaFoiReclamante = f.jaFoiReclamante;
+    if (typeof f.qtdDeposMin === 'number') validFilters.qtdDeposMin = f.qtdDeposMin;
+    if (typeof f.qtdDeposMax === 'number') validFilters.qtdDeposMax = f.qtdDeposMax;
+    if (typeof f.search === 'string') validFilters.search = f.search;
+    if (typeof f.temTriangulacao === 'boolean') validFilters.temTriangulacao = f.temTriangulacao;
+    if (typeof f.temTroca === 'boolean') validFilters.temTroca = f.temTroca;
+
     const { data, error } = await supabase.functions.invoke('mapa-testemunhas-testemunhas', {
       body: {
         page: params.page,
         limit: params.pageSize,
         sortBy: params.sortBy,
         sortDir: params.sortDir,
-        ...params.filters,
+        ...validFilters,
       },
+      headers: { 'Content-Type': 'application/json' }
     });
 
     if (error) {
