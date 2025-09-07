@@ -1,126 +1,84 @@
-# Guia de Templates AssistJur.IA
+# 📘 Guia de Uso — Assistjur.IA
 
-## Visão Geral
+Este guia apresenta como utilizar o **Assistjur.IA**, desde o acesso inicial até as funcionalidades avançadas de análise de processos e testemunhas.
 
-Este guia documenta os templates atualizados do AssistJur.IA, seguindo as diretrizes de branding, LGPD e acessibilidade.
+---
 
-## Componentes Base
+## 🚀 Introdução
+O **Assistjur.IA** foi desenvolvido para auxiliar escritórios e departamentos jurídicos na **gestão estratégica de processos**, com foco em:
+- Inteligência de Testemunhas  
+- Análise de Processos CNJ  
+- Governança e Compliance em IA  
 
-### BrandHeader
-- Logo + nome consistente
-- Tamanhos: sm, md, lg
-- Opção de mostrar versão
+---
 
-### LGPDFooter
-- Rodapé padrão com compliance
-- Timestamp local + versão
-- Informações da organização
+## 🔑 Acesso e Autenticação
+1. Acesse o sistema pelo link: `https://app.assistjur.ia`  
+2. Métodos de login disponíveis:  
+   - **E-mail e senha** (formulário clássico).  
+   - **Magic Link** (link enviado por e-mail).  
+   - **OAuth** (Google / Microsoft, se ativado pela organização).  
+   - **2FA** (opcional, conforme configuração da sua organização).  
 
-### ExportActions
-- Botões padronizados de export
-- Audit trail automático
-- Suporte a PDF, CSV, JSON
+Se você não tiver acesso, entre em contato com o administrador da sua organização.
 
-## Templates Atualizados
+---
 
-### 1. Relatório Conclusivo
-- ✅ Estrutura fixa: Resumo → Análise → Alertas → Estratégias → Próximos Passos
-- ✅ Header com logo AssistJur.IA
-- ✅ Rodapé LGPD + versão + timestamp
-- ✅ CNJ preservado como string
-- ✅ Cores do design system
+## 📂 Estrutura de Dados
 
-### 2. Chat Integrado
-- ✅ Ícones padronizados: 📌📋⚠️🎯➡️
-- ✅ Banner LGPD visível
-- ✅ Export com audit trail
+### Importação
+- Você pode importar arquivos CSV com dados de processos e testemunhas.  
+- Exemplos disponíveis em `/public/template-base-exemplo.csv`.  
+- Após upload, os dados passam por **validação automática** (normalização de CNJ, nomes e duplicidades).
 
-### 3. Wizard de Importação
-- ✅ Stepper visual padronizado
-- ✅ Compliance panel LGPD
-- ✅ Versionamento com status chips
+### Versionamento
+- Cada importação cria uma **nova versão de base**.  
+- Estados possíveis: `Draft`, `Published`, `Archived`.  
+- Apenas **admins** podem publicar versões.
 
-## Design System
+---
 
-### Cores (HSL)
-- `--brand-primary: hsl(258, 69%, 52%)` - Violeta tech
-- `--brand-accent: hsl(45, 93%, 58%)` - Gold
-- `--status-critical: hsl(0, 84%, 48%)` - WCAG AA
+## 🔍 Funcionalidades Principais
 
-### Badges de Risco
-- CRÍTICO: Contraste AA, vermelho
-- ATENÇÃO: Âmbar
-- OBSERVAÇÃO: Azul
+### 1. **Mapa de Testemunhas**
+- Identifica triangulações, trocas diretas e provas emprestadas.  
+- Apresenta classificação de risco: **Baixo, Médio, Alto, Crítico**.  
+- Exibe **insights estratégicos** para cada testemunha.
 
-## Compliance LGPD
+### 2. **Análise de Processos**
+- Filtros por **UF, Comarca, Fase, Classificação de Risco**.  
+- Máscara de dados pessoais (LGPD) pode ser ativada/desativada.  
+- Exportação em **PDF, CSV e JSON** via painel de exportação.
 
-✅ **Rodapé obrigatório**: "Validação nos autos é obrigatória. Dados tratados conforme LGPD."
-✅ **CNJ preservado**: String original sem reformatação
-✅ **Audit trail**: Logs de export automáticos
-✅ **Mascaramento PII**: CPFs automaticamente mascarados
+### 3. **Dashboard Administrativo**
+- Gestão de organizações, usuários e permissões.  
+- Painel de auditoria com logs de acesso e exportações.  
+- Definição de políticas de retenção de dados.
 
-## Acessibilidade
+### 4. **Integração com IA**
+- Prompts configuráveis para análise contextual de processos.  
+- Playground interno para testar diferentes modelos da OpenAI.  
+- Governança: logs de tokens e custos por organização.
 
-✅ **Contraste WCAG AA**: Todos os badges testados
-✅ **Navegação por teclado**: Componentes acessíveis
-✅ **Roles ARIA**: Implementados onde necessário
+---
 
-## Templates de E-mail
+## 🧪 Testes de Qualidade
+Antes de liberar uma versão:
+- Utilize o **Edge Function Tester** para validar conectividade.  
+- Execute testes de importação com os arquivos `template-test-exemplo.csv`.  
+- Verifique se os alertas LGPD e logs estão funcionando.
 
-### 1. WelcomeBeta
-- ✅ Header com logo AssistJur.IA
-- ✅ Informações de acesso personalizadas
-- ✅ Lista de recursos disponíveis
-- ✅ CTA para login
-- ✅ Rodapé LGPD completo
+---
 
-### 2. ImportComplete  
-- ✅ Resumo da importação com métricas
-- ✅ Tabela de estatísticas formatada
-- ✅ CTA para dashboard
-- ✅ Próximos passos sugeridos
+## 📜 Boas Práticas
+- Sempre use arquivos limpos e normalizados (CNJ válido).  
+- Revise permissões de usuários regularmente.  
+- Ative 2FA para maior segurança.  
+- Em caso de incidente, consulte o **Playbook de Resposta a Incidentes** (em construção).
 
-### 3. VersionPublished
-- ✅ Informações da versão publicada
-- ✅ Resumo das alterações
-- ✅ Métricas de processos/testemunhas
-- ✅ Ações recomendadas
+---
 
-### Componentes Reutilizáveis
-- ✅ **EmailHeader**: Logo + marca consistente
-- ✅ **EmailFooter**: Compliance LGPD + suporte
-
-## Migração Finalizada ✅
-
-### Branding Completo
-✅ **Zero referências "HubJUR.IA"** - Todas atualizadas para AssistJur.IA
-✅ **Design tokens padronizados** - Cores HSL com contraste WCAG AA
-✅ **Ícones Lucide padronizados** - Sem emojis, com semântica clara
-✅ **BrandHeader em wizards** - Identidade visual consistente
-✅ **ExportActions integrado** - Audit trail automático
-✅ **Templates de e-mail** - Transacionais completos com LGPD
-
-### Compliance & Acessibilidade
-✅ **CNJ preservado como string** - Sem reformatação
-✅ **Badges de risco WCAG AA** - Contraste validado
-✅ **Strings i18n extraídas** - Centralizadas para manutenção
-✅ **Audit trail completo** - Logs de export automáticos
-✅ **Mascaramento PII** - CPFs automaticamente protegidos
-
-### Arquivos Atualizados
-- `app/api/export/route.ts` - Título do PDF
-- `supabase/functions/process-base-upload/index.ts` - Bucket storage
-- `supabase/functions/templates-xlsx/index.ts` - Nome do arquivo
-- `src/features/testemunhas/ResultBlocks.tsx` - Design tokens + ExportActions
-- `src/features/testemunhas/ChatBar.tsx` - Ícones Lucide padronizados
-- `src/features/importer/components/BrandedImporterWizard.tsx` - Branding completo
-
-### Arquivos Criados
-- `src/templates/email/WelcomeBeta.tsx`
-- `src/templates/email/ImportComplete.tsx` 
-- `src/templates/email/VersionPublished.tsx`
-- `src/components/brand/EmailHeader.tsx`
-- `src/components/brand/EmailFooter.tsx`
-- `src/features/importer/components/BrandedImporterWizard.tsx`
-
-**Status: 100% Concluído** 🚀
+## 📞 Suporte
+- Documentação técnica: `docs/`  
+- Contato interno: equipe Assistjur  
+- Incidentes críticos: `security@assistjur.ia`  
