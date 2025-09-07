@@ -10,6 +10,24 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/tests/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      include: [
+        'src/utils/**',
+        'src/etl/synonyms.ts',
+        'src/etl/listParser.ts',
+        'src/engine/padroes/detectProvaEmprestada.ts',
+        'src/engine/padroes/detectTriangulacao.ts',
+        'src/lib/supabase.ts',
+        'supabase/functions/_shared/logger.ts',
+        'supabase/functions/get-processo/index.ts',
+      ],
+      lines: 0,
+      functions: 0,
+      branches: 0,
+      statements: 0,
+    },
   },
   resolve: {
     alias: {
