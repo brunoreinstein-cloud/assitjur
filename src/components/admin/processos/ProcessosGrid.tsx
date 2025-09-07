@@ -1,22 +1,34 @@
-import React, { useMemo, memo } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
+import React, { memo, useMemo, useState, useEffect } from 'react';
+import { ChevronUp, ChevronDown, ChevronsUpDown, Eye, MoreHorizontal, FileText, Edit, Trash2, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Eye, 
-  ChevronUp, 
-  ChevronDown,
-  ArrowUpDown,
-  Triangle,
-  ArrowRightLeft,
-  FileX,
-  Users
-} from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ProcessoRow } from '@/types/processos-explorer';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
+import { TooltipWrapper } from '@/components/ui/tooltip-wrapper';
+import { ProcessosClassificationChip } from './ProcessosClassificationChip';
+import { formatDatePtBR, formatDateWithTime, formatRelativeTime, formatCNJ } from '@/utils/date-formatter';
 
 interface ProcessosGridProps {
   data: ProcessoRow[];
@@ -51,292 +63,304 @@ export const ProcessosGrid = memo(function ProcessosGrid({
   onSort,
   isPiiMasked
 }: ProcessosGridProps) {
+  // Ordenação persistente
+  useEffect(() => {
+    const savedSort = localStorage.getItem('processos_sort');
+    if (savedSort) {
+      try {
+        const { field, direction } = JSON.parse(savedSort);
+        if (field !== orderBy || direction !== orderDir) {
+          onSort(field, direction);
+        }
+      } catch {
+        // Ignore parsing errors
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('processos_sort', JSON.stringify({
+      field: orderBy,
+      direction: orderDir
+    }));
+  }, [orderBy, orderDir]);
+
+  // Navigation por teclado
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   
-  const isAllSelected = data.length > 0 && selectedRows.size === data.length;
-  const isPartiallySelected = selectedRows.size > 0 && selectedRows.size < data.length;
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target !== document.body) return;
+      
+      switch (e.key) {
+        case 'ArrowUp':
+          e.preventDefault();
+          setSelectedIndex(prev => Math.max(0, prev - 1));
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          setSelectedIndex(prev => Math.min(data.length - 1, prev + 1));
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (selectedIndex >= 0 && data[selectedIndex]) {
+            onRowClick(data[selectedIndex]);
+          }
+          break;
+        case 'Escape':
+          setSelectedIndex(-1);
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [data, selectedIndex, onRowClick]);
+
+  const isAllSelected = data.length > 0 && data.every(p => selectedRows.has(p.id));
+  const isPartiallySelected = data.some(p => selectedRows.has(p.id)) && !isAllSelected;
 
   const handleSort = (field: string) => {
-    if (orderBy === field) {
-      onSort(field, orderDir === 'asc' ? 'desc' : 'asc');
-    } else {
-      onSort(field, 'asc');
-    }
+    const newDirection = orderBy === field && orderDir === 'asc' ? 'desc' : 'asc';
+    onSort(field as any, newDirection);
   };
 
   const SortIcon = ({ field }: { field: string }) => {
     if (orderBy !== field) {
-      return <ArrowUpDown className="h-4 w-4 text-muted-foreground" />;
+      return <ChevronsUpDown className="h-4 w-4 text-muted-foreground/50" />;
     }
-    return orderDir === 'asc' ? 
-      <ChevronUp className="h-4 w-4" /> : 
-      <ChevronDown className="h-4 w-4" />;
-  };
-
-  const getClassificacaoColor = (classificacao?: string) => {
-    switch (classificacao?.toLowerCase()) {
-      case 'alto':
-        return 'destructive';
-      case 'médio':
-        return 'outline';
-      case 'baixo':
-        return 'secondary';
-      default:
-        return 'secondary';
-    }
+    return orderDir === 'asc' 
+      ? <ChevronUp className="h-4 w-4 text-foreground" />
+      : <ChevronDown className="h-4 w-4 text-foreground" />;
   };
 
   const maskPII = (text?: string) => {
     if (!isPiiMasked || !text) return text;
-    // Simple masking - first 2 chars + *** + last 2 chars
     if (text.length <= 4) return '***';
     return text.slice(0, 2) + '***' + text.slice(-2);
   };
 
-  const formatDate = (dateStr: string) => {
-    try {
-      return format(new Date(dateStr), 'dd/MM/yy HH:mm', { locale: ptBR });
-    } catch {
-      return dateStr;
-    }
+  const truncateText = (text: string, maxLength: number = 30) => {
+    if (text.length <= maxLength) return text;
+    return text.slice(0, maxLength) + '…';
   };
-
-  const formatCNJ = (cnj?: string) => {
-    if (!cnj) return 'N/A';
-    if (cnj.length === 20) {
-      return `${cnj.slice(0, 7)}-${cnj.slice(7, 9)}.${cnj.slice(9, 13)}.${cnj.slice(13, 14)}.${cnj.slice(14, 16)}.${cnj.slice(16, 20)}`;
-    }
-    return cnj;
-  };
-
-  // Calculate pagination info
-  const totalPages = Math.ceil(total / pageSize);
-  const startRecord = ((page - 1) * pageSize) + 1;
-  const endRecord = Math.min(page * pageSize, total);
 
   return (
     <div className="space-y-4">
-      {/* Grid */}
+      {/* Badge PII ON */}
+      {isPiiMasked && (
+        <div className="flex justify-end">
+          <Badge 
+            variant="secondary" 
+            className="bg-indigo-100 text-indigo-800 border-indigo-200"
+          >
+            <Shield className="h-3 w-3 mr-1" />
+            PII ON
+          </Badge>
+        </div>
+      )}
+
+      {/* Table */}
       <div className="border rounded-lg overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="bg-muted/30">
               <TableHead className="w-12">
                 <Checkbox
                   checked={isAllSelected}
+                  ref={(el) => {
+                    if (el) {
+                      const input = el.querySelector('input') as HTMLInputElement;
+                      if (input) input.indeterminate = isPartiallySelected;
+                    }
+                  }}
                   onCheckedChange={onSelectAll}
+                  aria-label="Selecionar todos"
                 />
               </TableHead>
               
               <TableHead className="min-w-[180px]">
                 <Button
                   variant="ghost"
-                  className="h-auto p-0 font-semibold"
+                  size="sm"
                   onClick={() => handleSort('cnj')}
+                  className="font-semibold justify-start p-0 h-auto hover:bg-transparent"
                 >
                   CNJ
                   <SortIcon field="cnj" />
                 </Button>
               </TableHead>
               
-              <TableHead>
-                <Button
-                  variant="ghost"
-                  className="h-auto p-0 font-semibold"
-                  onClick={() => handleSort('uf')}
-                >
-                  UF
-                  <SortIcon field="uf" />
-                </Button>
-              </TableHead>
-              
-              <TableHead>
-                <Button
-                  variant="ghost"
-                  className="h-auto p-0 font-semibold"
-                  onClick={() => handleSort('comarca')}
-                >
-                  Comarca
-                  <SortIcon field="comarca" />
-                </Button>
-              </TableHead>
-              
+              <TableHead>UF</TableHead>
+              <TableHead>Comarca</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Fase</TableHead>
-              <TableHead>Advogado Ativo</TableHead>
-              <TableHead className="text-center"># Test.</TableHead>
+              <TableHead>Reclamante</TableHead>
+              <TableHead>Réu</TableHead>
+              
+              <TableHead className="text-center">
+                <Button
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => handleSort('testemunhas_total')}
+                  className="font-semibold p-0 h-auto hover:bg-transparent"
+                >
+                  Qtd Total
+                  <SortIcon field="testemunhas_total" />
+                </Button>
+              </TableHead>
               
               <TableHead>
                 <Button
                   variant="ghost"
-                  className="h-auto p-0 font-semibold"
+                  size="sm" 
                   onClick={() => handleSort('classificacao_final')}
+                  className="font-semibold justify-start p-0 h-auto hover:bg-transparent"
                 >
                   Classificação
                   <SortIcon field="classificacao_final" />
                 </Button>
               </TableHead>
               
-              <TableHead className="text-center">
-                <Button
-                  variant="ghost"
-                  className="h-auto p-0 font-semibold"
-                  onClick={() => handleSort('score_risco')}
-                >
-                  Score
-                  <SortIcon field="score_risco" />
-                </Button>
-              </TableHead>
-              
-              <TableHead className="text-center">Flags</TableHead>
-              
               <TableHead>
                 <Button
                   variant="ghost"
-                  className="h-auto p-0 font-semibold"
+                  size="sm"
                   onClick={() => handleSort('updated_at')}
+                  className="font-semibold justify-start p-0 h-auto hover:bg-transparent"
                 >
-                  Atualizado Em
+                  Data
                   <SortIcon field="updated_at" />
                 </Button>
               </TableHead>
               
-              <TableHead className="w-20">Ações</TableHead>
+              <TableHead className="w-16">Ações</TableHead>
             </TableRow>
           </TableHeader>
           
           <TableBody>
-            {data.map((processo) => {
-              const isSelected = selectedRows.has(processo.id);
-              const advPrincipal = processo.advogados_ativo?.[0];
+            {data.map((processo, index) => {
               const totalTestemunhas = (processo.testemunhas_ativo?.length || 0) + (processo.testemunhas_passivo?.length || 0);
+              const reclamanteText = processo.reclamante_nome || '—';
+              const reuText = processo.reu_nome || '—';
+              
+              const isRowSelected = selectedRows.has(processo.id);
+              const isKeyboardSelected = selectedIndex === index;
               
               return (
-                <TableRow 
+                <TableRow
                   key={processo.id}
-                  className={cn(
-                    "cursor-pointer hover:bg-muted/50 transition-colors",
-                    isSelected && "bg-muted/50 border-l-2 border-l-primary"
-                  )}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRowClick(processo);
-                  }}
+                  className={`
+                    h-11 cursor-pointer transition-colors
+                    ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}
+                    ${isRowSelected ? 'bg-blue-50 border-blue-200' : ''}
+                    ${isKeyboardSelected ? 'ring-2 ring-blue-500 ring-inset' : ''}
+                    hover:bg-muted/80
+                  `}
+                  onClick={() => onRowClick(processo)}
                 >
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Checkbox
-                      checked={isSelected}
+                      checked={isRowSelected}
                       onCheckedChange={(checked) => onRowSelection(processo.id, !!checked)}
+                      aria-label={`Selecionar processo ${processo.cnj}`}
                     />
                   </TableCell>
                   
                   <TableCell className="font-mono text-sm">
-                    <div className="space-y-1">
-                      <div>{formatCNJ(processo.cnj)}</div>
-                      {processo.cnj_digits?.length !== 20 && (
-                        <Badge variant="destructive" className="text-xs">
-                          CNJ Inválido
-                        </Badge>
-                      )}
-                    </div>
+                    <TooltipWrapper content={formatCNJ(processo.cnj)}>
+                      <span>{formatCNJ(processo.cnj)}</span>
+                    </TooltipWrapper>
                   </TableCell>
                   
                   <TableCell>
-                    <Badge variant="outline" className="font-mono">
+                    <Badge variant="outline" className="text-xs">
                       {processo.uf || '—'}
                     </Badge>
                   </TableCell>
                   
                   <TableCell>
-                    <div className="max-w-[200px] truncate" title={processo.comarca || ''}>
-                      {processo.comarca || '—'}
-                    </div>
+                    <TooltipWrapper content={processo.comarca}>
+                      <span className="text-sm">{truncateText(processo.comarca || '—', 15)}</span>
+                    </TooltipWrapper>
                   </TableCell>
                   
                   <TableCell>
-                    {processo.status && (
-                      <Badge variant="outline" className="text-xs">
-                        {processo.status}
-                      </Badge>
-                    )}
+                    <Badge variant="secondary" className="text-xs">
+                      {processo.status || '—'}
+                    </Badge>
                   </TableCell>
                   
                   <TableCell>
-                    {processo.fase && (
-                      <Badge variant="outline" className="text-xs">
-                        {processo.fase}
-                      </Badge>
-                    )}
+                    <Badge variant="outline" className="text-xs">
+                      {processo.fase || '—'}
+                    </Badge>
                   </TableCell>
                   
                   <TableCell>
-                    <div className="max-w-[150px] truncate" title={advPrincipal || ''}>
-                      {maskPII(advPrincipal) || '—'}
-                    </div>
-                    {(processo.advogados_ativo?.length || 0) > 1 && (
-                      <div className="text-xs text-muted-foreground">
-                        +{(processo.advogados_ativo?.length || 0) - 1} mais
-                      </div>
-                    )}
+                    <TooltipWrapper content={maskPII(reclamanteText)}>
+                      <span className="text-sm">
+                        {truncateText(maskPII(reclamanteText), 20)}
+                      </span>
+                    </TooltipWrapper>
+                  </TableCell>
+                  
+                  <TableCell>
+                    <TooltipWrapper content={maskPII(reuText)}>
+                      <span className="text-sm">
+                        {truncateText(maskPII(reuText), 20)}
+                      </span>
+                    </TooltipWrapper>
                   </TableCell>
                   
                   <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{totalTestemunhas}</span>
-                    </div>
+                    <Badge variant="secondary" className="font-mono text-xs">
+                      {totalTestemunhas}
+                    </Badge>
                   </TableCell>
                   
                   <TableCell>
-                    {processo.classificacao_final && (
-                      <Badge variant={getClassificacaoColor(processo.classificacao_final)}>
-                        {processo.classificacao_final}
-                      </Badge>
-                    )}
-                  </TableCell>
-                  
-                  <TableCell className="text-center">
-                    <div className="font-mono font-bold">
-                      {processo.score_risco || '—'}
-                    </div>
+                    <ProcessosClassificationChip processo={processo} />
                   </TableCell>
                   
                   <TableCell>
-                    <div className="flex items-center gap-1 flex-wrap">
-                      {processo.triangulacao_confirmada && (
-                        <Badge key={`${processo.id}-triangulacao`} variant="outline" className="text-xs gap-1 bg-purple-50 text-purple-700 border-purple-200">
-                          <Triangle className="h-3 w-3" />
-                          Triang.
-                        </Badge>
-                      )}
-                      {processo.troca_direta && (
-                        <Badge key={`${processo.id}-troca`} variant="outline" className="text-xs gap-1 bg-amber-50 text-amber-700 border-amber-200">
-                          <ArrowRightLeft className="h-3 w-3" />
-                          Troca
-                        </Badge>
-                      )}
-                      {processo.prova_emprestada && (
-                        <Badge key={`${processo.id}-prova`} variant="destructive" className="text-xs gap-1">
-                          <FileX className="h-3 w-3" />
-                          Prova
-                        </Badge>
-                      )}
-                      {processo.reclamante_foi_testemunha && (
-                        <Badge key={`${processo.id}-duplo`} variant="outline" className="text-xs gap-1 bg-sky-50 text-sky-700 border-sky-200">
-                          <Users className="h-3 w-3" />
-                          Duplo
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  
-                  <TableCell className="text-xs text-muted-foreground">
-                    {formatDate(processo.updated_at)}
+                    <TooltipWrapper content={`Atualizado ${formatRelativeTime(processo.updated_at)}`}>
+                      <span className="text-xs text-muted-foreground">
+                        {formatDatePtBR(processo.updated_at)}
+                      </span>
+                    </TooltipWrapper>
                   </TableCell>
                   
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="sm" onClick={() => onRowClick(processo)}>
-                      <Eye className="h-4 w-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onRowClick(processo)}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          Ver detalhes
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <FileText className="h-4 w-4 mr-2" />
+                          Abrir logs
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Shield className="h-4 w-4 mr-2" />
+                          Mascarar PII (linha)
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive">
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Excluir
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               );
@@ -346,43 +370,75 @@ export const ProcessosGrid = memo(function ProcessosGrid({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Mostrando {startRecord}-{endRecord} de {total} registros</span>
-          <select
-            value={pageSize}
-            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="border rounded px-2 py-1 text-sm"
-          >
-            <option key="25" value={25}>25 por página</option>
-            <option key="50" value={50}>50 por página</option>
-            <option key="100" value={100}>100 por página</option>
-          </select>
-        </div>
-
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(page - 1)}
-            disabled={page <= 1}
-          >
-            Anterior
-          </Button>
-          
-          <span className="text-sm">
-            Página {page} de {totalPages}
+          <span className="text-sm text-muted-foreground">
+            {((page - 1) * pageSize) + 1}–{Math.min(page * pageSize, total)} de {total.toLocaleString('pt-BR')}
           </span>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(page + 1)}
-            disabled={page >= totalPages}
-          >
-            Próxima
-          </Button>
         </div>
+        
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Registros por página:</span>
+          <Select
+            value={pageSize.toString()}
+            onValueChange={(value) => onPageSizeChange(parseInt(value))}
+          >
+            <SelectTrigger className="w-20">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="25">25</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+              <SelectItem value="100">100</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious 
+                onClick={() => onPageChange(Math.max(1, page - 1))}
+                className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+              />
+            </PaginationItem>
+            
+            {/* Page numbers logic */}
+            {Array.from({ length: Math.min(5, Math.ceil(total / pageSize)) }, (_, i) => {
+              const totalPages = Math.ceil(total / pageSize);
+              let pageNum;
+              
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (page <= 3) {
+                pageNum = i + 1;
+              } else if (page >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = page - 2 + i;
+              }
+              
+              return (
+                <PaginationItem key={pageNum}>
+                  <PaginationLink
+                    onClick={() => onPageChange(pageNum)}
+                    isActive={page === pageNum}
+                    className="cursor-pointer"
+                  >
+                    {pageNum}
+                  </PaginationLink>
+                </PaginationItem>
+              );
+            })}
+            
+            <PaginationItem>
+              <PaginationNext 
+                onClick={() => onPageChange(Math.min(Math.ceil(total / pageSize), page + 1))}
+                className={page >= Math.ceil(total / pageSize) ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   );
