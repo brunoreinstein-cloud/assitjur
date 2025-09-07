@@ -80,7 +80,7 @@ serve(async (req) => {
   try {
     // Usar tabela processos (substituindo processos_live que foi removida)
     let query = supabase
-      .from("processos")
+      .from("assistjur.processos")
       .select(`
         id,
         cnj,
@@ -97,11 +97,11 @@ serve(async (req) => {
         triangulacao_confirmada,
         prova_emprestada,
         classificacao_final,
-        org_id,
+        tenant_id,
         created_at,
         updated_at
       `, { count: 'exact' })
-      .eq('org_id', profile.organization_id)
+      .eq('tenant_id', profile.organization_id)
       .is('deleted_at', null) // Não incluir soft deleted
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
@@ -188,7 +188,7 @@ serve(async (req) => {
         testemunhas_prova_emprestada: [],
         classificacao_final: processo.classificacao_final || 'Não Classificado',
         insight_estrategico: null,
-        org_id: processo.org_id,
+        org_id: processo.tenant_id,
         created_at: processo.created_at,
         updated_at: processo.updated_at,
       };
