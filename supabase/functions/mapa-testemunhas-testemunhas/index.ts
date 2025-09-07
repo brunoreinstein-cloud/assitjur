@@ -55,7 +55,7 @@ serve(async (req) => {
       );
     }
 
-    let filters;
+    let filters: Record<string, unknown>;
     try {
       filters = await req.json();
     } catch {
@@ -63,6 +63,23 @@ serve(async (req) => {
         JSON.stringify({ error: 'Invalid JSON payload' }),
         { status: 400, headers }
       );
+    }
+
+    if (typeof filters !== 'object' || filters === null) {
+      return new Response(
+        JSON.stringify({ error: 'Request body must be a JSON object' }),
+        { status: 400, headers }
+      );
+    }
+
+    const requiredFields: Array<keyof typeof filters> = ['page', 'limit'];
+    for (const field of requiredFields) {
+      if (typeof filters[field] !== 'number') {
+        return new Response(
+          JSON.stringify({ error: `Missing or invalid '${String(field)}'` }),
+          { status: 400, headers }
+        );
+      }
     }
 
     const tenantId = profile.organization_id;
