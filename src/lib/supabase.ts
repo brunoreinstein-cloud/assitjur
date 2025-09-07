@@ -1,6 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
 import { ProcessoFilters, TestemunhaFilters } from "@/types/mapa-testemunhas";
+import { FunctionsHttpError } from '@supabase/supabase-js';
+import { mapFunctionsError } from './functions-errors';
 
 // Mock data for offline functionality
 const mockProcessos: PorProcesso[] = [
@@ -227,6 +229,9 @@ export const fetchPorProcesso = async (params: {
       total: payload.count || payload.total || 0
     };
   } catch (error) {
+    if (error instanceof FunctionsHttpError) {
+      throw new Error(mapFunctionsError(error));
+    }
     console.warn('📊 Request failed, using mock processos data:', error);
 
     // Mock filtering logic
@@ -326,6 +331,9 @@ export const fetchPorTestemunha = async (params: {
       total: payload.count || payload.total || 0
     };
   } catch (error) {
+    if (error instanceof FunctionsHttpError) {
+      throw new Error(mapFunctionsError(error));
+    }
     console.warn('📊 Request failed, using mock testemunhas data:', error);
 
     // Mock filtering logic

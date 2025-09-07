@@ -204,12 +204,15 @@ const MapaPage = () => {
         
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
-        setError(true, 'Falha ao carregar dados. Verifique sua conexão.');
+        const message = error instanceof Error
+          ? error.message
+          : 'Falha ao carregar dados. Verifique sua conexão.';
+        setError(true, message);
         setIsLoading(false);
-        
+
         toast({
           title: "Erro ao carregar dados",
-          description: "Não foi possível carregar os dados do Supabase. Tente novamente.",
+          description: message,
           variant: "destructive",
         });
       }
