@@ -29,8 +29,8 @@ import {
 } from "@/lib/store/mapa-testemunhas";
 import { ProcessoTable } from "@/components/mapa-testemunhas/ProcessoTable";
 import { TestemunhaTable } from "@/components/mapa-testemunhas/TestemunhaTable";
-import { ProcessoFilters } from "@/components/mapa-testemunhas/ProcessoFilters";
-import { TestemunhaFilters } from "@/components/mapa-testemunhas/TestemunhaFilters";
+import { ProcessoFilters as ProcessoFiltersComponent } from "@/components/mapa-testemunhas/ProcessoFilters";
+import { TestemunhaFilters as TestemunhaFiltersComponent } from "@/components/mapa-testemunhas/TestemunhaFilters";
 import { DetailDrawer } from "@/components/mapa-testemunhas/DetailDrawer";
 import { ImportModal } from "@/components/mapa-testemunhas/ImportModal";
 import { MaskPIISwitch } from "@/components/mapa/MaskPIISwitch";
@@ -39,7 +39,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { fetchPorProcesso, fetchPorTestemunha } from "@/lib/supabase";
-import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
+import { PorProcesso, PorTestemunha, MapaTestemunhasRequest, ProcessoFilters as ProcessoFiltersType, TestemunhaFilters as TestemunhaFiltersType } from "@/types/mapa-testemunhas";
 import { ChatBar } from "@/features/testemunhas/ChatBar";
 import { ResultBlocks } from "@/features/testemunhas/ResultBlocks";
 import { LoadingHints } from "@/features/testemunhas/LoadingHints";
@@ -162,17 +162,20 @@ const MapaPage = () => {
       setError(false);
       
       try {
-        // Apply current filters to the API calls
-        const processosParams = {
+        // Base params used for both requests
+        const baseParams = {
           page: 1,
           pageSize: 1000, // Load all data for now - TODO: implement pagination
-          filters: processoFilters
         };
-        
-        const testemunhasParams = {
-          page: 1,
-          pageSize: 1000, // Load all data for now - TODO: implement pagination
-          filters: testemunhaFilters
+
+        const processosParams: MapaTestemunhasRequest<ProcessoFiltersType> = {
+          ...baseParams,
+          filters: processoFilters,
+        };
+
+        const testemunhasParams: MapaTestemunhasRequest<TestemunhaFiltersType> = {
+          ...baseParams,
+          filters: testemunhaFilters,
         };
 
         // Fetch both datasets in parallel
@@ -402,7 +405,7 @@ const MapaPage = () => {
             </div>
 
             <TabsContent value="processos" className="space-y-6">
-              <ProcessoFilters />
+              <ProcessoFiltersComponent />
               {isLoading ? (
                 <div className="flex items-center justify-center p-12" aria-live="polite">
                   <div className="animate-pulse text-muted-foreground">Carregando dados...</div>
@@ -419,7 +422,7 @@ const MapaPage = () => {
             </TabsContent>
 
             <TabsContent value="testemunhas" className="space-y-6">
-              <TestemunhaFilters />
+              <TestemunhaFiltersComponent />
               {isLoading ? (
                 <div className="flex items-center justify-center p-12" aria-live="polite">
                   <div className="animate-pulse text-muted-foreground">Carregando dados...</div>

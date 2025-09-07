@@ -1,6 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
-import { ProcessoFilters, TestemunhaFilters } from "@/types/mapa-testemunhas";
+import { PorProcesso, PorTestemunha, ProcessoFilters, TestemunhaFilters, MapaTestemunhasRequest } from "@/types/mapa-testemunhas";
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { mapFunctionsError } from './functions-errors';
 
@@ -186,13 +185,9 @@ const isSupabaseConfigured = () => {
 };
 
 // Fetch functions with Supabase fallback to mocks
-export const fetchPorProcesso = async (params: {
-  page: number;
-  pageSize: number;
-  sortBy?: string;
-  sortDir?: 'asc' | 'desc';
-  filters: ProcessoFilters;
-}): Promise<{ data: PorProcesso[], total: number }> => {
+export const fetchPorProcesso = async (
+  params: MapaTestemunhasRequest<ProcessoFilters>
+): Promise<{ data: PorProcesso[], total: number }> => {
   try {
     if (!isSupabaseConfigured()) {
       console.log('⚠️ Supabase not configured, using mock data');
@@ -277,13 +272,9 @@ export const fetchPorProcesso = async (params: {
   }
 };
 
-export const fetchPorTestemunha = async (params: {
-  page: number;
-  pageSize: number;
-  sortBy?: string;
-  sortDir?: 'asc' | 'desc';
-  filters: TestemunhaFilters;
-}): Promise<{ data: PorTestemunha[], total: number }> => {
+export const fetchPorTestemunha = async (
+  params: MapaTestemunhasRequest<TestemunhaFilters>
+): Promise<{ data: PorTestemunha[], total: number }> => {
   try {
     if (!isSupabaseConfigured()) {
       console.log('⚠️ Supabase not configured, using mock data');

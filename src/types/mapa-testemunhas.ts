@@ -77,6 +77,14 @@ export type TestemunhaFilters = {
   temTroca?: boolean;
 };
 
+export interface MapaTestemunhasRequest<F> {
+  page: number;
+  pageSize: number;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
+  filters: F;
+}
+
 export type ImportResult = {
   stagingRows: number;
   upserts: number;
