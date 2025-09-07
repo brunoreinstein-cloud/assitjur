@@ -333,35 +333,17 @@ function calculateProvaEmprestadaConfidence(
   processosAnalisados: number
 ): number {
   let score = 0;
-
+  
   // Base por prova emprestada detectada
   score += 50;
-
+  
   // Quantidade de depoimentos
   score += Math.min(qtdDepoimentos * 1.5, 30);
-
+  
   // Advogados recorrentes são forte indicador
   score += Math.min(advogadosRecorrentes * 5, 20);
-
-  // Concentração geográfica reforça evidências (até +10)
-  score += Math.min(concentracaoComarca * 0.1, 10);
-
-  // Maior base de processos aumenta confiança (até +10)
-  score += Math.min(processosAnalisados, 10);
-
-  const finalScore = Math.min(score, 100);
-
-  if (process.env.NODE_ENV !== 'production') {
-    console.debug('calculateProvaEmprestadaConfidence', {
-      qtdDepoimentos,
-      advogadosRecorrentes,
-      concentracaoComarca,
-      processosAnalisados,
-      score: finalScore
-    });
-  }
-
-  return finalScore;
+  
+  return Math.min(score, 100);
 }
 
 /**
