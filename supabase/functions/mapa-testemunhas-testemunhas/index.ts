@@ -51,22 +51,39 @@ serve(async (req) => {
     }
 
     const filters = await req.json();
-    
-    // Buscar todos os processos da organização
-    const { data: processos, error: processosError } = await supabase
-      .from('processos')
-      .select('testemunhas_ativo, testemunhas_passivo, cnj, reclamante_nome, reu_nome, triangulacao_confirmada, troca_direta, prova_emprestada')
-      .eq('org_id', profile.organization_id)
-      .is('deleted_at', null);
 
-    if (processosError) {
-      console.error('Error fetching processos:', processosError);
-      throw processosError;
+    const tenantId = profile.organization_id;
+
+    // Buscar vínculos de processos e testemunhas no esquema assistjur
+    const { data: vinculos, error: vinculosError } = await supabase
+      .from('assistjur.processos_testemunhas')
+      .select(`
+        id,
+        processo_id,
+        status_oitiva,
+        relevancia,
+        risco,
+        proxima_movimentacao,
+        tags,
+        processo:assistjur.processos!inner (
+          id,
+          numero
+        ),
+        testemunha:assistjur.testemunhas!inner (
+          id,
+          nome
+        )
+      `)
+      .eq('tenant_id', tenantId);
+
+    if (vinculosError) {
+      console.error('Error fetching processos_testemunhas:', vinculosError);
+      throw vinculosError;
     }
 
-    if (!processos || processos.length === 0) {
+    if (!vinculos || vinculos.length === 0) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           data: [],
           count: 0,
           page: filters.page || 1,
@@ -77,97 +94,57 @@ serve(async (req) => {
     }
 
     // Agregação de dados por testemunha
-    const testemunhaMap = new Map();
+    const testemunhaMap = new Map<string, any>();
 
-    processos.forEach(processo => {
-      const allWitnesses = [
-        ...(processo.testemunhas_ativo || []),
-        ...(processo.testemunhas_passivo || [])
-      ];
+    vinculos.forEach(v => {
+      const witness = v.testemunha;
+      const process = v.processo;
+      if (!witness?.nome) return;
 
-      allWitnesses.forEach(witnessName => {
-        if (!witnessName || witnessName.trim() === '') return;
+      const key = witness.id;
+      if (!testemunhaMap.has(key)) {
+        testemunhaMap.set(key, {
+          testemunha_id: witness.id,
+          nome_testemunha: witness.nome.trim(),
+          qtd_depoimentos: 0,
+          cnjs_como_testemunha: [],
+          processos: [],
+          ja_foi_reclamante: false,
+          cnjs_como_reclamante: [],
+          foi_testemunha_ativo: false,
+          cnjs_ativo: [],
+          foi_testemunha_passivo: false,
+          cnjs_passivo: [],
+          foi_testemunha_em_ambos_polos: false,
+          participou_troca_favor: false,
+          cnjs_troca_favor: [],
+          participou_triangulacao: false,
+          cnjs_triangulacao: [],
+          e_prova_emprestada: false,
+          classificacao: 'Normal',
+          classificacao_estrategica: 'Normal',
+          org_id: tenantId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+      }
 
-        const cleanName = witnessName.trim();
-        
-        if (!testemunhaMap.has(cleanName)) {
-          testemunhaMap.set(cleanName, {
-            nome_testemunha: cleanName,
-            qtd_depoimentos: 0,
-            cnjs_como_testemunha: [],
-            ja_foi_reclamante: false,
-            cnjs_como_reclamante: [],
-            foi_testemunha_ativo: false,
-            cnjs_ativo: [],
-            foi_testemunha_passivo: false,
-            cnjs_passivo: [],
-            foi_testemunha_em_ambos_polos: false,
-            participou_troca_favor: false,
-            cnjs_troca_favor: [],
-            participou_triangulacao: false,
-            cnjs_triangulacao: [],
-            e_prova_emprestada: false,
-            classificacao: 'Normal',
-            classificacao_estrategica: 'Normal',
-            org_id: profile.organization_id,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-        }
+      const agg = testemunhaMap.get(key);
+      agg.qtd_depoimentos += 1;
 
-        const testemunha = testemunhaMap.get(cleanName);
-        testemunha.qtd_depoimentos += 1;
-        testemunha.cnjs_como_testemunha.push(processo.cnj);
-
-        // Verificar se foi reclamante
-        if (processo.reclamante_nome && processo.reclamante_nome.toLowerCase().includes(cleanName.toLowerCase())) {
-          testemunha.ja_foi_reclamante = true;
-          testemunha.cnjs_como_reclamante.push(processo.cnj);
-        }
-
-        // Verificar polo ativo/passivo
-        if (processo.testemunhas_ativo?.includes(witnessName)) {
-          testemunha.foi_testemunha_ativo = true;
-          testemunha.cnjs_ativo.push(processo.cnj);
-        }
-        
-        if (processo.testemunhas_passivo?.includes(witnessName)) {
-          testemunha.foi_testemunha_passivo = true;
-          testemunha.cnjs_passivo.push(processo.cnj);
-        }
-
-        // Verificar se foi em ambos os polos
-        if (testemunha.foi_testemunha_ativo && testemunha.foi_testemunha_passivo) {
-          testemunha.foi_testemunha_em_ambos_polos = true;
-        }
-
-        // Verificar participação em padrões
-        if (processo.troca_direta) {
-          testemunha.participou_troca_favor = true;
-          testemunha.cnjs_troca_favor.push(processo.cnj);
-        }
-        
-        if (processo.triangulacao_confirmada) {
-          testemunha.participou_triangulacao = true;
-          testemunha.cnjs_triangulacao.push(processo.cnj);
-        }
-        
-        if (processo.prova_emprestada) {
-          testemunha.e_prova_emprestada = true;
-        }
-
-        // Classificação estratégica baseada nos padrões
-        if (testemunha.qtd_depoimentos > 10) {
-          testemunha.classificacao = 'Profissional';
-          testemunha.classificacao_estrategica = 'Crítico';
-        } else if (testemunha.participou_triangulacao || testemunha.participou_troca_favor) {
-          testemunha.classificacao = 'Suspeita';
-          testemunha.classificacao_estrategica = 'Atenção';
-        } else if (testemunha.foi_testemunha_em_ambos_polos) {
-          testemunha.classificacao = 'Observação';
-          testemunha.classificacao_estrategica = 'Observação';
-        }
-      });
+      if (process?.numero) {
+        agg.cnjs_como_testemunha.push(process.numero);
+        agg.processos.push({
+          vinculo_id: v.id,
+          processo_id: v.processo_id,
+          processo_numero: process.numero,
+          status_oitiva: v.status_oitiva,
+          relevancia: v.relevancia,
+          risco: v.risco,
+          proxima_movimentacao: v.proxima_movimentacao,
+          tags: v.tags || []
+        });
+      }
     });
 
     // Converter para array e aplicar filtros
@@ -208,7 +185,8 @@ serve(async (req) => {
     const offset = (currentPage - 1) * currentLimit;
     const paginatedData = testemunhasArray.slice(offset, offset + currentLimit);
 
-    console.log(`Aggregated ${testemunhasArray.length} unique witnesses from ${processos.length} processos`);
+    const totalProcessos = new Set(vinculos.map(v => v.processo_id)).size;
+    console.log(`Aggregated ${testemunhasArray.length} unique witnesses from ${totalProcessos} processos`);
 
     return new Response(
       JSON.stringify({
@@ -217,7 +195,7 @@ serve(async (req) => {
         page: currentPage,
         limit: currentLimit,
         total_witnesses: testemunhasArray.length,
-        total_processos: processos.length,
+        total_processos: totalProcessos,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
