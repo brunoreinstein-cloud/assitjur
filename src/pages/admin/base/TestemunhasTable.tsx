@@ -55,7 +55,8 @@ export default function TestemunhasTable() {
   });
 
   const testemunhasData: PorTestemunha[] = testemunhasResponse?.data || [];
-  const totalCount = testemunhasResponse?.count || 0;
+  const totalWitnesses = testemunhasResponse?.total_witnesses || 0;
+  const totalProcessos = testemunhasResponse?.total_processos || 0;
 
   // Ações em massa específicas para testemunhas
   const handleFillDefaultReu = async () => {
@@ -147,7 +148,7 @@ export default function TestemunhasTable() {
           <div>
             <h2 className="text-2xl font-bold">Gestão de Testemunhas</h2>
             <p className="text-muted-foreground">
-              Dados extraídos dos {totalCount} processos da organização
+              {totalWitnesses} testemunhas encontradas em {totalProcessos} processos da organização
             </p>
           </div>
           <div className="flex gap-2">
