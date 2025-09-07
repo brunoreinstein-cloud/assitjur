@@ -46,53 +46,66 @@ export function useAssistJurProcessos(filters: ProcessosFilters = {}, limit = 50
       });
 
       try {
-        const { data, error } = await supabase.functions.invoke('assistjur-processos', {
-          body: {
-            filters,
-            page,
-            limit
-          }
-        });
+        const {
+          data: { session }
+        } = await supabase.auth.getSession();
 
-        // Log detalhado do resultado
+        const response = await fetch(
+          'https://fgjypmlszuzkgvhuszxn.functions.supabase.co/assistjur-processos',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(session?.access_token
+                ? { Authorization: `Bearer ${session.access_token}` }
+                : {}),
+              'x-correlation-id': crypto.randomUUID()
+            },
+            body: JSON.stringify({
+              filters,
+              page,
+              limit
+            })
+          }
+        );
+
+        const data = await response.json();
+
         console.log('📊 AssistJur Processos: Resposta recebida', {
           data,
-          error,
-          status: data ? 'success' : 'error'
+          status: response.status
         });
 
-        if (error) {
+        if (!response.ok) {
           console.error('❌ AssistJur Processos: Erro na Edge Function', {
-            error,
-            code: error.code || 'UNKNOWN',
-            message: error.message || 'Erro desconhecido'
+            error: data,
+            code: response.status,
+            message: data?.error || response.statusText
           });
 
-          // Tratamento diferenciado de erros HTTP
-          if (error.status === 401 || error.code === '401') {
+          if (response.status === 401) {
             toast.error('Sessão expirada. Faça login novamente.');
             throw new Error('Sessão expirada. Faça login novamente.');
-          } else if (error.status === 403 || error.code === '403') {
+          } else if (response.status === 403) {
             toast.error('Acesso negado. Verifique suas permissões.');
             throw new Error('Acesso negado. Verifique suas permissões.');
-          } else if (error.status === 500 || error.code === '500') {
+          } else if (response.status === 500) {
             toast.error('Erro interno do servidor. Tente novamente em alguns minutos.');
             throw new Error('Erro interno do servidor. Tente novamente em alguns minutos.');
           } else {
-            toast.error(`Erro na requisição: ${error.message || 'Erro desconhecido'}`);
-            throw error;
+            toast.error(`Erro na requisição: ${data?.error || 'Erro desconhecido'}`);
+            throw new Error(data?.error || 'Erro desconhecido');
           }
         }
 
-        // Sistema de fallback inteligente - usar mock apenas se status 200 mas data vazio
         if (!data || !data.data || data.data.length === 0) {
           console.log('⚠️ AssistJur Processos: Dados vazios, usando fallback mock', {
             dataEmpty: !data?.data || data.data.length === 0,
             willUseMock: true
           });
-          
+
           toast.info('Exibindo dados de exemplo. Verifique se há dados importados.');
-          
+
           return {
             data: mockProcessosData,
             count: mockProcessosData.length,
