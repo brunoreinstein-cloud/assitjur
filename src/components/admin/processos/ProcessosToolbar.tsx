@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
+import React, { useMemo, useState } from 'react';
+import { Search, Filter, SlidersHorizontal, X, Upload, Eye, EyeOff, Users, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Select,
   SelectContent,
@@ -17,20 +23,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
-import {
-  Search,
-  Filter,
-  X,
-  Download,
-  Eye,
-  EyeOff,
-  Shield,
-  Settings
-} from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
 import { ProcessoFiltersState } from '@/types/processos-explorer';
-import { cn } from '@/lib/utils';
+import { useDebounce } from '@/hooks/useDebounce';
+import { ProcessosSavedFilters } from './ProcessosSavedFilters';
+import { ProcessosDeleteConfirmModal } from './ProcessosDeleteConfirmModal';
 
 interface ProcessosToolbarProps {
   filters: ProcessoFiltersState;
@@ -42,6 +41,8 @@ interface ProcessosToolbarProps {
   onExport: () => void;
   selectedCount: number;
   totalCount: number;
+  onBulkDelete?: () => void;
+  processos?: any[];
 }
 
 const UF_OPTIONS = [
@@ -62,17 +63,19 @@ export function ProcessosToolbar({
   onClearFilters,
   onExport,
   selectedCount,
-  totalCount
+  totalCount,
+  onBulkDelete,
+  processos = []
 }: ProcessosToolbarProps) {
   const [searchTerm, setSearchTerm] = useState(filters.search);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const debouncedSearch = useDebounce(searchTerm, 300);
 
-  // Debounced search
+  // Debounced search effect  
   React.useEffect(() => {
-    const timeout = setTimeout(() => {
-      onFiltersChange({ ...filters, search: searchTerm });
-    }, 300);
-    return () => clearTimeout(timeout);
-  }, [searchTerm]);
+    onFiltersChange({ ...filters, search: debouncedSearch });
+  }, [debouncedSearch]);
 
   const updateFilters = (updates: Partial<ProcessoFiltersState>) => {
     onFiltersChange({ ...filters, ...updates });
@@ -84,11 +87,10 @@ export function ProcessosToolbar({
     });
   };
 
-  const activeFiltersCount = React.useMemo(() => {
+  const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (filters.search.trim()) count++;
     if (filters.uf.length > 0) count++;
-    if (filters.comarca.length > 0) count++;
     if (filters.status.length > 0) count++;
     if (filters.fase.length > 0) count++;
     if (filters.classificacao.length > 0) count++;
@@ -97,21 +99,57 @@ export function ProcessosToolbar({
     return count;
   }, [filters]);
 
+  const handleBulkDelete = async () => {
+    setIsDeleting(true);
+    try {
+      if (onBulkDelete) {
+        await onBulkDelete();
+      }
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteModalOpen(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
-      {/* Primary Toolbar */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex-1 flex items-center gap-2">
-          {/* Global Search */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      {/* Main Toolbar */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        {/* Search and Quick Filters */}
+        <div className="flex flex-1 items-center gap-2">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Buscar por CNJ, comarca, UF, reclamante..."
+              placeholder="Buscar por CNJ, Reclamante, Réu..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-9"
             />
           </div>
+
+          {/* Filtro de Testemunhas Rápido */}
+          <Select
+            value={filters.search.includes('testemunhas:') ? filters.search.split('testemunhas:')[1] : 'todas'}
+            onValueChange={(value) => {
+              if (value === 'todas') {
+                updateFilters({ search: filters.search.replace(/testemunhas:\w+/g, '').trim() });
+              } else {
+                const cleanSearch = filters.search.replace(/testemunhas:\w+/g, '').trim();
+                updateFilters({ search: `${cleanSearch} testemunhas:${value}`.trim() });
+              }
+            }}
+          >
+            <SelectTrigger className="w-40">
+              <Users className="h-4 w-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas</SelectItem>
+              <SelectItem value="ativas">Ativas</SelectItem>
+              <SelectItem value="passivas">Passivas</SelectItem>
+              <SelectItem value="0">Sem testemunhas</SelectItem>
+            </SelectContent>
+          </Select>
 
           {/* Advanced Filters */}
           <Popover>
@@ -277,41 +315,51 @@ export function ProcessosToolbar({
               </div>
             </PopoverContent>
           </Popover>
-
-          <Separator orientation="vertical" className="h-6" />
-
-          {/* PII Mask Toggle */}
-          <div className="flex items-center space-x-2">
-            <Shield className="h-4 w-4 text-muted-foreground" />
-            <Switch
-              id="mask-pii"
-              checked={isPiiMasked}
-              onCheckedChange={onPiiMaskChange}
-            />
-            <Label htmlFor="mask-pii" className="text-sm font-medium cursor-pointer flex items-center gap-1">
-              {isPiiMasked ? (
-                <>
-                  <EyeOff className="h-3 w-3" />
-                  Mascarar PII
-                </>
-              ) : (
-                <>
-                  <Eye className="h-3 w-3" />
-                  Mostrar PII
-                </>
-              )}
-            </Label>
-          </div>
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {/* PII Mask Toggle */}
+          <div className="flex items-center gap-2 px-3 py-2 border rounded-lg bg-background">
+            <Label htmlFor="pii-mask" className="text-sm font-medium cursor-pointer">
+              PII: {isPiiMasked ? 'ON' : 'OFF'}
+            </Label>
+            <Switch
+              id="pii-mask"
+              checked={isPiiMasked}
+              onCheckedChange={onPiiMaskChange}
+            />
+          </div>
+
           <Button variant="outline" onClick={onExport}>
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
+            <Upload className="h-4 w-4 mr-2" />
+            Exportar CSV
           </Button>
+
+          {/* Mais Ações Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="text-destructive focus:text-destructive"
+              >
+                Excluir Todos os Processos
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
+
+      {/* Filtros Salvos */}
+      <ProcessosSavedFilters
+        currentFilters={filters}
+        onFiltersApply={onFiltersChange}
+      />
 
       {/* Active Filters Chips */}
       {hasActiveFilters && (
@@ -383,16 +431,29 @@ export function ProcessosToolbar({
         </div>
       )}
 
-      {/* Results Summary */}
+      {/* Status Bar */}
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <div>
           {selectedCount > 0 ? (
-            <span>{selectedCount} de {totalCount} selecionados</span>
+            <span className="font-medium">
+              {selectedCount} de {totalCount} processos selecionados
+            </span>
           ) : (
-            <span>{totalCount} processos encontrados</span>
+            <span>
+              {totalCount.toLocaleString('pt-BR')} processos encontrados
+            </span>
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ProcessosDeleteConfirmModal
+        open={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleBulkDelete}
+        processos={processos}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 }

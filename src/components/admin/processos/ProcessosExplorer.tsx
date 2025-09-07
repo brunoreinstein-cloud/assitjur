@@ -11,6 +11,7 @@ import { ProcessosToolbar } from './ProcessosToolbar';
 import { ProcessosGrid } from './ProcessosGrid';
 import { ProcessoDetailDrawer } from './ProcessoDetailDrawer';
 import { ExportManager } from './ExportManager';
+import { ProcessosKPIs } from './ProcessosKPIs';
 import { ProcessoRow, ProcessoQuery, ProcessoFiltersState, VersionInfo } from '@/types/processos-explorer';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -275,6 +276,15 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
         </div>
       </div>
 
+      {/* Mini-KPIs */}
+      {!isLoading && processosData && (
+        <ProcessosKPIs
+          data={processosData.data}
+          filters={filters}
+          onFilterApply={setFilters}
+        />
+      )}
+
       {/* Toolbar */}
       <ProcessosToolbar
         filters={filters}
@@ -286,6 +296,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
         onExport={() => setIsExportOpen(true)}
         selectedCount={selectedRows.size}
         totalCount={processosData?.count || 0}
+        processos={processosData?.data || []}
       />
 
       {/* Loading State */}
