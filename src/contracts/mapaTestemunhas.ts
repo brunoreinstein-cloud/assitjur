@@ -1,22 +1,20 @@
 import { z } from "zod";
 
-const FiltersSchema = z.object({
-  uf: z.string().trim().optional(),
-  status: z.string().trim().optional(),
-  fase: z.string().trim().optional(),
-  search: z.string().trim().optional(),
-}).default({});
+// Accept arbitrary filters so functions can define their own
+const FiltersSchema = z.record(z.unknown()).default({});
 
-export const MapaRequestSchema = z.object({
-  filtros: FiltersSchema,
-  pagina: z.number().int().positive().default(1),
-  limite: z.number().int().positive().max(200).default(10),
+export const mapaTestemunhasSchema = z.object({
+  filters: FiltersSchema,
+  page: z.number().int().positive().default(1),
+  limit: z.number().int().positive().max(200).default(10),
+  sortBy: z.string().trim().optional(),
+  sortDir: z.enum(["asc", "desc"]).optional(),
 });
 
-export type MapaRequest = z.infer<typeof MapaRequestSchema>;
+export type MapaRequest = z.infer<typeof mapaTestemunhasSchema>;
 
 export function normalizeMapaRequest(payload: unknown): MapaRequest {
-  const parsed = MapaRequestSchema.safeParse(payload);
+  const parsed = mapaTestemunhasSchema.safeParse(payload);
   if (!parsed.success) {
     throw parsed.error;
   }

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts"
+import { normalizeMapaRequest, MapaResponseSchema } from "../../../src/contracts/mapaTestemunhas.ts"
 
 serve(async (req) => {
   const preflight = handlePreflight(req)
@@ -55,38 +56,23 @@ serve(async (req) => {
       );
     }
 
-    let filters: Record<string, unknown>;
+    let dto: ReturnType<typeof normalizeMapaRequest>;
     try {
-      filters = await req.json();
-    } catch {
+      dto = normalizeMapaRequest(await req.json());
+    } catch (e) {
+      const issues = (e as any)?.issues ?? e;
       return new Response(
-        JSON.stringify({ error: 'Invalid JSON payload' }),
+        JSON.stringify({ error: 'Invalid payload', issues }),
         { status: 400, headers }
       );
     }
 
-    if (typeof filters !== 'object' || filters === null) {
-      return new Response(
-        JSON.stringify({ error: 'Request body must be a JSON object' }),
-        { status: 400, headers }
-      );
-    }
-
-    const requiredFields: Array<keyof typeof filters> = ['page', 'limit'];
-    for (const field of requiredFields) {
-      if (typeof filters[field] !== 'number') {
-        return new Response(
-          JSON.stringify({ error: `Missing or invalid '${String(field)}'` }),
-          { status: 400, headers }
-        );
-      }
-    }
-
+    const { filters, page, limit, sortBy, sortDir } = dto;
     const tenantId = profile.organization_id;
 
     // Paginação e filtros diretamente na consulta
-    const currentPage = filters.page || 1;
-    const currentLimit = filters.limit || 50;
+    const currentPage = page;
+    const currentLimit = limit;
     const from = (currentPage - 1) * currentLimit;
     const to = from + currentLimit - 1;
 
@@ -141,6 +127,10 @@ serve(async (req) => {
       query = query.ilike('testemunha.nome', `%${filters.search}%`);
     }
 
+    if (sortBy) {
+      query = query.order(sortBy, { ascending: sortDir !== 'desc' });
+    }
+
     const { data: vinculos, error: vinculosError, count } = await query.range(from, to);
 
     if (vinculosError) {
@@ -162,13 +152,17 @@ serve(async (req) => {
     }
 
     if (!vinculos || vinculos.length === 0) {
+      const emptyResult = { data: [], total: 0 };
+      const ok = MapaResponseSchema.safeParse(emptyResult);
+      if (!ok.success) {
+        console.error('Resposta inválida:', ok.error.issues);
+        return new Response(
+          JSON.stringify({ error: 'Resposta inválida do servidor' }),
+          { status: 500, headers }
+        );
+      }
       return new Response(
-        JSON.stringify({
-          data: [],
-          count: 0,
-          page: currentPage,
-          limit: currentLimit
-        }),
+        JSON.stringify({ ...emptyResult, page: currentPage, limit: currentLimit }),
         { headers }
       );
     }
@@ -237,10 +231,21 @@ serve(async (req) => {
       `Aggregated ${testemunhasArray.length} unique witnesses from ${totalProcessos} processos`
     );
 
+    const result = {
+      data: testemunhasArray,
+      total: count ?? testemunhasArray.length,
+    };
+    const ok = MapaResponseSchema.safeParse(result);
+    if (!ok.success) {
+      console.error('Resposta inválida:', ok.error.issues);
+      return new Response(
+        JSON.stringify({ error: 'Resposta inválida do servidor' }),
+        { status: 500, headers }
+      );
+    }
     return new Response(
       JSON.stringify({
-        data: testemunhasArray,
-        count: count ?? testemunhasArray.length,
+        ...result,
         page: currentPage,
         limit: currentLimit,
         total_witnesses: testemunhasArray.length,
