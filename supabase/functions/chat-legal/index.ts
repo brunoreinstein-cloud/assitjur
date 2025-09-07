@@ -11,9 +11,14 @@ import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
  * Config & Constantes
  * =========================
  */
-const ALLOWED_ORIGINS = [
+const DEFAULT_ALLOWED_ORIGINS = [
   "https://app.assistjur.ia",
   "https://staging.assistjur.ia",
+  "http://localhost:5173",
+];
+const ALLOWED_ORIGINS = [
+  ...DEFAULT_ALLOWED_ORIGINS,
+  ...(Deno.env.get("ALLOWED_ORIGINS")?.split(",").map(s => s.trim()).filter(Boolean) ?? []),
 ];
 const DEFAULT_MODEL =
   Deno.env.get("OPENAI_DEFAULT_MODEL") ?? "gpt-4o-mini";
@@ -29,9 +34,13 @@ if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   console.error("❌ Missing Supabase env (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY)");
 }
 
-function isOriginAllowed(req: Request) {
+function isOriginAllowed(req: Request, cors: Record<string, string>) {
   const origin = req.headers.get("origin") ?? "";
-  return ALLOWED_ORIGINS.includes(origin);
+  return (
+    ALLOWED_ORIGINS.includes(origin) ||
+    cors["Access-Control-Allow-Origin"] === origin ||
+    cors["Access-Control-Allow-Origin"] === "*"
+  );
 }
 
 /**
@@ -134,11 +143,7 @@ serve(async (request: Request) => {
   if (preflight) return preflight;
 
   const cors = corsHeaders(request);
-  const origin = request.headers.get("origin") ?? "";
-  const originAllowed = isOriginAllowed(request);
-  if (originAllowed) {
-    cors["Access-Control-Allow-Origin"] = origin;
-  }
+  const originAllowed = isOriginAllowed(request, cors);
 
   if (!originAllowed) {
     return new Response(JSON.stringify({ error: "Origin not allowed" }), {
