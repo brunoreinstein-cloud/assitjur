@@ -77,6 +77,14 @@ export type TestemunhaFilters = {
   temTroca?: boolean;
 };
 
+export type MapaTestemunhasRequest<F = ProcessoFilters | TestemunhaFilters> = {
+  page: number;
+  pageSize: number;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
+  filters: F;
+};
+
 export type ImportResult = {
   stagingRows: number;
   upserts: number;
