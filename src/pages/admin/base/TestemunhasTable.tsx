@@ -40,12 +40,10 @@ export default function TestemunhasTable() {
 
       const { data, error } = await supabase.functions.invoke('mapa-testemunhas-testemunhas', {
         body: {
-          filters: {
-            search: searchTerm.trim() || undefined,
-          },
+          search: searchTerm.trim() || undefined,
           page,
-          limit
-        }
+          limit,
+        },
       });
 
       if (error) throw error;
