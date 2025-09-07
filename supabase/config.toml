@@ -40,10 +40,10 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.mapa-testemunhas-processos]
-verify_jwt = true
+verify_jwt = false
 
 [functions.mapa-testemunhas-testemunhas]
-verify_jwt = true
+verify_jwt = false
 
 [functions.mapa-testemunhas-analysis]
 verify_jwt = true
