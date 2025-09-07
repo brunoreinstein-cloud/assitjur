@@ -211,12 +211,13 @@ serve(async (req) => {
     console.log(`Aggregated ${testemunhasArray.length} unique witnesses from ${processos.length} processos`);
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         data: paginatedData,
         count: testemunhasArray.length,
         page,
         limit,
-        total_witnesses: testemunhasArray.length
+        total_witnesses: testemunhasArray.length,
+        total_processos: processos.length
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
