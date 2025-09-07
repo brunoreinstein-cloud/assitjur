@@ -1,21 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders, handlePreflight } from "../_shared/cors.ts"
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
+
+  const headers = corsHeaders(req)
 
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) {
     return new Response(
       JSON.stringify({ error: 'Unauthorized' }),
-      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 401, headers }
     );
   }
 
@@ -40,7 +37,7 @@ serve(async (req) => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers }
       );
     }
 
@@ -54,7 +51,7 @@ serve(async (req) => {
     if (!profile) {
       return new Response(
         JSON.stringify({ error: 'Profile not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 404, headers }
       );
     }
 
@@ -64,7 +61,7 @@ serve(async (req) => {
     } catch {
       return new Response(
         JSON.stringify({ error: 'Invalid JSON payload' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers }
       );
     }
 
@@ -143,7 +140,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ error: vinculosError.message }),
-        { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status, headers }
       );
     }
 
@@ -155,7 +152,7 @@ serve(async (req) => {
           page: currentPage,
           limit: currentLimit
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers }
       );
     }
 
@@ -232,7 +229,7 @@ serve(async (req) => {
         total_witnesses: testemunhasArray.length,
         total_processos: totalProcessos,
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers }
     );
 
   } catch (error) {
@@ -240,7 +237,7 @@ serve(async (req) => {
     const { code, message } = error as { code?: string; message?: string };
     return new Response(
       JSON.stringify({ error: { code, message } }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers }
     );
   }
 })
