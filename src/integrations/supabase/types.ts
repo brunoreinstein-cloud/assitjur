@@ -833,6 +833,7 @@ export type Database = {
           reclamante_nome: string | null
           reu_nome: string | null
           score_risco: number | null
+          segredo_justica: boolean | null
           status: string | null
           testemunhas_ativo: string[] | null
           testemunhas_passivo: string[] | null
@@ -865,6 +866,7 @@ export type Database = {
           reclamante_nome?: string | null
           reu_nome?: string | null
           score_risco?: number | null
+          segredo_justica?: boolean | null
           status?: string | null
           testemunhas_ativo?: string[] | null
           testemunhas_passivo?: string[] | null
@@ -897,6 +899,7 @@ export type Database = {
           reclamante_nome?: string | null
           reu_nome?: string | null
           score_risco?: number | null
+          segredo_justica?: boolean | null
           status?: string | null
           testemunhas_ativo?: string[] | null
           testemunhas_passivo?: string[] | null
@@ -1365,7 +1368,128 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      vw_processos_publicos: {
+        Row: {
+          advogados_ativo: string[] | null
+          advogados_passivo: string[] | null
+          classificacao_final: string | null
+          cnj: string | null
+          cnj_digits: string | null
+          cnj_normalizado: string | null
+          comarca: string | null
+          created_at: string | null
+          data_audiencia: string | null
+          fase: string | null
+          id: string | null
+          observacoes: string | null
+          org_id: string | null
+          prova_emprestada: boolean | null
+          reclamante_cpf_mask: string | null
+          reclamante_foi_testemunha: boolean | null
+          reclamante_nome: string | null
+          reu_nome: string | null
+          score_risco: number | null
+          segredo_justica: boolean | null
+          status: string | null
+          testemunhas_ativo: string[] | null
+          testemunhas_passivo: string[] | null
+          triangulacao_confirmada: boolean | null
+          tribunal: string | null
+          troca_direta: boolean | null
+          updated_at: string | null
+          vara: string | null
+          version_id: string | null
+        }
+        Insert: {
+          advogados_ativo?: string[] | null
+          advogados_passivo?: string[] | null
+          classificacao_final?: string | null
+          cnj?: string | null
+          cnj_digits?: string | null
+          cnj_normalizado?: string | null
+          comarca?: string | null
+          created_at?: string | null
+          data_audiencia?: string | null
+          fase?: string | null
+          id?: string | null
+          observacoes?: string | null
+          org_id?: string | null
+          prova_emprestada?: boolean | null
+          reclamante_cpf_mask?: string | null
+          reclamante_foi_testemunha?: boolean | null
+          reclamante_nome?: never
+          reu_nome?: never
+          score_risco?: number | null
+          segredo_justica?: boolean | null
+          status?: string | null
+          testemunhas_ativo?: string[] | null
+          testemunhas_passivo?: string[] | null
+          triangulacao_confirmada?: boolean | null
+          tribunal?: string | null
+          troca_direta?: boolean | null
+          updated_at?: string | null
+          vara?: string | null
+          version_id?: string | null
+        }
+        Update: {
+          advogados_ativo?: string[] | null
+          advogados_passivo?: string[] | null
+          classificacao_final?: string | null
+          cnj?: string | null
+          cnj_digits?: string | null
+          cnj_normalizado?: string | null
+          comarca?: string | null
+          created_at?: string | null
+          data_audiencia?: string | null
+          fase?: string | null
+          id?: string | null
+          observacoes?: string | null
+          org_id?: string | null
+          prova_emprestada?: boolean | null
+          reclamante_cpf_mask?: string | null
+          reclamante_foi_testemunha?: boolean | null
+          reclamante_nome?: never
+          reu_nome?: never
+          score_risco?: number | null
+          segredo_justica?: boolean | null
+          status?: string | null
+          testemunhas_ativo?: string[] | null
+          testemunhas_passivo?: string[] | null
+          triangulacao_confirmada?: boolean | null
+          tribunal?: string | null
+          troca_direta?: boolean | null
+          updated_at?: string | null
+          vara?: string | null
+          version_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "processos_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "processos_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vw_testemunhas_publicas: {
+        Row: {
+          email: string | null
+          id: string | null
+          nome: string | null
+          org_id: string | null
+          processo_id: string | null
+          risco_sensibilidade: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_invitation: {
