@@ -190,6 +190,14 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
     setIsDrawerOpen(true);
   };
 
+  // Handle KPI filter application
+  const handleKPIFilterApply = (partialFilters: Partial<ProcessoFiltersState>) => {
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      ...partialFilters
+    }));
+  };
+
   // Clear filters
   const handleClearFilters = () => {
     setFilters({
@@ -281,7 +289,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
         <ProcessosKPIs
           data={processosData.data}
           filters={filters}
-          onFilterApply={setFilters}
+          onFilterApply={handleKPIFilterApply}
         />
       )}
 
