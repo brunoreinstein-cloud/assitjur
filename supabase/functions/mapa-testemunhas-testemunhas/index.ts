@@ -50,7 +50,7 @@ serve(async (req) => {
       );
     }
 
-    const filters = await req.json();
+    const { page, limit, ...filters } = await req.json();
     
     // Buscar todos os processos da organização
     const { data: processos, error: processosError } = await supabase
@@ -69,8 +69,8 @@ serve(async (req) => {
         JSON.stringify({ 
           data: [],
           count: 0,
-          page: filters.page || 1,
-          limit: filters.limit || 50
+          page: page || 1,
+          limit: limit || 50
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -201,21 +201,21 @@ serve(async (req) => {
 
     // Ordenação por quantidade de depoimentos (decrescente)
     testemunhasArray.sort((a, b) => b.qtd_depoimentos - a.qtd_depoimentos);
-    
+
     // Paginação
-    const page = filters.page || 1;
-    const limit = filters.limit || 50;
-    const offset = (page - 1) * limit;
-    const paginatedData = testemunhasArray.slice(offset, offset + limit);
+    const currentPage = page || 1;
+    const currentLimit = limit || 50;
+    const offset = (currentPage - 1) * currentLimit;
+    const paginatedData = testemunhasArray.slice(offset, offset + currentLimit);
 
     console.log(`Aggregated ${testemunhasArray.length} unique witnesses from ${processos.length} processos`);
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         data: paginatedData,
         count: testemunhasArray.length,
-        page,
-        limit,
+        page: currentPage,
+        limit: currentLimit,
         total_witnesses: testemunhasArray.length
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

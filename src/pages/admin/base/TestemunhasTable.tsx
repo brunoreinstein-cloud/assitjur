@@ -38,14 +38,12 @@ export default function TestemunhasTable() {
     queryFn: async () => {
       if (!profile?.organization_id) throw new Error('Organização não encontrada');
 
+      const filters = {
+        search: searchTerm.trim() || undefined,
+      };
+
       const { data, error } = await supabase.functions.invoke('mapa-testemunhas-testemunhas', {
-        body: {
-          filters: {
-            search: searchTerm.trim() || undefined,
-          },
-          page,
-          limit
-        }
+        body: { ...filters, page, limit }
       });
 
       if (error) throw error;
