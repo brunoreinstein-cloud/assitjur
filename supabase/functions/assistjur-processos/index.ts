@@ -1,137 +1,150 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { getAuth } from "../_shared/auth.ts"
-import { createLogger } from "../_shared/logger.ts"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-correlation-id',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
-}
+const allowOrigins = [ Deno.env.get("APP_ORIGIN") ?? "*" ];
+const cors = (origin: string | null) => ({
+  "access-control-allow-origin": origin && allowOrigins.includes(origin) ? origin : allowOrigins[0],
+  "access-control-allow-headers": "authorization, content-type, x-client-info, x-correlation-id",
+  "access-control-allow-methods": "GET,POST,OPTIONS",
+  "vary": "origin",
+});
+
+console.log("[assistjur-processos] Function initialized");
 
 serve(async (req) => {
-  const correlationId = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
-  const log = createLogger(correlationId);
-  const url = new URL(req.url);
+  const origin = req.headers.get("origin");
+  const headers = { "content-type": "application/json; charset=utf-8", ...cors(origin) };
 
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: { ...corsHeaders, 'x-correlation-id': correlationId } });
+  console.log(`[assistjur-processos] ${req.method} ${req.url}`);
+
+  // CORS
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers });
+  if (req.method === "GET") return new Response(JSON.stringify({ ok: true, service: "assistjur-processos" }), { status: 200, headers });
+
+  // Auth
+  const auth = req.headers.get("authorization") ?? "";
+  if (!auth.startsWith("Bearer ")) {
+    console.error("[assistjur-processos] Missing bearer token");
+    return new Response(JSON.stringify({ error: "unauthorized", detail: "missing bearer token" }), { status: 401, headers });
   }
 
-  if (req.method === 'GET' && url.pathname === '/health') {
-    return new Response('ok', { status: 200, headers: { ...corsHeaders, 'x-correlation-id': correlationId } });
+  // Body seguro
+  let body: any = {};
+  try { 
+    const text = await req.text();
+    if (text.trim()) {
+      body = JSON.parse(text); 
+    }
+  } catch (e) { 
+    console.error("[assistjur-processos] Invalid JSON body:", e);
+    return new Response(JSON.stringify({ error: "bad_request", detail: "invalid JSON body" }), { status: 400, headers });
   }
 
-  if (req.method !== 'POST') {
-    return new Response('Not Found', { status: 404, headers: { ...corsHeaders, 'x-correlation-id': correlationId } });
+  console.log("[assistjur-processos] Request body:", JSON.stringify(body));
+
+  const filters = body?.filters ?? {};
+  const page = Number(body?.page ?? 1);
+  const limit = Math.min(Number(body?.limit ?? 50), 200);
+
+  // Supabase client com o mesmo Bearer do usuário (respeita RLS)
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: auth } } }
+  );
+
+  // Verificar usuário e organização
+  let org_id;
+  try {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      console.error("[assistjur-processos] Auth error:", userError);
+      return new Response(JSON.stringify({ error: "unauthorized", detail: "invalid user token" }), { status: 401, headers });
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("organization_id, role")
+      .eq("user_id", user.id)
+      .single();
+
+    if (profileError || !profile?.organization_id) {
+      console.error("[assistjur-processos] Profile error:", profileError);
+      return new Response(JSON.stringify({ error: "unauthorized", detail: "user profile or organization not found" }), { status: 401, headers });
+    }
+    org_id = profile.organization_id;
+  } catch (e) {
+    console.error("[assistjur-processos] User verification error:", e);
+    return new Response(JSON.stringify({ error: "unauthorized", detail: "authentication failed" }), { status: 401, headers });
   }
 
   try {
-    log.info('Processing assistjur-processos request...');
-
-    const { user, organization_id, supa } = await getAuth(req);
-    if (!user) {
-      log.error('Authentication failed: No user found');
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-correlation-id': correlationId }
-        }
-      );
-    }
-
-    if (!organization_id) {
-      log.error(`Organization not found for user: ${user.id}`);
-      return new Response(
-        JSON.stringify({ error: 'Organization not found' }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-correlation-id': correlationId }
-        }
-      );
-    }
-
-    log.info(`Authenticated user for org: ${organization_id}`);
-
-    // Parse request body safely
-    let requestData;
-    try {
-      const body = await req.text();
-      requestData = body ? JSON.parse(body) : {};
-    } catch (parseError) {
-      log.error(`Failed to parse request body: ${parseError}`);
-      requestData = {};
-    }
-
-    const { filters = {}, page = 1, limit = 50 } = requestData;
-    log.info(`Request params: ${JSON.stringify({ filters, page, limit, org_id: organization_id })}`);
-
-    // Call RPC function to get processos data
-    const { data: result, error } = await supa.rpc('rpc_get_assistjur_processos', {
-      p_org_id: organization_id,
+    // Chamar RPC function de forma robusta
+    console.log(`[assistjur-processos] Calling RPC with org_id: ${org_id}`);
+    
+    const { data: result, error } = await supabase.rpc('rpc_get_assistjur_processos', {
+      p_org_id: org_id,
       p_filters: filters,
       p_page: page,
       p_limit: limit
     });
 
     if (error) {
-      log.error(`RPC error details: ${JSON.stringify({
+      console.error("[assistjur-processos] RPC error:", JSON.stringify({
         message: error.message,
         details: error.details,
         hint: error.hint,
         code: error.code
-      })}`);
-
-      const status = error.code === '42501' ? 403 : 500
-      const body = error.code === '42501'
-        ? { error: 'Forbidden', details: error.message }
-        : { error: 'Database query failed', details: error.message }
-
+      }));
+      
+      // Mapear códigos de erro específicos
+      const code = (error as any).code ?? "rpc_error";
+      let status = 500;
+      let detail = error.message;
+      
+      if (code === "42501") {
+        status = 403;
+        detail = "Acesso negado. Verifique suas permissões.";
+      } else if (code.startsWith("P0001")) {
+        status = 400;
+        detail = `Erro nos parâmetros: ${error.message}`;
+      } else if (error.message?.includes("function") && error.message?.includes("does not exist")) {
+        status = 500;
+        detail = "Função do banco de dados não encontrada. Contate o suporte.";
+      } else if (error.message?.includes("schema") && error.message?.includes("assistjur")) {
+        status = 500;
+        detail = "Schema assistjur não encontrado. Verifique se os dados foram importados.";
+      }
+      
       return new Response(
-        JSON.stringify(body),
-        {
-          status,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-correlation-id': correlationId }
-        }
+        JSON.stringify({ error: "rpc_error", code, detail }), 
+        { status, headers }
       );
     }
 
-    log.info(`RPC result: ${JSON.stringify({ resultType: typeof result, isArray: Array.isArray(result) })}`);
+    console.log(`[assistjur-processos] RPC result type:`, typeof result, Array.isArray(result));
 
-    const processos = result?.[0]?.data || [];
+    // Extrair dados do resultado RPC
+    const processosData = result?.[0]?.data || [];
     const totalCount = result?.[0]?.total_count || 0;
+    const totalPages = Math.ceil(totalCount / limit);
 
-    log.info(`Final data: ${JSON.stringify({ processosCount: Array.isArray(processos) ? processos.length : 0, totalCount })}`);
+    const response = {
+      data: processosData,
+      count: totalCount,
+      totalPages,
+      page
+    };
 
+    console.log(`[assistjur-processos] Success: ${processosData?.length || 0} records, total: ${totalCount}`);
+    
+    return new Response(JSON.stringify(response), { status: 200, headers });
+
+  } catch (e) {
+    console.error("[assistjur-processos] Unexpected error:", e);
     return new Response(
-      JSON.stringify({
-        data: processos,
-        count: totalCount,
-        page,
-        totalPages: Math.ceil(totalCount / limit)
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-correlation-id': correlationId }
-      }
-    );
-
-  } catch (error) {
-    log.error(`Unexpected error in assistjur-processos: ${JSON.stringify({
-      message: error.message,
-      stack: error.stack,
-      name: error.name
-    })}`);
-    return new Response(
-      JSON.stringify({
-        error: 'Internal server error',
-        message: error.message || 'Unknown error occurred'
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-correlation-id': correlationId }
-      }
+      JSON.stringify({ error: "internal_error", detail: String(e) }), 
+      { status: 500, headers }
     );
   }
 });

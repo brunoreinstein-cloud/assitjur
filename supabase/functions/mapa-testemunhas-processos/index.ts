@@ -1,204 +1,235 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+const allowOrigins = [ Deno.env.get("APP_ORIGIN") ?? "*" ];
+const cors = (origin: string | null) => ({
+  "access-control-allow-origin": origin && allowOrigins.includes(origin) ? origin : allowOrigins[0],
+  "access-control-allow-headers": "authorization, content-type, x-client-info, x-correlation-id",
+  "access-control-allow-methods": "GET,POST,OPTIONS",
+  "vary": "origin",
+});
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+  const origin = req.headers.get("origin");
+  const headers = { "content-type": "application/json; charset=utf-8", ...cors(origin) };
+
+  console.log(`[mapa-testemunhas-processos] ${req.method} ${req.url}`);
+
+  // CORS
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers });
+  if (req.method === "GET") return new Response(JSON.stringify({ ok: true, service: "mapa-testemunhas-processos" }), { status: 200, headers });
+
+  // Auth
+  const auth = req.headers.get("authorization") ?? "";
+  if (!auth.startsWith("Bearer ")) {
+    console.error("[mapa-testemunhas-processos] Missing bearer token");
+    return new Response(JSON.stringify({ error: "unauthorized", detail: "missing bearer token" }), { status: 401, headers });
+  }
+
+  // Body seguro
+  let body: any = {};
+  try { 
+    const text = await req.text();
+    if (text.trim()) {
+      body = JSON.parse(text); 
+    }
+  } catch (e) { 
+    console.error("[mapa-testemunhas-processos] Invalid JSON body:", e);
+    return new Response(JSON.stringify({ error: "bad_request", detail: "invalid JSON body" }), { status: 400, headers });
+  }
+
+  console.log("[mapa-testemunhas-processos] Request body:", JSON.stringify(body));
+
+  const filters = body?.filters ?? {};
+  const page = Number(body?.page ?? 1);
+  const limit = Math.min(Number(body?.limit ?? 10), 200);
+  const offset = (page - 1) * limit;
+
+  // Supabase client com o mesmo Bearer do usuário (respeita RLS)
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: auth } } }
+  );
+
+  // Verificar usuário e organização
+  let profile;
+  try {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      console.error("[mapa-testemunhas-processos] Auth error:", userError);
+      return new Response(JSON.stringify({ error: "unauthorized", detail: "invalid user token" }), { status: 401, headers });
+    }
+
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .select("organization_id, role")
+      .eq("user_id", user.id)
+      .single();
+
+    if (profileError || !profileData?.organization_id) {
+      console.error("[mapa-testemunhas-processos] Profile error:", profileError);
+      return new Response(JSON.stringify({ error: "unauthorized", detail: "user profile or organization not found" }), { status: 401, headers });
+    }
+    profile = profileData;
+  } catch (e) {
+    console.error("[mapa-testemunhas-processos] User verification error:", e);
+    return new Response(JSON.stringify({ error: "unauthorized", detail: "authentication failed" }), { status: 401, headers });
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-          detectSessionInUrl: false,
-        },
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    );
-
-    const { filters = {}, page = 1, limit = 10 } = await req.json();
-
-    // Verificar autenticação
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Buscar perfil do usuário
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('organization_id, role')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!profile) {
-      return new Response(
-        JSON.stringify({ error: 'Profile not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Build query for processos_live (only published versions)
+    // Usar tabela processos (substituindo processos_live que foi removida)
     let query = supabase
-      .from('processos_live')
-      .select('*', { count: 'exact' })
-      .eq('org_id', profile.organization_id);
+      .from("processos")
+      .select(`
+        id,
+        cnj,
+        status,
+        comarca,
+        tribunal,
+        fase,
+        reclamante_nome,
+        advogados_ativo,
+        testemunhas_ativo,
+        testemunhas_passivo,
+        reclamante_foi_testemunha,
+        troca_direta,
+        triangulacao_confirmada,
+        prova_emprestada,
+        classificacao_final,
+        org_id,
+        created_at,
+        updated_at
+      `, { count: 'exact' })
+      .eq('org_id', profile.organization_id)
+      .is('deleted_at', null) // Não incluir soft deleted
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
 
-    // Apply filters
-    if (filters.uf) {
+    // Aplicar filtros
+    if (filters?.uf) {
       query = query.or(`comarca.ilike.%${filters.uf}%,tribunal.ilike.%${filters.uf}%`);
     }
-    if (filters.status) {
+    if (filters?.status) {
       query = query.eq('status', filters.status);
     }
-    if (filters.fase) {
+    if (filters?.fase) {
       query = query.eq('fase', filters.fase);
     }
-    if (filters.search) {
+    if (filters?.search) {
       query = query.or(`cnj.ilike.%${filters.search}%,comarca.ilike.%${filters.search}%,reclamante_nome.ilike.%${filters.search}%`);
     }
 
-    // Get total count first from processos_live
-    const { count } = await supabase
-      .from('processos_live')
-      .select('*', { count: 'exact', head: true })
-      .eq('org_id', profile.organization_id);
+    const { data, error, count } = await query;
 
-    // Apply pagination
-    const offset = (page - 1) * limit;
-    query = query.range(offset, offset + limit - 1);
-    query = query.order('created_at', { ascending: false });
-
-    const { data: processos, error: processosError } = await query;
-
-    if (processosError) {
-      console.error('Error fetching processos:', processosError);
-      throw processosError;
-    }
-
-    console.log(`Found ${count || 0} processos out of ${processos?.length || 0} returned`);
-
-    if (!processos || processos.length === 0) {
+    if (error) {
+      console.error("[mapa-testemunhas-processos] Database error:", error);
+      // Mapear códigos de erro específicos
+      const code = (error as any).code ?? "db_error";
+      let status = 500;
+      let detail = error.message;
+      
+      if (code === "42501") {
+        status = 403;
+        detail = "Acesso negado. Verifique suas permissões.";
+      } else if (code.startsWith("PGRST")) {
+        status = 400;
+        detail = `Erro na consulta: ${error.message}`;
+      }
+      
       return new Response(
-        JSON.stringify({ 
-          data: [],
-          count: count || 0,
-          page,
-          limit,
-          totalPages: Math.ceil((count || 0) / limit)
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: "db_error", code, detail }), 
+        { status, headers }
       );
     }
 
-    // Transform processos data to match PorProcesso type
-    let transformedData = processos.map(processo => ({
-      cnj: processo.cnj,
-      status: processo.status,
-      uf: extractUFFromField(processo.comarca) || extractUFFromField(processo.tribunal),
-      comarca: processo.comarca,
-      fase: processo.fase,
-      reclamante_limpo: processo.reclamante_nome,
-      advogados_parte_ativa: processo.advogados_ativo || [],
-      testemunhas_ativo_limpo: processo.testemunhas_ativo || [],
-      testemunhas_passivo_limpo: processo.testemunhas_passivo || [],
-      todas_testemunhas: [
-        ...(processo.testemunhas_ativo || []),
-        ...(processo.testemunhas_passivo || [])
-      ].filter((name, index, arr) => arr.indexOf(name) === index), // Remove duplicates
-      reclamante_foi_testemunha: processo.reclamante_foi_testemunha || false,
-      qtd_vezes_reclamante_foi_testemunha: 0, // Would need cross-reference calculation
-      cnjs_em_que_reclamante_foi_testemunha: [],
-      reclamante_testemunha_polo_passivo: false,
-      cnjs_passivo: [],
-      troca_direta: processo.troca_direta || false,
-      desenho_troca_direta: null,
-      cnjs_troca_direta: [],
-      triangulacao_confirmada: processo.triangulacao_confirmada || false,
-      desenho_triangulacao: null,
-      cnjs_triangulacao: [],
-      testemunha_do_reclamante_ja_foi_testemunha_antes: false,
-      qtd_total_depos_unicos: calculateUniqueDepositions(processo.testemunhas_ativo, processo.testemunhas_passivo),
-      cnjs_depos_unicos: [],
-      contem_prova_emprestada: processo.prova_emprestada || false,
-      testemunhas_prova_emprestada: [],
-      classificacao_final: processo.classificacao_final || 'Não Classificado',
-      insight_estrategico: null,
-      org_id: processo.org_id,
-      created_at: processo.created_at,
-      updated_at: processo.updated_at,
-    }));
+    // Transform processos data para o formato esperado
+    const transformedData = (data || []).map(processo => {
+      const extractUF = (field: string | null) => {
+        if (!field) return null;
+        const ufMatch = field.match(/\b(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b/i);
+        return ufMatch ? ufMatch[1].toUpperCase() : null;
+      };
 
-    // Apply post-processing filters
-    if (filters.qtdDeposMin !== undefined) {
-      transformedData = transformedData.filter(p => p.qtd_total_depos_unicos >= filters.qtdDeposMin);
+      const calculateUniqueDepositions = (ativo: any[], passivo: any[]) => {
+        const all = [...(ativo || []), ...(passivo || [])];
+        return new Set(all).size;
+      };
+
+      return {
+        cnj: processo.cnj,
+        status: processo.status,
+        uf: extractUF(processo.comarca) || extractUF(processo.tribunal),
+        comarca: processo.comarca,
+        fase: processo.fase,
+        reclamante_limpo: processo.reclamante_nome,
+        advogados_parte_ativa: processo.advogados_ativo || [],
+        testemunhas_ativo_limpo: processo.testemunhas_ativo || [],
+        testemunhas_passivo_limpo: processo.testemunhas_passivo || [],
+        todas_testemunhas: [
+          ...(processo.testemunhas_ativo || []),
+          ...(processo.testemunhas_passivo || [])
+        ].filter((name, index, arr) => arr.indexOf(name) === index),
+        reclamante_foi_testemunha: processo.reclamante_foi_testemunha || false,
+        qtd_vezes_reclamante_foi_testemunha: 0,
+        cnjs_em_que_reclamante_foi_testemunha: [],
+        reclamante_testemunha_polo_passivo: false,
+        cnjs_passivo: [],
+        troca_direta: processo.troca_direta || false,
+        desenho_troca_direta: null,
+        cnjs_troca_direta: [],
+        triangulacao_confirmada: processo.triangulacao_confirmada || false,
+        desenho_triangulacao: null,
+        cnjs_triangulacao: [],
+        testemunha_do_reclamante_ja_foi_testemunha_antes: false,
+        qtd_total_depos_unicos: calculateUniqueDepositions(processo.testemunhas_ativo, processo.testemunhas_passivo),
+        cnjs_depos_unicos: [],
+        contem_prova_emprestada: processo.prova_emprestada || false,
+        testemunhas_prova_emprestada: [],
+        classificacao_final: processo.classificacao_final || 'Não Classificado',
+        insight_estrategico: null,
+        org_id: processo.org_id,
+        created_at: processo.created_at,
+        updated_at: processo.updated_at,
+      };
+    });
+
+    // Aplicar filtros pós-processamento
+    let filteredData = transformedData;
+    if (filters?.qtdDeposMin !== undefined) {
+      filteredData = filteredData.filter(p => p.qtd_total_depos_unicos >= filters.qtdDeposMin);
     }
-    if (filters.qtdDeposMax !== undefined) {
-      transformedData = transformedData.filter(p => p.qtd_total_depos_unicos <= filters.qtdDeposMax);
+    if (filters?.qtdDeposMax !== undefined) {
+      filteredData = filteredData.filter(p => p.qtd_total_depos_unicos <= filters.qtdDeposMax);
     }
-    if (filters.temTriangulacao !== undefined) {
-      transformedData = transformedData.filter(p => p.triangulacao_confirmada === filters.temTriangulacao);
+    if (filters?.temTriangulacao !== undefined) {
+      filteredData = filteredData.filter(p => p.triangulacao_confirmada === filters.temTriangulacao);
     }
-    if (filters.temTroca !== undefined) {
-      transformedData = transformedData.filter(p => p.troca_direta === filters.temTroca);
+    if (filters?.temTroca !== undefined) {
+      filteredData = filteredData.filter(p => p.troca_direta === filters.temTroca);
     }
-    if (filters.temProvaEmprestada !== undefined) {
-      transformedData = transformedData.filter(p => p.contem_prova_emprestada === filters.temProvaEmprestada);
+    if (filters?.temProvaEmprestada !== undefined) {
+      filteredData = filteredData.filter(p => p.contem_prova_emprestada === filters.temProvaEmprestada);
     }
 
+    const result = {
+      data: filteredData,
+      count: count || 0,
+      page,
+      limit,
+      totalPages: Math.ceil((count || 0) / limit),
+      total_filtered: filteredData.length
+    };
+
+    console.log(`[mapa-testemunhas-processos] Success: ${filteredData.length} filtered records, total: ${count}`);
+    
+    return new Response(JSON.stringify(result), { status: 200, headers });
+
+  } catch (e) {
+    console.error("[mapa-testemunhas-processos] Unexpected error:", e);
     return new Response(
-      JSON.stringify({
-        data: transformedData,
-        count: count || 0,
-        page,
-        limit,
-        totalPages: Math.ceil((count || 0) / limit),
-        total_filtered: transformedData.length
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      },
-    );
-
-  } catch (error) {
-    console.error('Error:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      },
+      JSON.stringify({ error: "internal_error", detail: String(e) }), 
+      { status: 500, headers }
     );
   }
 });
-
-// Helper functions
-function extractUFFromField(field) {
-  if (!field) return null;
-  // Simple UF extraction - could be improved with better logic
-  const ufMatch = field.match(/\b(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b/i);
-  return ufMatch ? ufMatch[1].toUpperCase() : null;
-}
-
-function calculateUniqueDepositions(testemunhasAtivo, testemunhasPassivo) {
-  const allTestemunhas = [
-    ...(testemunhasAtivo || []),
-    ...(testemunhasPassivo || [])
-  ];
-  return new Set(allTestemunhas).size;
-}
