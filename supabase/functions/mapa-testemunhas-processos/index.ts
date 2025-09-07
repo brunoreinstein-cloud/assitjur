@@ -40,10 +40,67 @@ serve(async (req) => {
 
   console.log("[mapa-testemunhas-processos] Request body:", JSON.stringify(body));
 
-  const filters = body?.filters ?? {};
+  const filters = typeof body?.filters === "object" && body.filters ? body.filters : {};
   const page = Number(body?.page ?? 1);
   const limit = Math.min(Number(body?.limit ?? 10), 200);
   const offset = (page - 1) * limit;
+
+  // Validação de filtros para evitar injeções em cláusulas `.or`
+  const VALID_UFS = new Set([
+    "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS",
+    "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC",
+    "SP", "SE", "TO"
+  ]);
+  const SAFE_TEXT_REGEX = /^[\p{L}\p{N}\s\.\-]{1,100}$/u;
+  const SAFE_SEARCH_REGEX = /^[\p{L}\p{N}\s\.\-\/]{1,100}$/u;
+
+  let ufFilter: string | undefined;
+  if (filters.uf !== undefined) {
+    if (typeof filters.uf !== "string" || !VALID_UFS.has(filters.uf.toUpperCase())) {
+      console.error("[mapa-testemunhas-processos] Invalid UF filter:", filters.uf);
+      return new Response(
+        JSON.stringify({ error: "bad_request", detail: "invalid uf filter" }),
+        { status: 400, headers }
+      );
+    }
+    ufFilter = filters.uf.toUpperCase();
+  }
+
+  let statusFilter: string | undefined;
+  if (filters.status !== undefined) {
+    if (typeof filters.status !== "string" || !SAFE_TEXT_REGEX.test(filters.status)) {
+      console.error("[mapa-testemunhas-processos] Invalid status filter:", filters.status);
+      return new Response(
+        JSON.stringify({ error: "bad_request", detail: "invalid status filter" }),
+        { status: 400, headers }
+      );
+    }
+    statusFilter = filters.status;
+  }
+
+  let faseFilter: string | undefined;
+  if (filters.fase !== undefined) {
+    if (typeof filters.fase !== "string" || !SAFE_TEXT_REGEX.test(filters.fase)) {
+      console.error("[mapa-testemunhas-processos] Invalid fase filter:", filters.fase);
+      return new Response(
+        JSON.stringify({ error: "bad_request", detail: "invalid fase filter" }),
+        { status: 400, headers }
+      );
+    }
+    faseFilter = filters.fase;
+  }
+
+  let searchFilter: string | undefined;
+  if (filters.search !== undefined) {
+    if (typeof filters.search !== "string" || !SAFE_SEARCH_REGEX.test(filters.search)) {
+      console.error("[mapa-testemunhas-processos] Invalid search filter:", filters.search);
+      return new Response(
+        JSON.stringify({ error: "bad_request", detail: "invalid search filter" }),
+        { status: 400, headers }
+      );
+    }
+    searchFilter = filters.search;
+  }
 
   // Supabase client com o mesmo Bearer do usuário (respeita RLS)
   const supabase = createClient(
@@ -107,17 +164,17 @@ serve(async (req) => {
       .range(offset, offset + limit - 1);
 
     // Aplicar filtros
-    if (filters?.uf) {
-      query = query.or(`comarca.ilike.%${filters.uf}%,tribunal.ilike.%${filters.uf}%`);
+    if (ufFilter) {
+      query = query.or(`comarca.ilike.%${ufFilter}%,tribunal.ilike.%${ufFilter}%`);
     }
-    if (filters?.status) {
-      query = query.eq('status', filters.status);
+    if (statusFilter) {
+      query = query.eq('status', statusFilter);
     }
-    if (filters?.fase) {
-      query = query.eq('fase', filters.fase);
+    if (faseFilter) {
+      query = query.eq('fase', faseFilter);
     }
-    if (filters?.search) {
-      query = query.or(`cnj.ilike.%${filters.search}%,comarca.ilike.%${filters.search}%,reclamante_nome.ilike.%${filters.search}%`);
+    if (searchFilter) {
+      query = query.or(`cnj.ilike.%${searchFilter}%,comarca.ilike.%${searchFilter}%,reclamante_nome.ilike.%${searchFilter}%`);
     }
 
     const { data, error, count } = await query;
