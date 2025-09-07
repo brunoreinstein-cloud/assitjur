@@ -8,7 +8,7 @@ import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 
 /**
  * =========================
- * Config & Constantes
+ * Configuração e Constantes
  * =========================
  */
 const DEFAULT_ALLOWED_ORIGINS = [
@@ -31,7 +31,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-  console.error("❌ Missing Supabase env (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY)");
+  console.error("❌ Variáveis do Supabase ausentes (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY)");
 }
 
 function isOriginAllowed(req: Request, cors: Record<string, string>) {
@@ -45,7 +45,7 @@ function isOriginAllowed(req: Request, cors: Record<string, string>) {
 
 /**
  * =========================
- * Rate Limiter (naïve)
+ * Limitador de taxa (ingênuo)
  * =========================
  */
 const buckets = new Map<string, number[]>();
@@ -60,7 +60,7 @@ function rateLimit(key: string, limit = 20, windowMs = 60_000) {
 
 /**
  * =========================
- * JWT utils
+ * Utilitários de JWT
  * =========================
  */
 function getBearerToken(req: Request): string | null {
@@ -74,7 +74,7 @@ function getBearerToken(req: Request): string | null {
 function decodeJWT(token: string) {
   try {
     const [h, p] = token.split(".");
-    if (!p) throw new Error("Invalid JWT");
+    if (!p) throw new Error("JWT inválido");
     const payload = JSON.parse(atob(p.replace(/-/g, "+").replace(/_/g, "/")));
     return payload;
   } catch {
@@ -101,7 +101,7 @@ async function openAIChat({
   max_tokens?: number;
 }) {
   if (!OPENAI_API_KEY) {
-    throw new Error("Missing OPENAI_API_KEY");
+    throw new Error("OPENAI_API_KEY ausente");
   }
 
   const body = {
@@ -135,7 +135,7 @@ async function openAIChat({
 
 /**
  * =========================
- * Handler
+ * Manipulador
  * =========================
  */
 serve(async (request: Request) => {
@@ -146,7 +146,7 @@ serve(async (request: Request) => {
   const originAllowed = isOriginAllowed(request, cors);
 
   if (!originAllowed) {
-    return new Response(JSON.stringify({ error: "Origin not allowed" }), {
+    return new Response(JSON.stringify({ error: "Origem não permitida" }), {
       status: 403,
       headers: { ...cors },
     });
@@ -155,7 +155,7 @@ serve(async (request: Request) => {
   try {
     const token = getBearerToken(request);
     if (!token) {
-      return new Response(JSON.stringify({ error: "Authentication required" }), {
+      return new Response(JSON.stringify({ error: "Autenticação obrigatória" }), {
         status: 401,
         headers: { ...cors },
       });
@@ -164,7 +164,7 @@ serve(async (request: Request) => {
     const jwt = decodeJWT(token);
     const userId = jwt?.sub;
     if (!userId) {
-      return new Response(JSON.stringify({ error: "Invalid token" }), {
+      return new Response(JSON.stringify({ error: "Token inválido" }), {
         status: 401,
         headers: { ...cors },
       });
@@ -182,13 +182,13 @@ serve(async (request: Request) => {
     // Corpo da requisição
     const { message, promptName } = await request.json();
     if (!message || typeof message !== "string") {
-      return new Response(JSON.stringify({ error: "Invalid payload" }), {
+      return new Response(JSON.stringify({ error: "Payload inválido" }), {
         status: 400,
         headers: { ...cors },
       });
     }
     if (message.length > MAX_MESSAGE_LENGTH) {
-      return new Response(JSON.stringify({ error: "Message too long" }), {
+      return new Response(JSON.stringify({ error: "Mensagem muito longa" }), {
         status: 400,
         headers: { ...cors },
       });
@@ -202,7 +202,7 @@ serve(async (request: Request) => {
       .maybeSingle();
 
     if (profileErr || !profile?.organization_id) {
-      return new Response(JSON.stringify({ error: "User profile not found" }), {
+      return new Response(JSON.stringify({ error: "Perfil do usuário não encontrado" }), {
         status: 403,
         headers: { ...cors },
       });
@@ -213,7 +213,7 @@ serve(async (request: Request) => {
     // Rate limit (20 req/min por usuário+org)
     const rlKey = `${orgId}:${userId}:chat-legal`;
     if (!rateLimit(rlKey)) {
-      return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
+      return new Response(JSON.stringify({ error: "Limite de requisições excedido" }), {
         status: 429,
         headers: { ...cors },
       });
@@ -231,7 +231,7 @@ serve(async (request: Request) => {
       .maybeSingle();
 
     if (spErr) {
-      console.warn("⚠️ prompts query error:", spErr);
+      console.warn("⚠️ erro na consulta de prompts:", spErr);
     }
     systemPrompt = sysPromptRow?.content ?? getSystemPrompt(wantedName);
 
@@ -247,7 +247,7 @@ serve(async (request: Request) => {
       headers: { ...cors },
     });
   } catch (err) {
-    console.error("chat-legal error:", err);
+    console.error("erro no chat-legal:", err);
     return new Response(JSON.stringify({ error: String(err?.message ?? err) }), {
       status: 500,
       headers: { ...cors },
