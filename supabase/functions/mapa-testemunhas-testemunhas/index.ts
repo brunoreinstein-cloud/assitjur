@@ -94,7 +94,17 @@ serve(async (req) => {
 
     if (vinculosError) {
       console.error('Error fetching processos_testemunhas:', vinculosError);
-      throw vinculosError;
+      const code = (vinculosError as any).code ?? '';
+      let status = 500;
+      if (code === '42501') {
+        status = 403;
+      } else if (code.startsWith('PGRST')) {
+        status = 400;
+      }
+      return new Response(
+        JSON.stringify({ error: vinculosError.message }),
+        { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     if (!vinculos || vinculos.length === 0) {
