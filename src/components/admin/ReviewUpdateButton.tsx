@@ -19,6 +19,7 @@ import {
   Eye
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ReviewUpdateButtonProps {
   orgId?: string;
@@ -68,28 +69,23 @@ export function ReviewUpdateButton({ orgId, onSuccess }: ReviewUpdateButtonProps
     setIsRunning(true);
     
     try {
-      // Chamada para Edge Function review-update-dados
-      const response = await fetch(`https://fgjypmlszuzkgvhuszxn.supabase.co/functions/v1/review-update-dados`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnanlwbWxzenV6a2d2aHVzenhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE4MjQsImV4cCI6MjA3MTYwNzgyNH0.lN-Anhn1e-2SCDIAe6megYRHdhofe1VO71D6-Zk70XU`
-        },
-        body: JSON.stringify({ orgId, dryRun })
+      // Chamada para Edge Function review-update-dados usando supabase.functions.invoke
+      const { data, error } = await supabase.functions.invoke('review-update-dados', {
+        body: { orgId, dryRun }
       });
 
-      if (!response.ok) {
-        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      if (error) {
+        throw new Error(`Erro na função: ${error.message}`);
       }
 
-      const data: ReviewReport = await response.json();
-      setReport(data);
+      const reportData: ReviewReport = data;
+      setReport(reportData);
       setIsDryRun(dryRun);
 
       if (!dryRun) {
         toast({
-          title: "Revisão concluída",
-          description: `${data.flags_updated} registros atualizados, ${data.stubs_created} stubs criados`,
+          title: "Revisão concluída", 
+          description: `${reportData.flags_updated} registros atualizados, ${reportData.stubs_created} stubs criados`,
         });
         onSuccess?.();
       }

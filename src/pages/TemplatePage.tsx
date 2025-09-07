@@ -9,8 +9,27 @@ import { FieldDictionary } from '@/components/template/FieldDictionary';
 import { Examples } from '@/components/template/Examples';
 import { Checklist } from '@/components/template/Checklist';
 import { TrustNote } from '@/components/template/TrustNote';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function TemplatePage() {
+  const handleTemplateDownload = async (functionName: string, filename: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke(functionName);
+      
+      if (error) throw error;
+      
+      const blob = new Blob([data], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erro no download:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -58,7 +77,7 @@ export default function TemplatePage() {
               <TemplateDownloadCard
                 title="Excel Completo (XLSX)"
                 description="Arquivo completo com 3 abas: Por Processo, Por Testemunha e Dicionário de Campos"
-                downloadUrl="https://fgjypmlszuzkgvhuszxn.supabase.co/functions/v1/templates-xlsx"
+                downloadUrl="https://fgjypmlszuzkgvhuszxn.functions.supabase.co/templates-xlsx"
                 icon="xlsx"
                 filename="template-assistjur.xlsx"
                 recommended={true}
@@ -67,7 +86,7 @@ export default function TemplatePage() {
               <TemplateDownloadCard
                 title="CSV – Por Processo"
                 description="Apenas dados de processos em formato CSV (separador ponto e vírgula)"
-                downloadUrl="https://fgjypmlszuzkgvhuszxn.supabase.co/functions/v1/templates-csv?sheet=Por%20Processo"
+                downloadUrl="https://fgjypmlszuzkgvhuszxn.functions.supabase.co/templates-csv?sheet=Por%20Processo"
                 icon="csv"
                 filename="template-por-processo.csv"
               />
@@ -75,7 +94,7 @@ export default function TemplatePage() {
               <TemplateDownloadCard
                 title="CSV – Por Testemunha"
                 description="Apenas dados de testemunhas em formato CSV (separador ponto e vírgula)"
-                downloadUrl="https://fgjypmlszuzkgvhuszxn.supabase.co/functions/v1/templates-csv?sheet=Por%20Testemunha"
+                downloadUrl="https://fgjypmlszuzkgvhuszxn.functions.supabase.co/templates-csv?sheet=Por%20Testemunha"
                 icon="csv"
                 filename="template-por-testemunha.csv"
               />
