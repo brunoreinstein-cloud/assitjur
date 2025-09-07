@@ -291,8 +291,8 @@ export const fetchPorTestemunha = async (params: {
         limit: params.pageSize,
         sortBy: params.sortBy,
         sortDir: params.sortDir,
-        filters: params.filters
-      }
+        ...params.filters,
+      },
     });
 
     if (error) {
