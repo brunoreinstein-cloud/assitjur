@@ -57,7 +57,10 @@ export function corsHeaders(req: Request): Record<string, string> {
 
 export function handlePreflight(req: Request) {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders(req) });
+    const headers = corsHeaders(req);
+    headers["Access-Control-Allow-Methods"] =
+      headers["Access-Control-Allow-Methods"] || "POST, OPTIONS, GET";
+    return new Response("ok", { headers });
   }
   return null;
 }
