@@ -216,7 +216,8 @@ serve(async (req) => {
         count: testemunhasArray.length,
         page: currentPage,
         limit: currentLimit,
-        total_witnesses: testemunhasArray.length
+        total_witnesses: testemunhasArray.length,
+        total_processos: processos.length
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
