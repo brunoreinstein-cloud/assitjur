@@ -1,5 +1,5 @@
 // Security utilities for input sanitization and validation
-import { scryptSync, randomBytes, timingSafeEqual } from "crypto";
+import { createHash } from "node:crypto";
 
 /**
  * Masks an email leaving only first character and domain visible.
@@ -19,27 +19,25 @@ export const maskCPF = (cpf: string) =>
   cpf.replace(/^(\d{3})\d{6}(\d{2})$/, (_m, a, b) => `${a}******${b}`);
 
 /**
- * Hashes a value using the scrypt algorithm with a random salt.
- * Returns a string containing salt and hash separated by ':'
- * @example
- * const stored = hashValue('secret');
+ * Hashes a string using SHA-256. Uses Web Crypto when available and
+ * falls back to Node's `createHash` in non-browser environments.
  */
-export const hashValue = (value: string) => {
-  const salt = randomBytes(16);
-  const hash = scryptSync(value, salt, 64);
-  return `${salt.toString("hex")}:${hash.toString("hex")}`;
+export const hashString = async (input: string): Promise<string> => {
+  if (globalThis.crypto?.subtle) {
+    const data = new TextEncoder().encode(input);
+    const hashBuffer = await globalThis.crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+  return createHash("sha256").update(input).digest("hex");
 };
 
 /**
- * Verifies a value against a previously generated hash.
- * @example
- * const stored = hashValue('secret');
- * verifyHash('secret', stored); //=> true
+ * Verifies a string against a previously generated hash using SHA-256.
  */
-export const verifyHash = (value: string, stored: string) => {
-  const [saltHex, hashHex] = stored.split(":");
-  const hash = scryptSync(value, Buffer.from(saltHex, "hex"), 64);
-  return timingSafeEqual(hash, Buffer.from(hashHex, "hex"));
+export const verifyHash = async (value: string, hash: string): Promise<boolean> => {
+  const computed = await hashString(value);
+  return computed === hash;
 };
 
 /**
