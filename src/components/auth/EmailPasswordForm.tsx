@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -47,6 +47,7 @@ export const EmailPasswordForm = ({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { signIn, signUp } = useAuth();
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -72,23 +73,7 @@ export const EmailPasswordForm = ({
     setIsLoading(true);
     
     try {
-      if (!supabase) {
-        // Mock login for development
-        if (data.email === 'demo@assistjur.ia' && data.password === 'demo123') {
-          toast.success("Login realizado!", {
-            description: "Bem-vindo ao AssistJur.IA (modo demo)"
-          });
-          // Redirect would happen here in real app
-          return;
-        } else {
-          throw new Error('Credenciais inválidas');
-        }
-      }
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password
-      });
+      const { error } = await signIn(data.email, data.password, 'OFFICE');
 
       if (error) {
         throw error;
@@ -114,24 +99,7 @@ export const EmailPasswordForm = ({
     setIsLoading(true);
     
     try {
-      if (!supabase) {
-        toast.info("Modo demo", {
-          description: "Cadastro simulado. Use demo@assistjur.ia / demo123 para entrar."
-        });
-        onModeChange('signin');
-        return;
-      }
-
-      const { error } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/login?confirm=1`,
-          data: {
-            name: data.name
-          }
-        }
-      });
+      const { error } = await signUp(data.email, data.password, data.name);
 
       if (error) {
         throw error;

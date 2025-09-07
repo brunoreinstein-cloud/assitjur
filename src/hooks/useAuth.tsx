@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { ensureProfile } from '@/utils/ensureProfile';
 
 export type UserRole = 'ADMIN' | 'ANALYST' | 'VIEWER';
 
@@ -21,7 +21,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string, role: 'OFFICE' | 'ADMIN', orgCode?: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, name?: string, orgCode?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   hasRole: (role: UserRole) => boolean;
@@ -95,7 +95,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           // Defer profile fetching to avoid recursion
           setTimeout(async () => {
-            const profileData = await fetchProfile(session.user.id);
+            let profileData = await fetchProfile(session.user.id);
+            if (!profileData) {
+              profileData = await ensureProfile(session.user);
+            }
             setProfile(profileData);
             setLoading(false);
           }, 0);
@@ -113,7 +116,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (session?.user) {
         setTimeout(async () => {
-          const profileData = await fetchProfile(session.user.id);
+          let profileData = await fetchProfile(session.user.id);
+          if (!profileData) {
+            profileData = await ensureProfile(session.user);
+          }
           setProfile(profileData);
           setLoading(false);
         }, 0);
@@ -128,7 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string, role: 'OFFICE' | 'ADMIN', orgCode?: string) => {
     try {
       setLoading(true);
-      
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -136,7 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         await logAuthAttempt(email, 'login', 'failure', { role, error: error.message });
-        
+
         if (error.message.includes('Invalid login credentials')) {
           return { error: { message: 'E-mail ou senha incorretos.' } };
         }
@@ -144,25 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data.user) {
-        const profileData = await fetchProfile(data.user.id);
-        
-        if (!profileData) {
-          await logAuthAttempt(email, 'login', 'failure', { role, error: 'Profile not found' });
-          return { error: { message: 'Perfil de usuário não encontrado.' } };
-        }
-
-        if (!profileData.is_active) {
-          await logAuthAttempt(email, 'login', 'failure', { role, error: 'Account deactivated' });
-          return { error: { message: 'Sua conta está desativada. Contate o Administrador.' } };
-        }
-
-        // Validate role access
-        if (role === 'ADMIN' && profileData.role !== 'ADMIN') {
-          await logAuthAttempt(email, 'login', 'failure', { role, error: 'Insufficient privileges' });
-          return { error: { message: 'Sua conta não possui o perfil Administrador. Tente "Entrar como Escritório" ou contate o responsável.' } };
-        }
-
-        // Validate organization code for admin
+        let orgId: string | undefined;
         if (role === 'ADMIN' && orgCode) {
           const { data: orgData, error: orgError } = await supabase
             .from('organizations')
@@ -174,6 +162,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             await logAuthAttempt(email, 'login', 'failure', { role, orgCode, error: 'Invalid org code' });
             return { error: { message: 'Código da organização não encontrado.' } };
           }
+          orgId = orgData.id;
+        }
+
+        const profileData = await ensureProfile(
+          data.user,
+          role === 'ADMIN' ? 'ADMIN' : 'ANALYST',
+          orgId
+        );
+
+        if (!profileData) {
+          await logAuthAttempt(email, 'login', 'failure', { role, error: 'Profile not found' });
+          return { error: { message: 'Perfil de usuário não encontrado.' } };
+        }
+
+        if (!profileData.is_active) {
+          await logAuthAttempt(email, 'login', 'failure', { role, error: 'Account deactivated' });
+          return { error: { message: 'Sua conta está desativada. Contate o Administrador.' } };
+        }
+
+        if (role === 'ADMIN' && profileData.role !== 'ADMIN') {
+          await logAuthAttempt(email, 'login', 'failure', { role, error: 'Insufficient privileges' });
+          return { error: { message: 'Sua conta não possui o perfil Administrador. Tente "Entrar como Escritório" ou contate o responsável.' } };
         }
 
         await logAuthAttempt(email, 'login', 'success', { role, user_role: profileData.role });
@@ -189,22 +199,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, name?: string, orgCode?: string) => {
     try {
       setLoading(true);
       const redirectUrl = `${window.location.origin}/`;
-      
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl
-        }
+          emailRedirectTo: redirectUrl,
+          data: { name },
+        },
       });
 
       if (error) {
         await logAuthAttempt(email, 'signup', 'failure', { error: error.message });
         return { error };
+      }
+
+      let orgId: string | undefined;
+      if (orgCode) {
+        const { data: orgData } = await supabase
+          .from('organizations')
+          .select('id')
+          .eq('code', orgCode)
+          .single();
+        orgId = orgData?.id;
+      }
+
+      if (data.user) {
+        await ensureProfile(data.user, 'VIEWER', orgId);
       }
 
       await logAuthAttempt(email, 'signup', 'success', {});
