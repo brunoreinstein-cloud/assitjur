@@ -9,7 +9,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:integration": "vitest run tests/integration.supabase.test.ts"
+    "test:integration": "vitest run tests/integration.supabase.test.ts",
+    "generate:types": "node scripts/generate-api-types.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
