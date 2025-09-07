@@ -1365,41 +1365,7 @@ export type Database = {
       }
     }
     Views: {
-      processos_live: {
-        Row: {
-          advogados_ativo: string[] | null
-          advogados_passivo: string[] | null
-          classificacao_final: string | null
-          cnj: string | null
-          cnj_digits: string | null
-          cnj_normalizado: string | null
-          comarca: string | null
-          created_at: string | null
-          data_audiencia: string | null
-          deleted_at: string | null
-          deleted_by: string | null
-          fase: string | null
-          id: string | null
-          observacoes: string | null
-          org_id: string | null
-          prova_emprestada: boolean | null
-          reclamante_cpf_mask: string | null
-          reclamante_foi_testemunha: boolean | null
-          reclamante_nome: string | null
-          reu_nome: string | null
-          score_risco: number | null
-          status: string | null
-          testemunhas_ativo: string[] | null
-          testemunhas_passivo: string[] | null
-          triangulacao_confirmada: boolean | null
-          tribunal: string | null
-          troca_direta: boolean | null
-          updated_at: string | null
-          vara: string | null
-          version_id: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       accept_invitation: {
