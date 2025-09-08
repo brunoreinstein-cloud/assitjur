@@ -13,7 +13,7 @@ export function getSupabaseClient() {
         persistSession: true,
         autoRefreshToken: true,
       },
-      // Minimize realtime reconnection noise during development
+      // Reduce "Max reconnect attempts" noise in development by disabling retries
       realtime: import.meta.env.DEV
         ? ({
             retryStrategy: () => 0,
