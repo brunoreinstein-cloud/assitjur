@@ -151,7 +151,7 @@ serve(async (req) => {
           id,
           numero
         ),
-        testemunha:assistjur.testemunhas!inner (
+        testemunha:testemunha_id!inner (
           id,
           nome
         )
