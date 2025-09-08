@@ -79,7 +79,7 @@ export type TestemunhaFilters = {
 
 export type MapaTestemunhasRequest<F = ProcessoFilters | TestemunhaFilters> = {
   page: number;
-  pageSize: number;
+  limit: number;
   sortBy?: string;
   sortDir?: 'asc' | 'desc';
   filters: F;

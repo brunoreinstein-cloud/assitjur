@@ -8,6 +8,7 @@ import {
 } from "@/types/mapa-testemunhas";
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { mapFunctionsError } from './functions-errors';
+import { normalizeMapaRequest } from './normalizeMapaRequest';
 
 // Mock data for offline functionality
 const mockProcessos: PorProcesso[] = [
@@ -194,18 +195,29 @@ const isSupabaseConfigured = () => {
 export const fetchPorProcesso = async (
   params: MapaTestemunhasRequest<ProcessoFilters>
 ): Promise<{ data: PorProcesso[]; total: number }> => {
+  const normalized = normalizeMapaRequest<ProcessoFilters>(params);
+  console.debug('mapa-testemunhas-processos payload', normalized);
   try {
     if (!isSupabaseConfigured()) {
       console.log('⚠️ Supabase not configured, using mock data');
       throw new Error('Supabase not configured');
     }
 
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+
     const { data, error } = await supabase.functions.invoke('mapa-testemunhas-processos', {
-      body: params
+      body: normalized,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
+      }
     });
 
     if (error) {
-      console.error('Error in fetchPorProcesso:', error);
+      console.error('Error in fetchPorProcesso:', error.message);
+      console.info('Hint: verifique filtros ou tente novamente.');
       throw error;
     }
 
@@ -231,40 +243,40 @@ export const fetchPorProcesso = async (
 
     // Mock filtering logic
     let filteredData = [...mockProcessos];
-    
-    if (params.filters.search) {
-      const search = params.filters.search.toLowerCase();
-      filteredData = filteredData.filter(p => 
+
+    if (normalized.filters.search) {
+      const search = normalized.filters.search.toLowerCase();
+      filteredData = filteredData.filter(p =>
         p.cnj?.toLowerCase().includes(search) ||
         p.reclamante_limpo?.toLowerCase().includes(search) ||
         p.comarca?.toLowerCase().includes(search)
       );
     }
-    
-    if (params.filters.uf?.length) {
-      filteredData = filteredData.filter(p => params.filters.uf!.includes(p.uf!));
+
+    if (normalized.filters.uf?.length) {
+      filteredData = filteredData.filter(p => normalized.filters.uf!.includes(p.uf!));
     }
-    
-    if (params.filters.status?.length) {
-      filteredData = filteredData.filter(p => params.filters.status!.includes(p.status!));
+
+    if (normalized.filters.status?.length) {
+      filteredData = filteredData.filter(p => normalized.filters.status!.includes(p.status!));
     }
-    
-    if (params.filters.fase?.length) {
-      filteredData = filteredData.filter(p => params.filters.fase!.includes(p.fase!));
+
+    if (normalized.filters.fase?.length) {
+      filteredData = filteredData.filter(p => normalized.filters.fase!.includes(p.fase!));
     }
-    
-    if (params.filters.temTriangulacao) {
+
+    if (normalized.filters.temTriangulacao) {
       filteredData = filteredData.filter(p => p.triangulacao_confirmada === true);
     }
-    
-    if (params.filters.temProvaEmprestada) {
+
+    if (normalized.filters.temProvaEmprestada) {
       filteredData = filteredData.filter(p => p.contem_prova_emprestada === true);
     }
-    
+
     // Mock pagination
-    const start = (params.page - 1) * params.pageSize;
-    const end = start + params.pageSize;
-    
+    const start = (normalized.page - 1) * normalized.limit;
+    const end = start + normalized.limit;
+
     return {
       data: filteredData.slice(start, end),
       total: filteredData.length
@@ -275,19 +287,29 @@ export const fetchPorProcesso = async (
 export const fetchPorTestemunha = async (
   params: MapaTestemunhasRequest<TestemunhaFilters>
 ): Promise<{ data: PorTestemunha[]; total: number }> => {
+  const normalized = normalizeMapaRequest<TestemunhaFilters>(params);
+  console.debug('mapa-testemunhas-testemunhas payload', normalized);
   try {
     if (!isSupabaseConfigured()) {
       console.log('⚠️ Supabase not configured, using mock data');
       throw new Error('Supabase not configured');
     }
 
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+
     const { data, error } = await supabase.functions.invoke('mapa-testemunhas-testemunhas', {
-      body: params,
-      headers: { 'Content-Type': 'application/json' }
+      body: normalized,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
+      }
     });
 
     if (error) {
-      console.error('Error in fetchPorTestemunha:', error);
+      console.error('Error in fetchPorTestemunha:', error.message);
+      console.info('Hint: verifique filtros ou tente novamente.');
       throw error;
     }
 
@@ -313,34 +335,34 @@ export const fetchPorTestemunha = async (
 
     // Mock filtering logic
     let filteredData = [...mockTestemunhas];
-    
-    if (params.filters.search) {
-      const search = params.filters.search.toLowerCase();
-      filteredData = filteredData.filter(t => 
+
+    if (normalized.filters.search) {
+      const search = normalized.filters.search.toLowerCase();
+      filteredData = filteredData.filter(t =>
         t.nome_testemunha?.toLowerCase().includes(search)
       );
     }
-    
-    if (params.filters.ambosPolos !== undefined) {
-      filteredData = filteredData.filter(t => t.foi_testemunha_em_ambos_polos === params.filters.ambosPolos);
+
+    if (normalized.filters.ambosPolos !== undefined) {
+      filteredData = filteredData.filter(t => t.foi_testemunha_em_ambos_polos === normalized.filters.ambosPolos);
     }
-    
-    if (params.filters.jaFoiReclamante !== undefined) {
-      filteredData = filteredData.filter(t => t.ja_foi_reclamante === params.filters.jaFoiReclamante);
+
+    if (normalized.filters.jaFoiReclamante !== undefined) {
+      filteredData = filteredData.filter(t => t.ja_foi_reclamante === normalized.filters.jaFoiReclamante);
     }
-    
-    if (params.filters.temTriangulacao !== undefined) {
-      filteredData = filteredData.filter(t => t.participou_triangulacao === params.filters.temTriangulacao);
+
+    if (normalized.filters.temTriangulacao !== undefined) {
+      filteredData = filteredData.filter(t => t.participou_triangulacao === normalized.filters.temTriangulacao);
     }
-    
-    if (params.filters.temTroca !== undefined) {
-      filteredData = filteredData.filter(t => t.participou_troca_favor === params.filters.temTroca);
+
+    if (normalized.filters.temTroca !== undefined) {
+      filteredData = filteredData.filter(t => t.participou_troca_favor === normalized.filters.temTroca);
     }
-    
+
     // Mock pagination
-    const start = (params.page - 1) * params.pageSize;
-    const end = start + params.pageSize;
-    
+    const start = (normalized.page - 1) * normalized.limit;
+    const end = start + normalized.limit;
+
     return {
       data: filteredData.slice(start, end),
       total: filteredData.length
