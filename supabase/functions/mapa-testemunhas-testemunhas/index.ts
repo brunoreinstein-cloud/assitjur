@@ -151,7 +151,7 @@ serve(async (req) => {
           id,
           numero
         ),
-        testemunha:assistjur.testemunhas!inner (
+        testemunhas:assistjur.testemunhas!inner (
           id,
           nome
         )
@@ -179,7 +179,7 @@ serve(async (req) => {
       query = query.eq('participou_troca_favor', filters.temTroca);
     }
     if (filters.search) {
-      query = query.ilike('testemunha.nome', `%${filters.search}%`);
+      query = query.ilike('testemunhas.nome', `%${filters.search}%`);
     }
 
     const { data: vinculos, error: vinculosError, count } = await query.range(from, to);
@@ -218,7 +218,7 @@ serve(async (req) => {
     const testemunhaMap = new Map<string, any>();
 
     vinculos.forEach(v => {
-      const witness = v.testemunha;
+      const witness = v.testemunhas;
       const process = v.processo;
       if (!witness?.nome) return;
 
