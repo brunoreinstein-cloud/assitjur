@@ -60,6 +60,19 @@ supabase migration up
 supabase functions invoke chat-legal --no-verify-jwt --local
 ```
 
+### Como testar Edge Function
+
+Use o script `scripts/smoke-edge.sh` para fazer um teste rápido da Edge Function:
+
+```bash
+FUNCTION_URL="https://example.supabase.co/functions/v1/chat-legal" \
+ANON_KEY="chave-publica" \
+JWT="token-jwt" \
+scripts/smoke-edge.sh
+```
+
+O script envia `{"page":1,"limit":1}` e falha se a resposta não for **200**.
+
 ---
 
 ## 📂 Estrutura de Pastas

@@ -39,3 +39,14 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build
+
+  smoke-edge:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.FUNCTION_URL != '' && secrets.ANON_KEY != '' && secrets.JWT != '' }}
+    steps:
+      - uses: actions/checkout@v3
+      - run: ./scripts/smoke-edge.sh
+        env:
+          FUNCTION_URL: ${{ secrets.FUNCTION_URL }}
+          ANON_KEY: ${{ secrets.ANON_KEY }}
+          JWT: ${{ secrets.JWT }}
