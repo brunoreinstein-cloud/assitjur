@@ -235,7 +235,8 @@ export const fetchPorProcesso = async (
         errorPayload = await error.context.response.json();
       } catch {}
 
-      const message = errorPayload?.detail || 'Falha ao carregar dados. Verifique filtros/página.';
+      const { error: err, detail, hint, example } = errorPayload || {};
+      const message = detail || 'Falha ao carregar dados. Verifique filtros/página.';
       toast({
         title: 'Erro ao carregar dados',
         description: message,
@@ -244,8 +245,8 @@ export const fetchPorProcesso = async (
       console.error('fetchPorProcesso HTTP error', {
         status: error.context.response.status,
         url: error.context.response.url,
-        error: errorPayload,
-        payload: safePayload
+        payload: safePayload,
+        error: { error: err, detail, hint, example }
       });
       return { data: [], total: 0 };
     }
@@ -360,7 +361,8 @@ export const fetchPorTestemunha = async (
         errorPayload = await error.context.response.json();
       } catch {}
 
-      const message = errorPayload?.detail || 'Falha ao carregar dados. Verifique filtros/página.';
+      const { error: err, detail, hint, example } = errorPayload || {};
+      const message = detail || 'Falha ao carregar dados. Verifique filtros/página.';
       toast({
         title: 'Erro ao carregar dados',
         description: message,
@@ -369,8 +371,8 @@ export const fetchPorTestemunha = async (
       console.error('fetchPorTestemunha HTTP error', {
         status: error.context.response.status,
         url: error.context.response.url,
-        error: errorPayload,
-        payload: safePayload
+        payload: safePayload,
+        error: { error: err, detail, hint, example }
       });
       return { data: [], total: 0 };
     }
