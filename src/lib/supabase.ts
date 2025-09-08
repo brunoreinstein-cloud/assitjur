@@ -9,6 +9,7 @@ import {
 } from "@/types/mapa-testemunhas";
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { mapFunctionsError } from './functions-errors';
+import { z } from "zod";
 
 // Mock data for offline functionality
 const mockProcessos: PorProcesso[] = [
@@ -191,14 +192,44 @@ const isSupabaseConfigured = () => {
   }
 };
 
+// Zod schema to coerce and sanitize request params before sending
+const mapaRequestSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z
+    .coerce.number()
+    .int()
+    .min(1)
+    .default(20)
+    .transform(n => (n > 200 ? 200 : n)),
+  sortBy: z.string().trim().optional(),
+  sortDir: z.enum(["asc", "desc"]).optional(),
+  filters: z
+    .object({
+      uf: z.string().trim().optional(),
+      status: z.string().trim().optional(),
+      fase: z.string().trim().optional(),
+      search: z.string().trim().optional(),
+      ambosPolos: z.coerce.boolean().optional(),
+      jaFoiReclamante: z.coerce.boolean().optional(),
+      temTriangulacao: z.coerce.boolean().optional(),
+      temTroca: z.coerce.boolean().optional(),
+      temProvaEmprestada: z.coerce.boolean().optional(),
+      qtdDeposMin: z.coerce.number().optional(),
+      qtdDeposMax: z.coerce.number().optional(),
+    })
+    .passthrough()
+    .default({}),
+});
+
 // Fetch functions with Supabase fallback to mocks
 export const fetchPorProcesso = async (
   params: MapaTestemunhasRequest<ProcessoFilters>
 ): Promise<{ data: PorProcesso[]; total: number; error?: string }> => {
+  const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<ProcessoFilters>;
   const sanitized = {
-    ...params,
-    filters: params.filters
-      ? Object.fromEntries(Object.keys(params.filters).map(k => [k, '[redacted]']))
+    ...parsed,
+    filters: parsed.filters
+      ? Object.fromEntries(Object.keys(parsed.filters).map(k => [k, '[redacted]']))
       : undefined
   };
   console.debug('mapa-testemunhas-processos payload', sanitized);
@@ -209,20 +240,20 @@ export const fetchPorProcesso = async (
       throw new Error('Supabase not configured');
     }
 
-    const {
-      data: { session }
-    } = await supabase.auth.getSession();
+    const { data: sessionData } = await supabase.auth.getSession();
+    const access_token = sessionData?.session?.access_token;
+    if (!access_token) throw new Error("Usuário não autenticado");
 
     const { data, error } = await supabase.functions.invoke<{
       data?: PorProcesso[];
       count?: number;
       total?: number;
     }>('mapa-testemunhas-processos', {
-      body: params,
+      body: parsed,
       headers: {
         'Content-Type': 'application/json',
         'x-correlation-id': cid,
-        ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
+        Authorization: `Bearer ${access_token}`
       }
     });
 
@@ -275,8 +306,8 @@ export const fetchPorProcesso = async (
     // Mock filtering logic
     let filteredData = [...mockProcessos];
 
-    if (params.filters.search) {
-      const search = params.filters.search.toLowerCase();
+    if (parsed.filters.search) {
+      const search = parsed.filters.search.toLowerCase();
       filteredData = filteredData.filter(p =>
         p.cnj?.toLowerCase().includes(search) ||
         p.reclamante_limpo?.toLowerCase().includes(search) ||
@@ -284,29 +315,29 @@ export const fetchPorProcesso = async (
       );
     }
 
-    if (params.filters.uf?.length) {
-      filteredData = filteredData.filter(p => params.filters.uf!.includes(p.uf!));
+    if (parsed.filters.uf?.length) {
+      filteredData = filteredData.filter(p => parsed.filters.uf!.includes(p.uf!));
     }
 
-    if (params.filters.status?.length) {
-      filteredData = filteredData.filter(p => params.filters.status!.includes(p.status!));
+    if (parsed.filters.status?.length) {
+      filteredData = filteredData.filter(p => parsed.filters.status!.includes(p.status!));
     }
 
-    if (params.filters.fase?.length) {
-      filteredData = filteredData.filter(p => params.filters.fase!.includes(p.fase!));
+    if (parsed.filters.fase?.length) {
+      filteredData = filteredData.filter(p => parsed.filters.fase!.includes(p.fase!));
     }
 
-    if (params.filters.temTriangulacao) {
+    if (parsed.filters.temTriangulacao) {
       filteredData = filteredData.filter(p => p.triangulacao_confirmada === true);
     }
 
-    if (params.filters.temProvaEmprestada) {
+    if (parsed.filters.temProvaEmprestada) {
       filteredData = filteredData.filter(p => p.contem_prova_emprestada === true);
     }
 
     // Mock pagination
-    const start = (params.page - 1) * params.limit;
-    const end = start + params.limit;
+    const start = (parsed.page - 1) * parsed.limit;
+    const end = start + parsed.limit;
 
     return {
       data: filteredData.slice(start, end),
@@ -318,10 +349,11 @@ export const fetchPorProcesso = async (
 export const fetchPorTestemunha = async (
   params: MapaTestemunhasRequest<TestemunhaFilters>
 ): Promise<{ data: PorTestemunha[]; total: number; error?: string }> => {
+  const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<TestemunhaFilters>;
   const sanitized = {
-    ...params,
-    filters: params.filters
-      ? Object.fromEntries(Object.keys(params.filters).map(k => [k, '[redacted]']))
+    ...parsed,
+    filters: parsed.filters
+      ? Object.fromEntries(Object.keys(parsed.filters).map(k => [k, '[redacted]']))
       : undefined
   };
   console.debug('mapa-testemunhas-testemunhas payload', sanitized);
@@ -332,20 +364,20 @@ export const fetchPorTestemunha = async (
       throw new Error('Supabase not configured');
     }
 
-    const {
-      data: { session }
-    } = await supabase.auth.getSession();
+    const { data: sessionData } = await supabase.auth.getSession();
+    const access_token = sessionData?.session?.access_token;
+    if (!access_token) throw new Error("Usuário não autenticado");
 
     const { data, error } = await supabase.functions.invoke<{
       data?: PorTestemunha[];
       count?: number;
       total?: number;
     }>('mapa-testemunhas-testemunhas', {
-      body: params,
+      body: parsed,
       headers: {
         'Content-Type': 'application/json',
         'x-correlation-id': cid,
-        ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
+        Authorization: `Bearer ${access_token}`
       }
     });
 
@@ -398,32 +430,32 @@ export const fetchPorTestemunha = async (
     // Mock filtering logic
     let filteredData = [...mockTestemunhas];
 
-    if (params.filters.search) {
-      const search = params.filters.search.toLowerCase();
+    if (parsed.filters.search) {
+      const search = parsed.filters.search.toLowerCase();
       filteredData = filteredData.filter(t =>
         t.nome_testemunha?.toLowerCase().includes(search)
       );
     }
 
-    if (params.filters.ambosPolos !== undefined) {
-      filteredData = filteredData.filter(t => t.foi_testemunha_em_ambos_polos === params.filters.ambosPolos);
+    if (parsed.filters.ambosPolos !== undefined) {
+      filteredData = filteredData.filter(t => t.foi_testemunha_em_ambos_polos === parsed.filters.ambosPolos);
     }
 
-    if (params.filters.jaFoiReclamante !== undefined) {
-      filteredData = filteredData.filter(t => t.ja_foi_reclamante === params.filters.jaFoiReclamante);
+    if (parsed.filters.jaFoiReclamante !== undefined) {
+      filteredData = filteredData.filter(t => t.ja_foi_reclamante === parsed.filters.jaFoiReclamante);
     }
 
-    if (params.filters.temTriangulacao !== undefined) {
-      filteredData = filteredData.filter(t => t.participou_triangulacao === params.filters.temTriangulacao);
+    if (parsed.filters.temTriangulacao !== undefined) {
+      filteredData = filteredData.filter(t => t.participou_triangulacao === parsed.filters.temTriangulacao);
     }
 
-    if (params.filters.temTroca !== undefined) {
-      filteredData = filteredData.filter(t => t.participou_troca_favor === params.filters.temTroca);
+    if (parsed.filters.temTroca !== undefined) {
+      filteredData = filteredData.filter(t => t.participou_troca_favor === parsed.filters.temTroca);
     }
 
     // Mock pagination
-    const start = (params.page - 1) * params.limit;
-    const end = start + params.limit;
+    const start = (parsed.page - 1) * parsed.limit;
+    const end = start + parsed.limit;
 
     return {
       data: filteredData.slice(start, end),
