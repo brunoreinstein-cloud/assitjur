@@ -9,7 +9,6 @@ import {
 } from "@/types/mapa-testemunhas";
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { mapFunctionsError } from './functions-errors';
-import { normalizeMapaRequest } from './normalizeMapaRequest';
 
 // Mock data for offline functionality
 const mockProcessos: PorProcesso[] = [
@@ -196,11 +195,10 @@ const isSupabaseConfigured = () => {
 export const fetchPorProcesso = async (
   params: MapaTestemunhasRequest<ProcessoFilters>
 ): Promise<{ data: PorProcesso[]; total: number; error?: string }> => {
-  const normalized = normalizeMapaRequest<ProcessoFilters>(params);
   const sanitized = {
-    ...normalized,
-    filters: normalized.filters
-      ? Object.fromEntries(Object.keys(normalized.filters).map(k => [k, '[redacted]']))
+    ...params,
+    filters: params.filters
+      ? Object.fromEntries(Object.keys(params.filters).map(k => [k, '[redacted]']))
       : undefined
   };
   console.debug('mapa-testemunhas-processos payload', sanitized);
@@ -220,7 +218,7 @@ export const fetchPorProcesso = async (
       count?: number;
       total?: number;
     }>('mapa-testemunhas-processos', {
-      body: normalized,
+      body: params,
       headers: {
         'Content-Type': 'application/json',
         'x-correlation-id': cid,
@@ -277,8 +275,8 @@ export const fetchPorProcesso = async (
     // Mock filtering logic
     let filteredData = [...mockProcessos];
 
-    if (normalized.filters.search) {
-      const search = normalized.filters.search.toLowerCase();
+    if (params.filters.search) {
+      const search = params.filters.search.toLowerCase();
       filteredData = filteredData.filter(p =>
         p.cnj?.toLowerCase().includes(search) ||
         p.reclamante_limpo?.toLowerCase().includes(search) ||
@@ -286,29 +284,29 @@ export const fetchPorProcesso = async (
       );
     }
 
-    if (normalized.filters.uf?.length) {
-      filteredData = filteredData.filter(p => normalized.filters.uf!.includes(p.uf!));
+    if (params.filters.uf?.length) {
+      filteredData = filteredData.filter(p => params.filters.uf!.includes(p.uf!));
     }
 
-    if (normalized.filters.status?.length) {
-      filteredData = filteredData.filter(p => normalized.filters.status!.includes(p.status!));
+    if (params.filters.status?.length) {
+      filteredData = filteredData.filter(p => params.filters.status!.includes(p.status!));
     }
 
-    if (normalized.filters.fase?.length) {
-      filteredData = filteredData.filter(p => normalized.filters.fase!.includes(p.fase!));
+    if (params.filters.fase?.length) {
+      filteredData = filteredData.filter(p => params.filters.fase!.includes(p.fase!));
     }
 
-    if (normalized.filters.temTriangulacao) {
+    if (params.filters.temTriangulacao) {
       filteredData = filteredData.filter(p => p.triangulacao_confirmada === true);
     }
 
-    if (normalized.filters.temProvaEmprestada) {
+    if (params.filters.temProvaEmprestada) {
       filteredData = filteredData.filter(p => p.contem_prova_emprestada === true);
     }
 
     // Mock pagination
-    const start = (normalized.page - 1) * normalized.limit;
-    const end = start + normalized.limit;
+    const start = (params.page - 1) * params.limit;
+    const end = start + params.limit;
 
     return {
       data: filteredData.slice(start, end),
@@ -320,11 +318,10 @@ export const fetchPorProcesso = async (
 export const fetchPorTestemunha = async (
   params: MapaTestemunhasRequest<TestemunhaFilters>
 ): Promise<{ data: PorTestemunha[]; total: number; error?: string }> => {
-  const normalized = normalizeMapaRequest<TestemunhaFilters>(params);
   const sanitized = {
-    ...normalized,
-    filters: normalized.filters
-      ? Object.fromEntries(Object.keys(normalized.filters).map(k => [k, '[redacted]']))
+    ...params,
+    filters: params.filters
+      ? Object.fromEntries(Object.keys(params.filters).map(k => [k, '[redacted]']))
       : undefined
   };
   console.debug('mapa-testemunhas-testemunhas payload', sanitized);
@@ -344,7 +341,7 @@ export const fetchPorTestemunha = async (
       count?: number;
       total?: number;
     }>('mapa-testemunhas-testemunhas', {
-      body: normalized,
+      body: params,
       headers: {
         'Content-Type': 'application/json',
         'x-correlation-id': cid,
@@ -401,32 +398,32 @@ export const fetchPorTestemunha = async (
     // Mock filtering logic
     let filteredData = [...mockTestemunhas];
 
-    if (normalized.filters.search) {
-      const search = normalized.filters.search.toLowerCase();
+    if (params.filters.search) {
+      const search = params.filters.search.toLowerCase();
       filteredData = filteredData.filter(t =>
         t.nome_testemunha?.toLowerCase().includes(search)
       );
     }
 
-    if (normalized.filters.ambosPolos !== undefined) {
-      filteredData = filteredData.filter(t => t.foi_testemunha_em_ambos_polos === normalized.filters.ambosPolos);
+    if (params.filters.ambosPolos !== undefined) {
+      filteredData = filteredData.filter(t => t.foi_testemunha_em_ambos_polos === params.filters.ambosPolos);
     }
 
-    if (normalized.filters.jaFoiReclamante !== undefined) {
-      filteredData = filteredData.filter(t => t.ja_foi_reclamante === normalized.filters.jaFoiReclamante);
+    if (params.filters.jaFoiReclamante !== undefined) {
+      filteredData = filteredData.filter(t => t.ja_foi_reclamante === params.filters.jaFoiReclamante);
     }
 
-    if (normalized.filters.temTriangulacao !== undefined) {
-      filteredData = filteredData.filter(t => t.participou_triangulacao === normalized.filters.temTriangulacao);
+    if (params.filters.temTriangulacao !== undefined) {
+      filteredData = filteredData.filter(t => t.participou_triangulacao === params.filters.temTriangulacao);
     }
 
-    if (normalized.filters.temTroca !== undefined) {
-      filteredData = filteredData.filter(t => t.participou_troca_favor === normalized.filters.temTroca);
+    if (params.filters.temTroca !== undefined) {
+      filteredData = filteredData.filter(t => t.participou_troca_favor === params.filters.temTroca);
     }
 
     // Mock pagination
-    const start = (normalized.page - 1) * normalized.limit;
-    const end = start + normalized.limit;
+    const start = (params.page - 1) * params.limit;
+    const end = start + params.limit;
 
     return {
       data: filteredData.slice(start, end),
