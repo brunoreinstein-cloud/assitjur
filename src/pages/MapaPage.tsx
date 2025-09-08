@@ -184,34 +184,43 @@ const MapaPage = () => {
         // Update store with real data
         setProcessos(processosResult.data);
         setTestemunhas(testemunhasResult.data);
-        
-        // Set lastUpdate only when data finishes loading
-        if (isFirstLoad) {
-          setLastUpdate(new Date());
-          setIsFirstLoad(false);
-        }
-        
-        setIsLoading(false);
-        
-        console.log('Data loaded successfully:', {
-          processos: processosResult.data.length,
-          testemunhas: testemunhasResult.data.length,
-          appliedFilters: {
-            processos: processoFilters,
-            testemunhas: testemunhaFilters
+
+        const errorMsg = processosResult.error || testemunhasResult.error;
+        if (errorMsg) {
+          setError(true, errorMsg);
+          toast({
+            title: "Falha ao carregar dados",
+            description: errorMsg,
+            variant: "destructive",
+          });
+        } else {
+          if (isFirstLoad) {
+            setLastUpdate(new Date());
+            setIsFirstLoad(false);
           }
-        });
+
+          console.log('Data loaded successfully:', {
+            processos: processosResult.data.length,
+            testemunhas: testemunhasResult.data.length,
+            appliedFilters: {
+              processos: processoFilters,
+              testemunhas: testemunhaFilters
+            }
+          });
+        }
+
+        setIsLoading(false);
         
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
         const message = error instanceof Error
           ? error.message
-          : 'Falha ao carregar dados. Verifique sua conexão.';
+          : 'Verifique filtros e tente novamente.';
         setError(true, message);
         setIsLoading(false);
 
         toast({
-          title: "Erro ao carregar dados",
+          title: "Falha ao carregar dados",
           description: message,
           variant: "destructive",
         });
