@@ -48,13 +48,14 @@ export function ProcessosKPIs({ data, filters, onFilterApply }: ProcessosKPIsPro
       icon: FileText,
       variant: 'default' as const,
       className: '',
-      filter: () => onFilterApply({ 
-        search: '', 
-        uf: [], 
-        comarca: [], 
-        status: [], 
-        fase: [], 
-        classificacao: [], 
+      filter: () => onFilterApply({
+        search: '',
+        testemunha: '',
+        uf: [],
+        comarca: [],
+        status: [],
+        fase: [],
+        classificacao: [],
         scoreRange: [0, 100], 
         flags: { triangulacao: false, troca: false, prova: false, duplo: false } 
       })

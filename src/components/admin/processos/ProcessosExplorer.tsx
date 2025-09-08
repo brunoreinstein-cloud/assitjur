@@ -38,6 +38,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   // Filters State
   const [filters, setFilters] = useState<ProcessoFiltersState>({
     search: '',
+    testemunha: '',
     uf: [],
     comarca: [],
     status: [],
@@ -69,14 +70,15 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   // Build query from filters - memoized
   const buildQuery = useMemo((): ProcessoQuery => {
     const query: ProcessoQuery = {
-      page,
-      pageSize,
       orderBy,
       orderDir
     };
 
     if (debouncedSearch.trim()) {
       query.q = debouncedSearch.trim();
+    }
+    if (filters.testemunha.trim()) {
+      query.testemunha = filters.testemunha.trim();
     }
     if (filters.uf.length > 0) query.uf = filters.uf;
     if (filters.comarca.length > 0) query.comarca = filters.comarca;
@@ -98,7 +100,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
     }
 
     return query;
-  }, [page, pageSize, orderBy, orderDir, debouncedSearch, filters]);
+  }, [orderBy, orderDir, debouncedSearch, filters]);
 
   // Fetch version info
   const { data: versionInfo } = useQuery<VersionInfo>({
@@ -134,18 +136,18 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
     error, 
     refetch 
   } = useQuery({
-    queryKey: ['processos-explorer', profile?.organization_id, buildQuery],
+    queryKey: ['processos-explorer', profile?.organization_id, buildQuery, page, pageSize],
     queryFn: async () => {
       if (!profile?.organization_id) throw new Error('No organization');
 
-      const queryParams = buildQuery;
-      console.log('🔍 Fetching processos with query:', queryParams);
+      const queryFilters = buildQuery;
+      console.log('🔍 Fetching processos with filters:', queryFilters);
 
       const { data, error } = await supabase.functions.invoke('mapa-testemunhas-processos', {
         body: {
-          filters: queryParams,
           page,
-          limit: pageSize
+          limit: pageSize,
+          filters: queryFilters
         }
       });
 
@@ -202,6 +204,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   const handleClearFilters = () => {
     setFilters({
       search: '',
+      testemunha: '',
       uf: [],
       comarca: [],
       status: [],
@@ -221,6 +224,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   const hasActiveFilters = () => {
     return (
       filters.search.trim() !== '' ||
+      filters.testemunha.trim() !== '' ||
       filters.uf.length > 0 ||
       filters.comarca.length > 0 ||
       filters.status.length > 0 ||

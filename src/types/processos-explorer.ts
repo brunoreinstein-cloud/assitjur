@@ -34,6 +34,7 @@ export type ProcessoRow = {
 
 export type ProcessoQuery = {
   q?: string; // busca global
+  testemunha?: string; // filtro por nome de testemunha
   uf?: string[]; // filtro multi
   comarca?: string[]; // depende de uf
   status?: string[];
@@ -49,12 +50,11 @@ export type ProcessoQuery = {
   };
   orderBy?: 'updated_at'|'score_risco'|'uf'|'comarca'|'cnj';
   orderDir?: 'asc'|'desc';
-  page?: number;
-  pageSize?: number; // 25/50/100
 }
 
 export type ProcessoFiltersState = {
   search: string;
+  testemunha: string;
   uf: string[];
   comarca: string[];
   status: string[];

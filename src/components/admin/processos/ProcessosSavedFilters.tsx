@@ -73,6 +73,7 @@ export function ProcessosSavedFilters({
   const hasActiveFilters = () => {
     return (
       currentFilters.search.trim() !== '' ||
+      currentFilters.testemunha.trim() !== '' ||
       currentFilters.uf.length > 0 ||
       currentFilters.comarca.length > 0 ||
       currentFilters.status.length > 0 ||
@@ -154,8 +155,9 @@ export function ProcessosSavedFilters({
   // Gerar resumo do filtro
   const getFilterSummary = (filters: ProcessoFiltersState): string => {
     const parts = [];
-    
+
     if (filters.search) parts.push(`Busca: "${filters.search}"`);
+    if (filters.testemunha) parts.push(`Testemunha: "${filters.testemunha}"`);
     if (filters.uf.length > 0) parts.push(`UF: ${filters.uf.join(', ')}`);
     if (filters.status.length > 0) parts.push(`Status: ${filters.status.join(', ')}`);
     if (filters.classificacao.length > 0) parts.push(`Class.: ${filters.classificacao.join(', ')}`);

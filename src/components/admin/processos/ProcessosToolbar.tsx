@@ -90,6 +90,7 @@ export function ProcessosToolbar({
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (filters.search.trim()) count++;
+    if (filters.testemunha.trim()) count++;
     if (filters.uf.length > 0) count++;
     if (filters.status.length > 0) count++;
     if (filters.fase.length > 0) count++;
