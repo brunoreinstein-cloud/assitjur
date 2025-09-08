@@ -340,6 +340,21 @@ export type Database = {
           },
         ]
       }
+      example: {
+        Row: {
+          id: number
+          name: string
+        }
+        Insert: {
+          id?: never
+          name: string
+        }
+        Update: {
+          id?: never
+          name?: string
+        }
+        Relationships: []
+      }
       import_errors: {
         Row: {
           column_name: string | null
@@ -1022,6 +1037,45 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limit_counters: {
+        Row: {
+          expires_at: string
+          hits: number
+          route: string
+          subject_id: string
+        }
+        Insert: {
+          expires_at: string
+          hits?: number
+          route: string
+          subject_id: string
+        }
+        Update: {
+          expires_at?: string
+          hits?: number
+          route?: string
+          subject_id?: string
+        }
+        Relationships: []
+      }
+      rate_limit_hits: {
+        Row: {
+          created_at: string
+          route: string
+          subject_id: string
+        }
+        Insert: {
+          created_at?: string
+          route: string
+          subject_id: string
+        }
+        Update: {
+          created_at?: string
+          route?: string
+          subject_id?: string
+        }
+        Relationships: []
+      }
       rate_limits: {
         Row: {
           attempt_count: number
@@ -1621,6 +1675,26 @@ export type Database = {
           version_id: string
         }[]
       }
+      gtrgm_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_decompress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      gtrgm_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
       log_data_access: {
         Args: {
           p_access_type?: string
@@ -1706,9 +1780,21 @@ export type Database = {
         Args: { input_text: string }
         Returns: string
       }
+      set_limit: {
+        Args: { "": number }
+        Returns: number
+      }
       setup_default_retention_policies: {
         Args: { p_org_id: string }
         Returns: undefined
+      }
+      show_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      show_trgm: {
+        Args: { "": string }
+        Returns: string[]
       }
       upsert_padroes_agregados: {
         Args: { p_data: Json; p_org_id: string }

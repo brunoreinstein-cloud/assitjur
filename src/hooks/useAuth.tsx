@@ -12,11 +12,11 @@ export interface UserProfile {
   role: UserRole;
   organization_id?: string;
   is_active: boolean;
-  terms_accepted_at?: string;
+  terms_accepted_at?: string | null;
   created_at: string;
   updated_at: string;
-  last_login_at?: string;
-  data_access_level: 'FULL' | 'MASKED' | 'NONE';
+  last_login_at?: string | null;
+  data_access_level?: 'FULL' | 'MASKED' | 'NONE';
 }
 
 interface AuthContextType {
