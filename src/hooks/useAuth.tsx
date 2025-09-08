@@ -16,7 +16,7 @@ export interface UserProfile {
   created_at: string;
   updated_at: string;
   last_login_at?: string | null;
-  data_access_level?: 'FULL' | 'MASKED' | 'NONE';
+  data_access_level: 'FULL' | 'MASKED' | 'NONE';
 }
 
 interface AuthContextType {
@@ -101,9 +101,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setTimeout(async () => {
             let profileData = await fetchProfile(session.user.id);
             if (!profileData) {
-              profileData = await ensureProfile(session.user);
+              profileData = (await ensureProfile(session.user)) as any;
             }
-            setProfile(profileData);
+            setProfile(profileData as UserProfile);
             setLoading(false);
           }, 0);
         } else {
@@ -122,9 +122,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setTimeout(async () => {
           let profileData = await fetchProfile(session.user.id);
           if (!profileData) {
-            profileData = await ensureProfile(session.user);
+            profileData = (await ensureProfile(session.user)) as any;
           }
-          setProfile(profileData);
+          setProfile(profileData as UserProfile);
           setLoading(false);
         }, 0);
       } else {

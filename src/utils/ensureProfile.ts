@@ -43,6 +43,7 @@ export async function ensureProfile(
         role,
         organization_id: organizationId,
         is_active: true,
+        data_access_level: 'NONE'
       })
       .select()
       .single();
