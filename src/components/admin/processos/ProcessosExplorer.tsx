@@ -13,6 +13,7 @@ import { ProcessoDetailDrawer } from './ProcessoDetailDrawer';
 import { ExportManager } from './ExportManager';
 import { ProcessosKPIs } from './ProcessosKPIs';
 import { ProcessoRow, ProcessoQuery, ProcessoFiltersState, VersionInfo } from '@/types/processos-explorer';
+import type { ProcessoFilters } from '@/types/mapa-testemunhas';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { applyPIIMask } from '@/utils/pii-mask';
@@ -128,24 +129,33 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   });
 
   // Fetch processos data
-  const { 
-    data: processosData, 
-    isLoading, 
-    error, 
-    refetch 
+  const {
+    data: processosData,
+    isLoading,
+    error,
+    refetch
   } = useQuery({
     queryKey: ['processos-explorer', profile?.organization_id, buildQuery],
     queryFn: async () => {
       if (!profile?.organization_id) throw new Error('No organization');
 
       const queryParams = buildQuery;
-      console.log('🔍 Fetching processos with query:', queryParams);
+      const apiFilters: ProcessoFilters = {
+        ...(queryParams.q ? { search: queryParams.q } : {}),
+        ...(queryParams.uf && queryParams.uf.length > 0 ? { uf: queryParams.uf[0] } : {}),
+        ...(queryParams.status && queryParams.status.length > 0 ? { status: queryParams.status[0] } : {}),
+        ...(queryParams.fase && queryParams.fase.length > 0 ? { fase: queryParams.fase[0] } : {}),
+        ...(queryParams.flags?.triang ? { temTriangulacao: true } : {}),
+        ...(queryParams.flags?.troca ? { temTroca: true } : {}),
+        ...(queryParams.flags?.prova ? { temProvaEmprestada: true } : {})
+      };
+      console.log('🔍 Fetching processos with filters:', apiFilters);
 
       const { data, error } = await supabase.functions.invoke('mapa-testemunhas-processos', {
         body: {
-          filters: queryParams,
           page,
-          limit: pageSize
+          limit: pageSize,
+          filters: apiFilters
         }
       });
 

@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import type { PorTestemunha, TestemunhaFilters } from '@/types/mapa-testemunhas';
+import type { PorTestemunha, TestemunhaFilters, ProcessoFilters } from '@/types/mapa-testemunhas';
 
 export async function fetchTestemunhas(params: {
   page?: number;
@@ -27,13 +27,13 @@ export async function fetchTestemunhas(params: {
 export async function fetchProcessos(params: {
   page?: number;
   limit?: number;
-  search?: string;
+  filters?: ProcessoFilters;
 }): Promise<{ data: any[]; total: number }> {
   const { data, error } = await supabase.functions.invoke('mapa-testemunhas-processos', {
     body: {
       page: params.page || 1,
       limit: params.limit || 20,
-      search: params.search
+      filters: params.filters
     }
   });
 
