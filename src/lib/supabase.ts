@@ -6,11 +6,11 @@ import {
   TestemunhaFilters,
   MapaTestemunhasRequest,
 } from "@/types/mapa-testemunhas";
+import { toast } from "@/hooks/use-toast";
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { mapFunctionsError } from './functions-errors';
 import { normalizeMapaRequest } from './normalizeMapaRequest';
 import { SUPABASE_ANON_KEY } from './supabaseClient';
-import { toast } from "@/hooks/use-toast";
 
 // Mock data for offline functionality
 const mockProcessos: PorProcesso[] = [
