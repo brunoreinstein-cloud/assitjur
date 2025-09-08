@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
+import { enforceRateLimit } from "../_shared/rate-limit.ts";
 
 console.log("[assistjur-processos] Function initialized");
 
@@ -11,7 +12,10 @@ serve(async (req) => {
   const preflightResponse = handlePreflight(req);
   if (preflightResponse) return preflightResponse;
 
-  const headers = corsHeaders(req);
+  const rl = await enforceRateLimit(req, { route: "assistjur-processos", limit: 60, windowMs: 60_000 });
+  if (!rl.allowed) return rl.response;
+
+  const headers = { ...corsHeaders(req), ...rl.headers };
   
   // Health check
   if (req.method === "GET") {

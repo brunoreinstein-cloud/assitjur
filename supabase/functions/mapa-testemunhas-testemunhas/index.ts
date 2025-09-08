@@ -1,12 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts"
+import { enforceRateLimit } from "../_shared/rate-limit.ts"
 
 serve(async (req) => {
   const preflight = handlePreflight(req)
   if (preflight) return preflight
 
-  const headers = corsHeaders(req)
+  const rl = await enforceRateLimit(req, { route: "mapa-testemunhas-testemunhas", limit: 60, windowMs: 60_000 })
+  if (!rl.allowed) return rl.response
+
+  const headers = { ...corsHeaders(req), ...rl.headers }
 
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) {
