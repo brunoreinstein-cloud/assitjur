@@ -1,10 +1,13 @@
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useNotifications } from '@/stores/useNotificationStore';
+import { getProjectRef } from '@/lib/supabaseClient';
 import { useMapaTestemunhasStore, QueryKind, ResultBlock } from '@/lib/store/mapa-testemunhas';
 
 export function useAssistente() {
   const { toast } = useToast();
+  const { error: notifyError } = useNotifications();
   
   const {
     chatKind,
@@ -15,7 +18,8 @@ export function useAssistente() {
     setChatStatus,
     setChatResult,
     addChatMessage,
-    updateChatMessage
+    updateChatMessage,
+    setAgentOnline
   } = useMapaTestemunhasStore();
 
   const getQueryType = useCallback((kind: QueryKind) => {
@@ -142,11 +146,28 @@ export function useAssistente() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        if ((error as any).status === 402 || (error as any).message?.includes('Workspace out of credits')) {
+          const functionUrl = `https://${getProjectRef()}.functions.supabase.co/chat-legal`;
+          console.warn(`Lovable API ${error.status} at ${functionUrl}`);
+          notifyError(
+            'Limite de créditos atingido',
+            'As funções de chat/assistente estão temporariamente indisponíveis. Tente novamente mais tarde.',
+            { duration: null }
+          );
+          setAgentOnline(false);
+          updateChatMessage(assistantMessageId, {
+            content: 'Créditos esgotados. Função indisponível.'
+          });
+          setChatStatus('error');
+          return;
+        }
+        throw error;
+      }
 
       // Generate structured blocks from response
       const mockBlocks = generateMockBlocks(kind, input);
-      
+
       // Update assistant message with blocks
       updateChatMessage(assistantMessageId, {
         content: data.content || 'Análise concluída com sucesso.',
@@ -163,20 +184,20 @@ export function useAssistente() {
 
     } catch (error) {
       console.error('Error in analysis:', error);
-      
+
       updateChatMessage(assistantMessageId, {
         content: 'Erro ao executar análise. Tente novamente.'
       });
 
       setChatStatus('error');
-      
+
       toast({
         title: "Erro na análise",
         description: error instanceof Error ? error.message : "Erro desconhecido ao executar análise.",
         variant: "destructive"
       });
     }
-  }, [agentOnline, getQueryType, generateMockBlocks, setChatStatus, setChatResult, addChatMessage, updateChatMessage, toast]);
+  }, [agentOnline, getQueryType, generateMockBlocks, setChatStatus, setChatResult, addChatMessage, updateChatMessage, toast, notifyError, setAgentOnline]);
 
   return {
     runAnalysis,
