@@ -1,27 +1,47 @@
-export function corsHeaders(req: Request, cid?: string): Record<string,string> {
-  const origin = req.headers.get("Origin") || "";
-  const allowed = [
-    "https://app.assistjur.ia",
-    "https://staging.assistjur.ia",
-    ...(Deno.env.get("ALLOWED_ORIGINS")?.split(",").filter(Boolean) || [])
-  ];
-  const isDev = (Deno.env.get("ENVIRONMENT") === "development");
-  const allowOrigin =
-    (isDev && (origin.includes("localhost") || origin.includes("127.0.0.1"))) ? origin :
-    (allowed.includes(origin) ? origin : allowed[0] ?? "*");
-
-  return {
-    "Access-Control-Allow-Origin": allowOrigin,
-    "Vary": "Origin",
-    "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-correlation-id, prefer, range",
-    "Access-Control-Max-Age": "86400",
-    ...(cid ? { "x-correlation-id": cid } : {})
-  };
+function parseAllowedOrigins(): { patterns: string[], raw: string[] } {
+  const env = (Deno.env.get('ALLOWED_ORIGINS') ?? '').split(',').map(s => s.trim()).filter(Boolean)
+  const patterns = env
+    .map(o => o.replace(/\./g, '\\.').replace(/\*/g, '.*')) // *.lovable.dev -> .*\.lovable\.dev
+    .map(rx => `^${rx}$`)
+  return { patterns, raw: env }
 }
 
-export function handlePreflight(req: Request, cid?: string): Response | null {
-  if (req.method !== "OPTIONS") return null;
-  return new Response(null, { status: 204, headers: { ...corsHeaders(req, cid) } });
+function originIsAllowed(origin: string, patterns: string[]) {
+  if (!origin) return false
+  return patterns.some(rx => new RegExp(rx).test(origin))
 }
 
+export function buildCorsHeaders(req: Request) {
+  const { patterns, raw } = parseAllowedOrigins()
+  const origin = req.headers.get('origin') ?? ''
+  const headers: Record<string, string> = {
+    'Vary': 'Origin',
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+    'Access-Control-Allow-Headers':
+      'authorization,apikey,content-type,x-client-info,x-correlation-id,prefer,range',
+    'Access-Control-Max-Age': '86400',
+  }
+
+  // Se houver lista, reflete a origin se permitida; caso contrário, usa '*' (dev)
+  if (raw.length > 0) {
+    if (origin && originIsAllowed(origin, patterns)) {
+      headers['Access-Control-Allow-Origin'] = origin
+    } else {
+      // Opcional: para bloquear, não defina o header. Para dev mais flexível, defina '*'
+      headers['Access-Control-Allow-Origin'] = '*'
+    }
+  } else {
+    headers['Access-Control-Allow-Origin'] = '*'
+  }
+
+  return headers
+}
+
+export function handlePreflight(req: Request, cid: string) {
+  if (req.method === 'OPTIONS') {
+    const headers = buildCorsHeaders(req)
+    headers['x-correlation-id'] = cid
+    return new Response(null, { status: 204, headers })
+  }
+  return null
+}

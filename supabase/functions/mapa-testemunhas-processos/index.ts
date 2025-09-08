@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.56.0";
-import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
+import { buildCorsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { createLogger } from "../_shared/logger.ts";
 import { ProcessosRequestSchema, ListaResponseSchema } from "../_shared/mapa-contracts.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
@@ -9,10 +9,10 @@ serve(async (req) => {
   const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
   const logger = createLogger(cid);
 
-  const preflight = handlePreflight(req, cid);
-  if (preflight) return preflight;
+  const pre = handlePreflight(req, cid);
+  if (pre) return pre;
 
-  const headers = { ...corsHeaders(req, cid), "Content-Type": "application/json" };
+  const headers = { ...buildCorsHeaders(req), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" };
 
   let payload: unknown = {};
   if (req.method === "POST") {

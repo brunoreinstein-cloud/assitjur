@@ -4,7 +4,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { z } from "npm:zod@3.23.8";
 import { getSystemPrompt } from "../_shared/prompt-registry.ts";
-import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
+import { buildCorsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { getAuth, adminClient } from "../_shared/auth.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 import { createLogger } from "../_shared/logger.ts";
@@ -89,20 +89,8 @@ async function openAIChat({
  */
 export async function handler(request: Request) {
   const cid = request.headers.get("x-correlation-id") ?? crypto.randomUUID();
-  const preflight = handlePreflight(request, cid);
-  if (preflight) return preflight;
-
-  const cors = corsHeaders(request, cid);
-  const origin = request.headers.get("Origin") || "";
-  if (
-    cors["Access-Control-Allow-Origin"] !== "*" &&
-    cors["Access-Control-Allow-Origin"] !== origin
-  ) {
-    return new Response(JSON.stringify({ error: "Origem não permitida" }), {
-      status: 403,
-      headers: { ...cors, "x-correlation-id": cid },
-    });
-  }
+  const pre = handlePreflight(request, cid);
+  if (pre) return pre;
 
   const log = createLogger(cid);
 
@@ -111,7 +99,7 @@ export async function handler(request: Request) {
     if (error || !user || !organization_id) {
       return new Response(JSON.stringify({ error: "Autenticação obrigatória" }), {
         status: 401,
-        headers: { ...cors, "x-correlation-id": cid },
+        headers: { ...buildCorsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
       });
     }
 
@@ -126,7 +114,7 @@ export async function handler(request: Request) {
     if (!parsed.success) {
       return new Response(JSON.stringify({ error: "Payload inválido" }), {
         status: 400,
-        headers: { ...cors, "x-correlation-id": cid },
+        headers: { ...buildCorsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
       });
     }
     const { message, promptName } = parsed.data;
@@ -137,7 +125,7 @@ export async function handler(request: Request) {
     if (!allowed) {
       return new Response(JSON.stringify({ error: "Limite de requisições excedido" }), {
         status: 429,
-        headers: { ...cors, "x-correlation-id": cid },
+        headers: { ...buildCorsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
       });
     }
 
@@ -162,13 +150,13 @@ export async function handler(request: Request) {
 
     return new Response(JSON.stringify({ ok: true, data: completion }), {
       status: 200,
-      headers: { ...cors, "x-correlation-id": cid },
+      headers: { ...buildCorsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
     });
   } catch (err) {
     log.error(`erro no chat-legal: ${err?.message ?? err}`);
     return new Response(JSON.stringify({ error: "Erro interno" }), {
       status: 500,
-      headers: { ...cors, "x-correlation-id": cid },
+      headers: { ...buildCorsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
     });
   }
 }
