@@ -65,7 +65,7 @@ export function handlePreflight(req: Request, cid?: string) {
     const headers = corsHeaders(req, cid);
     headers["Access-Control-Allow-Methods"] =
       headers["Access-Control-Allow-Methods"] || "POST, OPTIONS, GET";
-    return new Response("ok", { headers });
+    return new Response(null, { status: 204, headers });
   }
   return null;
 }
