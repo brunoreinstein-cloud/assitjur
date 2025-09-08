@@ -30,21 +30,34 @@ serve(async (req) => {
 
   // Body seguro
   let body: any = {};
-  try { 
+  try {
     const text = await req.text();
     if (text.trim()) {
-      body = JSON.parse(text); 
+      body = JSON.parse(text);
     }
-  } catch (e) { 
+  } catch (e) {
     console.error("[assistjur-processos] Invalid JSON body:", e);
-    return new Response(JSON.stringify({ error: "bad_request", detail: "invalid JSON body" }), { status: 400, headers });
+    return new Response(
+      JSON.stringify({
+        error: "bad_request",
+        detail: "JSON inválido",
+        example: { filters: {}, page: 1, limit: 50 }
+      }),
+      { status: 400, headers }
+    );
   }
 
-  console.log("[assistjur-processos] Request body:", JSON.stringify(body));
-
   const filters = body?.filters ?? {};
-  const page = Number(body?.page ?? 1);
-  const limit = Math.min(Number(body?.limit ?? 50), 200);
+
+  let page = Number(body?.page ?? 1);
+  if (Number.isNaN(page) || page < 1) page = 1;
+
+  let limit = Number(body?.limit ?? 50);
+  if (Number.isNaN(limit) || limit < 1) limit = 50;
+  if (limit > 200) limit = 200;
+
+  const safePayload = { filters, page, limit };
+  console.log('[fn] payload:', safePayload);
 
   // Supabase client com o mesmo Bearer do usuário (respeita RLS)
   const supabase = createClient(
