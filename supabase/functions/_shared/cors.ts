@@ -1,4 +1,7 @@
+
 // CORS with domain restriction for security
+// Configure allowed origins via the SITE_URL env var (comma-separated).
+// Ensure the same value is set in the Supabase project variables.
 export function corsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("Origin") || "";
   let hostname = "";
