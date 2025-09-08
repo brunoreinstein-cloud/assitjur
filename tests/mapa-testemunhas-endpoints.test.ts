@@ -34,6 +34,12 @@ describe('mapa-testemunhas-processos endpoint', () => {
     expect(res.body).toMatchObject({ page: 2, limit: 50 })
   })
 
+  it('trims testemunha filter string', () => {
+    const res = processosEndpoint({ filters: { testemunha: '  Maria  ' } })
+    expect(res.status).toBe(200)
+    expect(res.body).toMatchObject({ page: 1, limit: 20, filters: { testemunha: 'Maria' } })
+  })
+
   it('clamps limit to 200 when above maximum', () => {
     const res = processosEndpoint({ limit: '999' })
     expect(res.status).toBe(200)

@@ -335,6 +335,15 @@ export const fetchPorProcesso = async (
       filteredData = filteredData.filter(p => parsed.filters.fase!.includes(p.fase!));
     }
 
+    if (parsed.filters.testemunha) {
+      const search = parsed.filters.testemunha.toLowerCase();
+      filteredData = filteredData.filter(p =>
+        p.testemunhas_ativo_limpo?.some(t => t.toLowerCase().includes(search)) ||
+        p.testemunhas_passivo_limpo?.some(t => t.toLowerCase().includes(search)) ||
+        p.todas_testemunhas?.some(t => t.toLowerCase().includes(search))
+      );
+    }
+
     if (parsed.filters.temTriangulacao) {
       filteredData = filteredData.filter(p => p.triangulacao_confirmada === true);
     }
