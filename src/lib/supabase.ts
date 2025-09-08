@@ -209,6 +209,7 @@ const mapaRequestSchema = z.object({
       status: z.string().trim().optional(),
       fase: z.string().trim().optional(),
       search: z.string().trim().optional(),
+      testemunha: z.string().trim().optional(),
       ambosPolos: z.coerce.boolean().optional(),
       jaFoiReclamante: z.coerce.boolean().optional(),
       temTriangulacao: z.coerce.boolean().optional(),
@@ -312,6 +313,13 @@ export const fetchPorProcesso = async (
         p.cnj?.toLowerCase().includes(search) ||
         p.reclamante_limpo?.toLowerCase().includes(search) ||
         p.comarca?.toLowerCase().includes(search)
+      );
+    }
+
+    if (parsed.filters.testemunha) {
+      const search = parsed.filters.testemunha.toLowerCase();
+      filteredData = filteredData.filter(p =>
+        p.todas_testemunhas?.some(t => t.toLowerCase().includes(search))
       );
     }
 
