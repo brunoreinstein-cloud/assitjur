@@ -1,20 +1,57 @@
-import { MapaTestemunhasRequest } from '@/types/mapa-testemunhas'
+import {
+  MapaTestemunhasRequest,
+  ProcessoFilters,
+  TestemunhaFilters
+} from '@/types/mapa-testemunhas'
+
+type KnownFilters = ProcessoFilters & TestemunhaFilters
+
+const ALLOWED_FILTER_KEYS: (keyof KnownFilters)[] = [
+  'uf',
+  'status',
+  'fase',
+  'search',
+  'qtdDeposMin',
+  'qtdDeposMax',
+  'temTriangulacao',
+  'temTroca',
+  'temProvaEmprestada',
+  'ambosPolos',
+  'jaFoiReclamante'
+]
 
 export function normalizeMapaRequest<F = Record<string, unknown>>(input: any): MapaTestemunhasRequest<F> {
-  const toNumber = (value: any, defaultValue: number): number => {
-    const num = Number(value)
-    if (!Number.isFinite(num) || num <= 0) return defaultValue
-    return num
-  }
+  let page = Number(input?.page ?? 1)
+  if (!Number.isFinite(page) || page < 1) page = 1
 
-  const page = toNumber(input?.page, 1)
-  let limit = toNumber(input?.limit ?? input?.pageSize, 20)
+  let limit = Number(input?.limit ?? 20)
+  if (!Number.isFinite(limit) || limit < 1) limit = 20
   if (limit > 200) limit = 200
+
+  const filters: Record<string, any> = {}
+  if (input?.filters && typeof input.filters === 'object') {
+    for (const [key, value] of Object.entries(input.filters)) {
+      if (!ALLOWED_FILTER_KEYS.includes(key as keyof KnownFilters)) continue
+      let v: any = value
+      if (typeof v === 'string') {
+        if (key === 'temTriangulacao' || key === 'temTroca') {
+          if (v === 'true') v = true
+          else if (v === 'false') v = false
+        } else if (key === 'search') {
+          v = v.trim()
+        } else if (key === 'qtdDeposMin' || key === 'qtdDeposMax') {
+          const num = Number(v)
+          if (Number.isFinite(num)) v = num
+        }
+      }
+      filters[key] = v
+    }
+  }
 
   const output: MapaTestemunhasRequest<F> = {
     page,
     limit,
-    filters: {} as F,
+    filters: filters as F
   }
 
   if (typeof input?.sortBy === 'string') {
@@ -23,19 +60,6 @@ export function normalizeMapaRequest<F = Record<string, unknown>>(input: any): M
 
   if (input?.sortDir === 'asc' || input?.sortDir === 'desc') {
     output.sortDir = input.sortDir
-  }
-
-  if (input?.filters && typeof input.filters === 'object') {
-    const cleanFilters: Record<string, any> = {}
-    for (const [key, value] of Object.entries(input.filters)) {
-      if (typeof value === 'string') {
-        const num = Number(value)
-        cleanFilters[key] = Number.isFinite(num) && value.trim() !== '' ? num : value
-      } else {
-        cleanFilters[key] = value
-      }
-    }
-    output.filters = cleanFilters as F
   }
 
   return output
