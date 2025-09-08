@@ -69,7 +69,7 @@ export const clientRateLimiter = new RateLimiter();
 // Content Security Policy helpers
 export const CSP_DIRECTIVES = {
   'default-src': ["'self'"],
-  'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://api.openai.com"],
+  'script-src': ["'self'", "https://api.openai.com"],
   'style-src': ["'self'", "'unsafe-inline'"],
   'img-src': ["'self'", "data:", "https:"],
   'connect-src': ["'self'", "https://api.supabase.com", "https://api.openai.com", "wss:"],
