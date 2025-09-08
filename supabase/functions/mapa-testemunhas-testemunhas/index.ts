@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.56.0";
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
+import { normalizeMapaRequest, MapaResponseSchema } from '../_shared/mapa-contracts.ts';
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
@@ -49,24 +50,22 @@ Deno.serve(async (req) => {
       }
     }
 
-    const page = Number(body?.page ?? 1);
-    const limit = Math.min(Number(body?.limit ?? 20), 100);
-
-    if (!Number.isFinite(page) || page < 1) {
-      return new Response(JSON.stringify({ error: "Invalid 'page' (must be integer >= 1)" }), {
-        status: 400,
-        headers: { ...corsHeaders(req, cid), "x-correlation-id": cid }
-      });
-    }
-    
-    if (!Number.isFinite(limit) || limit < 1) {
-      return new Response(JSON.stringify({ error: "Invalid 'limit' (must be integer >= 1)" }), {
+    // Normalize and validate request
+    let dto;
+    try {
+      dto = normalizeMapaRequest(body);
+    } catch (e) {
+      console.error(`[cid=${cid}] Validation failed:`, e);
+      return new Response(JSON.stringify({ 
+        error: "Validation failed", 
+        details: e instanceof Error ? e.message : String(e)
+      }), {
         status: 400,
         headers: { ...corsHeaders(req, cid), "x-correlation-id": cid }
       });
     }
 
-    console.log(`[cid=${cid}] Fetching testemunhas: page=${page}, limit=${limit}`);
+    console.log(`[cid=${cid}] Fetching testemunhas:`, dto);
 
     // Create client with user's token for RLS
     const userSupabase = createClient(
@@ -108,16 +107,26 @@ Deno.serve(async (req) => {
       }
     ];
 
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
+    const startIndex = (dto.page - 1) * dto.limit;
+    const endIndex = startIndex + dto.limit;
     const paginatedData = mockData.slice(startIndex, endIndex);
 
-    return new Response(JSON.stringify({ 
+    const result = { 
       data: paginatedData, 
-      total: mockData.length,
-      page,
-      limit
-    }), {
+      total: mockData.length
+    };
+
+    // Validate response
+    const validation = MapaResponseSchema.safeParse(result);
+    if (!validation.success) {
+      console.error(`[cid=${cid}] Invalid response:`, validation.error.issues);
+      return new Response(JSON.stringify({ error: "Invalid server response" }), {
+        status: 500,
+        headers: { ...corsHeaders(req, cid), "x-correlation-id": cid }
+      });
+    }
+
+    return new Response(JSON.stringify(result), {
       status: 200,
       headers: { ...corsHeaders(req, cid), "x-correlation-id": cid }
     });
