@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.56.0";
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { createLogger } from "../_shared/logger.ts";
-import { parseTestemunhasRequest, ListaResponseSchema } from "../_shared/mapa-contracts.ts";
+import { TestemunhasRequestSchema, ListaResponseSchema } from "../_shared/mapa-contracts.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 serve(async (req) => {
@@ -21,23 +21,26 @@ serve(async (req) => {
     } catch (e) {
       logger.error(`invalid json: ${e.message}`);
       return new Response(
-        JSON.stringify({ error: "INVALID_JSON", message: "Corpo deve ser JSON válido" }),
+        JSON.stringify({ error: "INVALID_JSON", message: "Corpo deve ser JSON válido", cid }),
         { status: 400, headers },
       );
     }
   }
 
-  let params;
-  try {
-    params = parseTestemunhasRequest(payload);
-  } catch (e) {
-    const issues = e instanceof z.ZodError ? e.issues : undefined;
-    logger.error(`validation: ${e}`);
+  const validation = TestemunhasRequestSchema.safeParse(payload);
+  if (!validation.success) {
+    logger.error(`validation: ${validation.error.message}`);
     return new Response(
-      JSON.stringify({ error: "VALIDATION_ERROR", details: issues }),
+      JSON.stringify({ 
+        error: "VALIDATION_ERROR", 
+        details: validation.error.issues, 
+        cid 
+      }),
       { status: 422, headers },
     );
   }
+
+  const params = validation.data;
 
   const {
     paginacao: { page, limit },
@@ -71,25 +74,39 @@ serve(async (req) => {
   if (filtros.search) {
     query = query.ilike("search", `%${filtros.search}%`);
   }
+  if (filtros.data_inicio) {
+    query = query.gte("data", filtros.data_inicio);
+  }
+  if (filtros.data_fim) {
+    query = query.lte("data", filtros.data_fim);
+  }
 
   const { data, count, error } = await query;
   if (error) {
     logger.error(`database: ${error.message}`);
     return new Response(
-      JSON.stringify({ error: "DATABASE_ERROR", message: error.message }),
+      JSON.stringify({ 
+        error: "DB_ERROR", 
+        message: error.message,
+        cid 
+      }),
       { status: 500, headers },
     );
   }
 
   const result = { items: data ?? [], page, limit, total: count ?? 0 };
-  const valid = ListaResponseSchema.safeParse(result);
-  if (!valid.success) {
-    logger.error(`response validation: ${valid.error.message}`);
+  const resultValidation = ListaResponseSchema.safeParse(result);
+  if (!resultValidation.success) {
+    logger.error(`response validation: ${resultValidation.error.message}`);
     return new Response(
-      JSON.stringify({ error: "INCONSISTENT_RESPONSE" }),
+      JSON.stringify({ 
+        error: "INCONSISTENT_RESPONSE",
+        cid 
+      }),
       { status: 500, headers },
     );
   }
 
+  logger.info(`success: ${result.items.length} items returned`);
   return new Response(JSON.stringify(result), { status: 200, headers });
 });

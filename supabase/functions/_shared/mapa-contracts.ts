@@ -39,9 +39,11 @@ const TestemunhasFiltroSchema = z
     nome: z.string().trim().optional(),
     documento: z.string().trim().optional(),
     search: z.string().trim().optional(),
+    data_inicio: z.string().trim().optional(),
+    data_fim: z.string().trim().optional(),
   })
   .refine((f) => !!(f.nome || f.documento || f.search), {
-    message: "Pelo menos um filtro é obrigatório",
+    message: "Pelo menos um filtro é obrigatório (nome, documento ou search)",
   });
 
 export const TestemunhasRequestSchema = z

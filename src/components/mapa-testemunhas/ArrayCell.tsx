@@ -30,7 +30,7 @@ export const ArrayCell = memo<ArrayCellProps>(({
       return null;
     }
     
-    const { visible, hidden, total } = formatArrayForDisplay(items, maxVisible);
+    const { visible, hidden, total } = formatArrayForDisplay([...items], maxVisible);
     
     return {
       visible: visible.map(item => isPiiMasked ? applyPIIMask(item) : item),
