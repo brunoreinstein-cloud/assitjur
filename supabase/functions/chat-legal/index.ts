@@ -2,7 +2,7 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.56.0";
+import { createClient } from "npm:@supabase/supabase-js@2.56.0";
 import { getSystemPrompt } from "../_shared/prompt-registry.ts";
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 
