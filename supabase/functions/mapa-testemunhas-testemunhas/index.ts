@@ -1,90 +1,73 @@
-import { createClient } from "npm:@supabase/supabase-js@2.56.0";
-import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
-import { normalizeMapaRequest, MapaResponseSchema } from '../_shared/mapa-contracts.ts';
+import { corsHeaders } from '../_shared/cors.ts';
+import { mapaTestemunhasSchema, MapaResponseSchema } from '../_shared/mapa-contracts.ts';
+import {
+  validateJWT,
+  createAuthenticatedClient,
+  checkRateLimit,
+  secureLog,
+  withTimeout,
+} from '../_shared/security.ts';
 
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL")!,
-  Deno.env.get("SUPABASE_ANON_KEY")!,
-  {
-    auth: { persistSession: false }
-  }
-);
-
-Deno.serve(async (req) => {
+function createSecureErrorResponse(error: unknown, req: Request, expose: boolean): Response {
   const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
-  
-  // Handle CORS preflight
-  const preflightResponse = handlePreflight(req, cid);
-  if (preflightResponse) return preflightResponse;
+  secureLog('mapa-testemunhas-testemunhas error', { cid, error: String(error) });
+  const message = expose && error instanceof Error ? error.message : 'Internal server error';
+  return new Response(JSON.stringify({ error: message }), {
+    status: 500,
+    headers: { ...corsHeaders(req), 'x-correlation-id': cid },
+  });
+}
+
+async function handler(req: Request): Promise<Response> {
+  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders(req) });
+  }
+
+  const headers = { ...corsHeaders(req), 'x-correlation-id': cid };
 
   try {
-    // Get auth token from request
-    const authHeader = req.headers.get("Authorization") ?? "";
-    const token = authHeader.replace(/^Bearer\s+/i, "").trim();
-    
-    if (!token) {
-      return new Response(JSON.stringify({ error: "Missing authorization token" }), {
+    const token = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim() || null;
+    if (!validateJWT(token)) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
-        headers: { ...corsHeaders(req, cid), "x-correlation-id": cid }
+        headers,
       });
     }
 
-    // Parse request body
-    let body: any = {};
-    if (req.method !== "GET") {
-      const contentType = req.headers.get("Content-Type") || "";
-      if (!contentType.toLowerCase().includes("application/json")) {
-        return new Response(JSON.stringify({ error: "Content-Type must be application/json" }), {
-          status: 400,
-          headers: { ...corsHeaders(req, cid), "x-correlation-id": cid }
-        });
-      }
-      
-      try {
-        body = await req.json();
-      } catch {
-        return new Response(JSON.stringify({ error: "Invalid JSON payload" }), {
-          status: 400,
-          headers: { ...corsHeaders(req, cid), "x-correlation-id": cid }
-        });
-      }
+    const supabase = createAuthenticatedClient(token!);
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers,
+      });
     }
 
-    // Normalize and validate request
-    let dto;
-    try {
-      dto = normalizeMapaRequest(body);
-    } catch (e) {
-      console.error(`[cid=${cid}] Validation failed:`, e);
-      return new Response(JSON.stringify({ 
-        error: "Validation failed", 
-        details: e instanceof Error ? e.message : String(e)
-      }), {
+    if (!checkRateLimit(`${user.id}:mapa-testemunhas`, 20, 60_000)) {
+      return new Response(JSON.stringify({ error: 'Too many requests' }), {
+        status: 429,
+        headers,
+      });
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const parsed = mapaTestemunhasSchema.safeParse(body);
+    if (!parsed.success) {
+      const message = parsed.error.issues[0]?.message ?? 'Invalid request body';
+      secureLog('mapa-testemunhas-testemunhas invalid body', { cid, message });
+      return new Response(JSON.stringify({ error: message }), {
         status: 400,
-        headers: { ...corsHeaders(req, cid), "x-correlation-id": cid }
+        headers,
       });
     }
 
-    console.log(`[cid=${cid}] Fetching testemunhas:`, dto);
+    const dto = parsed.data;
+    secureLog('mapa-testemunhas-testemunhas fetch', { cid, dto });
 
-    // Create client with user's token for RLS
-    const userSupabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      {
-        auth: { persistSession: false },
-        global: { 
-          headers: { 
-            Authorization: `Bearer ${token}` 
-          } 
-        }
-      }
-    );
-
-    // For now, return mock data since the actual tables might not exist yet
     const mockData = [
       {
-        nome: "João Silva",
+        nome: 'João Silva',
         qtd_testemunhos: 3,
         polo_ativo_autor: 1,
         polo_ativo_testemunha: 2,
@@ -92,10 +75,10 @@ Deno.serve(async (req) => {
         polo_passivo_testemunha: 0,
         troca_favor: false,
         triangulacao: false,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       },
       {
-        nome: "Maria Santos",
+        nome: 'Maria Santos',
         qtd_testemunhos: 5,
         polo_ativo_autor: 2,
         polo_ativo_testemunha: 3,
@@ -103,42 +86,36 @@ Deno.serve(async (req) => {
         polo_passivo_testemunha: 1,
         troca_favor: true,
         triangulacao: false,
-        created_at: new Date().toISOString()
-      }
+        created_at: new Date().toISOString(),
+      },
     ];
 
     const startIndex = (dto.page - 1) * dto.limit;
-    const endIndex = startIndex + dto.limit;
-    const paginatedData = mockData.slice(startIndex, endIndex);
+    const paginatedData = mockData.slice(startIndex, startIndex + dto.limit);
 
-    const result = { 
-      data: paginatedData, 
-      total: mockData.length
+    const result = {
+      data: paginatedData,
+      total: mockData.length,
     };
 
-    // Validate response
     const validation = MapaResponseSchema.safeParse(result);
     if (!validation.success) {
-      console.error(`[cid=${cid}] Invalid response:`, validation.error.issues);
-      return new Response(JSON.stringify({ error: "Invalid server response" }), {
+      return new Response(JSON.stringify({ error: 'Invalid server response' }), {
         status: 500,
-        headers: { ...corsHeaders(req, cid), "x-correlation-id": cid }
+        headers,
       });
     }
 
-    return new Response(JSON.stringify(result), {
-      status: 200,
-      headers: { ...corsHeaders(req, cid), "x-correlation-id": cid }
+    secureLog('mapa-testemunhas-testemunhas success', {
+      cid,
+      count: result.data.length,
     });
 
+    return new Response(JSON.stringify(result), { status: 200, headers });
   } catch (error) {
-    console.error(`[cid=${cid}] Unhandled error:`, error);
-    return new Response(JSON.stringify({
-      error: "Internal server error",
-      message: String(error)
-    }), {
-      status: 500,
-      headers: { ...corsHeaders(req, cid), "x-correlation-id": cid }
-    });
+    return createSecureErrorResponse(error, req, true);
   }
-});
+}
+
+Deno.serve((req) => withTimeout(handler(req), 30_000));
+
