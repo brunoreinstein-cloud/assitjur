@@ -15,7 +15,12 @@ const filtersSchema = z
 export const mapaTestemunhasSchema = z.object({
   filters: filtersSchema,
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(200).default(20),
+  limit: z
+    .coerce.number()
+    .int()
+    .min(1)
+    .default(20)
+    .transform((n) => (n > 200 ? 200 : n)),
   sortBy: z.string().trim().optional(),
   sortDir: z.enum(["asc", "desc"]).optional(),
 });
