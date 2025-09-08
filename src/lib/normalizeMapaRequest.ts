@@ -11,6 +11,7 @@ const ALLOWED_FILTER_KEYS: (keyof KnownFilters)[] = [
   'status',
   'fase',
   'search',
+  'testemunha',
   'qtdDeposMin',
   'qtdDeposMax',
   'temTriangulacao',

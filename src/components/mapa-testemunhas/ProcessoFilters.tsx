@@ -68,6 +68,16 @@ export function ProcessoFilters() {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="testemunha">Testemunha</Label>
+            <Input
+              id="testemunha"
+              placeholder="Nome da testemunha"
+              value={processoFilters.testemunha || ''}
+              onChange={(e) => updateFilter('testemunha', e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="uf">UF</Label>
             <Select
               value={processoFilters.uf || 'TODAS'}

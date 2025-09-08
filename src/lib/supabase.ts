@@ -209,6 +209,7 @@ const mapaRequestSchema = z.object({
       status: z.string().trim().optional(),
       fase: z.string().trim().optional(),
       search: z.string().trim().optional(),
+      testemunha: z.string().trim().optional(),
       ambosPolos: z.coerce.boolean().optional(),
       jaFoiReclamante: z.coerce.boolean().optional(),
       temTriangulacao: z.coerce.boolean().optional(),
