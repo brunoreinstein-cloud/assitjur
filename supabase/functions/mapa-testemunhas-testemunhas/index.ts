@@ -1,121 +1,100 @@
-import { corsHeaders } from '../_shared/cors.ts';
-import { mapaTestemunhasSchema, MapaResponseSchema } from '../_shared/mapa-contracts.ts';
-import {
-  validateJWT,
-  createAuthenticatedClient,
-  checkRateLimit,
-  secureLog,
-  withTimeout,
-} from '../_shared/security.ts';
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.56.0";
+import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
+import { createLogger } from '../_shared/logger.ts';
 
-function createSecureErrorResponse(error: unknown, req: Request, expose: boolean): Response {
+const PayloadSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  filters: z.record(z.any()).default({})
+}).partial();
+
+Deno.serve(async (req) => {
   const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
-  secureLog('mapa-testemunhas-testemunhas error', { cid, error: String(error) });
-  const message = expose && error instanceof Error ? error.message : 'Internal server error';
-  return new Response(JSON.stringify({ error: message }), {
-    status: 500,
-    headers: { ...corsHeaders(req), 'x-correlation-id': cid },
-  });
-}
+  const logger = createLogger(cid);
 
-async function handler(req: Request): Promise<Response> {
-  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders(req) });
-  }
+  const pre = handlePreflight(req, cid);
+  if (pre) return pre;
 
-  const headers = { ...corsHeaders(req), 'x-correlation-id': cid };
+  const headers = corsHeaders(req, cid);
 
   try {
-    const token = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim() || null;
-    if (!validateJWT(token)) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers,
-      });
+    let bodyText = "";
+    if (req.method === "POST") {
+      try { bodyText = await req.text(); } catch { /* ignore */ }
     }
 
-    const supabase = createAuthenticatedClient(token!);
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers,
-      });
+    let payload: unknown = {};
+    if (bodyText && bodyText.trim()) {
+      try { payload = JSON.parse(bodyText); } catch (e) { logger.warn(`json parse: ${e.message}`); }
     }
 
-    if (!checkRateLimit(`${user.id}:mapa-testemunhas`, 20, 60_000)) {
-      return new Response(JSON.stringify({ error: 'Too many requests' }), {
-        status: 429,
-        headers,
-      });
-    }
-
-    const body = await req.json().catch(() => ({}));
-    const parsed = mapaTestemunhasSchema.safeParse(body);
+    const parsed = PayloadSchema.safeParse(payload);
     if (!parsed.success) {
-      const message = parsed.error.issues[0]?.message ?? 'Invalid request body';
-      secureLog('mapa-testemunhas-testemunhas invalid body', { cid, message });
-      return new Response(JSON.stringify({ error: message }), {
-        status: 400,
-        headers,
+      return new Response(JSON.stringify({ error:"invalid_payload", details: parsed.error.issues, correlationId: cid }), { status: 400, headers: { ...headers, "Content-Type":"application/json" }});
+    }
+
+    const page  = Math.max(1, Number(parsed.data.page ?? 1) || 1);
+    const limit = Math.min(100, Math.max(1, Number(parsed.data.limit ?? 20) || 20));
+    const filtersRaw = parsed.data.filters ?? {};
+    const filters = Object.fromEntries(Object.entries(filtersRaw).flatMap(([k,v]) => {
+      if (v === "" || v === undefined || v === null) return [];
+      if (v === "true") return [[k,true]];
+      if (v === "false") return [[k,false]];
+      return [[k,v]];
+    }));
+
+    const authHeader = req.headers.get("authorization") ?? "";
+    if (!/^Bearer\s+.+/i.test(authHeader)) {
+      return new Response(JSON.stringify({ error:"unauthorized", message:"Token de autorização obrigatório", correlationId: cid }), { status: 401, headers: { ...headers, "Content-Type":"application/json" }});
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { auth: { persistSession:false, autoRefreshToken:false }, global: { headers: { Authorization: authHeader } } }
+    );
+
+    const isProd = (Deno.env.get("ENVIRONMENT") ?? "production") === "production";
+
+    // MOCK apenas fora de produção
+    if (!isProd) {
+      let mock = [
+        { nome_testemunha:"João Silva",  qtd_testemunhos:3, polo_ativo_autor:1, polo_ativo_testemunha:2, polo_passivo_reu:0, polo_passivo_testemunha:0, troca_favor:false, triangulacao:false, created_at:new Date().toISOString() },
+        { nome_testemunha:"Maria Santos", qtd_testemunhos:5, polo_ativo_autor:2, polo_ativo_testemunha:3, polo_passivo_reu:1, polo_passivo_testemunha:1, troca_favor:true,  triangulacao:false, created_at:new Date().toISOString() },
+        { nome_testemunha:"Pedro Oliveira", qtd_testemunhos:8, polo_ativo_autor:0, polo_ativo_testemunha:6, polo_passivo_reu:0, polo_passivo_testemunha:2, troca_favor:false, triangulacao:true,  created_at:new Date().toISOString() }
+      ];
+
+      if (typeof filters.search === "string" && filters.search.trim()) {
+        const q = filters.search.toLowerCase();
+        mock = mock.filter(i => i.nome_testemunha.toLowerCase().includes(q));
+      }
+      if (filters.troca_favor === true) mock = mock.filter(i => i.troca_favor);
+      if (filters.triangulacao === true) mock = mock.filter(i => i.triangulacao);
+
+      const start = (page - 1) * limit;
+      const end   = start + limit;
+      const data  = mock.slice(start, end);
+      const count = mock.length;
+      const totalPages = Math.ceil(count / limit);
+
+      return new Response(JSON.stringify({ data, count, totalPages, page, limit }), {
+        status: 200, headers: { ...headers, "Content-Type":"application/json" }
       });
     }
 
-    const dto = parsed.data;
-    secureLog('mapa-testemunhas-testemunhas fetch', { cid, dto });
+    // TODO: produção → chame sua RPC/tabela real aqui
+    // const { data, error } = await supabase.rpc("rpc_get_assistjur_testemunhas", { ... });
+    // if (error) { /* mapear erros como na outra função */ }
 
-    const mockData = [
-      {
-        nome: 'João Silva',
-        qtd_testemunhos: 3,
-        polo_ativo_autor: 1,
-        polo_ativo_testemunha: 2,
-        polo_passivo_reu: 0,
-        polo_passivo_testemunha: 0,
-        troca_favor: false,
-        triangulacao: false,
-        created_at: new Date().toISOString(),
-      },
-      {
-        nome: 'Maria Santos',
-        qtd_testemunhos: 5,
-        polo_ativo_autor: 2,
-        polo_ativo_testemunha: 3,
-        polo_passivo_reu: 1,
-        polo_passivo_testemunha: 1,
-        troca_favor: true,
-        triangulacao: false,
-        created_at: new Date().toISOString(),
-      },
-    ];
-
-    const startIndex = (dto.page - 1) * dto.limit;
-    const paginatedData = mockData.slice(startIndex, startIndex + dto.limit);
-
-    const result = {
-      data: paginatedData,
-      total: mockData.length,
-    };
-
-    const validation = MapaResponseSchema.safeParse(result);
-    if (!validation.success) {
-      return new Response(JSON.stringify({ error: 'Invalid server response' }), {
-        status: 500,
-        headers,
-      });
-    }
-
-    secureLog('mapa-testemunhas-testemunhas success', {
-      cid,
-      count: result.data.length,
+    return new Response(JSON.stringify({ data:[], count:0, totalPages:0, page, limit }), {
+      status: 200, headers: { ...headers, "Content-Type":"application/json" }
     });
 
-    return new Response(JSON.stringify(result), { status: 200, headers });
-  } catch (error) {
-    return createSecureErrorResponse(error, req, true);
+  } catch (e: any) {
+    return new Response(JSON.stringify({ error:"server_error", message: e?.message || "Erro", correlationId: cid }), {
+      status: 500, headers: { ...headers, "Content-Type":"application/json" }
+    });
   }
-}
-
-Deno.serve((req) => withTimeout(handler(req), 30_000));
+});
 
