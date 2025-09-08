@@ -11,6 +11,7 @@ const ALLOWED_FILTER_KEYS: (keyof KnownFilters)[] = [
   'status',
   'fase',
   'search',
+  'testemunha',
   'qtdDeposMin',
   'qtdDeposMax',
   'temTriangulacao',
@@ -50,7 +51,7 @@ export function normalizeMapaRequest<F = Record<string, unknown>>(input: any): M
         } else if (typeof v === 'boolean') {
           // keep as is
         } else continue
-      } else if (key === 'search' && typeof v === 'string') {
+      } else if ((key === 'search' || key === 'testemunha') && typeof v === 'string') {
         v = v.trim()
       } else if (key === 'qtdDeposMin' || key === 'qtdDeposMax') {
         const num = typeof v === 'number' ? v : Number(v)

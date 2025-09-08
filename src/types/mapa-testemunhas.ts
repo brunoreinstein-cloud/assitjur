@@ -60,6 +60,7 @@ export type ProcessoFilters = {
   status?: string;
   fase?: string;
   search?: string;
+  testemunha?: string;
   qtdDeposMin?: number;
   qtdDeposMax?: number;
   temTriangulacao?: boolean;
