@@ -80,6 +80,26 @@ scripts/smoke-edge.sh
 
 O script envia `{"page":1,"limit":1}` e falha se a resposta não for **200**.
 
+### Exemplos de curl
+
+#### mapa-testemunhas-processos
+
+```bash
+curl -X POST "$SUPABASE_URL/functions/v1/mapa-testemunhas-processos" \
+  -H "Authorization: Bearer $JWT" \
+  -H "Content-Type: application/json" \
+  -d '{"paginacao":{"page":1,"limit":10},"filtros":{"search":"joao"}}'
+```
+
+#### mapa-testemunhas-testemunhas
+
+```bash
+curl -X POST "$SUPABASE_URL/functions/v1/mapa-testemunhas-testemunhas" \
+  -H "Authorization: Bearer $JWT" \
+  -H "Content-Type: application/json" \
+  -d '{"paginacao":{"page":1,"limit":10},"filtros":{"nome":"Maria"}}'
+```
+
 ---
 
 ## 📂 Estrutura de Pastas
