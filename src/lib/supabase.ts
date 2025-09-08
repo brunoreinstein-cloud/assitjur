@@ -9,7 +9,6 @@ import {
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { mapFunctionsError } from './functions-errors';
 import { normalizeMapaRequest } from './normalizeMapaRequest';
-import { toast } from "@/hooks/use-toast";
 
 // Mock data for offline functionality
 const mockProcessos: PorProcesso[] = [
@@ -195,7 +194,7 @@ const isSupabaseConfigured = () => {
 // Fetch functions with Supabase fallback to mocks
 export const fetchPorProcesso = async (
   params: MapaTestemunhasRequest<ProcessoFilters>
-): Promise<{ data: PorProcesso[]; total: number }> => {
+): Promise<{ data: PorProcesso[]; total: number; error?: string }> => {
   const normalized = normalizeMapaRequest<ProcessoFilters>(params);
   console.debug('mapa-testemunhas-processos payload', normalized);
   try {
@@ -216,31 +215,27 @@ export const fetchPorProcesso = async (
       }
     });
 
-    if (error instanceof FunctionsHttpError && error.context?.response?.status >= 400) {
+    if (error instanceof FunctionsHttpError && error.context?.response?.ok === false) {
       let errorPayload: any;
       try {
         errorPayload = await error.context.response.json();
       } catch {}
 
-      const message = errorPayload?.detail || 'Falha ao carregar dados. Verifique filtros/página.';
+      const { error: err, detail, hint, example } = errorPayload || {};
+      const message = detail || 'Verifique filtros e tente novamente.';
       const sanitizedPayload = {
         ...normalized,
         filters: normalized.filters
           ? Object.fromEntries(Object.keys(normalized.filters).map(k => [k, '[redacted]']))
           : undefined
       };
-      toast({
-        title: 'Erro ao carregar dados',
-        description: message,
-        variant: 'destructive'
-      });
       console.error('fetchPorProcesso HTTP error', {
         status: error.context.response.status,
         url: error.context.response.url,
-        error: errorPayload,
-        payload: sanitizedPayload
+        payload: sanitizedPayload,
+        error: { error: err, detail, hint, example }
       });
-      return { data: [], total: 0 };
+      return { data: [], total: 0, error: message };
     }
 
     if (error) {
@@ -314,7 +309,7 @@ export const fetchPorProcesso = async (
 
 export const fetchPorTestemunha = async (
   params: MapaTestemunhasRequest<TestemunhaFilters>
-): Promise<{ data: PorTestemunha[]; total: number }> => {
+): Promise<{ data: PorTestemunha[]; total: number; error?: string }> => {
   const normalized = normalizeMapaRequest<TestemunhaFilters>(params);
   console.debug('mapa-testemunhas-testemunhas payload', normalized);
   try {
@@ -335,31 +330,27 @@ export const fetchPorTestemunha = async (
       }
     });
 
-    if (error instanceof FunctionsHttpError && error.context?.response?.status >= 400) {
+    if (error instanceof FunctionsHttpError && error.context?.response?.ok === false) {
       let errorPayload: any;
       try {
         errorPayload = await error.context.response.json();
       } catch {}
 
-      const message = errorPayload?.detail || 'Falha ao carregar dados. Verifique filtros/página.';
+      const { error: err, detail, hint, example } = errorPayload || {};
+      const message = detail || 'Verifique filtros e tente novamente.';
       const sanitizedPayload = {
         ...normalized,
         filters: normalized.filters
           ? Object.fromEntries(Object.keys(normalized.filters).map(k => [k, '[redacted]']))
           : undefined
       };
-      toast({
-        title: 'Erro ao carregar dados',
-        description: message,
-        variant: 'destructive'
-      });
       console.error('fetchPorTestemunha HTTP error', {
         status: error.context.response.status,
         url: error.context.response.url,
-        error: errorPayload,
-        payload: sanitizedPayload
+        payload: sanitizedPayload,
+        error: { error: err, detail, hint, example }
       });
-      return { data: [], total: 0 };
+      return { data: [], total: 0, error: message };
     }
 
     if (error) {
