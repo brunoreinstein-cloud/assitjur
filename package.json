@@ -8,7 +8,9 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "preview": "vite preview",
+    "test": "vitest run",
     "test:integration": "vitest run tests/integration.supabase.test.ts",
     "generate:types": "node scripts/generate-api-types.js"
   },
