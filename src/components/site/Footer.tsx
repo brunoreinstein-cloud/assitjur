@@ -6,17 +6,24 @@ export function Footer() {
   const navigate = useNavigate();
   
   const footerLinks = [
-    { label: 'Sobre o Hub', action: () => navigate('/sobre') },
+    { label: 'Sobre o AssistJur.IA', action: () => navigate('/sobre') },
     { label: 'Sobre Bianca', action: () => navigate('/sobre') },
-    { label: 'Contato', action: () => navigate('/sobre#contato') },
+    { label: 'Segurança & Conformidade', action: () => navigate('/sobre#seguranca') },
   ];
 
   return (
     <footer className="bg-foreground text-background py-16">
       <div className="container mx-auto px-6">
         <div className="max-w-4xl mx-auto">
+          {/* Texto de rodapé */}
+          <div className="text-center mb-8">
+            <p className="text-background/90 font-medium text-lg mb-2">
+              AssistJur.IA — Gestão do contencioso com inovação e olhar estratégico, desenvolvido por Bianca Reinstein Consultoria.
+            </p>
+          </div>
+
           {/* Links de navegação */}
-          <div className="flex flex-wrap justify-center gap-8 mb-12">
+          <div className="flex flex-wrap justify-center gap-8 mb-8">
             {footerLinks.map((link, index) => (
               <button
                 key={index}
@@ -28,40 +35,37 @@ export function Footer() {
             ))}
           </div>
 
-          <Separator className="bg-background/20 mb-12" />
+          <Separator className="bg-background/20 mb-8" />
 
-          {/* Assinatura institucional */}
-          <div className="text-center space-y-6">
-            <div className="space-y-3">
-              <p className="text-background/90 font-medium">
-                Documento produzido com apoio do AssistJur.IA
-              </p>
-              <p className="text-background/70">
-                Gestão do contencioso com inovação e olhar estratégico
-              </p>
-              <p className="text-background/70">
-                por Bianca Reinstein Consultoria
-              </p>
-            </div>
+          {/* Contato */}
+          <div className="text-center mb-8">
+            <h3 className="text-background font-semibold mb-2">Contato:</h3>
+            <a 
+              href="mailto:bianca@brconsultoriaadv.com" 
+              className="text-background/80 hover:text-background transition-colors"
+            >
+              📩 bianca@brconsultoriaadv.com
+            </a>
+          </div>
 
-            <Separator className="bg-background/20 max-w-md mx-auto" />
+          <Separator className="bg-background/20 mb-8" />
 
-            {/* Aviso obrigatório */}
-            <div className="bg-background/10 rounded-lg p-6 border border-background/20">
-              <p className="text-background/90 font-semibold text-sm">
-                ⚠️ Aviso Importante
-              </p>
-              <p className="text-background/80 text-sm mt-2">
-                Validação nos autos é obrigatória.
-              </p>
-            </div>
+          {/* Aviso Legal */}
+          <div className="bg-background/10 rounded-lg p-6 border border-background/20 mb-6">
+            <p className="text-background/90 font-semibold text-sm mb-2">
+              ⚠️ Aviso legal:
+            </p>
+            <p className="text-background/80 text-sm">
+              O AssistJur.IA oferece suporte em inteligência artificial, mas exige sempre a supervisão de um advogado. 
+              Não substitui a análise humana, nem dispensa a validação nos autos.
+            </p>
+          </div>
 
-            {/* Copyright */}
-            <div className="pt-8">
-              <p className="text-background/60 text-xs">
-                © {new Date().getFullYear()} AssistJur.IA. Todos os direitos reservados.
-              </p>
-            </div>
+          {/* Copyright */}
+          <div className="text-center">
+            <p className="text-background/70 text-sm">
+              👉 © 2025 AssistJur.IA. Desenvolvido por Bianca Reinstein Consultoria. Todos os direitos reservados.
+            </p>
           </div>
         </div>
       </div>

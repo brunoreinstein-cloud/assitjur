@@ -6,6 +6,8 @@ import { Audience } from '@/components/site/Audience';
 import { AgentsPreview } from '@/components/site/AgentsPreview';
 import { ROI } from '@/components/site/ROI';
 import { SecurityAccordion } from '@/components/site/SecurityAccordion';
+import { AboutAssistJur } from '@/components/site/AboutAssistJur';
+import { AboutBianca } from '@/components/site/AboutBianca';
 import { Footer } from '@/components/site/Footer';
 import { BetaModal } from '@/components/sobre/BetaModal';
 import { Toaster } from '@/components/ui/toaster';
@@ -57,7 +59,7 @@ export default function PublicHome() {
 
         {/* 5. ROI */}
         <section id="roi">
-          <ROI />
+          <ROI onSignup={handleBetaSignup} />
         </section>
 
         {/* 6. Segurança & Conformidade */}
@@ -65,7 +67,17 @@ export default function PublicHome() {
           <SecurityAccordion />
         </section>
 
-        {/* 7. Footer */}
+        {/* 7. Sobre o AssistJur.IA */}
+        <section id="sobre">
+          <AboutAssistJur />
+        </section>
+
+        {/* 8. Sobre Bianca Reinstein */}
+        <section id="bianca">
+          <AboutBianca />
+        </section>
+
+        {/* 9. Footer */}
         <Footer />
       </main>
 

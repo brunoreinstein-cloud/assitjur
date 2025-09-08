@@ -1,46 +1,53 @@
 import React from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Lock, Eye, UserCheck, ArrowRightLeft } from 'lucide-react';
+import { Shield, Lock, Eye, UserCheck, ArrowRightLeft, FileText } from 'lucide-react';
 
 export function SecurityAccordion() {
   const securityItems = [
     {
+      id: 'dpa',
+      icon: FileText,
+      title: 'DPA e Termos Claros',
+      content: 'Acordo de Processamento de Dados assinado com regras transparentes.',
+    },
+    {
       id: 'encryption',
       icon: Lock,
-      title: 'Criptografia ponta-a-ponta',
-      content: 'Todos os dados são criptografados em trânsito e em repouso usando padrões AES-256. Chaves de criptografia gerenciadas com HSM (Hardware Security Module) certificado.',
+      title: 'Criptografia Ponta-a-Ponta',
+      content: 'Dados em trânsito e em repouso com padrão bancário.',
     },
     {
       id: 'permissions',
       icon: UserCheck,
-      title: 'Permissões granulares e 2FA',
-      content: 'Sistema de controle de acesso baseado em roles (RBAC) com autenticação de dois fatores obrigatória. Permissões configuráveis por usuário, função e tipo de dado.',
+      title: 'Controle de Acesso',
+      content: 'Permissões granulares, autenticação 2FA e logs completos.',
     },
     {
       id: 'audit',
       icon: Eye,
-      title: 'Trilha de auditoria completa',
-      content: 'Registro detalhado de todas as ações realizadas na plataforma, incluindo visualizações, modificações e exportações. Logs imutáveis com timestamp e geolocalização.',
+      title: 'Trilha de Auditoria',
+      content: 'Registro de todas as ações com timestamp e usuário.',
     },
     {
       id: 'human-review',
       icon: Shield,
-      title: 'Revisão humana obrigatória',
-      content: 'Todas as análises de IA passam por validação humana antes da entrega final. Especialistas jurídicos revisam recomendações críticas e insights estratégicos.',
+      title: 'Revisão Humana',
+      content: 'Outputs de IA sempre validados por especialista jurídico.',
     },
     {
       id: 'portability',
       icon: ArrowRightLeft,
-      title: 'Portabilidade total',
-      content: 'Seus dados podem ser exportados a qualquer momento em formatos padronizados. Não há lock-in tecnológico - você mantém controle total sobre suas informações.',
+      title: 'Portabilidade Total',
+      content: 'Seus dados exportáveis a qualquer momento.',
     },
   ];
 
   const certifications = [
     { label: 'ISO 27001', icon: '🔒' },
-    { label: 'SOC 2', icon: '🛡️' },
-    { label: 'LGPD', icon: '🇧🇷' },
+    { label: 'SOC 2 Type II', icon: '🛡️' },
+    { label: 'LGPD Compliant', icon: '🇧🇷' },
+    { label: 'Marco Civil', icon: '⚖️' },
   ];
 
   return (
@@ -49,10 +56,10 @@ export function SecurityAccordion() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Segurança & Conformidade
+              👉 Segurança & Conformidade
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Seus dados protegidos com os mais altos padrões de segurança
+              Proteção máxima de dados com transparência total. Todos os requisitos da LGPD atendidos desde o primeiro dia.
             </p>
           </div>
 
@@ -83,10 +90,10 @@ export function SecurityAccordion() {
             </Accordion>
           </div>
 
-          {/* Selos de Certificação */}
+          {/* Certificações */}
           <div className="text-center">
             <h3 className="text-lg font-semibold text-foreground mb-6">
-              Certificações e Conformidades
+              Certificações destacadas
             </h3>
             <div className="flex justify-center items-center gap-6 flex-wrap">
               {certifications.map((cert, index) => (
