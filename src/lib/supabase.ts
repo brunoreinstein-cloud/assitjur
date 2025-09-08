@@ -316,6 +316,13 @@ export const fetchPorProcesso = async (
       );
     }
 
+    if (parsed.filters.testemunha) {
+      const search = parsed.filters.testemunha.toLowerCase();
+      filteredData = filteredData.filter(p =>
+        p.todas_testemunhas?.some(t => t.toLowerCase().includes(search))
+      );
+    }
+
     if (parsed.filters.uf?.length) {
       filteredData = filteredData.filter(p => parsed.filters.uf!.includes(p.uf!));
     }
