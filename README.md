@@ -106,6 +106,9 @@ npm run test
 * Sanitização de entradas no frontend.
 * Logs de auditoria nas exports e Edge Functions.
 * **Nunca** subir `.env` ou chaves privadas no repositório.
+* Funções Supabase seguem dois padrões:
+  * **client-RLS** – usam o JWT do usuário final e respeitam as políticas de RLS.
+  * **admin-no-RLS** – executadas com `SERVICE_ROLE_KEY`, exigem autorização administrativa e ignoram RLS.
 
 ---
 
