@@ -1,18 +1,19 @@
 import { createClient } from "npm:@supabase/supabase-js@2.56.0";
-
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+import {
+  SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_ANON_KEY,
+} from "./env.ts";
 
 export function clientRLS(req: Request) {
-  return createClient(SUPABASE_URL, ANON_KEY, {
+  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
     auth: { autoRefreshToken: false, persistSession: false }
   });
 }
 
 export function adminClient() {
-  return createClient(SUPABASE_URL, SERVICE_ROLE, {
+  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { autoRefreshToken: false, persistSession: false }
   });
 }

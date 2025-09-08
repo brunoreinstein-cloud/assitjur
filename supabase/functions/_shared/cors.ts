@@ -1,3 +1,5 @@
+import { ENVIRONMENT, ALLOWED_ORIGINS } from "./env.ts";
+
 // CORS with domain restriction for security
 export function corsHeaders(req: Request, cid?: string): Record<string, string> {
   const origin = req.headers.get("Origin") || "";
@@ -8,55 +10,48 @@ export function corsHeaders(req: Request, cid?: string): Record<string, string> 
     hostname = "";
   }
 
-  // Configure allowed origins via environment specific SITE_URL_* vars
-  // or fallback to SITE_URL. In the Supabase dashboard: Project Settings →
-  // Edge Functions → Environment Variables.
-  const env = (Deno.env.get("NODE_ENV") || "development").toUpperCase();
-  const envSpecific = Deno.env.get(`SITE_URL_${env}`) || "";
-  const configuredOrigins = (envSpecific || Deno.env.get("SITE_URL") || "")
-    .split(",")
-    .map(s => s.trim())
-    .filter(Boolean);
-  const configuredHostnames = configuredOrigins.map(url => {
+  const configuredOrigins = ALLOWED_ORIGINS;
+  const configuredHostnames = configuredOrigins.map((url) => {
     try {
       return new URL(url).host;
     } catch {
       return url;
     }
   });
-  
-  // Specific Lovable domains
+
   const allowedLovableDomains = [
-    "c19fd3c7-1955-4ba3-bf12-37fcb264235a.sandbox.lovable.dev"
+    "c19fd3c7-1955-4ba3-bf12-37fcb264235a.sandbox.lovable.dev",
   ];
-  
-  // Auto-detect Lovable preview domains
-  const isLovablePreview = hostname.endsWith('.lovable.app') ||
-                          hostname.endsWith('.sandbox.lovable.dev') ||
-                          allowedLovableDomains.includes(hostname);
-  
-  // Determine allowed origin
+
+  const isLovablePreview =
+    hostname.endsWith(".lovable.app") ||
+    hostname.endsWith(".sandbox.lovable.dev") ||
+    allowedLovableDomains.includes(hostname);
+
   let allowOrigin = "*"; // Default fallback for development
-  
+
   if (configuredHostnames.length > 0) {
-    // Use configured origins if available
-    allowOrigin = configuredHostnames.includes(hostname) ? origin : configuredOrigins[0];
+    allowOrigin = configuredHostnames.includes(hostname)
+      ? origin
+      : configuredOrigins[0];
   } else if (isLovablePreview) {
-    // Allow Lovable preview domains automatically
     allowOrigin = origin;
-  } else if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // Allow localhost for development
+  } else if (
+    ENVIRONMENT === "development" &&
+    (hostname === "localhost" || hostname === "127.0.0.1")
+  ) {
     allowOrigin = origin;
   }
 
-  console.log(`${cid ? `[cid=${cid}] ` : ''}CORS: Origin ${origin} -> Allow: ${allowOrigin}`);
-  
+  console.log(`${cid ? `[cid=${cid}] ` : ""}CORS: Origin ${origin} -> Allow: ${allowOrigin}`);
+
   return {
     "Access-Control-Allow-Origin": allowOrigin,
-    "Vary": "Origin",
+    Vary: "Origin",
     "Access-Control-Allow-Methods": "POST, OPTIONS, GET",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-correlation-id",
-    "Content-Type": "application/json"
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, x-correlation-id",
+    "Content-Type": "application/json",
   };
 }
 

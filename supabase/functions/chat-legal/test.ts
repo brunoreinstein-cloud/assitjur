@@ -5,8 +5,8 @@ Deno.env.set("OPENAI_API_KEY", "test");
 Deno.env.set("SUPABASE_URL", "https://example.supabase.co");
 Deno.env.set("SUPABASE_ANON_KEY", "anon");
 Deno.env.set("SUPABASE_SERVICE_ROLE_KEY", "service");
-Deno.env.set("SITE_URL_DEVELOPMENT", "http://localhost:5173");
-Deno.env.set("NODE_ENV", "development");
+Deno.env.set("ALLOWED_ORIGINS", "http://localhost:5173");
+Deno.env.set("ENVIRONMENT", "development");
 
 Deno.test("CORS preflight allows apikey", async () => {
   const req = new Request("http://localhost", {

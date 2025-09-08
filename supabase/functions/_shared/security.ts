@@ -1,8 +1,6 @@
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.56.0";
 import type { ZodSchema } from "npm:zod@4.1.3";
-
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./env.ts";
 
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,7 +33,7 @@ export function createSecureErrorResponse(message: string, status = 400): Respon
 }
 
 export function createAuthenticatedClient(jwt: string): SupabaseClient {
-  return createClient(SUPABASE_URL, ANON_KEY, {
+  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     global: { headers: { Authorization: `Bearer ${jwt}` } },
     auth: { autoRefreshToken: false, persistSession: false }
   });
@@ -92,24 +90,6 @@ export function normalizeProcessoFields(input: Record<string, unknown>): Process
     vara: input.vara ? String(input.vara) : undefined,
     dataDistribuicao: input.dataDistribuicao ? String(input.dataDistribuicao) : undefined
   };
-}
-
-function redact(value: string): string {
-  return value.replace(/./g, "*");
-}
-
-function safeStringify(obj: unknown, keys: string[]): string {
-  return JSON.stringify(obj, (key, value) => {
-    if (keys.includes(key)) {
-      return typeof value === "string" ? redact(value) : "[REDACTED]";
-    }
-    return value;
-  });
-}
-
-export function secureLog(message: string, data?: Record<string, unknown>, keysToRedact: string[] = []): void {
-  const payload = data ? safeStringify(data, keysToRedact) : "";
-  console.log(message + (payload ? ` ${payload}` : ""));
 }
 
 export function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
