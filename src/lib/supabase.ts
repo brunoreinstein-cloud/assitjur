@@ -11,27 +11,6 @@ import { FunctionsHttpError } from '@supabase/supabase-js';
 import { mapFunctionsError } from './functions-errors';
 import { normalizeMapaRequest } from './normalizeMapaRequest';
 
-async function invokeEdgeFunction<T>(
-  fn: string,
-  body: any,
-  accessToken?: string
-): Promise<{ data: T | null; error: any; cid: string }> {
-  const cid = uuidv4();
-  const { data, error } = await supabase.functions.invoke<T>(fn, {
-    body,
-    headers: {
-      "Content-Type": "application/json",
-      "x-correlation-id": cid,
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
-    }
-  });
-
-  const responseCid =
-    (error as any)?.context?.response?.headers.get("x-correlation-id") ?? cid;
-
-  return { data: data as T | null, error, cid: responseCid };
-}
-
 // Mock data for offline functionality
 const mockProcessos: PorProcesso[] = [
   {
@@ -218,8 +197,14 @@ export const fetchPorProcesso = async (
   params: MapaTestemunhasRequest<ProcessoFilters>
 ): Promise<{ data: PorProcesso[]; total: number; error?: string }> => {
   const normalized = normalizeMapaRequest<ProcessoFilters>(params);
-  console.debug('mapa-testemunhas-processos payload', normalized);
-  let cid: string | undefined;
+  const sanitized = {
+    ...normalized,
+    filters: normalized.filters
+      ? Object.fromEntries(Object.keys(normalized.filters).map(k => [k, '[redacted]']))
+      : undefined
+  };
+  console.debug('mapa-testemunhas-processos payload', sanitized);
+  let cid = uuidv4();
   try {
     if (!isSupabaseConfigured()) {
       console.log('⚠️ Supabase not configured, using mock data');
@@ -230,13 +215,20 @@ export const fetchPorProcesso = async (
       data: { session }
     } = await supabase.auth.getSession();
 
-    const result = await invokeEdgeFunction<{
+    const { data, error } = await supabase.functions.invoke<{
       data?: PorProcesso[];
       count?: number;
       total?: number;
-    }>('mapa-testemunhas-processos', normalized, session?.access_token);
-    cid = result.cid;
-    const { data, error } = result;
+    }>('mapa-testemunhas-processos', {
+      body: normalized,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-correlation-id': cid,
+        ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
+      }
+    });
+
+    cid = (error as any)?.context?.response?.headers.get('x-correlation-id') ?? cid;
 
     if (error instanceof FunctionsHttpError && error.context?.response?.ok === false) {
       let errorPayload: any;
@@ -245,17 +237,11 @@ export const fetchPorProcesso = async (
       } catch {}
 
       const { error: err, detail, hint, example } = errorPayload || {};
-      const message = detail || 'Verifique filtros e tente novamente.';
-      const sanitizedPayload = {
-        ...normalized,
-        filters: normalized.filters
-          ? Object.fromEntries(Object.keys(normalized.filters).map(k => [k, '[redacted]']))
-          : undefined
-      };
+      const message = detail || hint || 'Verifique filtros e tente novamente.';
       console.error(`[cid=${cid}] fetchPorProcesso HTTP error`, {
         status: error.context.response.status,
         url: error.context.response.url,
-        payload: sanitizedPayload,
+        payload: sanitized,
         error: { error: err, detail, hint, example }
       });
       return { data: [], total: 0, error: message };
@@ -335,8 +321,14 @@ export const fetchPorTestemunha = async (
   params: MapaTestemunhasRequest<TestemunhaFilters>
 ): Promise<{ data: PorTestemunha[]; total: number; error?: string }> => {
   const normalized = normalizeMapaRequest<TestemunhaFilters>(params);
-  console.debug('mapa-testemunhas-testemunhas payload', normalized);
-  let cid: string | undefined;
+  const sanitized = {
+    ...normalized,
+    filters: normalized.filters
+      ? Object.fromEntries(Object.keys(normalized.filters).map(k => [k, '[redacted]']))
+      : undefined
+  };
+  console.debug('mapa-testemunhas-testemunhas payload', sanitized);
+  let cid = uuidv4();
   try {
     if (!isSupabaseConfigured()) {
       console.log('⚠️ Supabase not configured, using mock data');
@@ -347,13 +339,20 @@ export const fetchPorTestemunha = async (
       data: { session }
     } = await supabase.auth.getSession();
 
-    const result = await invokeEdgeFunction<{
+    const { data, error } = await supabase.functions.invoke<{
       data?: PorTestemunha[];
       count?: number;
       total?: number;
-    }>('mapa-testemunhas-testemunhas', normalized, session?.access_token);
-    cid = result.cid;
-    const { data, error } = result;
+    }>('mapa-testemunhas-testemunhas', {
+      body: normalized,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-correlation-id': cid,
+        ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
+      }
+    });
+
+    cid = (error as any)?.context?.response?.headers.get('x-correlation-id') ?? cid;
 
     if (error instanceof FunctionsHttpError && error.context?.response?.ok === false) {
       let errorPayload: any;
@@ -362,17 +361,11 @@ export const fetchPorTestemunha = async (
       } catch {}
 
       const { error: err, detail, hint, example } = errorPayload || {};
-      const message = detail || 'Verifique filtros e tente novamente.';
-      const sanitizedPayload = {
-        ...normalized,
-        filters: normalized.filters
-          ? Object.fromEntries(Object.keys(normalized.filters).map(k => [k, '[redacted]']))
-          : undefined
-      };
+      const message = detail || hint || 'Verifique filtros e tente novamente.';
       console.error(`[cid=${cid}] fetchPorTestemunha HTTP error`, {
         status: error.context.response.status,
         url: error.context.response.url,
-        payload: sanitizedPayload,
+        payload: sanitized,
         error: { error: err, detail, hint, example }
       });
       return { data: [], total: 0, error: message };

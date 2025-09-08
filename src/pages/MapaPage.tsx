@@ -40,6 +40,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { fetchPorProcesso, fetchPorTestemunha } from "@/lib/supabase";
 import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
+import { normalizeMapaRequest } from "@/lib/normalizeMapaRequest";
 import { ChatBar } from "@/features/testemunhas/ChatBar";
 import { ResultBlocks } from "@/features/testemunhas/ResultBlocks";
 import { LoadingHints } from "@/features/testemunhas/LoadingHints";
@@ -163,17 +164,17 @@ const MapaPage = () => {
       
       try {
         // Apply current filters to the API calls
-        const processosParams = {
+        const processosParams = normalizeMapaRequest({
           page: 1,
-          limit: 1000, // Load all data for now - TODO: implement pagination
+          limit: 1000,
           filters: processoFilters
-        };
+        });
 
-        const testemunhasParams = {
+        const testemunhasParams = normalizeMapaRequest({
           page: 1,
-          limit: 1000, // Load all data for now - TODO: implement pagination
+          limit: 1000,
           filters: testemunhaFilters
-        };
+        });
 
         // Fetch both datasets in parallel
         const [processosResult, testemunhasResult] = await Promise.all([
@@ -201,11 +202,7 @@ const MapaPage = () => {
 
           console.log('Data loaded successfully:', {
             processos: processosResult.data.length,
-            testemunhas: testemunhasResult.data.length,
-            appliedFilters: {
-              processos: processoFilters,
-              testemunhas: testemunhaFilters
-            }
+            testemunhas: testemunhasResult.data.length
           });
         }
 
