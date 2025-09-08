@@ -1,62 +1,74 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle, ArrowRight, Target, TrendingUp, Shield } from 'lucide-react';
+import { CheckCircle, ArrowRight, Target, TrendingUp, Shield, Award, Users, Brain } from 'lucide-react';
 
 export function ValueProps() {
   return (
     <section id="diferenciais" className="py-20 bg-muted/20">
       <div className="container mx-auto px-6">
-        <div className="max-w-4xl mx-auto">
-          {/* Problema vs Solução */}
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
           <div className="text-center mb-16 space-y-8">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              Diferencial AssistJur.IA
+              👉 Diferencial AssistJur.IA
             </h2>
             
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              {/* Problema */}
-              <Card className="border-destructive/20 bg-destructive/5 animate-slide-up hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-8 text-center">
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-destructive/20 flex items-center justify-center">
-                    <Target className="h-6 w-6 text-destructive" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-3 text-destructive">Problema</h3>
-                  <p className="text-muted-foreground">
-                    Excesso de soluções genéricas, pouca efetividade no contencioso.
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Arrow */}
-              <div className="hidden md:flex justify-center">
-                <ArrowRight className="h-8 w-8 text-primary animate-pulse" />
+            <div className="max-w-4xl mx-auto space-y-6">
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                O AssistJur.IA não é apenas um catálogo de agentes de inteligência artificial. 
+                É a aplicação prática da experiência real em gestão de carteiras judiciais complexas, 
+                transformada em soluções seguras, estratégicas e orientadas a resultados.
+              </p>
+              
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-6">
+                <h3 className="text-2xl font-bold text-primary mb-4">
+                  Tecnologia + Consultoria Estratégica
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  O AssistJur.IA une inteligência artificial com a experiência de uma consultoria especializada 
+                  em gestão de contencioso. Não apenas tecnologia: entregamos resultado estratégico, 
+                  como em um projeto de consultoria, mas com escala e velocidade de IA.
+                </p>
               </div>
-              <div className="md:hidden flex justify-center">
-                <ArrowRight className="h-8 w-8 text-primary rotate-90 animate-pulse" />
-              </div>
-
-              {/* Solução */}
-              <Card className="border-primary/20 bg-primary/5 animate-slide-up hover:shadow-glow transition-all duration-300" style={{ animationDelay: '0.2s' }}>
-                <CardContent className="p-8 text-center">
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
-                    <CheckCircle className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-3 text-primary">Solução</h3>
-                  <p className="text-muted-foreground">
-                    Hub único, testado em grandes carteiras, com foco em governança, eficiência e estratégia.
-                  </p>
-                </CardContent>
-              </Card>
             </div>
           </div>
 
-          {/* Proposta de Valor */}
-          <div className="space-y-8">
-            <h3 className="text-2xl font-bold text-center text-foreground mb-12">
-              Nossa Proposta de Valor
+          {/* Problema vs Solução */}
+          <div className="grid md:grid-cols-2 gap-8 items-center mb-16">
+            {/* Problema */}
+            <Card className="border-destructive/20 bg-destructive/5 animate-slide-up hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-8 text-center">
+                <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-destructive/20 flex items-center justify-center">
+                  <Target className="h-6 w-6 text-destructive" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3 text-destructive">👉 Problema</h3>
+                <p className="text-muted-foreground">
+                  Excesso de soluções genéricas, pouca efetividade no contencioso.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Solução */}
+            <Card className="border-primary/20 bg-primary/5 animate-slide-up hover:shadow-glow transition-all duration-300" style={{ animationDelay: '0.2s' }}>
+              <CardContent className="p-8 text-center">
+                <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
+                  <CheckCircle className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3 text-primary">👉 Solução</h3>
+                <p className="text-muted-foreground">
+                  Hub único, testado em grandes carteiras, com foco em governança, eficiência e estratégia.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Principais Focos */}
+          <div className="space-y-8 mb-16">
+            <h3 className="text-2xl font-bold text-center text-foreground">
+              Principais focos do Hub
             </h3>
             
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-4 gap-6">
               {/* Governança */}
               <Card className="border-border/50 hover:border-accent/50 hover:shadow-lg group transition-all duration-300 animate-slide-up">
                 <CardContent className="p-6 text-center">
@@ -64,10 +76,10 @@ export function ValueProps() {
                     <Shield className="h-6 w-6 text-accent group-hover:scale-110 transition-transform" />
                   </div>
                   <h4 className="text-lg font-semibold mb-3 text-foreground">
-                    Aumento da governança
+                    Governança
                   </h4>
                   <p className="text-muted-foreground text-sm">
-                    sobre a carteira judicial.
+                    Aumento da governança sobre a carteira judicial
                   </p>
                 </CardContent>
               </Card>
@@ -79,10 +91,10 @@ export function ValueProps() {
                     <Target className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
                   </div>
                   <h4 className="text-lg font-semibold mb-3 text-foreground">
-                    Fortalecimento da estratégia
+                    Estratégia
                   </h4>
                   <p className="text-muted-foreground text-sm">
-                    jurídica e empresarial.
+                    Fortalecimento da estratégia jurídica e empresarial
                   </p>
                 </CardContent>
               </Card>
@@ -94,11 +106,159 @@ export function ValueProps() {
                     <TrendingUp className="h-6 w-6 text-success group-hover:scale-110 transition-transform" />
                   </div>
                   <h4 className="text-lg font-semibold mb-3 text-foreground">
-                    Ganhos de produtividade
+                    Produtividade
                   </h4>
                   <p className="text-muted-foreground text-sm">
-                    para equipes e escritórios.
+                    Ganhos de produtividade para equipes e escritórios
                   </p>
+                </CardContent>
+              </Card>
+
+              {/* Qualidade */}
+              <Card className="border-border/50 hover:border-accent/50 hover:shadow-lg group transition-all duration-300 animate-slide-up" style={{ animationDelay: '0.3s' }}>
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-accent/20 group-hover:bg-accent/30 flex items-center justify-center transition-colors">
+                    <Award className="h-6 w-6 text-accent group-hover:scale-110 transition-transform" />
+                  </div>
+                  <h4 className="text-lg font-semibold mb-3 text-foreground">
+                    Qualidade
+                  </h4>
+                  <p className="text-muted-foreground text-sm">
+                    Melhoria na qualidade dos serviços jurídicos, com apoio em dados e IA
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Exclusividade */}
+          <div className="bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20 rounded-lg p-8 mb-12">
+            <h3 className="text-2xl font-bold text-primary mb-6 text-center">
+              Exclusividade
+            </h3>
+            <div className="space-y-4 text-center">
+              <p className="text-muted-foreground leading-relaxed">
+                Pensado e estruturado por Bianca Reinstein, referência nacional em gestão estratégica 
+                de passivos judiciais, com mais de 20 anos de atuação junto a grandes empresas e escritórios.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Clientes podem ter agentes customizados para suas bases, com uso exclusivo e privado.
+              </p>
+              <p className="text-lg font-semibold text-primary">
+                👉 Assistente inteligente, sempre aliado ao olhar humano do advogado.
+              </p>
+            </div>
+          </div>
+
+          {/* Supervisão Humana */}
+          <Card className="border-primary/30 bg-primary/5 mb-12">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
+                <Users className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-primary mb-4">
+                ⚖️ Supervisão Humana Obrigatória
+              </h3>
+              <p className="text-muted-foreground leading-relaxed max-w-3xl mx-auto">
+                O AssistJur.IA funciona como um assistente inteligente, mas a análise e decisão final 
+                sempre dependem do olhar humano do advogado. Inteligência artificial estratégica, 
+                com responsabilidade e segurança.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Por que não ChatGPT */}
+          <div className="bg-muted/50 border border-border rounded-lg p-8 mb-12">
+            <h3 className="text-2xl font-bold text-foreground mb-6 text-center">
+              Por que não ChatGPT ou outras IAs?
+            </h3>
+            <div className="space-y-4 text-center max-w-3xl mx-auto">
+              <p className="text-muted-foreground leading-relaxed">
+                Ferramentas genéricas de inteligência artificial não foram criadas para lidar 
+                com a complexidade do contencioso judicial.
+              </p>
+              <p className="text-lg font-semibold text-primary">
+                O AssistJur.IA nasceu da prática jurídica e é construído sob medida para esse contexto.
+              </p>
+            </div>
+          </div>
+
+          {/* Nossos Diferenciais */}
+          <div className="space-y-8">
+            <h3 className="text-2xl font-bold text-center text-foreground">
+              Nossos Diferenciais
+            </h3>
+            
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                      <Brain className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold mb-2 text-foreground">
+                        Especialização Jurídica
+                      </h4>
+                      <p className="text-muted-foreground text-sm">
+                        Desenvolvido por especialistas com mais de 20 anos de experiência em gestão de contencioso.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                      <Award className="h-5 w-5 text-accent" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold mb-2 text-foreground">
+                        Conhecimento de Jurisprudência
+                      </h4>
+                      <p className="text-muted-foreground text-sm">
+                        Estrutura pensado para interpretar dados jurídicos, decisões e padrões processuais.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0">
+                      <TrendingUp className="h-5 w-5 text-success" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold mb-2 text-foreground">
+                        Integração com Bases Jurídicas
+                      </h4>
+                      <p className="text-muted-foreground text-sm">
+                        Capacidade de cruzar dados internos da empresa com informações de tribunais e sistemas públicos.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                      <Shield className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold mb-2 text-foreground">
+                        Supervisão Especializada
+                      </h4>
+                      <p className="text-muted-foreground text-sm">
+                        Outputs sempre validados por advogados — tecnologia que apoia, mas não substitui a análise humana.
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>

@@ -43,37 +43,43 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
             <div className="inline-flex items-center space-x-3 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
               <Sparkles className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium text-primary">
-                AssistJur.IA - Gestão do contencioso com inovação
+                O Hub de IA Estratégica para Contencioso
               </span>
             </div>
 
             {/* Main Headline */}
             <div className="space-y-4">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-                O primeiro hub de{' '}
+                AssistJur.IA —{' '}
                 <span className="relative">
                   <span className="absolute inset-0 bg-gradient-primary bg-clip-text text-transparent blur-sm opacity-50" />
                   <span className="relative bg-gradient-primary bg-clip-text text-transparent">
-                    agentes de IA
+                    Inteligência Artificial Estratégica
                   </span>
                 </span>
-                {' '}especializados em gestão estratégica do contencioso
+                {' '}para Gestão do Contencioso
               </h1>
               
-              <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl">
-                Transforme sua carteira judicial com inteligência artificial especializada. 
-                Governança, eficiência e estratégia em uma única plataforma.
-              </p>
+              <div className="space-y-4">
+                <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl">
+                  Transforme sua carteira judicial com inteligência artificial especializada. 
+                  Governança, eficiência e estratégia em uma única plataforma. Criado por Bianca Reinstein, 
+                  especialista com mais de 20 anos em gestão de passivos judiciais complexos.
+                </p>
+                <p className="text-lg text-primary font-medium">
+                  ✨ Acessível para advogados autônomos, pequenas, médias e grandes empresas e escritórios de advocacia — de fácil e rápida implantação.
+                </p>
+              </div>
             </div>
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Button 
                 size="lg" 
-                onClick={() => navigate('/beta')}
+                onClick={scrollToForm}
                 className="bg-gradient-primary hover:bg-primary/90 text-lg px-8 py-6 shadow-lg hover:shadow-glow transition-all duration-300 group"
               >
-                Testar o Hub
+                🚀 Testar o Hub
                 <ArrowDown className="ml-2 h-5 w-5 group-hover:translate-y-1 transition-transform" />
               </Button>
               
@@ -83,7 +89,7 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
                 onClick={() => document.getElementById('diferenciais')?.scrollIntoView({ behavior: 'smooth' })}
                 className="text-lg px-8 py-6 hover:bg-muted/50 transition-all duration-300"
               >
-                Conhecer Diferenciais
+                🔎 Conhecer Diferenciais
               </Button>
             </div>
 
