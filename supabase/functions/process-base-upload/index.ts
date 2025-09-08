@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts"
-import { createClient } from "npm:@supabase/supabase-js@2.56.0"
+import { getAuth } from "../_shared/auth.ts"
 import * as XLSX from "https://deno.land/x/sheetjs@v0.18.3/xlsx.mjs"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
@@ -58,19 +58,6 @@ interface ValidationResult {
   normalizedValue?: any;
 }
 
-// JWT verification function
-function decodeJWT(token: string) {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) throw new Error('Invalid JWT format');
-    
-    const payload = JSON.parse(atob(parts[1]));
-    return payload;
-  } catch (error) {
-    throw new Error('Failed to decode JWT: ' + error.message);
-  }
-}
-
 // Header mapping will be handled by the advanced function later in the file
 
 // Text sanitization will be handled by the advanced function later in the file
@@ -91,53 +78,17 @@ serve(async (req) => {
   }
 
   try {
-    // Extract JWT from authorization header
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const { user, organization_id: orgId, role, supa: supabase } = await getAuth(req);
+    if (!user) {
       throw new Error('Missing or invalid authorization header');
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    console.log('🔐 Decoding JWT token...');
-    
-    // Decode JWT to get user info
-    const payload = decodeJWT(token);
-    const userId = payload.sub;
-    
-    if (!userId) {
-      throw new Error('Invalid token: no user ID found');
-    }
-    
-    console.log('✅ User ID from JWT:', userId);
+    const userId = user.id;
 
-    // Create service role client for database operations
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    if (!supabaseUrl || !serviceRoleKey) {
-      throw new Error('Missing Supabase environment variables');
-    }
-
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
-
-    // Get user profile and verify admin role
-    console.log('👤 Getting user profile...');
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('organization_id, role, email')
-      .eq('user_id', userId)
-      .single();
-
-    if (profileError || !profile) {
-      console.error('❌ Profile error:', profileError);
-      throw new Error('User profile not found');
-    }
-
-    if (profile.role !== 'ADMIN') {
+    if (role !== 'ADMIN') {
       throw new Error('Only admins can upload base data');
     }
 
-    const orgId = profile.organization_id;
     console.log('✅ Admin user verified for org:', orgId);
 
     const formData = await req.formData()
@@ -156,7 +107,7 @@ serve(async (req) => {
     }
 
     // Process file in chunks to avoid memory issues
-    const validationResult = await processFileInChunks(file, orgId, userId, profile.email, action, supabase)
+    const validationResult = await processFileInChunks(file, orgId, userId, user.email!, action, supabase)
     
     if (action === 'validate') {
       // Just return validation results

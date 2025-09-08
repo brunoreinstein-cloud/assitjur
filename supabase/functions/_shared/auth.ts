@@ -2,16 +2,23 @@ import { createClient } from "npm:@supabase/supabase-js@2.56.0";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-export function adminClient(req: Request) {
-  return createClient(SUPABASE_URL, SERVICE_ROLE, {
+export function clientRLS(req: Request) {
+  return createClient(SUPABASE_URL, ANON_KEY, {
     global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
     auth: { autoRefreshToken: false, persistSession: false }
   });
 }
 
+export function adminClient() {
+  return createClient(SUPABASE_URL, SERVICE_ROLE, {
+    auth: { autoRefreshToken: false, persistSession: false }
+  });
+}
+
 export async function getAuth(req: Request) {
-  const supa = adminClient(req);
+  const supa = clientRLS(req);
   const { data: { user }, error } = await supa.auth.getUser();
   if (error || !user) return { user: null, supa, error: "unauthorized" } as const;
 
@@ -22,10 +29,10 @@ export async function getAuth(req: Request) {
     .eq("user_id", user.id)
     .single();
 
-  return { 
-    user, 
-    organization_id: profile?.organization_id ?? null, 
-    role: profile?.role ?? null, 
-    supa 
+  return {
+    user,
+    organization_id: profile?.organization_id ?? null,
+    role: profile?.role ?? null,
+    supa
   } as const;
 }
