@@ -8,9 +8,12 @@ export function corsHeaders(req: Request, cid?: string): Record<string, string> 
     hostname = "";
   }
 
-  // Configure allowed origins via the SITE_URL env variable.
-  // In the Supabase dashboard: Project Settings → Edge Functions → Environment Variables.
-  const configuredOrigins = (Deno.env.get("SITE_URL") || "")
+  // Configure allowed origins via environment specific SITE_URL_* vars
+  // or fallback to SITE_URL. In the Supabase dashboard: Project Settings →
+  // Edge Functions → Environment Variables.
+  const env = (Deno.env.get("NODE_ENV") || "development").toUpperCase();
+  const envSpecific = Deno.env.get(`SITE_URL_${env}`) || "";
+  const configuredOrigins = (envSpecific || Deno.env.get("SITE_URL") || "")
     .split(",")
     .map(s => s.trim())
     .filter(Boolean);
