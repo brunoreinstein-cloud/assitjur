@@ -9,6 +9,7 @@ import {
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { mapFunctionsError } from './functions-errors';
 import { normalizeMapaRequest } from './normalizeMapaRequest';
+import { toast } from "@/hooks/use-toast";
 
 // Mock data for offline functionality
 const mockProcessos: PorProcesso[] = [
@@ -215,6 +216,33 @@ export const fetchPorProcesso = async (
       }
     });
 
+    if (error instanceof FunctionsHttpError && error.context?.response?.status >= 400) {
+      let errorPayload: any;
+      try {
+        errorPayload = await error.context.response.json();
+      } catch {}
+
+      const message = errorPayload?.detail || 'Falha ao carregar dados. Verifique filtros/página.';
+      const sanitizedPayload = {
+        ...normalized,
+        filters: normalized.filters
+          ? Object.fromEntries(Object.keys(normalized.filters).map(k => [k, '[redacted]']))
+          : undefined
+      };
+      toast({
+        title: 'Erro ao carregar dados',
+        description: message,
+        variant: 'destructive'
+      });
+      console.error('fetchPorProcesso HTTP error', {
+        status: error.context.response.status,
+        url: error.context.response.url,
+        error: errorPayload,
+        payload: sanitizedPayload
+      });
+      return { data: [], total: 0 };
+    }
+
     if (error) {
       console.error('Error in fetchPorProcesso:', error.message);
       console.info('Hint: verifique filtros ou tente novamente.');
@@ -306,6 +334,33 @@ export const fetchPorTestemunha = async (
         ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
       }
     });
+
+    if (error instanceof FunctionsHttpError && error.context?.response?.status >= 400) {
+      let errorPayload: any;
+      try {
+        errorPayload = await error.context.response.json();
+      } catch {}
+
+      const message = errorPayload?.detail || 'Falha ao carregar dados. Verifique filtros/página.';
+      const sanitizedPayload = {
+        ...normalized,
+        filters: normalized.filters
+          ? Object.fromEntries(Object.keys(normalized.filters).map(k => [k, '[redacted]']))
+          : undefined
+      };
+      toast({
+        title: 'Erro ao carregar dados',
+        description: message,
+        variant: 'destructive'
+      });
+      console.error('fetchPorTestemunha HTTP error', {
+        status: error.context.response.status,
+        url: error.context.response.url,
+        error: errorPayload,
+        payload: sanitizedPayload
+      });
+      return { data: [], total: 0 };
+    }
 
     if (error) {
       console.error('Error in fetchPorTestemunha:', error.message);
