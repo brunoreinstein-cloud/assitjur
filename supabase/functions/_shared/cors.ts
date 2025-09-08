@@ -1,5 +1,5 @@
 // CORS with domain restriction for security
-export function corsHeaders(req: Request): Record<string, string> {
+export function corsHeaders(req: Request, cid?: string): Record<string, string> {
   const origin = req.headers.get("Origin") || "";
   let hostname = "";
   try {
@@ -44,7 +44,7 @@ export function corsHeaders(req: Request): Record<string, string> {
     allowOrigin = origin;
   }
 
-  console.log(`CORS: Origin ${origin} -> Allow: ${allowOrigin}`);
+  console.log(`${cid ? `[cid=${cid}] ` : ''}CORS: Origin ${origin} -> Allow: ${allowOrigin}`);
   
   return {
     "Access-Control-Allow-Origin": allowOrigin,
@@ -55,9 +55,9 @@ export function corsHeaders(req: Request): Record<string, string> {
   };
 }
 
-export function handlePreflight(req: Request) {
+export function handlePreflight(req: Request, cid?: string) {
   if (req.method === "OPTIONS") {
-    const headers = corsHeaders(req);
+    const headers = corsHeaders(req, cid);
     headers["Access-Control-Allow-Methods"] =
       headers["Access-Control-Allow-Methods"] || "POST, OPTIONS, GET";
     return new Response("ok", { headers });
