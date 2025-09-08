@@ -4,13 +4,13 @@ import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 const filtersSchema = z
   .object({
     uf: z.string().trim().optional(),
-   status: z.string().trim().optional(),
-   fase: z.string().trim().optional(),
-   search: z.string().trim().optional(),
+    status: z.string().trim().optional(),
+    fase: z.string().trim().optional(),
+    search: z.string().trim().optional(),
     testemunha: z.string().trim().optional(),
-   temTriangulacao: z.coerce.boolean().optional(),
-   temTroca: z.coerce.boolean().optional(),
-   jaFoiReclamante: z.coerce.boolean().optional(),
+    temTriangulacao: z.coerce.boolean().optional(),
+    temTroca: z.coerce.boolean().optional(),
+    jaFoiReclamante: z.coerce.boolean().optional(),
   })
   .default({});
 
