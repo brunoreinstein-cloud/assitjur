@@ -13,6 +13,10 @@ export interface UserProfile {
   organization_id?: string;
   is_active: boolean;
   terms_accepted_at?: string;
+  created_at: string;
+  updated_at: string;
+  last_login_at?: string;
+  data_access_level: 'FULL' | 'MASKED' | 'NONE';
 }
 
 interface AuthContextType {

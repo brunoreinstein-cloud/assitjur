@@ -19,7 +19,8 @@ const ERROR_MESSAGE_MAP: Record<string, string> = {
 export function mapFunctionsError(error: FunctionsHttpError): string {
   if (import.meta.env.DEV) {
     console.error('FunctionsHttpError context:', error.context);
-    console.error('FunctionsHttpError response:', error.response);
+    // Note: FunctionsHttpError doesn't have a direct response property
+    console.error('FunctionsHttpError details:', error);
   }
 
   const contextError = (error.context as any)?.error as string | undefined;
