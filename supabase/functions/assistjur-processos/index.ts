@@ -47,6 +47,17 @@ serve(async (req) => {
     );
   }
 
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return new Response(
+      JSON.stringify({
+        error: 'invalid_payload',
+        hint: 'JSON object esperado',
+        example: { filters: {}, page: 1, limit: 50 }
+      }),
+      { status: 400, headers }
+    );
+  }
+
   const filters = body?.filters ?? {};
 
   let page = Number(body?.page ?? 1);
