@@ -1,119 +1,131 @@
-import { corsHeaders } from '../_shared/cors.ts';
-import { mapaTestemunhasSchema, MapaResponseSchema } from '../_shared/mapa-contracts.ts';
-import {
-  validateJWT,
-  createAuthenticatedClient,
-  checkRateLimit,
-  secureLog,
-  withTimeout,
-} from '../_shared/security.ts';
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.56.0";
+import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
+import { createLogger } from "../_shared/logger.ts";
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 
-function createSecureErrorResponse(error: unknown, req: Request, expose: boolean): Response {
+const PayloadSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(200).default(20),
+  filters: z.record(z.any()).default({})
+}).partial().transform((p) => ({
+  page: Math.max(1, Number(p.page ?? 1) || 1),
+  limit: Math.min(200, Math.max(1, Number(p.limit ?? 20) || 20)),
+  filters: (p.filters && typeof p.filters === 'object' && !Array.isArray(p.filters)) ? p.filters : {}
+}));
+
+serve(async (req) => {
   const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
-  secureLog('mapa-testemunhas-processos error', { cid, error: String(error) });
-  const message = expose && error instanceof Error ? error.message : 'Internal server error';
-  return new Response(JSON.stringify({ error: message }), {
-    status: 500,
-    headers: { ...corsHeaders(req), 'x-correlation-id': cid },
-  });
-}
+  const logger = createLogger(cid);
 
-async function handler(req: Request): Promise<Response> {
-  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders(req) });
-  }
+  // Preflight
+  const pre = handlePreflight(req, cid);
+  if (pre) return pre;
 
-  const headers = { ...corsHeaders(req), 'x-correlation-id': cid };
+  const headers = corsHeaders(req, cid);
 
   try {
-    const token = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim() || null;
-    if (!validateJWT(token)) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers,
-      });
+    // Parse JSON tolerante (text->JSON para logs mais úteis)
+    let bodyText = "";
+    try {
+      if (req.method === "POST") {
+        bodyText = await req.text();
+      }
+    } catch { /* ignore */ }
+
+    let payload: unknown = {};
+    if (bodyText && bodyText.trim().length) {
+      try {
+        payload = JSON.parse(bodyText);
+      } catch (e) {
+        logger.error(`invalid JSON: ${e.message}`);
+        return new Response(JSON.stringify({ error:"invalid_json", message:"Corpo deve ser JSON válido", correlationId: cid }), { status: 400, headers: { ...headers, "Content-Type":"application/json" }});
+      }
     }
 
-    const supabase = createAuthenticatedClient(token!);
+    // Zod + normalização de booleans em filters
+    const parsed = PayloadSchema.safeParse(payload);
+    if (!parsed.success) {
+      logger.error(`payload validation: ${parsed.error.message}`);
+      return new Response(JSON.stringify({ error:"invalid_payload", message:"Parâmetros inválidos", details: parsed.error.issues, correlationId: cid }), { status: 400, headers: { ...headers, "Content-Type":"application/json" }});
+    }
+    const { page, limit } = parsed.data;
+    const filters = Object.fromEntries(Object.entries(parsed.data.filters).flatMap(([k,v]) => {
+      if (v === "" || v === undefined || v === null) return [];
+      if (v === "true") return [[k,true]];
+      if (v === "false") return [[k,false]];
+      if (v === "null") return [[k,null]];
+      return [[k,v]];
+    }));
+
+    // Auth
+    const authHeader = req.headers.get("authorization") ?? "";
+    if (!/^Bearer\s+.+/i.test(authHeader)) {
+      logger.error("missing bearer");
+      return new Response(JSON.stringify({ error:"unauthorized", message:"Token de autorização obrigatório", correlationId: cid }), { status: 401, headers: { ...headers, "Content-Type":"application/json" }});
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } }, auth: { autoRefreshToken:false, persistSession:false } }
+    );
+
+    // Usuário & organização
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers,
-      });
+      logger.error(`auth.getUser: ${userError?.message || "no user"}`);
+      return new Response(JSON.stringify({ error:"unauthorized", message:"Token inválido ou expirado", correlationId: cid }), { status: 401, headers: { ...headers, "Content-Type":"application/json" }});
     }
 
-    if (!checkRateLimit(`${user.id}:mapa-testemunhas`, 20, 60_000)) {
-      return new Response(JSON.stringify({ error: 'Too many requests' }), {
-        status: 429,
-        headers,
-      });
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles").select("organization_id, role").eq("user_id", user.id).single();
+
+    if (profileError || !profile?.organization_id) {
+      logger.error(`profile: ${profileError?.message || "no org"}`);
+      return new Response(JSON.stringify({ error:"forbidden", message:"Perfil/organização não encontrados", correlationId: cid }), { status: 403, headers: { ...headers, "Content-Type":"application/json" }});
     }
 
-    const body = await req.json().catch(() => ({}));
-    const parsed = mapaTestemunhasSchema.safeParse(body);
-    if (!parsed.success) {
-      const message = parsed.error.issues[0]?.message ?? 'Invalid request body';
-      secureLog('mapa-testemunhas-processos invalid body', { cid, message });
-      return new Response(JSON.stringify({ error: message }), {
-        status: 400,
-        headers,
-      });
-    }
+    const orgId = profile.organization_id;
 
-    const dto = parsed.data;
-    secureLog('mapa-testemunhas-processos fetch', { cid, dto });
-
-    const mockData = [
-      {
-        cnj: '1234567-89.2023.4.05.6789',
-        status: 'Em andamento',
-        fase: 'Instrução',
-        testemunhas: ['João Silva', 'Maria Santos'],
-        uf: 'SP',
-        troca_direta: false,
-        triangulacao: true,
-        created_at: new Date().toISOString(),
-      },
-      {
-        cnj: '9876543-21.2023.4.05.1234',
-        status: 'Finalizado',
-        fase: 'Sentença',
-        testemunhas: ['Carlos Oliveira'],
-        uf: 'RJ',
-        troca_direta: true,
-        triangulacao: false,
-        created_at: new Date().toISOString(),
-      },
-    ];
-
-    const startIndex = (dto.page - 1) * dto.limit;
-    const paginatedData = mockData.slice(startIndex, startIndex + dto.limit);
-
-    const result = {
-      data: paginatedData,
-      total: mockData.length,
-    };
-
-    const validation = MapaResponseSchema.safeParse(result);
-    if (!validation.success) {
-      return new Response(JSON.stringify({ error: 'Invalid server response' }), {
-        status: 500,
-        headers,
-      });
-    }
-
-    secureLog('mapa-testemunhas-processos success', {
-      cid,
-      count: result.data.length,
+    // RPC
+    const { data: result, error: rpcError } = await supabase.rpc("rpc_get_assistjur_processos", {
+      p_org_id: orgId,
+      p_filters: filters,
+      p_page: page,
+      p_limit: limit
     });
 
-    return new Response(JSON.stringify(result), { status: 200, headers });
-  } catch (error) {
-    return createSecureErrorResponse(error, req, true);
+    if (rpcError) {
+      const info = { message: rpcError.message, details: rpcError.details, hint: rpcError.hint, code: rpcError.code };
+      logger.error(`rpc error: ${JSON.stringify(info)}`);
+      let status = 500, userMessage = "Erro interno do servidor";
+      switch (rpcError.code) {
+        case "42501": status = 403; userMessage = "Acesso negado."; break;
+        case "P0001": status = 400; userMessage = "Erro nos parâmetros da consulta."; break;
+        case "42883": status = 500; userMessage = "Função do banco não encontrada."; break;
+        case "42P01": status = 500; userMessage = "Tabela não encontrada."; break;
+        default:
+          if (rpcError.message?.toLowerCase().includes("timeout")) { status = 504; userMessage = "Timeout na consulta. Use filtros mais específicos."; }
+      }
+      return new Response(JSON.stringify({ error:"database_error", message:userMessage, code:rpcError.code, correlationId: cid }), { status, headers: { ...headers, "Content-Type":"application/json" }});
+    }
+
+    // Normalize result
+    const first = Array.isArray(result) ? result[0] : null;
+    const data = (first?.data && Array.isArray(first.data)) ? first.data : [];
+    const totalCount = Number(first?.total_count || 0);
+    const totalPages = totalCount > 0 ? Math.ceil(totalCount / limit) : 0;
+
+    return new Response(JSON.stringify({ data, count: totalCount, totalPages, page }), {
+      status: 200,
+      headers: { ...headers, "Content-Type":"application/json" }
+    });
+  } catch (e: any) {
+    const msg = e?.message || "Erro";
+    return new Response(JSON.stringify({ error:"server_error", message: msg, correlationId: cid }), {
+      status: 500,
+      headers: { ...headers, "Content-Type":"application/json" }
+    });
   }
-}
-
-Deno.serve((req) => withTimeout(handler(req), 30_000));
-
+});
