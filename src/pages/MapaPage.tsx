@@ -75,7 +75,10 @@ const MapaPage = () => {
   const lastUpdate = useMapaTestemunhasStore(selectLastUpdate);
   const processoFilters = useMapaTestemunhasStore(selectProcessoFilters);
   const testemunhaFilters = useMapaTestemunhasStore(selectTestemunhaFilters);
-  
+
+  const page = Number(searchParams.get('page') ?? 1);
+  const limit = Number(searchParams.get('limit') ?? 20);
+
   // Chat selectors
   const chatResult = useMapaTestemunhasStore(s => s.chatResult);
   const chatStatus = useMapaTestemunhasStore(s => s.chatStatus);
@@ -164,14 +167,14 @@ const MapaPage = () => {
       try {
         // Apply current filters to the API calls
         const processosParams = {
-          page: 1,
-          limit: 1000, // Load all data for now - TODO: implement pagination
+          page,
+          limit,
           filters: processoFilters
         };
 
         const testemunhasParams = {
-          page: 1,
-          limit: 1000, // Load all data for now - TODO: implement pagination
+          page,
+          limit,
           filters: testemunhaFilters
         };
 
@@ -220,7 +223,7 @@ const MapaPage = () => {
 
     loadData();
     
-  }, [user, setProcessos, setTestemunhas, setIsLoading, setError, setLastUpdate, isFirstLoad, toast, processoFilters, testemunhaFilters]);
+  }, [user, setProcessos, setTestemunhas, setIsLoading, setError, setLastUpdate, isFirstLoad, toast, processoFilters, testemunhaFilters, page, limit]);
 
   // Show loading during auth check
   if (loading) {

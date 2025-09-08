@@ -9,6 +9,7 @@ import {
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { mapFunctionsError } from './functions-errors';
 import { normalizeMapaRequest } from './normalizeMapaRequest';
+import { SUPABASE_ANON_KEY } from './supabaseClient';
 import { toast } from "@/hooks/use-toast";
 
 // Mock data for offline functionality
@@ -197,7 +198,13 @@ export const fetchPorProcesso = async (
   params: MapaTestemunhasRequest<ProcessoFilters>
 ): Promise<{ data: PorProcesso[]; total: number }> => {
   const normalized = normalizeMapaRequest<ProcessoFilters>(params);
-  console.debug('mapa-testemunhas-processos payload', normalized);
+  const safePayload = {
+    ...normalized,
+    filters: normalized.filters
+      ? Object.fromEntries(Object.keys(normalized.filters).map(k => [k, '[redacted]']))
+      : undefined
+  };
+  console.debug('mapa-testemunhas-processos payload', safePayload);
   try {
     if (!isSupabaseConfigured()) {
       console.log('⚠️ Supabase not configured, using mock data');
@@ -208,11 +215,17 @@ export const fetchPorProcesso = async (
       data: { session }
     } = await supabase.auth.getSession();
 
+    if (!session?.access_token) {
+      throw new Error('Sessão inválida');
+    }
+
     const { data, error } = await supabase.functions.invoke('mapa-testemunhas-processos', {
-      body: normalized,
+      method: 'POST',
+      body: JSON.stringify(normalized),
       headers: {
         'Content-Type': 'application/json',
-        ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
+        Authorization: `Bearer ${session.access_token}`,
+        apikey: SUPABASE_ANON_KEY
       }
     });
 
@@ -223,12 +236,6 @@ export const fetchPorProcesso = async (
       } catch {}
 
       const message = errorPayload?.detail || 'Falha ao carregar dados. Verifique filtros/página.';
-      const sanitizedPayload = {
-        ...normalized,
-        filters: normalized.filters
-          ? Object.fromEntries(Object.keys(normalized.filters).map(k => [k, '[redacted]']))
-          : undefined
-      };
       toast({
         title: 'Erro ao carregar dados',
         description: message,
@@ -238,7 +245,7 @@ export const fetchPorProcesso = async (
         status: error.context.response.status,
         url: error.context.response.url,
         error: errorPayload,
-        payload: sanitizedPayload
+        payload: safePayload
       });
       return { data: [], total: 0 };
     }
@@ -316,7 +323,13 @@ export const fetchPorTestemunha = async (
   params: MapaTestemunhasRequest<TestemunhaFilters>
 ): Promise<{ data: PorTestemunha[]; total: number }> => {
   const normalized = normalizeMapaRequest<TestemunhaFilters>(params);
-  console.debug('mapa-testemunhas-testemunhas payload', normalized);
+  const safePayload = {
+    ...normalized,
+    filters: normalized.filters
+      ? Object.fromEntries(Object.keys(normalized.filters).map(k => [k, '[redacted]']))
+      : undefined
+  };
+  console.debug('mapa-testemunhas-testemunhas payload', safePayload);
   try {
     if (!isSupabaseConfigured()) {
       console.log('⚠️ Supabase not configured, using mock data');
@@ -327,11 +340,17 @@ export const fetchPorTestemunha = async (
       data: { session }
     } = await supabase.auth.getSession();
 
+    if (!session?.access_token) {
+      throw new Error('Sessão inválida');
+    }
+
     const { data, error } = await supabase.functions.invoke('mapa-testemunhas-testemunhas', {
-      body: normalized,
+      method: 'POST',
+      body: JSON.stringify(normalized),
       headers: {
         'Content-Type': 'application/json',
-        ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
+        Authorization: `Bearer ${session.access_token}`,
+        apikey: SUPABASE_ANON_KEY
       }
     });
 
@@ -342,12 +361,6 @@ export const fetchPorTestemunha = async (
       } catch {}
 
       const message = errorPayload?.detail || 'Falha ao carregar dados. Verifique filtros/página.';
-      const sanitizedPayload = {
-        ...normalized,
-        filters: normalized.filters
-          ? Object.fromEntries(Object.keys(normalized.filters).map(k => [k, '[redacted]']))
-          : undefined
-      };
       toast({
         title: 'Erro ao carregar dados',
         description: message,
@@ -357,7 +370,7 @@ export const fetchPorTestemunha = async (
         status: error.context.response.status,
         url: error.context.response.url,
         error: errorPayload,
-        payload: sanitizedPayload
+        payload: safePayload
       });
       return { data: [], total: 0 };
     }
