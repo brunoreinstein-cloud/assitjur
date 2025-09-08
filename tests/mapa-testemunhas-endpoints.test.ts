@@ -45,4 +45,10 @@ describe('mapa-testemunhas-processos endpoint', () => {
     expect(res.status).toBe(200)
     expect(res.body).toMatchObject({ page: 1, limit: 20, filters: {} })
   })
+
+  it('retains testemunha filter', () => {
+    const res = processosEndpoint({ filters: { testemunha: 'João Silva' } })
+    expect(res.status).toBe(200)
+    expect(res.body).toMatchObject({ page: 1, limit: 20, filters: { testemunha: 'João Silva' } })
+  })
 })
