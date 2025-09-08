@@ -12,7 +12,14 @@ export function getSupabaseClient() {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-      }
+      },
+      // Minimize realtime reconnection noise during development
+      realtime: import.meta.env.DEV
+        ? ({
+            retryStrategy: () => 0,
+            maxReconnectAttempts: 1,
+          } as any)
+        : undefined,
     })
   }
   return client
