@@ -55,75 +55,51 @@ const handler = async (req: Request): Promise<Response> => {
       necessidades: body.necessidades 
     });
 
-    // Validate required fields
-    if (!body.nome || !body.email || !body.organizacao || !body.necessidades?.length) {
-      return new Response(JSON.stringify({ 
-        error: 'Campos obrigatórios: nome, email, organizacao, necessidades' 
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(body.email)) {
-      return new Response(JSON.stringify({ error: 'Formato de e-mail inválido' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
-    }
-
-    // Check if email already exists
-    const { data: existingSignup } = await supabase
-      .from('beta_signups')
-      .select('id')
-      .eq('email', body.email.toLowerCase())
-      .single();
-
-    if (existingSignup) {
-      return new Response(JSON.stringify({ 
-        message: 'E-mail já cadastrado na lista Beta',
-        already_exists: true 
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
-    }
-
-    // Insert into beta_signups table
-    const { data, error } = await supabase
-      .from('beta_signups')
-      .insert([{
-        nome: body.nome,
-        email: body.email.toLowerCase(),
-        cargo: body.cargo || null,
-        organizacao: body.organizacao,
-        necessidades: body.necessidades,
-        outro_texto: body.outro_texto || null,
-        utm: body.utm || {},
-        created_at: new Date().toISOString(),
-      }])
-      .select()
-      .single();
+    // Use the secure function to insert beta signup (includes all validation)
+    const { data, error } = await supabase.rpc('secure_insert_beta_signup', {
+      p_nome: body.nome,
+      p_email: body.email,
+      p_cargo: body.cargo || null,
+      p_organizacao: body.organizacao,
+      p_necessidades: body.necessidades,
+      p_outro_texto: body.outro_texto || null,
+      p_utm: body.utm || {}
+    });
 
     if (error) {
-      console.error('Supabase insert error:', error);
+      console.error('Secure function error:', error);
       return new Response(JSON.stringify({ error: 'Erro ao salvar dados' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
 
-    console.log('Beta signup successful:', { id: data.id, email: data.email });
+    // Handle function response
+    if (!data.success) {
+      if (data.already_exists) {
+        return new Response(JSON.stringify({ 
+          message: data.message,
+          already_exists: true 
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        });
+      }
+      
+      return new Response(JSON.stringify({ error: data.error }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
+
+    console.log('Beta signup successful via secure function');
 
     // TODO: Send welcome email
     // await sendWelcomeEmail(data.email, data.nome);
 
     return new Response(JSON.stringify({
-      message: 'Cadastro realizado com sucesso',
+      message: data.message,
       success: true,
-      id: data.id,
     }), {
       status: 201,
       headers: { 'Content-Type': 'application/json', ...corsHeaders },

@@ -1482,6 +1482,21 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_beta_signups_secure: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: {
+          cargo: string
+          created_at: string
+          email: string
+          id: string
+          necessidades: string[]
+          nome: string
+          organizacao: string
+          outro_texto: string
+          total_count: number
+          utm: Json
+        }[]
+      }
       get_current_user_org: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1713,6 +1728,18 @@ export type Database = {
       sanitize_input: {
         Args: { input_text: string }
         Returns: string
+      }
+      secure_insert_beta_signup: {
+        Args: {
+          p_cargo: string
+          p_email: string
+          p_necessidades: string[]
+          p_nome: string
+          p_organizacao: string
+          p_outro_texto: string
+          p_utm: Json
+        }
+        Returns: Json
       }
       set_limit: {
         Args: { "": number }
