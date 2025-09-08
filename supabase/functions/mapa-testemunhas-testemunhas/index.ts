@@ -73,7 +73,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           error: 'invalid_payload',
-          hint: 'JSON object esperado',
+          detail: 'Corpo deve ser um objeto JSON.',
           example: { page: 1, limit: 20 }
         }),
         { status: 400, headers }
@@ -83,32 +83,39 @@ serve(async (req) => {
     const { page: rawPage, limit: rawLimit, ...filters } = payload as Record<string, any>;
 
     let page = Number(rawPage ?? 1);
-    if (Number.isNaN(page) || page < 1) page = 1;
+    if (!Number.isFinite(page) || page < 1) page = 1;
 
     let limit = Number(rawLimit ?? 20);
-    if (Number.isNaN(limit) || limit < 1) limit = 20;
+    if (!Number.isFinite(limit) || limit < 1) limit = 20;
     if (limit > 200) limit = 200;
 
-    const toBoolean = (value: any) => {
-      if (value === 'true' || value === true) return true;
-      if (value === 'false' || value === false) return false;
-      return undefined;
-    };
-
-    ['ambosPolos', 'jaFoiReclamante', 'temTriangulacao', 'temTroca'].forEach((key) => {
+    const boolKeys = ['ambosPolos', 'jaFoiReclamante', 'temTriangulacao', 'temTroca'];
+    for (const key of boolKeys) {
       if (filters[key] !== undefined) {
-        const boolVal = toBoolean(filters[key]);
-        if (typeof boolVal === 'boolean') filters[key] = boolVal;
-        else delete filters[key];
+        if (filters[key] === 'true') filters[key] = true;
+        else if (filters[key] === 'false') filters[key] = false;
+        else if (typeof filters[key] !== 'boolean') {
+          return new Response(
+            JSON.stringify({ error: 'bad_request', detail: 'Parâmetros inválidos', example: { page: 1, limit: 20 } }),
+            { status: 400, headers }
+          );
+        }
       }
-    });
+    }
 
-    ['qtdDeposMin', 'qtdDeposMax'].forEach((key) => {
+    for (const key of ['qtdDeposMin', 'qtdDeposMax']) {
       if (filters[key] !== undefined) {
         const numVal = Number(filters[key]);
-        if (!Number.isNaN(numVal)) filters[key] = numVal;
+        if (Number.isFinite(numVal)) {
+          filters[key] = numVal;
+        } else {
+          return new Response(
+            JSON.stringify({ error: 'bad_request', detail: 'Parâmetros inválidos', example: { page: 1, limit: 20 } }),
+            { status: 400, headers }
+          );
+        }
       }
-    });
+    }
 
     const safePayload = { page, limit, ...filters };
     console.log('[fn] payload:', safePayload);

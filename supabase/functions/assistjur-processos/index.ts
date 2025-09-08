@@ -41,7 +41,7 @@ serve(async (req) => {
       JSON.stringify({
         error: "bad_request",
         detail: "JSON inválido",
-        example: { filters: {}, page: 1, limit: 50 }
+        example: { page: 1, limit: 20 }
       }),
       { status: 400, headers }
     );
@@ -51,20 +51,39 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         error: 'invalid_payload',
-        hint: 'JSON object esperado',
-        example: { filters: {}, page: 1, limit: 50 }
+        detail: 'Corpo deve ser um objeto JSON.',
+        example: { page: 1, limit: 20 }
       }),
       { status: 400, headers }
     );
   }
 
-  const filters = body?.filters ?? {};
+  let filters: Record<string, any> = {};
+  if (body.filters === undefined) {
+    filters = {};
+  } else if (typeof body.filters === 'object' && body.filters !== null && !Array.isArray(body.filters)) {
+    filters = body.filters;
+  } else {
+    return new Response(
+      JSON.stringify({
+        error: 'bad_request',
+        detail: 'Parâmetros inválidos',
+        example: { page: 1, limit: 20 }
+      }),
+      { status: 400, headers }
+    );
+  }
 
-  let page = Number(body?.page ?? 1);
-  if (Number.isNaN(page) || page < 1) page = 1;
+  for (const [key, value] of Object.entries(filters)) {
+    if (value === 'true') filters[key] = true;
+    else if (value === 'false') filters[key] = false;
+  }
 
-  let limit = Number(body?.limit ?? 50);
-  if (Number.isNaN(limit) || limit < 1) limit = 50;
+  let page = Number(body.page ?? 1);
+  if (!Number.isFinite(page) || page < 1) page = 1;
+
+  let limit = Number(body.limit ?? 20);
+  if (!Number.isFinite(limit) || limit < 1) limit = 20;
   if (limit > 200) limit = 200;
 
   const safePayload = { filters, page, limit };
