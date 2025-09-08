@@ -71,7 +71,11 @@ serve(async (req) => {
 
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
       return new Response(
-        JSON.stringify({ error: 'invalid_payload', hint: 'JSON object esperado' }),
+        JSON.stringify({
+          error: 'invalid_payload',
+          hint: 'JSON object esperado',
+          example: { page: 1, limit: 20 }
+        }),
         { status: 400, headers }
       );
     }
