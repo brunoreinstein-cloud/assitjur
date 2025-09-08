@@ -3,6 +3,8 @@ import type { ZodSchema } from "npm:zod@4.1.3";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+const RATE_LIMIT_MAX = Number(Deno.env.get("RATE_LIMIT_MAX") ?? "20");
+const RATE_LIMIT_WINDOW_MS = Number(Deno.env.get("RATE_LIMIT_WINDOW_MS") ?? "60000");
 
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -126,3 +128,5 @@ export function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
       });
   });
 }
+
+export { RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS };

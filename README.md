@@ -38,6 +38,13 @@ Crie um arquivo `.env` (não commitado). Use o modelo abaixo:
 ```bash
 VITE_SUPABASE_URL="https://xxxx.supabase.co"
 VITE_SUPABASE_PUBLISHABLE_KEY="chave-publica"
+
+SUPABASE_URL="https://xxxx.supabase.co"
+SUPABASE_ANON_KEY="public-anon-key"
+SUPABASE_SERVICE_ROLE_KEY="service-role-key"
+JWT_SECRET="sup3r-s3cret"
+RATE_LIMIT_MAX="20"
+RATE_LIMIT_WINDOW_MS="60000"
 ```
 
 👉 Nunca exponha chaves privadas no repositório. Use `.env.example` para documentação.
