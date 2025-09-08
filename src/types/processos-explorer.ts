@@ -38,11 +38,12 @@ export type ProcessoQuery = {
   comarca?: string[]; // depende de uf
   status?: string[];
   fase?: string[];
+  testemunha?: string;
   class?: ('Baixo'|'Médio'|'Alto')[];
   scoreMin?: number;
   scoreMax?: number;
-  flags?: { 
-    triang?: boolean; 
+  flags?: {
+    triang?: boolean;
     troca?: boolean; 
     prova?: boolean; 
     duplo?: boolean 
@@ -55,6 +56,7 @@ export type ProcessoQuery = {
 
 export type ProcessoFiltersState = {
   search: string;
+  testemunha: string;
   uf: string[];
   comarca: string[];
   status: string[];

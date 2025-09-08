@@ -38,6 +38,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   // Filters State
   const [filters, setFilters] = useState<ProcessoFiltersState>({
     search: '',
+    testemunha: '',
     uf: [],
     comarca: [],
     status: [],
@@ -65,6 +66,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
 
   // Debounce search to avoid excessive queries
   const debouncedSearch = useDebounce(filters.search, 500);
+  const debouncedTestemunha = useDebounce(filters.testemunha, 500);
 
   // Build query from filters - memoized
   const buildQuery = useMemo((): ProcessoQuery => {
@@ -82,6 +84,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
     if (filters.comarca.length > 0) query.comarca = filters.comarca;
     if (filters.status.length > 0) query.status = filters.status;
     if (filters.fase.length > 0) query.fase = filters.fase;
+    if (debouncedTestemunha.trim()) query.testemunha = debouncedTestemunha.trim();
     if (filters.classificacao.length > 0) query.class = filters.classificacao as any;
     if (filters.scoreRange[0] > 0 || filters.scoreRange[1] < 100) {
       query.scoreMin = filters.scoreRange[0];
@@ -98,7 +101,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
     }
 
     return query;
-  }, [page, pageSize, orderBy, orderDir, debouncedSearch, filters]);
+  }, [page, pageSize, orderBy, orderDir, debouncedSearch, debouncedTestemunha, filters]);
 
   // Fetch version info
   const { data: versionInfo } = useQuery<VersionInfo>({
@@ -202,6 +205,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   const handleClearFilters = () => {
     setFilters({
       search: '',
+      testemunha: '',
       uf: [],
       comarca: [],
       status: [],
@@ -221,6 +225,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   const hasActiveFilters = () => {
     return (
       filters.search.trim() !== '' ||
+      filters.testemunha.trim() !== '' ||
       filters.uf.length > 0 ||
       filters.comarca.length > 0 ||
       filters.status.length > 0 ||

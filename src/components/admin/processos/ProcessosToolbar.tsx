@@ -90,6 +90,7 @@ export function ProcessosToolbar({
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (filters.search.trim()) count++;
+    if (filters.testemunha.trim()) count++;
     if (filters.uf.length > 0) count++;
     if (filters.status.length > 0) count++;
     if (filters.fase.length > 0) count++;
@@ -177,6 +178,16 @@ export function ProcessosToolbar({
                       Limpar
                     </Button>
                   )}
+                </div>
+
+                {/* Testemunha Filter */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Testemunha</Label>
+                  <Input
+                    placeholder="Nome da testemunha"
+                    value={filters.testemunha}
+                    onChange={(e) => updateFilters({ testemunha: e.target.value })}
+                  />
                 </div>
 
                 {/* UF Filter */}
@@ -375,6 +386,19 @@ export function ProcessosToolbar({
                   setSearchTerm('');
                   updateFilters({ search: '' });
                 }}
+                className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+
+          {filters.testemunha.trim() && (
+            <Badge variant="secondary" className="gap-1">
+              <Users className="h-3 w-3" />
+              Testemunha: {filters.testemunha}
+              <button
+                onClick={() => updateFilters({ testemunha: '' })}
                 className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
               >
                 <X className="h-3 w-3" />
