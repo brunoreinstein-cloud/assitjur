@@ -6,13 +6,16 @@ const filtersSchema = z
     status: z.string().trim().optional(),
     fase: z.string().trim().optional(),
     search: z.string().trim().optional(),
+    temTriangulacao: z.coerce.boolean().optional(),
+    temTroca: z.coerce.boolean().optional(),
+    jaFoiReclamante: z.coerce.boolean().optional(),
   })
   .default({});
 
 export const mapaTestemunhasSchema = z.object({
   filters: filtersSchema,
-  page: z.number().int().positive().default(1),
-  limit: z.number().int().positive().max(200).default(10),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(200).default(20),
   sortBy: z.string().trim().optional(),
   sortDir: z.enum(["asc", "desc"]).optional(),
 });
