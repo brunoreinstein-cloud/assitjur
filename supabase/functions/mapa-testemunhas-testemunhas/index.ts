@@ -3,10 +3,15 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts"
 
 serve(async (req) => {
-  const preflight = handlePreflight(req)
-  if (preflight) return preflight
+  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID()
+  const preflight = handlePreflight(req, cid)
+  if (preflight) {
+    preflight.headers.set('x-correlation-id', cid)
+    return preflight
+  }
 
-  const headers = corsHeaders(req)
+  const headers = corsHeaders(req, cid)
+  headers['x-correlation-id'] = cid
 
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) {
@@ -118,7 +123,7 @@ serve(async (req) => {
     }
 
     const safePayload = { page, limit, ...filters };
-    console.log('[fn] payload:', safePayload);
+    console.log(`[cid=${cid}] [fn] payload:`, safePayload);
 
     const tenantId = profile.organization_id;
 
@@ -180,7 +185,7 @@ serve(async (req) => {
     const { data: vinculos, error: vinculosError, count } = await query.range(from, to);
 
     if (vinculosError) {
-      console.error('Error fetching processos_testemunhas:', vinculosError);
+      console.error(`[cid=${cid}] Error fetching processos_testemunhas:`, vinculosError);
 
       const { code } = vinculosError as { code?: string };
       let status = 500;
@@ -270,7 +275,7 @@ serve(async (req) => {
 
     const totalProcessos = new Set(vinculos.map(v => v.processo_id)).size;
     console.log(
-      `Aggregated ${testemunhasArray.length} unique witnesses from ${totalProcessos} processos`
+      `[cid=${cid}] Aggregated ${testemunhasArray.length} unique witnesses from ${totalProcessos} processos`
     );
 
     return new Response(
@@ -286,7 +291,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in mapa-testemunhas-testemunhas:', error);
+    console.error(`[cid=${cid}] Error in mapa-testemunhas-testemunhas:`, error);
     const { code, message } = error as { code?: string; message?: string };
     return new Response(
       JSON.stringify({ error: { code, message } }),
