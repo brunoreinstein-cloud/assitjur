@@ -164,22 +164,22 @@ const MapaPage = () => {
       
       try {
         // Apply current filters to the API calls
-        const processosParams = normalizeMapaRequest({
-          page: 1,
-          limit: 1000,
-          filters: processoFilters
-        });
-
-        const testemunhasParams = normalizeMapaRequest({
-          page: 1,
-          limit: 1000,
-          filters: testemunhaFilters
-        });
-
-        // Fetch both datasets in parallel
+        // Ensure only normalized filters are sent
         const [processosResult, testemunhasResult] = await Promise.all([
-          fetchPorProcesso(processosParams),
-          fetchPorTestemunha(testemunhasParams)
+          fetchPorProcesso(
+            normalizeMapaRequest({
+              page: 1,
+              limit: 1000,
+              filters: processoFilters
+            })
+          ),
+          fetchPorTestemunha(
+            normalizeMapaRequest({
+              page: 1,
+              limit: 1000,
+              filters: testemunhaFilters
+            })
+          )
         ]);
 
         // Update store with real data
