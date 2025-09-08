@@ -165,13 +165,13 @@ const MapaPage = () => {
         // Apply current filters to the API calls
         const processosParams = {
           page: 1,
-          pageSize: 1000, // Load all data for now - TODO: implement pagination
+          limit: 1000, // Load all data for now - TODO: implement pagination
           filters: processoFilters
         };
-        
+
         const testemunhasParams = {
           page: 1,
-          pageSize: 1000, // Load all data for now - TODO: implement pagination
+          limit: 1000, // Load all data for now - TODO: implement pagination
           filters: testemunhaFilters
         };
 
