@@ -55,40 +55,65 @@ serve(async (req) => {
       );
     }
 
-    let filters: Record<string, unknown>;
+    let payload: any;
     try {
-      filters = await req.json();
+      payload = await req.json();
     } catch {
       return new Response(
-        JSON.stringify({ error: 'Invalid JSON payload' }),
+        JSON.stringify({
+          error: 'bad_request',
+          detail: 'JSON inválido',
+          example: { page: 1, limit: 20 }
+        }),
         { status: 400, headers }
       );
     }
 
-    if (typeof filters !== 'object' || filters === null) {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
       return new Response(
-        JSON.stringify({ error: 'Request body must be a JSON object' }),
+        JSON.stringify({ error: 'invalid_payload', hint: 'JSON object esperado' }),
         { status: 400, headers }
       );
     }
 
-    const requiredFields: Array<keyof typeof filters> = ['page', 'limit'];
-    for (const field of requiredFields) {
-      if (typeof filters[field] !== 'number') {
-        return new Response(
-          JSON.stringify({ error: `Missing or invalid '${String(field)}'` }),
-          { status: 400, headers }
-        );
+    const { page: rawPage, limit: rawLimit, ...filters } = payload as Record<string, any>;
+
+    let page = Number(rawPage ?? 1);
+    if (Number.isNaN(page) || page < 1) page = 1;
+
+    let limit = Number(rawLimit ?? 20);
+    if (Number.isNaN(limit) || limit < 1) limit = 20;
+    if (limit > 200) limit = 200;
+
+    const toBoolean = (value: any) => {
+      if (value === 'true' || value === true) return true;
+      if (value === 'false' || value === false) return false;
+      return undefined;
+    };
+
+    ['ambosPolos', 'jaFoiReclamante', 'temTriangulacao', 'temTroca'].forEach((key) => {
+      if (filters[key] !== undefined) {
+        const boolVal = toBoolean(filters[key]);
+        if (typeof boolVal === 'boolean') filters[key] = boolVal;
+        else delete filters[key];
       }
-    }
+    });
+
+    ['qtdDeposMin', 'qtdDeposMax'].forEach((key) => {
+      if (filters[key] !== undefined) {
+        const numVal = Number(filters[key]);
+        if (!Number.isNaN(numVal)) filters[key] = numVal;
+      }
+    });
+
+    const safePayload = { page, limit, ...filters };
+    console.log('[fn] payload:', safePayload);
 
     const tenantId = profile.organization_id;
 
     // Paginação e filtros diretamente na consulta
-    const currentPage = filters.page || 1;
-    const currentLimit = filters.limit || 50;
-    const from = (currentPage - 1) * currentLimit;
-    const to = from + currentLimit - 1;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
     let query = supabase
       .from('assistjur.processos_testemunhas')
@@ -166,8 +191,8 @@ serve(async (req) => {
         JSON.stringify({
           data: [],
           count: 0,
-          page: currentPage,
-          limit: currentLimit
+          page,
+          limit
         }),
         { headers }
       );
@@ -241,8 +266,8 @@ serve(async (req) => {
       JSON.stringify({
         data: testemunhasArray,
         count: count ?? testemunhasArray.length,
-        page: currentPage,
-        limit: currentLimit,
+        page,
+        limit,
         total_witnesses: testemunhasArray.length,
         total_processos: totalProcessos,
       }),
