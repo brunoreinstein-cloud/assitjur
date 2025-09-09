@@ -35,12 +35,12 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
 
   const navItems = [
     { label: 'Início', action: () => scrollToSection('hero') },
-    { label: 'Sobre', action: () => navigate('/sobre') },
-    { label: 'Diferencial', action: () => scrollToSection('diferenciais') },
     { label: 'Para Quem', action: () => scrollToSection('publico') },
-    { label: 'Agentes', action: () => scrollToSection('agentes') },
+    { label: 'Diferenciais', action: () => scrollToSection('diferenciais') },
     { label: 'ROI', action: () => scrollToSection('roi') },
-    { label: 'Segurança', action: () => scrollToSection('seguranca') }
+    { label: 'Agentes', action: () => scrollToSection('agentes') },
+    { label: 'Segurança', action: () => scrollToSection('seguranca') },
+    { label: 'Sobre', action: () => navigate('/sobre') }
   ];
 
   return (
@@ -49,35 +49,46 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
         ? 'bg-background/95 backdrop-blur-md border-b shadow-sm' 
         : 'bg-transparent'
     }`}>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="container mx-auto px-6 sm:px-8 lg:px-12">
+        <div className="flex items-center justify-between h-18">
           {/* Logo */}
-          <div className="flex items-center space-x-3 cursor-pointer transition-transform duration-200 hover:scale-105" onClick={() => scrollToSection('hero')}>
+          <div className="flex items-center cursor-pointer transition-transform duration-200 hover:scale-105 mr-8" onClick={() => scrollToSection('hero')}>
             <img 
               src={BRAND.logo.light}
               alt={BRAND.name} 
-              className="h-10 md:h-12 object-contain"
+              className="h-14 md:h-16 object-contain filter brightness-0 saturate-100 hue-rotate-258 contrast-125"
             />
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden lg:flex items-center space-x-10">
             {navItems.map((item, index) => (
               <button
                 key={index}
                 onClick={item.action}
-                className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium"
+                className="text-foreground/80 hover:text-primary font-medium text-sm transition-all duration-200 relative group"
               >
                 {item.label}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-200 group-hover:w-full"></span>
               </button>
             ))}
           </nav>
 
-          {/* CTA + Mobile Menu */}
+          {/* Actions + Mobile Menu */}
           <div className="flex items-center space-x-4">
+            {/* Login Button - Hidden on mobile */}
+            <Button 
+              onClick={() => navigate('/login')}
+              variant="outline"
+              className="hidden sm:flex border-primary/30 text-primary hover:bg-primary/5 hover:border-primary transition-all duration-200"
+            >
+              Login
+            </Button>
+            
+            {/* Beta Button */}
             <Button 
               onClick={() => navigate('/beta')}
-              className="hidden sm:flex bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200"
+              className="hidden sm:flex bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-200"
             >
               Entrar na Lista Beta
             </Button>
@@ -85,13 +96,13 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
+              className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors"
               aria-label="Toggle menu"
             >
               {isMobileMenuOpen ? (
-                <X className="h-5 w-5" />
+                <X className="h-5 w-5 text-foreground" />
               ) : (
-                <Menu className="h-5 w-5" />
+                <Menu className="h-5 w-5 text-foreground" />
               )}
             </button>
           </div>
@@ -99,18 +110,31 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t bg-background/95 backdrop-blur-md">
-            <div className="px-4 py-4 space-y-3">
+          <div className="lg:hidden border-t bg-background/95 backdrop-blur-md shadow-lg">
+            <div className="px-6 py-6 space-y-4">
+              {/* Mobile Navigation Items */}
               {navItems.map((item, index) => (
                 <button
                   key={index}
                   onClick={item.action}
-                  className="block w-full text-left px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+                  className="block w-full text-left px-4 py-3 text-foreground/80 hover:text-primary hover:bg-muted/50 rounded-lg transition-all duration-200 font-medium"
                 >
                   {item.label}
                 </button>
               ))}
-              <div className="pt-3">
+              
+              {/* Mobile Action Buttons */}
+              <div className="pt-4 space-y-3 border-t border-border/20">
+                <Button 
+                  onClick={() => {
+                    navigate('/login');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  variant="outline"
+                  className="w-full border-primary/30 text-primary hover:bg-primary/5"
+                >
+                  Login
+                </Button>
                 <Button 
                   onClick={() => {
                     navigate('/beta');
