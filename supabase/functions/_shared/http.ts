@@ -1,3 +1,12 @@
+export function withCid(req: Request) {
+  let cid = req.headers.get("x-correlation-id");
+  if (!cid) {
+    cid = crypto.randomUUID();
+    req.headers.set("x-correlation-id", cid);
+  }
+  return { cid };
+}
+
 export const json = (
   status: number,
   data: unknown,

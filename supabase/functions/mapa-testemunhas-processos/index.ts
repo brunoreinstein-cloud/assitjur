@@ -3,11 +3,11 @@ import { createClient } from "npm:@supabase/supabase-js@2.56.0";
 import { buildCorsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { createLogger } from "../_shared/logger.ts";
 import { ProcessosRequestSchema, ListaResponseSchema } from "../_shared/mapa-contracts.ts";
-import { json, jsonError } from "../_shared/http.ts";
+import { json, jsonError, withCid } from "../_shared/http.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 serve(async (req) => {
-  const cid = crypto.randomUUID();
+  const { cid } = withCid(req);
   const logger = createLogger(cid);
 
   const pre = handlePreflight(req, cid);

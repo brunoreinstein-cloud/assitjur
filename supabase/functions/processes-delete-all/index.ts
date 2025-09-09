@@ -1,11 +1,11 @@
 // Secure bulk deletion endpoint for processos
 // Endpoint: /functions/v1/processes-delete-all
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
-import { json, jsonError } from "../_shared/http.ts";
+import { json, jsonError, withCid } from "../_shared/http.ts";
 import { getAuth } from "../_shared/auth.ts";
 
 Deno.serve(async (req: Request) => {
-  const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
+  const { cid } = withCid(req);
   const ch = corsHeaders(req);
   const pf = handlePreflight(req, cid);
   if (pf) return pf;
