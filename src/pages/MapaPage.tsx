@@ -200,7 +200,7 @@ const MapaPage = () => {
             setIsFirstLoad(false);
           }
 
-          console.log('Data loaded successfully:', {
+          console.info('MapaPage dados carregados', {
             processos: processosResult.data.length,
             testemunhas: testemunhasResult.data.length
           });
@@ -209,7 +209,9 @@ const MapaPage = () => {
         setIsLoading(false);
         
       } catch (error) {
-        console.error('Erro ao carregar dados:', error);
+        console.error('Erro ao carregar dados',
+          error instanceof Error ? error.message : String(error)
+        );
         const message = error instanceof Error
           ? error.message
           : 'Verifique filtros e tente novamente.';

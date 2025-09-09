@@ -99,7 +99,6 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
     
     try {
       // Track form submission
-      console.log('beta_form_submitted', data);
       
       // Get UTM parameters
       const urlParams = new URLSearchParams(window.location.search);
@@ -123,7 +122,6 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
 
         if (error) throw error;
 
-        console.log('beta_form_success', result);
         setIsSuccess(true);
         toast({
           title: 'Sucesso!',
@@ -131,10 +129,8 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
         });
       } catch (apiError) {
         // Fallback to mock success
-        console.log('Using mock success - API not available');
         await new Promise(resolve => setTimeout(resolve, 700)); // Simulate API delay
         
-        console.log('beta_form_success (mock)', payload);
         setIsSuccess(true);
         toast({
           title: 'Sucesso!',
@@ -142,7 +138,6 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
         });
       }
     } catch (error) {
-      console.error('beta_form_error', error);
       toast({
         title: 'Erro',
         description: 'Ocorreu um erro. Tente novamente em alguns instantes.',
@@ -157,8 +152,7 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
     setIsSuccess(false);
     setShowEmailHint(false);
     setShowOutroText(false);
-    reset();
-    console.log('beta_form_opened');
+      reset();
   };
 
   if (isSuccess) {

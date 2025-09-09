@@ -227,17 +227,10 @@ export const fetchPorProcesso = async (
   params: MapaTestemunhasRequest<ProcessoFilters>
 ): Promise<{ data: PorProcesso[]; total: number; error?: string }> => {
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<ProcessoFilters>;
-  const sanitized = {
-    ...parsed,
-    filters: parsed.filters
-      ? Object.fromEntries(Object.keys(parsed.filters).map(k => [k, '[redacted]']))
-      : undefined
-  };
-  console.debug('mapa-testemunhas-processos payload', sanitized);
   let cid = uuidv4();
   try {
     if (!isSupabaseConfigured()) {
-      console.log('⚠️ Supabase not configured, using mock data');
+      console.info('Supabase not configured, using mock data');
       throw new Error('Supabase not configured');
     }
 
@@ -266,28 +259,23 @@ export const fetchPorProcesso = async (
         errorPayload = await error.context.response.json();
       } catch {}
 
-      const { error: err, detail, hint, example } = errorPayload || {};
+      const { detail, hint } = errorPayload || {};
       const message = detail || hint || 'Verifique filtros e tente novamente.';
-      console.error(`[cid=${cid}] fetchPorProcesso HTTP error`, {
-        status: error.context.response.status,
-        url: error.context.response.url,
-        payload: sanitized,
-        error: { error: err, detail, hint, example }
-      });
+      console.error(`[cid=${cid}] fetchPorProcesso HTTP error`, error.context.response.status);
       return { data: [], total: 0, error: message };
     }
 
     if (error) {
-      console.error(`[cid=${cid}] Error in fetchPorProcesso:`, error.message);
+      console.error(`[cid=${cid}] Error in fetchPorProcesso`, error.message);
       console.info(`[cid=${cid}] Hint: verifique filtros ou tente novamente.`);
       throw error;
     }
 
     const payload = data as { data?: PorProcesso[]; count?: number; total?: number };
     if (!payload?.data || payload.data.length === 0) {
-      console.log(`[cid=${cid}] 📊 Supabase returned empty processos dataset`);
+      console.info(`[cid=${cid}] Supabase returned empty processos dataset`);
     } else {
-      console.log(`[cid=${cid}] 📊 Fetched processos from API:`, {
+      console.info(`[cid=${cid}] Fetched processos from API`, {
         count: payload.data.length,
         total: payload.count || payload.total || 0
       });
@@ -302,7 +290,7 @@ export const fetchPorProcesso = async (
       console.error(`[cid=${cid}]`, mapFunctionsError(error));
       throw new Error(mapFunctionsError(error));
     }
-    console.warn(`[cid=${cid}] 📊 Request failed, using mock processos data:`, error);
+    console.warn(`[cid=${cid}] Request failed, using mock processos data`, (error as Error).message);
 
     // Mock filtering logic
     let filteredData = [...mockProcessos];
@@ -374,17 +362,10 @@ export const fetchPorTestemunha = async (
   params: MapaTestemunhasRequest<TestemunhaFilters>
 ): Promise<{ data: PorTestemunha[]; total: number; error?: string }> => {
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<TestemunhaFilters>;
-  const sanitized = {
-    ...parsed,
-    filters: parsed.filters
-      ? Object.fromEntries(Object.keys(parsed.filters).map(k => [k, '[redacted]']))
-      : undefined
-  };
-  console.debug('mapa-testemunhas-testemunhas payload', sanitized);
   let cid = uuidv4();
   try {
     if (!isSupabaseConfigured()) {
-      console.log('⚠️ Supabase not configured, using mock data');
+      console.info('Supabase not configured, using mock data');
       throw new Error('Supabase not configured');
     }
 
@@ -413,28 +394,23 @@ export const fetchPorTestemunha = async (
         errorPayload = await error.context.response.json();
       } catch {}
 
-      const { error: err, detail, hint, example } = errorPayload || {};
+      const { detail, hint } = errorPayload || {};
       const message = detail || hint || 'Verifique filtros e tente novamente.';
-      console.error(`[cid=${cid}] fetchPorTestemunha HTTP error`, {
-        status: error.context.response.status,
-        url: error.context.response.url,
-        payload: sanitized,
-        error: { error: err, detail, hint, example }
-      });
+      console.error(`[cid=${cid}] fetchPorTestemunha HTTP error`, error.context.response.status);
       return { data: [], total: 0, error: message };
     }
 
     if (error) {
-      console.error(`[cid=${cid}] Error in fetchPorTestemunha:`, error.message);
+      console.error(`[cid=${cid}] Error in fetchPorTestemunha`, error.message);
       console.info(`[cid=${cid}] Hint: verifique filtros ou tente novamente.`);
       throw error;
     }
 
     const payload = data as { data?: PorTestemunha[]; count?: number; total?: number };
     if (!payload?.data || payload.data.length === 0) {
-      console.log(`[cid=${cid}] 📊 Supabase returned empty testemunhas dataset`);
+      console.info(`[cid=${cid}] Supabase returned empty testemunhas dataset`);
     } else {
-      console.log(`[cid=${cid}] 📊 Fetched testemunhas from API:`, {
+      console.info(`[cid=${cid}] Fetched testemunhas from API`, {
         count: payload.data.length,
         total: payload.count || payload.total || 0
       });
@@ -449,7 +425,7 @@ export const fetchPorTestemunha = async (
       console.error(`[cid=${cid}]`, mapFunctionsError(error));
       throw new Error(mapFunctionsError(error));
     }
-    console.warn(`[cid=${cid}] 📊 Request failed, using mock testemunhas data:`, error);
+    console.warn(`[cid=${cid}] Request failed, using mock testemunhas data`, (error as Error).message);
 
     // Mock filtering logic
     let filteredData = [...mockTestemunhas];

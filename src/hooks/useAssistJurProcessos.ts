@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchWithAuth } from '@/lib/fetchWithAuth';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { mockProcessosData, mockStatsData } from '@/lib/mock-data/assistjur-processos';
@@ -34,38 +35,18 @@ export function useAssistJurProcessos(filters: ProcessosFilters = {}, limit = 50
     queryFn: async () => {
       // Validação robusta de org_id
       if (!profile?.organization_id) {
-        console.error('❌ AssistJur Processos: org_id não encontrado', { profile });
+        console.error('❌ AssistJur Processos: org_id não encontrado');
         throw new Error('Organização não encontrada. Faça login novamente.');
       }
 
-      console.log('🔄 AssistJur Processos: Iniciando requisição', {
-        org_id: profile.organization_id,
-        filters,
-        page,
-        limit
-      });
-
       try {
-        // Get session for Bearer token
-        const { data: { session } } = await supabase.auth.getSession();
-        const jwt = session?.access_token;
-        if (!jwt) {
-          throw new Error('Sessão expirada. Faça login novamente.');
-        }
-
         const URL = "https://fgjypmlszuzkgvhuszxn.functions.supabase.co/assistjur-processos";
-        
-        const response = await fetch(URL, {
+        const response = await fetchWithAuth(URL, {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${jwt}`,
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ 
-            filters,
-            page,
-            limit
-          })
+          body: JSON.stringify({ filters, page, limit })
         });
 
         if (!response.ok) {
@@ -75,21 +56,8 @@ export function useAssistJurProcessos(filters: ProcessosFilters = {}, limit = 50
 
         const data = await response.json();
 
-        // Log detalhado do resultado
-        console.log('📊 AssistJur Processos: Resposta recebida', {
-          data,
-          status: 'success'
-        });
-
-        // Sistema de fallback inteligente - usar mock apenas se status 200 mas data vazio
         if (!data || !data.data || data.data.length === 0) {
-          console.log('⚠️ AssistJur Processos: Dados vazios, usando fallback mock', {
-            dataEmpty: !data?.data || data.data.length === 0,
-            willUseMock: true
-          });
-          
           toast.info('Exibindo dados de exemplo. Verifique se há dados importados.');
-          
           return {
             data: mockProcessosData,
             count: mockProcessosData.length,
@@ -97,20 +65,10 @@ export function useAssistJurProcessos(filters: ProcessosFilters = {}, limit = 50
           };
         }
 
-        console.log('✅ AssistJur Processos: Dados carregados com sucesso', {
-          count: data.data?.length || 0,
-          totalCount: data.count || 0
-        });
-
         return data;
       } catch (err: any) {
-        console.error('💥 AssistJur Processos: Erro fatal na requisição', {
-          error: err,
-          message: err.message,
-          stack: err.stack
-        });
-        
-        // Tratamento de erros específicos
+        console.error('AssistJur Processos: Erro na requisição', err.message);
+
         if (err.message?.includes('Sessão expirada')) {
           toast.error('Sessão expirada. Faça login novamente.');
         } else if (err.message?.includes('Acesso negado')) {
@@ -120,7 +78,7 @@ export function useAssistJurProcessos(filters: ProcessosFilters = {}, limit = 50
         } else {
           toast.error(`Erro na requisição: ${err.message || 'Erro desconhecido'}`);
         }
-        
+
         throw err;
       }
     },
@@ -158,25 +116,17 @@ export function useAssistJurStats() {
         return null;
       }
 
-      console.log('📈 AssistJur Stats: Carregando estatísticas', {
-        org_id: profile.organization_id
-      });
-
       try {
         const { data, error } = await supabase.functions.invoke('assistjur-stats');
 
         if (error) {
-          console.error('❌ AssistJur Stats: Erro na Edge Function', { error });
-          
-          // Fallback para dados mock em caso de erro
-          console.log('⚠️ AssistJur Stats: Usando dados mock como fallback');
+          console.error('❌ AssistJur Stats: Erro na Edge Function', error.message);
           return mockStatsData;
         }
 
-        console.log('✅ AssistJur Stats: Estatísticas carregadas', { data });
         return data || mockStatsData;
       } catch (err) {
-        console.error('💥 AssistJur Stats: Erro fatal', { error: err });
+        console.error('AssistJur Stats: Erro fatal', (err as Error).message);
         return mockStatsData;
       }
     },

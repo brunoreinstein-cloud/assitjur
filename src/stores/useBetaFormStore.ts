@@ -75,9 +75,6 @@ export const useBetaFormStore = create<BetaFormStore>((set, get) => ({
         }
       } catch (apiError) {
         // Fallback para mock se API não existir
-        console.log('Beta signup mock data:', payload);
-        
-        // Simular delay da API
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         success = true;
@@ -100,7 +97,7 @@ export const useBetaFormStore = create<BetaFormStore>((set, get) => ({
         return true;
       }
     } catch (error) {
-      console.error('Erro ao enviar inscrição beta:', error);
+      console.error('Erro ao enviar inscrição beta', (error as Error).message);
       
       const errorMessage = 'Não foi possível enviar. Tente novamente.';
       set({ 

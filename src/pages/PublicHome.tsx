@@ -16,7 +16,6 @@ export default function PublicHome() {
   const [isBetaModalOpen, setIsBetaModalOpen] = useState(false);
 
   const handleBetaSignup = (data: { email: string; needs: string[]; otherNeed?: string }) => {
-    console.log('Beta signup data:', data);
     // Esta função será chamada quando o formulário for enviado com sucesso
   };
 
