@@ -3,6 +3,7 @@
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { getAuth } from "../_shared/auth.ts";
+import { z } from "npm:zod@3.23.8";
 
 Deno.serve(async (req: Request) => {
   const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
@@ -28,11 +29,19 @@ Deno.serve(async (req: Request) => {
       return json(403, { error: "insufficient_permissions", cid }, { ...ch, "x-correlation-id": cid });
     }
 
-    const body = await req.json().catch(() => ({}));
-    const confirmText = body?.confirm;
-    const hardDelete = body?.hard_delete === true;
+    const payload = await req.json().catch(() => ({}));
+    const EXPECTED = { confirm: organization_id, hard_delete: false };
+    const ReqSchema = z.object({
+      confirm: z.string(),
+      hard_delete: z.boolean().optional(),
+    });
+    const result = ReqSchema.safeParse(payload);
+    if (!result.success) {
+      return jsonError(400, "Payload inválido", { issues: result.error.issues, expected: EXPECTED, cid }, { ...ch, "x-correlation-id": cid });
+    }
+    const { confirm, hard_delete = false } = result.data;
 
-    if (confirmText !== organization_id) {
+    if (confirm !== organization_id) {
       return json(400, { error: "confirmation_required", cid }, { ...ch, "x-correlation-id": cid });
     }
 
@@ -49,7 +58,7 @@ Deno.serve(async (req: Request) => {
 
     // Execute deletion
     let deleteError: any = null;
-    if (hardDelete) {
+    if (hard_delete) {
       // Hard delete - permanent removal
       const { error } = await supa
         .from("processos")
@@ -91,7 +100,7 @@ Deno.serve(async (req: Request) => {
       {
         success: true,
         deleted_count: affectedCount,
-        operation_type: hardDelete ? "HARD_DELETE" : "SOFT_DELETE",
+        operation_type: hard_delete ? "HARD_DELETE" : "SOFT_DELETE",
         message: "Operação de exclusão concluída com sucesso",
         organization_id,
         remaining_count: afterCount ?? 0,

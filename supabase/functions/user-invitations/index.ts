@@ -1,42 +1,36 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.56.0";
-import { corsHeaders } from "../_shared/cors.ts";
+import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
+import { json, jsonError } from "../_shared/http.ts";
+import { z } from "npm:zod@3.23.8";
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 );
 
-interface InviteUserRequest {
-  email: string;
-  role: 'ADMIN' | 'ANALYST' | 'VIEWER';
-  data_access_level: 'FULL' | 'MASKED' | 'NONE';
-  org_id: string;
-}
-
 const handler = async (req: Request): Promise<Response> => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  const ch = corsHeaders(req);
+  const pf = handlePreflight(req, cid);
+  if (pf) return pf;
 
   try {
+    if (req.method !== 'POST') {
+      return jsonError(405, 'Method not allowed', { cid }, { ...ch, 'x-correlation-id': cid });
+    }
+
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return jsonError(401, 'Missing authorization header', { cid }, { ...ch, 'x-correlation-id': cid });
     }
 
     // Verify user authentication
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
+
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return jsonError(401, 'Invalid token', { cid }, { ...ch, 'x-correlation-id': cid });
     }
 
     // Get user profile to check permissions
@@ -47,28 +41,31 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     if (profileError || !profile || profile.role !== 'ADMIN') {
-      return new Response(
-        JSON.stringify({ error: 'Insufficient permissions' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return jsonError(403, 'Insufficient permissions', { cid }, { ...ch, 'x-correlation-id': cid });
     }
 
-    const { email, role, data_access_level, org_id }: InviteUserRequest = await req.json();
-
-    // Validate input
-    if (!email || !role || !data_access_level || !org_id) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const payload = await req.json().catch(() => ({}));
+    const EXPECTED = {
+      email: 'user@example.com',
+      role: 'ADMIN',
+      data_access_level: 'FULL',
+      org_id: profile.organization_id ?? ''
+    };
+    const ReqSchema = z.object({
+      email: z.string().email(),
+      role: z.enum(['ADMIN', 'ANALYST', 'VIEWER']),
+      data_access_level: z.enum(['FULL', 'MASKED', 'NONE']),
+      org_id: z.string(),
+    });
+    const result = ReqSchema.safeParse(payload);
+    if (!result.success) {
+      return jsonError(400, 'Payload inválido', { issues: result.error.issues, expected: EXPECTED, cid }, { ...ch, 'x-correlation-id': cid });
     }
+    const { email, role, data_access_level, org_id } = result.data;
 
     // Check if user belongs to the organization
     if (profile.organization_id !== org_id) {
-      return new Response(
-        JSON.stringify({ error: 'Organization mismatch' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return jsonError(403, 'Organization mismatch', { cid }, { ...ch, 'x-correlation-id': cid });
     }
 
     // Check if user already exists in the organization
@@ -80,10 +77,7 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     if (existingProfile) {
-      return new Response(
-        JSON.stringify({ error: 'User already exists in this organization' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return jsonError(400, 'User already exists in this organization', { cid }, { ...ch, 'x-correlation-id': cid });
     }
 
     // Check for existing pending invitation
@@ -96,15 +90,11 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     if (existingInvitation) {
-      return new Response(
-        JSON.stringify({ error: 'Invitation already pending for this email' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return jsonError(400, 'Invitation already pending for this email', { cid }, { ...ch, 'x-correlation-id': cid });
     }
 
     // Generate invitation token
-    const { data: tokenData, error: tokenError } = await supabase
-      .rpc('generate_invitation_token');
+    const { data: tokenData, error: tokenError } = await supabase.rpc('generate_invitation_token');
 
     if (tokenError || !tokenData) {
       throw new Error('Failed to generate invitation token');
@@ -140,52 +130,31 @@ const handler = async (req: Request): Promise<Response> => {
       throw orgError;
     }
 
-    // TODO: Send email invitation using Resend or similar service
-    // For now, just log the invitation details
-    console.log(`Invitation created:`, {
-      email,
-      role,
-      data_access_level,
-      organization: org.name,
-      token: tokenData,
-      expires_at: invitation.expires_at
-    });
-
     // Log the action
     await supabase.rpc('log_user_action', {
       action_type: 'INVITE_USER',
       resource_type: 'user_invitations',
       resource_id: invitation.id,
-      metadata: {
-        email,
-        role,
-        data_access_level,
-        org_id
-      }
+      metadata: { email, role, data_access_level, org_id }
     });
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Invitation created successfully',
-        invitation: {
-          id: invitation.id,
-          email: invitation.email,
-          role: invitation.role,
-          data_access_level: invitation.data_access_level,
-          expires_at: invitation.expires_at,
-          invitation_url: `${Deno.env.get('NEXT_PUBLIC_SITE_URL') || 'http://localhost:3000'}/invite/${tokenData}`
-        }
-      }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return json(200, {
+      success: true,
+      message: 'Invitation created successfully',
+      invitation: {
+        id: invitation.id,
+        email: invitation.email,
+        role: invitation.role,
+        data_access_level: invitation.data_access_level,
+        expires_at: invitation.expires_at,
+        invitation_url: `${Deno.env.get('NEXT_PUBLIC_SITE_URL') || 'http://localhost:3000'}/invite/${tokenData}`
+      },
+      cid
+    }, { ...ch, 'x-correlation-id': cid });
 
   } catch (error: any) {
-    console.error('Error in user-invitations function:', error);
-    return new Response(
-      JSON.stringify({ error: error.message || 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.error(JSON.stringify({ cid, err: String(error) }));
+    return jsonError(500, error.message || 'Internal server error', { cid }, { ...ch, 'x-correlation-id': cid });
   }
 };
 
