@@ -224,7 +224,8 @@ const mapaRequestSchema = z.object({
 
 // Fetch functions with Supabase fallback to mocks
 export const fetchPorProcesso = async (
-  params: MapaTestemunhasRequest<ProcessoFilters>
+  params: MapaTestemunhasRequest<ProcessoFilters>,
+  signal?: AbortSignal
 ): Promise<{ data: PorProcesso[]; total: number; error?: string }> => {
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<ProcessoFilters>;
   const sanitized = {
@@ -255,7 +256,8 @@ export const fetchPorProcesso = async (
         'Content-Type': 'application/json',
         'x-correlation-id': cid,
         Authorization: `Bearer ${access_token}`
-      }
+      },
+      signal
     });
 
     cid = (error as any)?.context?.response?.headers.get('x-correlation-id') ?? cid;
@@ -298,6 +300,9 @@ export const fetchPorProcesso = async (
       total: payload.count || payload.total || 0
     };
   } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw error;
+    }
     if (error instanceof FunctionsHttpError) {
       console.error(`[cid=${cid}]`, mapFunctionsError(error));
       throw new Error(mapFunctionsError(error));
@@ -371,7 +376,8 @@ export const fetchPorProcesso = async (
 };
 
 export const fetchPorTestemunha = async (
-  params: MapaTestemunhasRequest<TestemunhaFilters>
+  params: MapaTestemunhasRequest<TestemunhaFilters>,
+  signal?: AbortSignal
 ): Promise<{ data: PorTestemunha[]; total: number; error?: string }> => {
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<TestemunhaFilters>;
   const sanitized = {
@@ -402,7 +408,8 @@ export const fetchPorTestemunha = async (
         'Content-Type': 'application/json',
         'x-correlation-id': cid,
         Authorization: `Bearer ${access_token}`
-      }
+      },
+      signal
     });
 
     cid = (error as any)?.context?.response?.headers.get('x-correlation-id') ?? cid;
@@ -445,6 +452,9 @@ export const fetchPorTestemunha = async (
       total: payload.count || payload.total || 0
     };
   } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw error;
+    }
     if (error instanceof FunctionsHttpError) {
       console.error(`[cid=${cid}]`, mapFunctionsError(error));
       throw new Error(mapFunctionsError(error));

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +44,7 @@ import { normalizeMapaRequest } from "@/lib/normalizeMapaRequest";
 import { ChatBar } from "@/features/testemunhas/ChatBar";
 import { ResultBlocks } from "@/features/testemunhas/ResultBlocks";
 import { LoadingHints } from "@/features/testemunhas/LoadingHints";
+import { useDebounce } from "@/hooks/useDebounce";
 
 // Updated types to match mapa-testemunhas structure
 type Processo = PorProcesso;
@@ -76,6 +77,12 @@ const MapaPage = () => {
   const lastUpdate = useMapaTestemunhasStore(selectLastUpdate);
   const processoFilters = useMapaTestemunhasStore(selectProcessoFilters);
   const testemunhaFilters = useMapaTestemunhasStore(selectTestemunhaFilters);
+
+  const debouncedProcessFilters = useDebounce(processoFilters, 400);
+  const debouncedTestemunhaFilters = useDebounce(testemunhaFilters, 400);
+
+  const processoAbortRef = useRef<AbortController | null>(null);
+  const testemunhaAbortRef = useRef<AbortController | null>(null);
   
   // Chat selectors
   const chatResult = useMapaTestemunhasStore(s => s.chatResult);
@@ -158,29 +165,42 @@ const MapaPage = () => {
   useEffect(() => {
     if (!user) return;
 
+    // abort previous requests
+    processoAbortRef.current?.abort();
+    testemunhaAbortRef.current?.abort();
+
+    const processoController = new AbortController();
+    const testemunhaController = new AbortController();
+    processoAbortRef.current = processoController;
+    testemunhaAbortRef.current = testemunhaController;
+
     const loadData = async () => {
       setIsLoading(true);
       setError(false);
-      
+
       try {
-        // Apply current filters to the API calls
-        // Ensure only normalized filters are sent
         const [processosResult, testemunhasResult] = await Promise.all([
           fetchPorProcesso(
             normalizeMapaRequest({
               page: 1,
               limit: 1000,
-              filters: processoFilters
-            })
+              filters: debouncedProcessFilters
+            }),
+            processoController.signal
           ),
           fetchPorTestemunha(
             normalizeMapaRequest({
               page: 1,
               limit: 1000,
-              filters: testemunhaFilters
-            })
+              filters: debouncedTestemunhaFilters
+            }),
+            testemunhaController.signal
           )
         ]);
+
+        if (processoController.signal.aborted || testemunhaController.signal.aborted) {
+          return;
+        }
 
         // Update store with real data
         setProcessos(processosResult.data);
@@ -205,28 +225,46 @@ const MapaPage = () => {
             testemunhas: testemunhasResult.data.length
           });
         }
-
-        setIsLoading(false);
-        
       } catch (error) {
+        if ((error as any)?.name === 'AbortError') {
+          return;
+        }
         console.error('Erro ao carregar dados:', error);
         const message = error instanceof Error
           ? error.message
           : 'Verifique filtros e tente novamente.';
         setError(true, message);
-        setIsLoading(false);
 
         toast({
           title: "Falha ao carregar dados",
           description: message,
           variant: "destructive",
         });
+      } finally {
+        if (!processoController.signal.aborted && !testemunhaController.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     };
 
     loadData();
-    
-  }, [user, setProcessos, setTestemunhas, setIsLoading, setError, setLastUpdate, isFirstLoad, toast, processoFilters, testemunhaFilters]);
+
+    return () => {
+      processoAbortRef.current?.abort();
+      testemunhaAbortRef.current?.abort();
+    };
+  }, [
+    user,
+    setProcessos,
+    setTestemunhas,
+    setIsLoading,
+    setError,
+    setLastUpdate,
+    isFirstLoad,
+    toast,
+    debouncedProcessFilters,
+    debouncedTestemunhaFilters
+  ]);
 
   // Show loading during auth check
   if (loading) {
