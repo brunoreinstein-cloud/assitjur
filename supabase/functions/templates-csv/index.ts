@@ -1,4 +1,3 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts'
 
 // Generate valid CNJ with correct check digits
@@ -512,7 +511,7 @@ function buildCsv(sheetName: string): string {
   return lines.join('\n');
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
   const ch = corsHeaders(req);
   const pre = handlePreflight(req, cid);

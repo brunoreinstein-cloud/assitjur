@@ -1,10 +1,9 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.56.0";
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { z } from "npm:zod@3.23.8";
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
   const ch = corsHeaders(req);
   const pf = handlePreflight(req, cid);

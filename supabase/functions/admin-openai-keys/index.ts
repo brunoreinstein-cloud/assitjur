@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from 'npm:@supabase/supabase-js@2.56.0';
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
@@ -57,7 +56,7 @@ async function testOpenAIKey(key: string): Promise<{ valid: boolean; model?: str
   }
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   console.log('🔑 OpenAI Keys Management Function');
   console.log('Method:', req.method, 'URL:', req.url);
 
