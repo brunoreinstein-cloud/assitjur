@@ -256,8 +256,7 @@ export const fetchPorProcesso = async (
         'Content-Type': 'application/json',
         'x-correlation-id': cid,
         Authorization: `Bearer ${access_token}`
-      },
-      signal
+      }
     });
 
     cid = (error as any)?.context?.response?.headers.get('x-correlation-id') ?? cid;
@@ -408,8 +407,7 @@ export const fetchPorTestemunha = async (
         'Content-Type': 'application/json',
         'x-correlation-id': cid,
         Authorization: `Bearer ${access_token}`
-      },
-      signal
+      }
     });
 
     cid = (error as any)?.context?.response?.headers.get('x-correlation-id') ?? cid;

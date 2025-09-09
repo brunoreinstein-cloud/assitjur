@@ -123,34 +123,66 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
           {/* Right Column - Visual */}
           <div className="relative animate-scale-in" style={{ animationDelay: '0.2s' }}>
             <div className="relative max-w-lg mx-auto">
-              {/* Main Circle */}
-              <div className="w-80 h-80 mx-auto rounded-full bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-primary/30 shadow-glow animate-glow-pulse">
-                <div className="w-full h-full rounded-full bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center relative overflow-hidden">
-                  {/* Network nodes */}
-                  <div className="absolute inset-4 rounded-full border border-primary/40">
-                    <div className="absolute top-2 left-1/2 w-3 h-3 bg-primary rounded-full -translate-x-1/2 animate-pulse" />
-                    <div className="absolute bottom-2 left-1/4 w-2 h-2 bg-accent rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
-                    <div className="absolute right-4 top-1/2 w-2 h-2 bg-primary/60 rounded-full -translate-y-1/2 animate-pulse" style={{ animationDelay: '1s' }} />
-                    <div className="absolute left-4 bottom-1/3 w-2 h-2 bg-accent/60 rounded-full animate-pulse" style={{ animationDelay: '1.5s' }} />
+              {/* Data Flow Diagram */}
+              <div className="w-80 h-80 mx-auto relative">
+                {/* Input Side */}
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 space-y-4">
+                  <div className="bg-background border-2 border-border rounded-lg p-3 shadow-md animate-fade-in">
+                    <div className="text-xs font-semibold text-primary mb-1">PROCESSOS</div>
+                    <div className="w-12 h-1 bg-gradient-to-r from-primary/40 to-primary/20 rounded-full" />
                   </div>
-                  
-                  {/* Center Hub */}
-                  <div className="w-20 h-20 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg">
+                  <div className="bg-background border-2 border-border rounded-lg p-3 shadow-md animate-fade-in" style={{ animationDelay: '0.3s' }}>
+                    <div className="text-xs font-semibold text-primary mb-1">TESTEMUNHAS</div>
+                    <div className="w-12 h-1 bg-gradient-to-r from-primary/40 to-primary/20 rounded-full" />
+                  </div>
+                  <div className="bg-background border-2 border-border rounded-lg p-3 shadow-md animate-fade-in" style={{ animationDelay: '0.6s' }}>
+                    <div className="text-xs font-semibold text-primary mb-1">CNJ</div>
+                    <div className="w-12 h-1 bg-gradient-to-r from-primary/40 to-primary/20 rounded-full" />
+                  </div>
+                </div>
+
+                {/* Center AI Engine */}
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                  <div className="w-20 h-20 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow animate-glow-pulse border-2 border-accent/30">
                     <div className="text-center">
-                      <div className="text-lg font-bold text-primary-foreground">IA</div>
-                      <div className="text-xs text-primary-foreground/80">Hub</div>
+                      <div className="text-sm font-bold text-primary-foreground">IA</div>
+                      <div className="text-xs text-primary-foreground/80 font-medium">Engine</div>
                     </div>
                   </div>
                 </div>
+
+                {/* Output Side */}
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 space-y-4">
+                  <div className="bg-background border-2 border-accent/40 rounded-lg p-3 shadow-md animate-fade-in" style={{ animationDelay: '0.9s' }}>
+                    <div className="text-xs font-semibold text-accent mb-1">ESTRATÉGIA</div>
+                    <div className="w-12 h-1 bg-gradient-to-r from-accent/40 to-accent/20 rounded-full" />
+                  </div>
+                  <div className="bg-background border-2 border-accent/40 rounded-lg p-3 shadow-md animate-fade-in" style={{ animationDelay: '1.2s' }}>
+                    <div className="text-xs font-semibold text-accent mb-1">RELATÓRIOS</div>
+                    <div className="w-12 h-1 bg-gradient-to-r from-accent/40 to-accent/20 rounded-full" />
+                  </div>
+                  <div className="bg-background border-2 border-accent/40 rounded-lg p-3 shadow-md animate-fade-in" style={{ animationDelay: '1.5s' }}>
+                    <div className="text-xs font-semibold text-accent mb-1">INSIGHTS</div>
+                    <div className="w-12 h-1 bg-gradient-to-r from-accent/40 to-accent/20 rounded-full" />
+                  </div>
+                </div>
+
+                {/* Flow Arrows */}
+                <div className="absolute left-20 top-1/2 -translate-y-1/2 w-16 h-0.5 bg-gradient-to-r from-primary/60 to-transparent animate-pulse" />
+                <div className="absolute right-20 top-1/2 -translate-y-1/2 w-16 h-0.5 bg-gradient-to-l from-accent/60 to-transparent animate-pulse" style={{ animationDelay: '0.5s' }} />
+                
+                {/* Arrow heads */}
+                <div className="absolute left-32 top-1/2 -translate-y-1/2 w-2 h-2 border-r-2 border-b-2 border-primary/60 transform rotate-[-45deg] animate-pulse" />
+                <div className="absolute right-32 top-1/2 -translate-y-1/2 w-2 h-2 border-l-2 border-t-2 border-accent/60 transform rotate-[-45deg] animate-pulse" style={{ animationDelay: '0.5s' }} />
               </div>
 
-              {/* Floating elements */}
-              <div className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-accent rounded-lg flex items-center justify-center shadow-lg animate-bounce" style={{ animationDelay: '2s' }}>
-                <Users className="h-8 w-8 text-accent-foreground" />
+              {/* Floating Legal Icons */}
+              <div className="absolute -top-4 -right-4 w-14 h-14 bg-gradient-to-br from-accent/20 to-accent/10 border-2 border-accent/30 rounded-lg flex items-center justify-center shadow-lg animate-bounce" style={{ animationDelay: '2s' }}>
+                <Shield className="h-6 w-6 text-accent" />
               </div>
               
-              <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-gradient-primary rounded-lg flex items-center justify-center shadow-lg animate-bounce" style={{ animationDelay: '3s' }}>
-                <Shield className="h-8 w-8 text-primary-foreground" />
+              <div className="absolute -bottom-4 -left-4 w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/30 rounded-lg flex items-center justify-center shadow-lg animate-bounce" style={{ animationDelay: '3s' }}>
+                <TrendingUp className="h-6 w-6 text-primary" />
               </div>
             </div>
           </div>
