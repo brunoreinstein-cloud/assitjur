@@ -43,8 +43,9 @@ All colors MUST be HSL. Professional navy/blue theme for trust and authority.
     --primary-glow: 257 42% 71%;
 
     /* Accent - Dourado Elegante */
-    --accent: 50 31% 33%; /* #776931 */
-    --accent-foreground: 0 0% 98%;
+    --accent: 45 93% 58%; /* #F7CA4A - Dourado sutil */
+    --accent-foreground: 0 0% 15%;
+    --accent-muted: 45 60% 90%; /* Para aplicações sutis */
 
     /* Secondary - Cinza Neutro */
     --secondary: 0 0% 96%;

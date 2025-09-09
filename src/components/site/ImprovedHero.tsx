@@ -52,12 +52,12 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
                 AssistJur.IA —{' '}
                 <span className="relative">
-                  <span className="absolute inset-0 bg-gradient-primary bg-clip-text text-transparent blur-sm opacity-50" />
-                  <span className="relative bg-gradient-primary bg-clip-text text-transparent">
+                  <span className="text-primary">
                     Inteligência Artificial Estratégica
                   </span>
                 </span>
-                {' '}para Gestão do Contencioso
+                {' '}para Gestão do{' '}
+                <span className="text-accent font-black">Contencioso</span>
               </h1>
               
               <div className="space-y-4">
@@ -77,7 +77,7 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
               <Button 
                 size="lg" 
                 onClick={scrollToForm}
-                className="bg-gradient-primary hover:bg-primary/90 text-lg px-8 py-6 shadow-lg hover:shadow-glow transition-all duration-300 group"
+                className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300 group"
               >
                 🚀 Testar o Hub
                 <ArrowDown className="ml-2 h-5 w-5 group-hover:translate-y-1 transition-transform" />
@@ -87,24 +87,26 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
                 size="lg" 
                 variant="outline"
                 onClick={() => document.getElementById('diferenciais')?.scrollIntoView({ behavior: 'smooth' })}
-                className="text-lg px-8 py-6 hover:bg-muted/50 transition-all duration-300"
+                className="text-lg px-8 py-6 transition-all duration-300"
               >
                 🔎 Conhecer Diferenciais
               </Button>
             </div>
 
             {/* Trust Indicators */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 border-t border-accent/20">
               {trustIndicators.map((item, index) => {
-                const Icon = item.icon;
                 return (
                   <div 
                     key={index} 
                     className="flex items-center space-x-3 p-4 rounded-lg bg-muted/30 border border-border/50 animate-slide-up"
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center flex-shrink-0">
-                      <Icon className="h-5 w-5 text-primary-foreground" />
+                    <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+                      {/* Geometric minimalist icons */}
+                      {index === 0 && <div className="w-4 h-4 border-2 border-primary-foreground rounded-sm" />}
+                      {index === 1 && <div className="w-3 h-3 bg-primary-foreground rounded-full" />}
+                      {index === 2 && <div className="w-4 h-4 bg-primary-foreground transform rotate-45" />}
                     </div>
                     <div>
                       <div className="font-semibold text-foreground text-sm">
@@ -120,69 +122,99 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
             </div>
           </div>
 
-          {/* Right Column - Visual */}
+          {/* Right Column - Dashboard Jurídico */}
           <div className="relative animate-scale-in" style={{ animationDelay: '0.2s' }}>
-            <div className="relative max-w-lg mx-auto">
-              {/* Data Flow Diagram */}
-              <div className="w-80 h-80 mx-auto relative">
-                {/* Input Side */}
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 space-y-4">
-                  <div className="bg-background border-2 border-border rounded-lg p-3 shadow-md animate-fade-in">
-                    <div className="text-xs font-semibold text-primary mb-1">PROCESSOS</div>
-                    <div className="w-12 h-1 bg-gradient-to-r from-primary/40 to-primary/20 rounded-full" />
-                  </div>
-                  <div className="bg-background border-2 border-border rounded-lg p-3 shadow-md animate-fade-in" style={{ animationDelay: '0.3s' }}>
-                    <div className="text-xs font-semibold text-primary mb-1">TESTEMUNHAS</div>
-                    <div className="w-12 h-1 bg-gradient-to-r from-primary/40 to-primary/20 rounded-full" />
-                  </div>
-                  <div className="bg-background border-2 border-border rounded-lg p-3 shadow-md animate-fade-in" style={{ animationDelay: '0.6s' }}>
-                    <div className="text-xs font-semibold text-primary mb-1">CNJ</div>
-                    <div className="w-12 h-1 bg-gradient-to-r from-primary/40 to-primary/20 rounded-full" />
-                  </div>
+            <div className="relative max-w-md mx-auto">
+              {/* Dashboard Container */}
+              <div className="bg-card border border-border/50 rounded-2xl p-6 shadow-lg">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-bold text-foreground">Dashboard Jurídico</h3>
+                  <div className="w-3 h-3 bg-accent rounded-full animate-pulse" />
                 </div>
 
-                {/* Center AI Engine */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                  <div className="w-20 h-20 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow animate-glow-pulse border-2 border-accent/30">
-                    <div className="text-center">
-                      <div className="text-sm font-bold text-primary-foreground">IA</div>
-                      <div className="text-xs text-primary-foreground/80 font-medium">Engine</div>
+                {/* Stats Cards Grid */}
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  {/* Card Processos */}
+                  <div className="bg-muted/30 border border-border/30 rounded-lg p-3 animate-fade-in">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 bg-primary rounded-sm" />
+                      <span className="text-xs font-medium text-muted-foreground">PROCESSOS</span>
                     </div>
+                    <div className="text-xl font-bold text-foreground">1.247</div>
+                    <div className="text-xs text-success">+12%</div>
+                  </div>
+
+                  {/* Card Riscos */}
+                  <div className="bg-muted/30 border border-border/30 rounded-lg p-3 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 bg-warning rounded-sm" />
+                      <span className="text-xs font-medium text-muted-foreground">ALTO RISCO</span>
+                    </div>
+                    <div className="text-xl font-bold text-foreground">43</div>
+                    <div className="text-xs text-warning">Atenção</div>
+                  </div>
+
+                  {/* Card Insights */}
+                  <div className="bg-muted/30 border border-border/30 rounded-lg p-3 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 bg-accent rounded-sm" />
+                      <span className="text-xs font-medium text-muted-foreground">INSIGHTS</span>
+                    </div>
+                    <div className="text-xl font-bold text-foreground">89</div>
+                    <div className="text-xs text-accent">Ativos</div>
+                  </div>
+
+                  {/* Card Economia */}
+                  <div className="bg-muted/30 border border-border/30 rounded-lg p-3 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 bg-success rounded-sm" />
+                      <span className="text-xs font-medium text-muted-foreground">ECONOMIA</span>
+                    </div>
+                    <div className="text-xl font-bold text-foreground">87%</div>
+                    <div className="text-xs text-success">Tempo</div>
                   </div>
                 </div>
 
-                {/* Output Side */}
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 space-y-4">
-                  <div className="bg-background border-2 border-accent/40 rounded-lg p-3 shadow-md animate-fade-in" style={{ animationDelay: '0.9s' }}>
-                    <div className="text-xs font-semibold text-accent mb-1">ESTRATÉGIA</div>
-                    <div className="w-12 h-1 bg-gradient-to-r from-accent/40 to-accent/20 rounded-full" />
+                {/* Chart Area */}
+                <div className="bg-muted/20 border border-border/20 rounded-lg p-4 mb-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-medium text-muted-foreground">ANÁLISE TENDENCIAL</span>
+                    <div className="w-1 h-1 bg-accent rounded-full" />
                   </div>
-                  <div className="bg-background border-2 border-accent/40 rounded-lg p-3 shadow-md animate-fade-in" style={{ animationDelay: '1.2s' }}>
-                    <div className="text-xs font-semibold text-accent mb-1">RELATÓRIOS</div>
-                    <div className="w-12 h-1 bg-gradient-to-r from-accent/40 to-accent/20 rounded-full" />
-                  </div>
-                  <div className="bg-background border-2 border-accent/40 rounded-lg p-3 shadow-md animate-fade-in" style={{ animationDelay: '1.5s' }}>
-                    <div className="text-xs font-semibold text-accent mb-1">INSIGHTS</div>
-                    <div className="w-12 h-1 bg-gradient-to-r from-accent/40 to-accent/20 rounded-full" />
+                  
+                  {/* Simplified Chart */}
+                  <div className="flex items-end gap-1 h-16">
+                    <div className="flex-1 bg-primary/40 rounded-sm h-8" />
+                    <div className="flex-1 bg-primary/60 rounded-sm h-12" />
+                    <div className="flex-1 bg-primary/80 rounded-sm h-10" />
+                    <div className="flex-1 bg-primary rounded-sm h-16" />
+                    <div className="flex-1 bg-accent/40 rounded-sm h-14" />
+                    <div className="flex-1 bg-accent/60 rounded-sm h-11" />
+                    <div className="flex-1 bg-accent rounded-sm h-13" />
                   </div>
                 </div>
 
-                {/* Flow Arrows */}
-                <div className="absolute left-20 top-1/2 -translate-y-1/2 w-16 h-0.5 bg-gradient-to-r from-primary/60 to-transparent animate-pulse" />
-                <div className="absolute right-20 top-1/2 -translate-y-1/2 w-16 h-0.5 bg-gradient-to-l from-accent/60 to-transparent animate-pulse" style={{ animationDelay: '0.5s' }} />
-                
-                {/* Arrow heads */}
-                <div className="absolute left-32 top-1/2 -translate-y-1/2 w-2 h-2 border-r-2 border-b-2 border-primary/60 transform rotate-[-45deg] animate-pulse" />
-                <div className="absolute right-32 top-1/2 -translate-y-1/2 w-2 h-2 border-l-2 border-t-2 border-accent/60 transform rotate-[-45deg] animate-pulse" style={{ animationDelay: '0.5s' }} />
+                {/* Action Items */}
+                <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.5s' }}>
+                  <div className="flex items-center gap-3 p-2 bg-muted/20 rounded-lg border border-accent/20">
+                    <div className="w-1.5 h-1.5 bg-accent rounded-full" />
+                    <span className="text-xs text-foreground">Revisar 3 processos críticos</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-2 bg-muted/20 rounded-lg border border-primary/20">
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+                    <span className="text-xs text-foreground">Gerar relatório mensal</span>
+                  </div>
+                </div>
               </div>
 
-              {/* Floating Legal Icons */}
-              <div className="absolute -top-4 -right-4 w-14 h-14 bg-gradient-to-br from-accent/20 to-accent/10 border-2 border-accent/30 rounded-lg flex items-center justify-center shadow-lg animate-bounce" style={{ animationDelay: '2s' }}>
-                <Shield className="h-6 w-6 text-accent" />
+              {/* Floating Indicators */}
+              <div className="absolute -top-3 -right-3 w-12 h-12 bg-accent/10 border-2 border-accent/30 rounded-xl flex items-center justify-center shadow-lg animate-bounce" style={{ animationDelay: '2s' }}>
+                <div className="w-4 h-4 bg-accent rounded-sm rotate-45" />
               </div>
               
-              <div className="absolute -bottom-4 -left-4 w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/30 rounded-lg flex items-center justify-center shadow-lg animate-bounce" style={{ animationDelay: '3s' }}>
-                <TrendingUp className="h-6 w-6 text-primary" />
+              <div className="absolute -bottom-3 -left-3 w-12 h-12 bg-primary/10 border-2 border-primary/30 rounded-xl flex items-center justify-center shadow-lg animate-bounce" style={{ animationDelay: '3s' }}>
+                <div className="w-3 h-3 border-2 border-primary rounded-sm" />
               </div>
             </div>
           </div>
