@@ -1,15 +1,12 @@
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 // Paginação padrão
-const PaginacaoSchema = z.object({
+export const PaginacaoSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  limit: z
-    .coerce.number()
-    .int()
-    .min(1)
-    .default(20)
-    .transform((n) => (n > 200 ? 200 : n)),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
 });
+
+export type Paginacao = z.infer<typeof PaginacaoSchema>;
 
 // ------ Processos ------
 const ProcessosFiltroSchema = z
@@ -63,8 +60,9 @@ export function parseTestemunhasRequest(payload: unknown): TestemunhasRequest {
 export const ListaResponseSchema = z.object({
   items: z.array(z.unknown()),
   page: z.number().int().min(1),
-  limit: z.number().int().min(1),
-  total: z.number().int().nonnegative(),
+  limit: z.number().int().min(1).max(100),
+  next_cursor: z.null().default(null),
+  cid: z.string(),
 });
 
 export type ListaResponse = z.infer<typeof ListaResponseSchema>;
