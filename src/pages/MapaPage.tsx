@@ -23,6 +23,7 @@ import {
   selectIsPiiMasked,
   selectHasError,
   selectErrorMessage,
+  selectErrorCid,
   selectLastUpdate,
   selectProcessoFilters,
   selectTestemunhaFilters
@@ -73,6 +74,7 @@ const MapaPage = () => {
   const isPiiMasked = useMapaTestemunhasStore(selectIsPiiMasked);
   const hasError = useMapaTestemunhasStore(selectHasError);
   const errorMessage = useMapaTestemunhasStore(selectErrorMessage);
+  const errorCid = useMapaTestemunhasStore(selectErrorCid);
   const lastUpdate = useMapaTestemunhasStore(selectLastUpdate);
   const processoFilters = useMapaTestemunhasStore(selectProcessoFilters);
   const testemunhaFilters = useMapaTestemunhasStore(selectTestemunhaFilters);
@@ -188,7 +190,8 @@ const MapaPage = () => {
 
         const errorMsg = processosResult.error || testemunhasResult.error;
         if (errorMsg) {
-          setError(true, errorMsg);
+          const cid = processosResult.error ? processosResult.cid : testemunhasResult.cid;
+          setError(true, errorMsg, cid);
           toast({
             title: "Falha ao carregar dados",
             description: errorMsg,
@@ -294,12 +297,17 @@ const MapaPage = () => {
         {/* Error State */}
         {hasError && (
           <Card className="rounded-2xl border-destructive/50 bg-destructive/5 mb-6">
-            <CardContent className="p-4">
+            <CardContent className="p-4 space-y-1">
               <div className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-4 w-4" aria-hidden="true" />
                 <span className="font-medium">Erro:</span>
                 <span className="text-sm">{errorMessage}</span>
               </div>
+              {errorCid && (
+                <div className="text-xs text-destructive/70">
+                  ID de correlação: {errorCid}
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
