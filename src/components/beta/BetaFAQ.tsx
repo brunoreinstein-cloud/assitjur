@@ -83,7 +83,7 @@ export function BetaFAQ() {
               Ainda tem dúvidas?
             </h3>
             <p className="text-muted-foreground mb-4">
-              Entre em contato conosco pelo email <strong>contato@assistjur.ia</strong> ou 
+              Entre em contato conosco pelo email <strong>contato@assistjur.com.br</strong> ou
               WhatsApp <strong>(11) 99999-9999</strong>.
             </p>
             <p className="text-sm text-muted-foreground">

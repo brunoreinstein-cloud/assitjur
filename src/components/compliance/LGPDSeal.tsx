@@ -88,7 +88,7 @@ export function LGPDFooter({ className = '' }: { className?: string }) {
       <p className="text-xs text-muted-foreground max-w-2xl mx-auto">
         Documento produzido em conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei 13.709/2018). 
         Dados pessoais tratados com base na execução regular de direitos em processo judicial. 
-        Para exercer seus direitos como titular: portal.assistjur.ia/lgpd
+        Para exercer seus direitos como titular: assistjur.com.br/lgpd
       </p>
       <p className="text-xs text-muted-foreground mt-2">
         Gerado em {new Date().toLocaleString('pt-BR')} • Suporte: contato@assistjur.ia

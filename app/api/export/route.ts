@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/integrations/supabase/client';
+import { SITE_URL } from '@/config/site';
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     // For now, create a mock download URL
     // In production, this would upload to storage bucket and return signed URL
-    const mockUrl = `https://assistjur.ia/exports/${filename}`;
+    const mockUrl = `${SITE_URL}/exports/${filename}`;
 
     // Log audit entry
     try {
