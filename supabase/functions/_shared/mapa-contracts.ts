@@ -64,7 +64,8 @@ export const ListaResponseSchema = z.object({
   items: z.array(z.unknown()),
   page: z.number().int().min(1),
   limit: z.number().int().min(1),
-  total: z.number().int().nonnegative(),
+  next_cursor: z.null(),
+  cid: z.string(),
 });
 
 export type ListaResponse = z.infer<typeof ListaResponseSchema>;

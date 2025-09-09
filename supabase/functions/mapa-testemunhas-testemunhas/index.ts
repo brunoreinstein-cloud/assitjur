@@ -1,9 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.56.0";
-import { buildCorsHeaders, handlePreflight } from "../_shared/cors.ts";
+import { handlePreflight } from "../_shared/cors.ts";
 import { createLogger } from "../_shared/logger.ts";
 import { TestemunhasRequestSchema, ListaResponseSchema } from "../_shared/mapa-contracts.ts";
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { jres } from "../_shared/jres.ts";
 
 serve(async (req) => {
   const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
@@ -12,32 +12,24 @@ serve(async (req) => {
   const pre = handlePreflight(req, cid);
   if (pre) return pre;
 
-  const headers = { ...buildCorsHeaders(req), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" };
-
   let payload: unknown = {};
   if (req.method === "POST") {
     try {
       payload = await req.json();
     } catch (e) {
       logger.error(`invalid json: ${e.message}`);
-      return new Response(
-        JSON.stringify({ error: "INVALID_JSON", message: "Corpo deve ser JSON válido", cid }),
-        { status: 400, headers },
-      );
+      return jres(req, { error: "INVALID_JSON", message: "Corpo deve ser JSON válido", cid }, 400);
     }
   }
 
   const validation = TestemunhasRequestSchema.safeParse(payload);
   if (!validation.success) {
     logger.error(`validation: ${validation.error.message}`);
-    return new Response(
-      JSON.stringify({ 
-        error: "VALIDATION_ERROR", 
-        details: validation.error.issues, 
-        cid 
-      }),
-      { status: 422, headers },
-    );
+    return jres(req, {
+      error: "VALIDATION_ERROR",
+      details: validation.error.issues,
+      cid,
+    }, 422);
   }
 
   const params = validation.data;
@@ -49,7 +41,7 @@ serve(async (req) => {
 
   const authHeader = req.headers.get("authorization") ?? "";
   if (!authHeader.startsWith("Bearer ")) {
-    return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401, headers });
+    return jres(req, { error: "unauthorized", cid }, 401);
   }
 
   const supabase = createClient(
@@ -62,7 +54,7 @@ serve(async (req) => {
   const to = from + limit - 1;
   let query = supabase
     .from("assistjur_testemunhas_view")
-    .select("*", { count: "exact" })
+    .select("*")
     .range(from, to);
 
   if (filtros.nome) {
@@ -81,32 +73,26 @@ serve(async (req) => {
     query = query.lte("data", filtros.data_fim);
   }
 
-  const { data, count, error } = await query;
+  const { data, error } = await query;
   if (error) {
     logger.error(`database: ${error.message}`);
-    return new Response(
-      JSON.stringify({ 
-        error: "DB_ERROR", 
-        message: error.message,
-        cid 
-      }),
-      { status: 500, headers },
-    );
+    return jres(req, {
+      error: "DB_ERROR",
+      message: error.message,
+      cid,
+    }, 500);
   }
 
-  const result = { items: data ?? [], page, limit, total: count ?? 0 };
+  const result = { items: data ?? [], page, limit, next_cursor: null, cid };
   const resultValidation = ListaResponseSchema.safeParse(result);
   if (!resultValidation.success) {
     logger.error(`response validation: ${resultValidation.error.message}`);
-    return new Response(
-      JSON.stringify({ 
-        error: "INCONSISTENT_RESPONSE",
-        cid 
-      }),
-      { status: 500, headers },
-    );
+    return jres(req, {
+      error: "INCONSISTENT_RESPONSE",
+      cid,
+    }, 500);
   }
 
   logger.info(`success: ${result.items.length} items returned`);
-  return new Response(JSON.stringify(result), { status: 200, headers });
+  return jres(req, result);
 });
