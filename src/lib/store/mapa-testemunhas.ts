@@ -40,6 +40,7 @@ type TabType = 'processos' | 'testemunhas';
 interface ErrorState {
   hasError: boolean;
   message?: string;
+  cid?: string;
 }
 
 interface MapaTestemunhasStore {
@@ -55,9 +56,10 @@ interface MapaTestemunhasStore {
   isImportModalOpen: boolean;
   isLoading: boolean;
   isPiiMasked: boolean;
-  hasError: boolean;
-  errorMessage: string;
-  lastUpdate: Date | null;
+    hasError: boolean;
+    errorMessage: string;
+    errorCid: string;
+    lastUpdate: Date | null;
   
   // Filters
   processoFilters: FilterProcesso;
@@ -90,10 +92,10 @@ interface MapaTestemunhasStore {
   setSelectedTestemunha: (testemunha: Testemunha | null) => void;
   setIsDetailDrawerOpen: (open: boolean) => void;
   setIsImportModalOpen: (open: boolean) => void;
-  setIsLoading: (loading: boolean) => void;
-  setIsPiiMasked: (masked: boolean) => void;
-  setError: (error: boolean, message?: string) => void;
-  setLastUpdate: (date: Date | null) => void;
+    setIsLoading: (loading: boolean) => void;
+    setIsPiiMasked: (masked: boolean) => void;
+    setError: (error: boolean, details?: { message?: string; cid?: string }) => void;
+    setLastUpdate: (date: Date | null) => void;
   setProcessoFilters: (filters: Partial<FilterProcesso>) => void;
   setTestemunhaFilters: (filters: Partial<FilterTestemunha>) => void;
   setProcessosPage: (page: number) => void;
@@ -137,6 +139,7 @@ export const useMapaTestemunhasStore = create<MapaTestemunhasStore>((set, get) =
   isPiiMasked: false,
   hasError: false,
   errorMessage: '',
+  errorCid: '',
   lastUpdate: null,
   processoFilters: {},
   testemunhaFilters: {},
@@ -166,7 +169,11 @@ export const useMapaTestemunhasStore = create<MapaTestemunhasStore>((set, get) =
   setIsImportModalOpen: (open) => set({ isImportModalOpen: open }),
   setIsLoading: (loading) => set({ isLoading: loading }),
   setIsPiiMasked: (masked) => set({ isPiiMasked: masked }),
-  setError: (error, message = '') => set({ hasError: error, errorMessage: message }),
+  setError: (error, details = {}) => set({
+    hasError: error,
+    errorMessage: details.message ?? '',
+    errorCid: details.cid ?? ''
+  }),
   setLastUpdate: (date) => set({ lastUpdate: date }),
   setProcessoFilters: (filters) => 
     set((state) => ({ 
@@ -236,6 +243,7 @@ export const selectIsLoading = (state: MapaTestemunhasStore) => state.isLoading;
 export const selectIsPiiMasked = (state: MapaTestemunhasStore) => state.isPiiMasked;
 export const selectHasError = (state: MapaTestemunhasStore) => state.hasError;
 export const selectErrorMessage = (state: MapaTestemunhasStore) => state.errorMessage;
+export const selectErrorCid = (state: MapaTestemunhasStore) => state.errorCid;
 export const selectLastUpdate = (state: MapaTestemunhasStore) => state.lastUpdate;
 export const selectProcessoFilters = (state: MapaTestemunhasStore) => state.processoFilters;
 export const selectTestemunhaFilters = (state: MapaTestemunhasStore) => state.testemunhaFilters;

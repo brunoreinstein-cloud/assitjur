@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -23,6 +23,7 @@ import {
   selectIsPiiMasked,
   selectHasError,
   selectErrorMessage,
+  selectErrorCid,
   selectLastUpdate,
   selectProcessoFilters,
   selectTestemunhaFilters
@@ -62,6 +63,7 @@ interface StatsData {
 const MapaPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const { user, loading } = useAuth();
   const { toast } = useToast();
   
@@ -73,6 +75,7 @@ const MapaPage = () => {
   const isPiiMasked = useMapaTestemunhasStore(selectIsPiiMasked);
   const hasError = useMapaTestemunhasStore(selectHasError);
   const errorMessage = useMapaTestemunhasStore(selectErrorMessage);
+  const errorCid = useMapaTestemunhasStore(selectErrorCid);
   const lastUpdate = useMapaTestemunhasStore(selectLastUpdate);
   const processoFilters = useMapaTestemunhasStore(selectProcessoFilters);
   const testemunhaFilters = useMapaTestemunhasStore(selectTestemunhaFilters);
@@ -154,6 +157,19 @@ const MapaPage = () => {
     setSearchParams({ tab: newTab });
   };
 
+  const handleCopyErrorDetails = () => {
+    const details = {
+      route: location.pathname,
+      status: errorMessage,
+      cid: errorCid,
+      timestamp: new Date().toISOString()
+    };
+
+    navigator.clipboard.writeText(JSON.stringify(details)).then(() =>
+      toast({ title: 'Detalhes copiados' })
+    );
+  };
+
   // Load real data from Supabase with filter integration
   useEffect(() => {
     if (!user) return;
@@ -188,7 +204,7 @@ const MapaPage = () => {
 
         const errorMsg = processosResult.error || testemunhasResult.error;
         if (errorMsg) {
-          setError(true, errorMsg);
+          setError(true, { message: errorMsg });
           toast({
             title: "Falha ao carregar dados",
             description: errorMsg,
@@ -213,7 +229,7 @@ const MapaPage = () => {
         const message = error instanceof Error
           ? error.message
           : 'Verifique filtros e tente novamente.';
-        setError(true, message);
+        setError(true, { message });
         setIsLoading(false);
 
         toast({
@@ -294,11 +310,17 @@ const MapaPage = () => {
         {/* Error State */}
         {hasError && (
           <Card className="rounded-2xl border-destructive/50 bg-destructive/5 mb-6">
-            <CardContent className="p-4">
+            <CardContent className="p-4 space-y-2">
               <div className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-4 w-4" aria-hidden="true" />
                 <span className="font-medium">Erro:</span>
                 <span className="text-sm">{errorMessage}</span>
+              </div>
+              <div className="flex items-center justify-between text-destructive">
+                <span className="text-xs">cid: {errorCid}</span>
+                <Button variant="outline" size="sm" onClick={handleCopyErrorDetails}>
+                  Copiar detalhes
+                </Button>
               </div>
             </CardContent>
           </Card>
