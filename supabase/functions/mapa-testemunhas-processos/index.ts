@@ -43,7 +43,7 @@ serve(async (req) => {
   const params = validation.data;
 
   const {
-    paginacao: { page, limit },
+    paginacao: { cursor, limit },
     filtros,
   } = params;
 
@@ -58,12 +58,17 @@ serve(async (req) => {
     { global: { headers: { Authorization: authHeader } }, auth: { autoRefreshToken: false, persistSession: false } },
   );
 
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
   let query = supabase
     .from("assistjur_processos_view")
-    .select("*", { count: "exact" })
-    .range(from, to);
+    .select("*")
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
+
+  if (cursor) {
+    query = query
+      .lt("created_at", cursor.created_at)
+      .or(`created_at.eq.${cursor.created_at}.and(id.lt.${cursor.id})`);
+  }
 
   if (filtros.search) {
     query = query.ilike("search", `%${filtros.search}%`);
@@ -75,27 +80,34 @@ serve(async (req) => {
     query = query.lte("data", filtros.data_fim);
   }
 
-  const { data, count, error } = await query;
+  const { data, error } = await query.limit(limit + 1);
   if (error) {
     logger.error(`database: ${error.message}`);
     return new Response(
-      JSON.stringify({ 
-        error: "DB_ERROR", 
+      JSON.stringify({
+        error: "DB_ERROR",
         message: error.message,
-        cid 
+        cid
       }),
       { status: 500, headers },
     );
   }
 
-  const result = { items: data ?? [], page, limit, total: count ?? 0 };
+  let items = data ?? [];
+  let next_cursor: { created_at: string; id: string } | undefined;
+  if (items.length > limit) {
+    const last = items.pop()!;
+    next_cursor = { created_at: last.created_at, id: last.id };
+  }
+
+  const result = { items, limit, next_cursor };
   const resultValidation = ListaResponseSchema.safeParse(result);
   if (!resultValidation.success) {
     logger.error(`response validation: ${resultValidation.error.message}`);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: "INCONSISTENT_RESPONSE",
-        cid 
+        cid
       }),
       { status: 500, headers },
     );

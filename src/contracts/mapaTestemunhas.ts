@@ -13,9 +13,14 @@ const filtersSchema = z
   })
   .default({});
 
+const cursorSchema = z.object({
+  created_at: z.string(),
+  id: z.string(),
+});
+
 export const mapaTestemunhasSchema = z.object({
   filters: filtersSchema,
-  page: z.coerce.number().int().min(1).default(1),
+  cursor: cursorSchema.optional(),
   limit: z
     .coerce.number()
     .int()
@@ -34,7 +39,7 @@ export function normalizeMapaRequest(payload: unknown): MapaTestemunhasRequest {
 
 export const MapaResponseSchema = z.object({
   data: z.array(z.unknown()),
-  total: z.number().int(),
+  next_cursor: cursorSchema.optional(),
 });
 
 export type MapaResponse = z.infer<typeof MapaResponseSchema>;

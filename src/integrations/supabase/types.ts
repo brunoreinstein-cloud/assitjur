@@ -1702,11 +1702,12 @@ export type Database = {
           p_filters?: Json
           p_limit?: number
           p_org_id: string
-          p_page?: number
+          p_cursor_created_at?: string
+          p_cursor_id?: string
         }
         Returns: {
           data: Json
-          total_count: number
+          next_cursor: Json | null
         }[]
       }
       rpc_get_assistjur_stats: {

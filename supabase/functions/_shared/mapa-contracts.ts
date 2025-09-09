@@ -1,8 +1,13 @@
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-// Paginação padrão
+// Paginação padrão baseada em cursor
+const CursorSchema = z.object({
+  created_at: z.string(),
+  id: z.string(),
+});
+
 const PaginacaoSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
+  cursor: CursorSchema.optional(),
   limit: z
     .coerce.number()
     .int()
@@ -22,7 +27,7 @@ const ProcessosFiltroSchema = z
 
 export const ProcessosRequestSchema = z
   .object({
-    paginacao: PaginacaoSchema.default({ page: 1, limit: 20 }),
+    paginacao: PaginacaoSchema.default({ limit: 20 }),
     filtros: ProcessosFiltroSchema,
   })
   .default({ paginacao: {}, filtros: {} });
@@ -48,7 +53,7 @@ const TestemunhasFiltroSchema = z
 
 export const TestemunhasRequestSchema = z
   .object({
-    paginacao: PaginacaoSchema.default({ page: 1, limit: 20 }),
+    paginacao: PaginacaoSchema.default({ limit: 20 }),
     filtros: TestemunhasFiltroSchema,
   })
   .default({ paginacao: {}, filtros: {} });
@@ -62,9 +67,8 @@ export function parseTestemunhasRequest(payload: unknown): TestemunhasRequest {
 // ------ Lista Response ------
 export const ListaResponseSchema = z.object({
   items: z.array(z.unknown()),
-  page: z.number().int().min(1),
   limit: z.number().int().min(1),
-  total: z.number().int().nonnegative(),
+  next_cursor: CursorSchema.optional(),
 });
 
 export type ListaResponse = z.infer<typeof ListaResponseSchema>;
