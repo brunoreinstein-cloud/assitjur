@@ -1,5 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { corsHeaders } from '../_shared/cors.ts'
+import { corsHeaders, handlePreflight } from '../_shared/cors.ts'
 
 // Import XLSX for Deno - using ESM.sh for better compatibility
 import * as XLSX from 'https://esm.sh/xlsx@0.18.5'
@@ -444,9 +444,10 @@ function buildTemplateXlsx(): Uint8Array {
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
+  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  const ch = corsHeaders(req);
+  const pre = handlePreflight(req, cid);
+  if (pre) return pre;
 
   try {
     const buffer = buildCanonicalXlsx()
@@ -454,7 +455,8 @@ serve(async (req) => {
     return new Response(buffer, {
       status: 200,
       headers: {
-        ...corsHeaders,
+        ...ch,
+        'x-correlation-id': cid,
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': 'attachment; filename="AssistJurIA_Template.xlsx"',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -468,7 +470,7 @@ serve(async (req) => {
       JSON.stringify({ error: 'Erro interno do servidor' }),
       { 
         status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid }
       }
     )
   }

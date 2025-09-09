@@ -1,14 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2.56.0'
 
-import { corsHeaders } from '../_shared/cors.ts';
+import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
 
 serve(async (req) => {
   console.log(`create-version called: ${req.method} from ${req.headers.get("Origin")}`);
-  
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders(req) });
-  }
+
+  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  const ch = corsHeaders(req);
+  const pre = handlePreflight(req, cid);
+  if (pre) return pre;
 
   try {
     const supabase = createClient(
@@ -32,7 +33,7 @@ serve(async (req) => {
       console.error('Auth error:', authError);
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
@@ -46,7 +47,7 @@ serve(async (req) => {
     if (!profile) {
       return new Response(
         JSON.stringify({ error: 'Profile not found' }),
-        { status: 404, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+        { status: 404, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
@@ -64,7 +65,7 @@ serve(async (req) => {
     if (profile.role !== 'ADMIN' || profile.organization_id !== targetOrgId) {
       return new Response(
         JSON.stringify({ error: 'Insufficient permissions' }),
-        { status: 403, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+        { status: 403, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
@@ -92,25 +93,25 @@ serve(async (req) => {
       console.error('Error creating version:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to create version' }),
-        { status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
     console.log(`Created version v${version.number} for org ${targetOrgId}`);
 
     return new Response(
-      JSON.stringify({ 
-        versionId: version.id, 
-        number: version.number 
+      JSON.stringify({
+        versionId: version.id,
+        number: version.number
       }),
-      { headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+      { headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
     );
 
   } catch (error) {
     console.error('Error in create-version:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
     );
   }
 });

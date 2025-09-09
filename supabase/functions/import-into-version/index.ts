@@ -1,20 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2.56.0'
-import { corsHeaders } from '../_shared/cors.ts'
+import { corsHeaders, handlePreflight } from '../_shared/cors.ts'
 
 console.log('🚀 import-into-version function starting - CORS fix applied...');
 
 serve(async (req) => {
   console.log(`📞 import-into-version called with method: ${req.method}, origin: ${req.headers.get('origin')}`);
-  
-  // Handle CORS preflight with enhanced logging
-  if (req.method === 'OPTIONS') {
-    console.log('✅ CORS preflight request received');
-    return new Response(null, { 
-      status: 200,
-      headers: corsHeaders(req) 
-    });
-  }
+
+  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  const ch = corsHeaders(req);
+  const pre = handlePreflight(req, cid);
+  if (pre) return pre;
 
   console.log(`📞 Processing ${req.method} request...`);
 
@@ -24,7 +20,7 @@ serve(async (req) => {
       console.error('❌ Invalid method:', req.method);
       return new Response(
         JSON.stringify({ error: 'Method not allowed' }),
-        { status: 405, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+        { status: 405, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
@@ -34,7 +30,7 @@ serve(async (req) => {
       console.error('❌ Missing Authorization header');
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
@@ -60,7 +56,7 @@ serve(async (req) => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
@@ -74,7 +70,7 @@ serve(async (req) => {
     if (!profile || profile.role !== 'ADMIN') {
       return new Response(
         JSON.stringify({ error: 'Insufficient permissions' }),
-        { status: 403, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+        { status: 403, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
@@ -125,14 +121,14 @@ serve(async (req) => {
     if (!version) {
       return new Response(
         JSON.stringify({ error: 'Version not found' }),
-        { status: 404, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+        { status: 404, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
     if (version.status !== 'draft') {
       return new Response(
         JSON.stringify({ error: 'Can only import into draft versions' }),
-        { status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
@@ -149,7 +145,7 @@ serve(async (req) => {
       console.error('❌ Error clearing version data:', deleteError);
       return new Response(
         JSON.stringify({ error: 'Failed to clear existing data' }),
-        { status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
@@ -450,7 +446,7 @@ serve(async (req) => {
             errors: errors,
             retries_attempted: totalRetried
           }),
-          { status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
         );
       }
       
@@ -466,7 +462,7 @@ serve(async (req) => {
             errors: errors,
             retries_attempted: totalRetried
           }),
-          { status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
         );
       }
     } else {
@@ -517,7 +513,7 @@ serve(async (req) => {
           analyzed: (requestBody.processos || []).length
         }
       }),
-      { headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+      { headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
     );
 
   } catch (error) {
@@ -531,7 +527,7 @@ serve(async (req) => {
         message: error.message,
         timestamp: new Date().toISOString()
       }),
-      { status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
     );
   }
 });

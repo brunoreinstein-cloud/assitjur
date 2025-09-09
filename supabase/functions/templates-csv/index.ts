@@ -1,5 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { corsHeaders } from '../_shared/cors.ts'
+import { corsHeaders, handlePreflight } from '../_shared/cors.ts'
 
 // Generate valid CNJ with correct check digits
 function generateValidCNJ(sequential?: number): string {
@@ -513,9 +513,10 @@ function buildCsv(sheetName: string): string {
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
+  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  const ch = corsHeaders(req);
+  const pre = handlePreflight(req, cid);
+  if (pre) return pre;
 
   try {
     const url = new URL(req.url)
@@ -524,9 +525,9 @@ serve(async (req) => {
     if (!sheet) {
       return new Response(
         JSON.stringify({ error: 'Parâmetro "sheet" é obrigatório' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        {
+          status: 400,
+          headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid }
         }
       )
     }
@@ -535,9 +536,9 @@ serve(async (req) => {
     if (!validSheets.includes(sheet)) {
       return new Response(
         JSON.stringify({ error: `Aba "${sheet}" inválida. Use: ${validSheets.join(', ')}` }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        {
+          status: 400,
+          headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid }
         }
       )
     }
@@ -550,7 +551,8 @@ serve(async (req) => {
     return new Response(csvContent, {
       status: 200,
       headers: {
-        ...corsHeaders,
+        ...ch,
+        'x-correlation-id': cid,
         'Content-Type': 'text/csv; charset=utf-8',
         'Content-Disposition': `attachment; filename="${filename}"`,
         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -564,7 +566,7 @@ serve(async (req) => {
       JSON.stringify({ error: error instanceof Error ? error.message : 'Erro interno do servidor' }),
       { 
         status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid }
       }
     )
   }

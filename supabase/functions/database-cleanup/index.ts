@@ -1,5 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.56.0';
-import { corsHeaders } from '../_shared/cors.ts';
+import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
 
 interface CleanupRequest {
   orgId: string;
@@ -20,10 +20,10 @@ interface CleanupResponse {
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  const ch = corsHeaders(req);
+  const pre = handlePreflight(req, cid);
+  if (pre) return pre;
 
   try {
     // Get JWT token from Authorization header
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
         totalProcessed: 0,
         error: 'Token de autorização não encontrado'
       }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid },
         status: 401
       });
     }
@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
         totalProcessed: 0,
         error: 'Erro ao verificar permissões do usuário'
       }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid },
         status: 403
       });
     }
@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
         totalProcessed: 0,
         error: 'Acesso negado. Apenas administradores podem executar esta operação.'
       }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid },
         status: 403
       });
     }
@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
         preview: previewData,
         message: 'Preview gerado com sucesso'
       }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid },
         status: 200
       });
     }
@@ -176,7 +176,7 @@ Deno.serve(async (req) => {
     console.log('Cleanup completed:', response);
 
     return new Response(JSON.stringify(response), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid },
       status: 200
     });
 
@@ -189,7 +189,7 @@ Deno.serve(async (req) => {
       totalProcessed: 0,
       error: error.message
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid },
       status: 500
     });
   }
