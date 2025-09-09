@@ -9,6 +9,7 @@ import {
 } from "@/types/mapa-testemunhas";
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { mapFunctionsError } from './functions-errors';
+import { fetchWithRetry } from './fetchWithRetry';
 import { z } from "zod";
 
 // Mock data for offline functionality
@@ -236,67 +237,71 @@ export const fetchPorProcesso = async (
   console.debug('mapa-testemunhas-processos payload', sanitized);
   let cid = uuidv4();
   try {
-    if (!isSupabaseConfigured()) {
-      console.log('⚠️ Supabase not configured, using mock data');
-      throw new Error('Supabase not configured');
-    }
-
-    const { data: sessionData } = await supabase.auth.getSession();
-    const access_token = sessionData?.session?.access_token;
-    if (!access_token) throw new Error("Usuário não autenticado");
-
-    const { data, error } = await supabase.functions.invoke<{
-      data?: PorProcesso[];
-      count?: number;
-      total?: number;
-    }>('mapa-testemunhas-processos', {
-      body: parsed,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-correlation-id': cid,
-        Authorization: `Bearer ${access_token}`
+    return await fetchWithRetry(async () => {
+      if (!isSupabaseConfigured()) {
+        console.log('⚠️ Supabase not configured, using mock data');
+        throw new Error('Supabase not configured');
       }
-    });
 
-    cid = (error as any)?.context?.response?.headers.get('x-correlation-id') ?? cid;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const access_token = sessionData?.session?.access_token;
+      if (!access_token) throw new Error("Usuário não autenticado");
 
-    if (error instanceof FunctionsHttpError && error.context?.response?.ok === false) {
-      let errorPayload: any;
-      try {
-        errorPayload = await error.context.response.json();
-      } catch {}
-
-      const { error: err, detail, hint, example } = errorPayload || {};
-      const message = detail || hint || 'Verifique filtros e tente novamente.';
-      console.error(`[cid=${cid}] fetchPorProcesso HTTP error`, {
-        status: error.context.response.status,
-        url: error.context.response.url,
-        payload: sanitized,
-        error: { error: err, detail, hint, example }
+      const { data, error } = await supabase.functions.invoke<{
+        data?: PorProcesso[];
+        count?: number;
+        total?: number;
+      }>('mapa-testemunhas-processos', {
+        body: parsed,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-correlation-id': cid,
+          Authorization: `Bearer ${access_token}`
+        }
       });
-      return { data: [], total: 0, error: message };
-    }
 
-    if (error) {
-      console.error(`[cid=${cid}] Error in fetchPorProcesso:`, error.message);
-      console.info(`[cid=${cid}] Hint: verifique filtros ou tente novamente.`);
-      throw error;
-    }
+      cid = (error as any)?.context?.response?.headers.get('x-correlation-id') ?? cid;
 
-    const payload = data as { data?: PorProcesso[]; count?: number; total?: number };
-    if (!payload?.data || payload.data.length === 0) {
-      console.log(`[cid=${cid}] 📊 Supabase returned empty processos dataset`);
-    } else {
-      console.log(`[cid=${cid}] 📊 Fetched processos from API:`, {
-        count: payload.data.length,
+      if (error instanceof FunctionsHttpError && error.context?.response?.ok === false) {
+        if (error.context.response.status === 429) throw error;
+
+        let errorPayload: any;
+        try {
+          errorPayload = await error.context.response.json();
+        } catch {}
+
+        const { error: err, detail, hint, example } = errorPayload || {};
+        const message = detail || hint || 'Verifique filtros e tente novamente.';
+        console.error(`[cid=${cid}] fetchPorProcesso HTTP error`, {
+          status: error.context.response.status,
+          url: error.context.response.url,
+          payload: sanitized,
+          error: { error: err, detail, hint, example }
+        });
+        return { data: [], total: 0, error: message };
+      }
+
+      if (error) {
+        console.error(`[cid=${cid}] Error in fetchPorProcesso:`, error.message);
+        console.info(`[cid=${cid}] Hint: verifique filtros ou tente novamente.`);
+        throw error;
+      }
+
+      const payload = data as { data?: PorProcesso[]; count?: number; total?: number };
+      if (!payload?.data || payload.data.length === 0) {
+        console.log(`[cid=${cid}] 📊 Supabase returned empty processos dataset`);
+      } else {
+        console.log(`[cid=${cid}] 📊 Fetched processos from API:`, {
+          count: payload.data.length,
+          total: payload.count || payload.total || 0
+        });
+      }
+
+      return {
+        data: payload.data || [],
         total: payload.count || payload.total || 0
-      });
-    }
-
-    return {
-      data: payload.data || [],
-      total: payload.count || payload.total || 0
-    };
+      };
+    });
   } catch (error) {
     if (error instanceof FunctionsHttpError) {
       console.error(`[cid=${cid}]`, mapFunctionsError(error));
@@ -383,67 +388,71 @@ export const fetchPorTestemunha = async (
   console.debug('mapa-testemunhas-testemunhas payload', sanitized);
   let cid = uuidv4();
   try {
-    if (!isSupabaseConfigured()) {
-      console.log('⚠️ Supabase not configured, using mock data');
-      throw new Error('Supabase not configured');
-    }
-
-    const { data: sessionData } = await supabase.auth.getSession();
-    const access_token = sessionData?.session?.access_token;
-    if (!access_token) throw new Error("Usuário não autenticado");
-
-    const { data, error } = await supabase.functions.invoke<{
-      data?: PorTestemunha[];
-      count?: number;
-      total?: number;
-    }>('mapa-testemunhas-testemunhas', {
-      body: parsed,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-correlation-id': cid,
-        Authorization: `Bearer ${access_token}`
+    return await fetchWithRetry(async () => {
+      if (!isSupabaseConfigured()) {
+        console.log('⚠️ Supabase not configured, using mock data');
+        throw new Error('Supabase not configured');
       }
-    });
 
-    cid = (error as any)?.context?.response?.headers.get('x-correlation-id') ?? cid;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const access_token = sessionData?.session?.access_token;
+      if (!access_token) throw new Error("Usuário não autenticado");
 
-    if (error instanceof FunctionsHttpError && error.context?.response?.ok === false) {
-      let errorPayload: any;
-      try {
-        errorPayload = await error.context.response.json();
-      } catch {}
-
-      const { error: err, detail, hint, example } = errorPayload || {};
-      const message = detail || hint || 'Verifique filtros e tente novamente.';
-      console.error(`[cid=${cid}] fetchPorTestemunha HTTP error`, {
-        status: error.context.response.status,
-        url: error.context.response.url,
-        payload: sanitized,
-        error: { error: err, detail, hint, example }
+      const { data, error } = await supabase.functions.invoke<{
+        data?: PorTestemunha[];
+        count?: number;
+        total?: number;
+      }>('mapa-testemunhas-testemunhas', {
+        body: parsed,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-correlation-id': cid,
+          Authorization: `Bearer ${access_token}`
+        }
       });
-      return { data: [], total: 0, error: message };
-    }
 
-    if (error) {
-      console.error(`[cid=${cid}] Error in fetchPorTestemunha:`, error.message);
-      console.info(`[cid=${cid}] Hint: verifique filtros ou tente novamente.`);
-      throw error;
-    }
+      cid = (error as any)?.context?.response?.headers.get('x-correlation-id') ?? cid;
 
-    const payload = data as { data?: PorTestemunha[]; count?: number; total?: number };
-    if (!payload?.data || payload.data.length === 0) {
-      console.log(`[cid=${cid}] 📊 Supabase returned empty testemunhas dataset`);
-    } else {
-      console.log(`[cid=${cid}] 📊 Fetched testemunhas from API:`, {
-        count: payload.data.length,
+      if (error instanceof FunctionsHttpError && error.context?.response?.ok === false) {
+        if (error.context.response.status === 429) throw error;
+
+        let errorPayload: any;
+        try {
+          errorPayload = await error.context.response.json();
+        } catch {}
+
+        const { error: err, detail, hint, example } = errorPayload || {};
+        const message = detail || hint || 'Verifique filtros e tente novamente.';
+        console.error(`[cid=${cid}] fetchPorTestemunha HTTP error`, {
+          status: error.context.response.status,
+          url: error.context.response.url,
+          payload: sanitized,
+          error: { error: err, detail, hint, example }
+        });
+        return { data: [], total: 0, error: message };
+      }
+
+      if (error) {
+        console.error(`[cid=${cid}] Error in fetchPorTestemunha:`, error.message);
+        console.info(`[cid=${cid}] Hint: verifique filtros ou tente novamente.`);
+        throw error;
+      }
+
+      const payload = data as { data?: PorTestemunha[]; count?: number; total?: number };
+      if (!payload?.data || payload.data.length === 0) {
+        console.log(`[cid=${cid}] 📊 Supabase returned empty testemunhas dataset`);
+      } else {
+        console.log(`[cid=${cid}] 📊 Fetched testemunhas from API:`, {
+          count: payload.data.length,
+          total: payload.count || payload.total || 0
+        });
+      }
+
+      return {
+        data: payload.data || [],
         total: payload.count || payload.total || 0
-      });
-    }
-
-    return {
-      data: payload.data || [],
-      total: payload.count || payload.total || 0
-    };
+      };
+    });
   } catch (error) {
     if (error instanceof FunctionsHttpError) {
       console.error(`[cid=${cid}]`, mapFunctionsError(error));
