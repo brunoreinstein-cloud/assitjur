@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.56.0";
-import { corsHeaders } from "../_shared/cors.ts";
+import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
@@ -15,16 +15,17 @@ interface ManageUserRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  const ch = corsHeaders(req);
+  const pre = handlePreflight(req, cid);
+  if (pre) return pre;
 
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
@@ -35,7 +36,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Invalid token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
@@ -49,7 +50,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (adminProfileError || !adminProfile || adminProfile.role !== 'ADMIN') {
       return new Response(
         JSON.stringify({ error: 'Insufficient permissions' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 403, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
@@ -59,7 +60,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (!action || !user_id) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
@@ -74,7 +75,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (targetProfileError || !targetProfile) {
       return new Response(
         JSON.stringify({ error: 'User not found in organization' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 404, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
@@ -82,7 +83,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (user.id === user_id && (action === 'deactivate' || action === 'delete')) {
       return new Response(
         JSON.stringify({ error: 'Cannot deactivate or delete your own account' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
       );
     }
 
@@ -104,7 +105,7 @@ const handler = async (req: Request): Promise<Response> => {
         if (!role || !data_access_level) {
           return new Response(
             JSON.stringify({ error: 'Role and data access level required for role change' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
           );
         }
         updateData = { role, data_access_level };
@@ -124,7 +125,7 @@ const handler = async (req: Request): Promise<Response> => {
       default:
         return new Response(
           JSON.stringify({ error: 'Invalid action' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
         );
     }
 
@@ -169,14 +170,14 @@ const handler = async (req: Request): Promise<Response> => {
           is_active: updatedProfile.is_active
         }
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
     );
 
   } catch (error: any) {
     console.error('Error in manage-user-roles function:', error);
     return new Response(
       JSON.stringify({ error: error.message || 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
     );
   }
 };
