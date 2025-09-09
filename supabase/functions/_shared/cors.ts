@@ -14,14 +14,11 @@ export function buildCorsHeaders(req: Request) {
   const headers: Record<string,string> = {
     'Vary': 'Origin',
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-    'Access-Control-Allow-Headers': 'authorization,apikey,content-type,x-client-info,x-correlation-id,prefer,range',
-    'Access-Control-Max-Age': '86400',
+    'Access-Control-Allow-Headers': 'authorization,apikey,content-type,x-correlation-id,x-client-info',
   }
   if (raw.length > 0) {
     if (origin && originIsAllowed(origin, patterns)) {
       headers['Access-Control-Allow-Origin'] = origin
-    } else {
-      headers['Access-Control-Allow-Origin'] = '*' // fallback dev
     }
   } else {
     headers['Access-Control-Allow-Origin'] = '*'
