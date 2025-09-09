@@ -7,9 +7,9 @@ import {
   TestemunhaFilters,
   MapaTestemunhasRequest,
 } from "@/types/mapa-testemunhas";
-import { FunctionsHttpError } from '@supabase/supabase-js';
-import { mapFunctionsError } from './functions-errors';
 import { z } from "zod";
+import { fetchWithAuth } from "./fetchWithAuth";
+import { getProjectRef } from "./supabaseClient";
 
 // Mock data for offline functionality
 const mockProcessos: PorProcesso[] = [
@@ -192,6 +192,8 @@ const isSupabaseConfigured = () => {
   }
 };
 
+const FUNCTIONS_BASE_URL = `https://${getProjectRef()}.functions.supabase.co`;
+
 // Zod schema to coerce and sanitize request params before sending
 const mapaRequestSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -225,7 +227,7 @@ const mapaRequestSchema = z.object({
 // Fetch functions with Supabase fallback to mocks
 export const fetchPorProcesso = async (
   params: MapaTestemunhasRequest<ProcessoFilters>
-): Promise<{ data: PorProcesso[]; total: number; error?: string }> => {
+): Promise<{ data: PorProcesso[]; total: number; cid: string; error?: string }> => {
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<ProcessoFilters>;
   const sanitized = {
     ...parsed,
@@ -241,46 +243,35 @@ export const fetchPorProcesso = async (
       throw new Error('Supabase not configured');
     }
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    const access_token = sessionData?.session?.access_token;
-    if (!access_token) throw new Error("Usuário não autenticado");
-
-    const { data, error } = await supabase.functions.invoke<{
+    const url = `${FUNCTIONS_BASE_URL}/mapa-testemunhas-processos`;
+    const { data, status, cid: respCid } = await fetchWithAuth<{
       data?: PorProcesso[];
       count?: number;
       total?: number;
-    }>('mapa-testemunhas-processos', {
-      body: parsed,
+      error?: string;
+      detail?: string;
+      hint?: string;
+      example?: string;
+      cid?: string;
+    }>(url, {
+      method: 'POST',
+      body: JSON.stringify(parsed),
       headers: {
-        'Content-Type': 'application/json',
-        'x-correlation-id': cid,
-        Authorization: `Bearer ${access_token}`
+        'Content-Type': 'application/json'
       }
     });
+    cid = respCid;
 
-    cid = (error as any)?.context?.response?.headers.get('x-correlation-id') ?? cid;
-
-    if (error instanceof FunctionsHttpError && error.context?.response?.ok === false) {
-      let errorPayload: any;
-      try {
-        errorPayload = await error.context.response.json();
-      } catch {}
-
-      const { error: err, detail, hint, example } = errorPayload || {};
+    if (status >= 400) {
+      const { error: err, detail, hint, example } = (data as any) || {};
       const message = detail || hint || 'Verifique filtros e tente novamente.';
       console.error(`[cid=${cid}] fetchPorProcesso HTTP error`, {
-        status: error.context.response.status,
-        url: error.context.response.url,
+        status,
+        url,
         payload: sanitized,
         error: { error: err, detail, hint, example }
       });
-      return { data: [], total: 0, error: message };
-    }
-
-    if (error) {
-      console.error(`[cid=${cid}] Error in fetchPorProcesso:`, error.message);
-      console.info(`[cid=${cid}] Hint: verifique filtros ou tente novamente.`);
-      throw error;
+      return { data: [], total: 0, error: message, cid };
     }
 
     const payload = data as { data?: PorProcesso[]; count?: number; total?: number };
@@ -295,13 +286,11 @@ export const fetchPorProcesso = async (
 
     return {
       data: payload.data || [],
-      total: payload.count || payload.total || 0
+      total: payload.count || payload.total || 0,
+      cid
     };
   } catch (error) {
-    if (error instanceof FunctionsHttpError) {
-      console.error(`[cid=${cid}]`, mapFunctionsError(error));
-      throw new Error(mapFunctionsError(error));
-    }
+    cid = (error as any)?.cid || cid;
     console.warn(`[cid=${cid}] 📊 Request failed, using mock processos data:`, error);
 
     // Mock filtering logic
@@ -365,14 +354,15 @@ export const fetchPorProcesso = async (
 
     return {
       data: filteredData.slice(start, end),
-      total: filteredData.length
+      total: filteredData.length,
+      cid
     };
   }
 };
 
 export const fetchPorTestemunha = async (
   params: MapaTestemunhasRequest<TestemunhaFilters>
-): Promise<{ data: PorTestemunha[]; total: number; error?: string }> => {
+): Promise<{ data: PorTestemunha[]; total: number; cid: string; error?: string }> => {
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<TestemunhaFilters>;
   const sanitized = {
     ...parsed,
@@ -388,46 +378,35 @@ export const fetchPorTestemunha = async (
       throw new Error('Supabase not configured');
     }
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    const access_token = sessionData?.session?.access_token;
-    if (!access_token) throw new Error("Usuário não autenticado");
-
-    const { data, error } = await supabase.functions.invoke<{
+    const url = `${FUNCTIONS_BASE_URL}/mapa-testemunhas-testemunhas`;
+    const { data, status, cid: respCid } = await fetchWithAuth<{
       data?: PorTestemunha[];
       count?: number;
       total?: number;
-    }>('mapa-testemunhas-testemunhas', {
-      body: parsed,
+      error?: string;
+      detail?: string;
+      hint?: string;
+      example?: string;
+      cid?: string;
+    }>(url, {
+      method: 'POST',
+      body: JSON.stringify(parsed),
       headers: {
-        'Content-Type': 'application/json',
-        'x-correlation-id': cid,
-        Authorization: `Bearer ${access_token}`
+        'Content-Type': 'application/json'
       }
     });
+    cid = respCid;
 
-    cid = (error as any)?.context?.response?.headers.get('x-correlation-id') ?? cid;
-
-    if (error instanceof FunctionsHttpError && error.context?.response?.ok === false) {
-      let errorPayload: any;
-      try {
-        errorPayload = await error.context.response.json();
-      } catch {}
-
-      const { error: err, detail, hint, example } = errorPayload || {};
+    if (status >= 400) {
+      const { error: err, detail, hint, example } = (data as any) || {};
       const message = detail || hint || 'Verifique filtros e tente novamente.';
       console.error(`[cid=${cid}] fetchPorTestemunha HTTP error`, {
-        status: error.context.response.status,
-        url: error.context.response.url,
+        status,
+        url,
         payload: sanitized,
         error: { error: err, detail, hint, example }
       });
-      return { data: [], total: 0, error: message };
-    }
-
-    if (error) {
-      console.error(`[cid=${cid}] Error in fetchPorTestemunha:`, error.message);
-      console.info(`[cid=${cid}] Hint: verifique filtros ou tente novamente.`);
-      throw error;
+      return { data: [], total: 0, error: message, cid };
     }
 
     const payload = data as { data?: PorTestemunha[]; count?: number; total?: number };
@@ -442,13 +421,11 @@ export const fetchPorTestemunha = async (
 
     return {
       data: payload.data || [],
-      total: payload.count || payload.total || 0
+      total: payload.count || payload.total || 0,
+      cid
     };
   } catch (error) {
-    if (error instanceof FunctionsHttpError) {
-      console.error(`[cid=${cid}]`, mapFunctionsError(error));
-      throw new Error(mapFunctionsError(error));
-    }
+    cid = (error as any)?.cid || cid;
     console.warn(`[cid=${cid}] 📊 Request failed, using mock testemunhas data:`, error);
 
     // Mock filtering logic
@@ -483,7 +460,8 @@ export const fetchPorTestemunha = async (
 
     return {
       data: filteredData.slice(start, end),
-      total: filteredData.length
+      total: filteredData.length,
+      cid
     };
   }
 };
