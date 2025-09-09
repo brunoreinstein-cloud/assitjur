@@ -17,6 +17,12 @@
 
 ---
 
+## 📚 Documentação
+
+- [Configuração de CORS](docs/cors-setup.md)
+
+---
+
 ## 📦 Como Rodar o Projeto
 
 ### 1. Clonar o repositório
