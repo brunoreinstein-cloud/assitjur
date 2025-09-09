@@ -1,24 +1,9 @@
-import React, { memo, useMemo, useState, useEffect } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import { ChevronUp, ChevronDown, ChevronsUpDown, Eye, MoreHorizontal, FileText, Edit, Trash2, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +13,7 @@ import {
 import { ProcessoRow } from '@/types/processos-explorer';
 import { TooltipWrapper } from '@/components/ui/tooltip-wrapper';
 import { ProcessosClassificationChip } from './ProcessosClassificationChip';
-import { formatDatePtBR, formatDateWithTime, formatRelativeTime, formatCNJ } from '@/utils/date-formatter';
+import { formatDatePtBR, formatRelativeTime, formatCNJ } from '@/utils/date-formatter';
 
 interface ProcessosGridProps {
   data: ProcessoRow[];
@@ -36,15 +21,14 @@ interface ProcessosGridProps {
   onRowSelection: (id: string, selected: boolean) => void;
   onSelectAll: (selected: boolean) => void;
   onRowClick: (processo: ProcessoRow) => void;
-  page: number;
-  pageSize: number;
-  total: number;
-  onPageChange: (page: number) => void;
-  onPageSizeChange: (pageSize: number) => void;
   orderBy: string;
   orderDir: 'asc' | 'desc';
   onSort: (field: any, direction: 'asc' | 'desc') => void;
   isPiiMasked: boolean;
+  onLoadMore: () => void;
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  total: number;
 }
 
 export const ProcessosGrid = memo(function ProcessosGrid({
@@ -53,15 +37,14 @@ export const ProcessosGrid = memo(function ProcessosGrid({
   onRowSelection,
   onSelectAll,
   onRowClick,
-  page,
-  pageSize,
-  total,
-  onPageChange,
-  onPageSizeChange,
   orderBy,
   orderDir,
   onSort,
-  isPiiMasked
+  isPiiMasked,
+  onLoadMore,
+  hasMore,
+  isLoadingMore,
+  total
 }: ProcessosGridProps) {
   // Ordenação persistente
   useEffect(() => {
@@ -369,76 +352,16 @@ export const ProcessosGrid = memo(function ProcessosGrid({
         </Table>
       </div>
 
-      {/* Pagination */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            {((page - 1) * pageSize) + 1}–{Math.min(page * pageSize, total)} de {total.toLocaleString('pt-BR')}
-          </span>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Registros por página:</span>
-          <Select
-            value={pageSize.toString()}
-            onValueChange={(value) => onPageSizeChange(parseInt(value))}
-          >
-            <SelectTrigger className="w-20">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="25">25</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious 
-                onClick={() => onPageChange(Math.max(1, page - 1))}
-                className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-              />
-            </PaginationItem>
-            
-            {/* Page numbers logic */}
-            {Array.from({ length: Math.min(5, Math.ceil(total / pageSize)) }, (_, i) => {
-              const totalPages = Math.ceil(total / pageSize);
-              let pageNum;
-              
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (page <= 3) {
-                pageNum = i + 1;
-              } else if (page >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = page - 2 + i;
-              }
-              
-              return (
-                <PaginationItem key={pageNum}>
-                  <PaginationLink
-                    onClick={() => onPageChange(pageNum)}
-                    isActive={page === pageNum}
-                    className="cursor-pointer"
-                  >
-                    {pageNum}
-                  </PaginationLink>
-                </PaginationItem>
-              );
-            })}
-            
-            <PaginationItem>
-              <PaginationNext 
-                onClick={() => onPageChange(Math.min(Math.ceil(total / pageSize), page + 1))}
-                className={page >= Math.ceil(total / pageSize) ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+      {/* Load More */}
+      <div className="flex flex-col items-center justify-center gap-4 py-4">
+        <span className="text-sm text-muted-foreground">
+          Mostrando {data.length} de {total.toLocaleString('pt-BR')}
+        </span>
+        {hasMore && (
+          <Button onClick={onLoadMore} disabled={isLoadingMore}>
+            {isLoadingMore ? 'Carregando...' : 'Carregar mais'}
+          </Button>
+        )}
       </div>
     </div>
   );

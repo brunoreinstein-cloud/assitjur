@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, memo } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +14,6 @@ import { ExportManager } from './ExportManager';
 import { ProcessosKPIs } from './ProcessosKPIs';
 import { ProcessoRow, ProcessoQuery, ProcessoFiltersState, VersionInfo } from '@/types/processos-explorer';
 import type { ProcessoFilters } from '@/types/mapa-testemunhas';
-import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { applyPIIMask } from '@/utils/pii-mask';
 
@@ -23,9 +22,7 @@ interface ProcessosExplorerProps {
 }
 
 export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: ProcessosExplorerProps) {
-  const { user, profile } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { profile } = useAuth();
 
   // UI State
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
@@ -55,10 +52,15 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   });
 
   // Pagination State
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [items, setItems] = useState<ProcessoRow[]>([]);
+  const [isInitialLoading, setIsInitialLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [orderBy, setOrderBy] = useState<'updated_at'|'score_risco'|'uf'|'comarca'|'cnj'>('updated_at');
   const [orderDir, setOrderDir] = useState<'asc'|'desc'>('desc');
+  const [totalCount, setTotalCount] = useState(0);
+  const [error, setError] = useState<Error | null>(null);
+  const limit = 25;
 
   // Save PII mask preference
   useEffect(() => {
@@ -72,8 +74,6 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   // Build query from filters - memoized
   const buildQuery = useMemo((): ProcessoQuery => {
     const query: ProcessoQuery = {
-      page,
-      pageSize,
       orderBy,
       orderDir
     };
@@ -102,7 +102,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
     }
 
     return query;
-  }, [page, pageSize, orderBy, orderDir, debouncedSearch, debouncedTestemunha, filters]);
+  }, [orderBy, orderDir, debouncedSearch, debouncedTestemunha, filters]);
 
   // Fetch version info
   const { data: versionInfo } = useQuery<VersionInfo>({
@@ -132,51 +132,78 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   });
 
   // Fetch processos data
-  const {
-    data: processosData,
-    isLoading,
-    error,
-    refetch
-  } = useQuery({
-    queryKey: ['processos-explorer', profile?.organization_id, buildQuery],
-    queryFn: async () => {
-      if (!profile?.organization_id) throw new Error('No organization');
+  const fetchProcessos = async (cursorParam: string | null) => {
+    if (!profile?.organization_id) throw new Error('No organization');
 
-      const queryParams = buildQuery;
-      const apiFilters: ProcessoFilters = {
-        ...(queryParams.q ? { search: queryParams.q } : {}),
-        ...(queryParams.uf && queryParams.uf.length > 0 ? { uf: queryParams.uf[0] } : {}),
-        ...(queryParams.status && queryParams.status.length > 0 ? { status: queryParams.status[0] } : {}),
-        ...(queryParams.fase && queryParams.fase.length > 0 ? { fase: queryParams.fase[0] } : {}),
-        ...(queryParams.flags?.triang ? { temTriangulacao: true } : {}),
-        ...(queryParams.flags?.troca ? { temTroca: true } : {}),
-        ...(queryParams.flags?.prova ? { temProvaEmprestada: true } : {})
-      };
-      console.log('🔍 Fetching processos with filters:', apiFilters);
+    const queryParams = buildQuery;
+    const apiFilters: ProcessoFilters = {
+      ...(queryParams.q ? { search: queryParams.q } : {}),
+      ...(queryParams.uf && queryParams.uf.length > 0 ? { uf: queryParams.uf[0] } : {}),
+      ...(queryParams.status && queryParams.status.length > 0 ? { status: queryParams.status[0] } : {}),
+      ...(queryParams.fase && queryParams.fase.length > 0 ? { fase: queryParams.fase[0] } : {}),
+      ...(queryParams.flags?.triang ? { temTriangulacao: true } : {}),
+      ...(queryParams.flags?.troca ? { temTroca: true } : {}),
+      ...(queryParams.flags?.prova ? { temProvaEmprestada: true } : {})
+    };
+    console.log('🔍 Fetching processos with filters:', apiFilters);
 
-      const { data, error } = await supabase.functions.invoke('mapa-testemunhas-processos', {
-        body: {
-          page,
-          limit: pageSize,
-          filters: apiFilters
-        }
-      });
+    const { data, error } = await supabase.functions.invoke('mapa-testemunhas-processos', {
+      body: {
+        cursor: cursorParam,
+        limit,
+        filters: apiFilters
+      }
+    });
 
-      if (error) throw error;
-      
-      // Apply PII masking if enabled
-      const maskedData = {
-        ...data,
-        data: isPiiMasked ? applyPIIMask(data.data, true) : data.data
-      };
+    if (error) throw error;
 
-      console.log('✅ Processos loaded:', maskedData);
-      return maskedData;
-    },
-    enabled: !!profile?.organization_id,
-    refetchOnWindowFocus: false,
-    staleTime: 2 * 60 * 1000 // 2 minutes
-  });
+    const newItems = isPiiMasked ? applyPIIMask(data.data, true) : data.data;
+    setItems(prev => cursorParam ? [...prev, ...newItems] : newItems);
+    setCursor(data.next_cursor ?? null);
+    setTotalCount(data.count ?? 0);
+    console.log('✅ Processos loaded:', data);
+  };
+
+  const loadInitial = async () => {
+    setIsInitialLoading(true);
+    try {
+      await fetchProcessos(null);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setIsInitialLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setItems([]);
+    setCursor(null);
+    setSelectedRows(new Set());
+    setError(null);
+    if (profile?.organization_id) {
+      loadInitial();
+    }
+  }, [profile?.organization_id, buildQuery, isPiiMasked]);
+
+  const refetch = () => {
+    setItems([]);
+    setCursor(null);
+    setSelectedRows(new Set());
+    setError(null);
+    loadInitial();
+  };
+
+  const handleLoadMore = async () => {
+    if (!cursor) return;
+    setIsLoadingMore(true);
+    try {
+      await fetchProcessos(cursor);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   // Handle row selection
   const handleRowSelection = (id: string, selected: boolean) => {
@@ -190,8 +217,8 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   };
 
   const handleSelectAll = (selected: boolean) => {
-    if (selected && processosData?.data) {
-      setSelectedRows(new Set(processosData.data.map(p => p.id)));
+    if (selected) {
+      setSelectedRows(new Set(items.map(p => p.id)));
     } else {
       setSelectedRows(new Set());
     }
@@ -229,7 +256,6 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
         duplo: false
       }
     });
-    setPage(1);
   };
 
   const hasActiveFilters = () => {
@@ -300,9 +326,9 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
       </div>
 
       {/* Mini-KPIs */}
-      {!isLoading && processosData && (
+      {!isInitialLoading && items.length > 0 && (
         <ProcessosKPIs
-          data={processosData.data}
+          data={items}
           filters={filters}
           onFilterApply={handleKPIFilterApply}
         />
@@ -318,12 +344,12 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
         onClearFilters={handleClearFilters}
         onExport={() => setIsExportOpen(true)}
         selectedCount={selectedRows.size}
-        totalCount={processosData?.count || 0}
-        processos={processosData?.data || []}
+        totalCount={totalCount}
+        processos={items}
       />
 
       {/* Loading State */}
-      {isLoading && (
+      {isInitialLoading && (
         <Card>
           <CardContent className="p-6">
             <div className="space-y-4">
@@ -336,38 +362,38 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
       )}
 
       {/* Grid */}
-      {!isLoading && processosData && (
+      {!isInitialLoading && items && (
         <ProcessosGrid
-          data={processosData.data}
+          data={items}
           selectedRows={selectedRows}
           onRowSelection={handleRowSelection}
           onSelectAll={handleSelectAll}
           onRowClick={handleRowClick}
-          page={page}
-          pageSize={pageSize}
-          total={processosData.count}
-          onPageChange={setPage}
-          onPageSizeChange={setPageSize}
           orderBy={orderBy}
           orderDir={orderDir}
           onSort={(field, direction) => {
             setOrderBy(field);
             setOrderDir(direction);
-            setPage(1);
+            setItems([]);
+            setCursor(null);
           }}
           isPiiMasked={isPiiMasked}
+          onLoadMore={handleLoadMore}
+          hasMore={cursor !== null}
+          isLoadingMore={isLoadingMore}
+          total={totalCount}
         />
       )}
 
       {/* Empty State */}
-      {!isLoading && processosData?.data.length === 0 && (
+      {!isInitialLoading && items.length === 0 && (
         <Card>
           <CardContent className="p-8 text-center">
             <Database className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Nenhum processo encontrado</h3>
             <p className="text-muted-foreground mb-4">
-              {hasActiveFilters() 
-                ? 'Nenhum processo corresponde aos filtros aplicados.' 
+              {hasActiveFilters()
+                ? 'Nenhum processo corresponde aos filtros aplicados.'
                 : 'Não há dados disponíveis na versão publicada.'
               }
             </p>
@@ -395,8 +421,8 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
       <ExportManager
         open={isExportOpen}
         onClose={() => setIsExportOpen(false)}
-        data={processosData?.data || []}
-        selectedData={processosData?.data?.filter(p => selectedRows.has(p.id)) || []}
+        data={items}
+        selectedData={items.filter(p => selectedRows.has(p.id))}
         filters={buildQuery}
         isPiiMasked={isPiiMasked}
       />
