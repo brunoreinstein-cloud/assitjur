@@ -1,18 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.56.0";
-import { buildCorsHeaders, handlePreflight } from "../_shared/cors.ts";
+import { handlePreflight } from "../_shared/cors.ts";
 import { createLogger } from "../_shared/logger.ts";
 import { ProcessosRequestSchema, ListaResponseSchema } from "../_shared/mapa-contracts.ts";
+import { withCid, jres, jerr } from "../_shared/http.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 serve(async (req) => {
-  const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
+  const { cid } = withCid(req);
   const logger = createLogger(cid);
 
   const pre = handlePreflight(req, cid);
   if (pre) return pre;
-
-  const headers = { ...buildCorsHeaders(req), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" };
 
   let payload: unknown = {};
   if (req.method === "POST") {
@@ -20,24 +19,15 @@ serve(async (req) => {
       payload = await req.json();
     } catch (e) {
       logger.error(`invalid json: ${e.message}`);
-      return new Response(
-        JSON.stringify({ error: "INVALID_JSON", message: "Corpo deve ser JSON válido", cid }),
-        { status: 400, headers },
-      );
+      return jerr(req, cid, 400, "INVALID_JSON", { message: "Corpo deve ser JSON válido" });
     }
   }
 
   const validation = ProcessosRequestSchema.safeParse(payload);
   if (!validation.success) {
     logger.error(`validation: ${validation.error.message}`);
-    return new Response(
-      JSON.stringify({ 
-        error: "VALIDATION_ERROR", 
-        details: validation.error.issues, 
-        cid 
-      }),
-      { status: 422, headers },
-    );
+    const fieldErrors = validation.error.flatten().fieldErrors;
+    return jerr(req, cid, 400, "INVALID_PAYLOAD", fieldErrors);
   }
 
   const params = validation.data;
@@ -49,7 +39,7 @@ serve(async (req) => {
 
   const authHeader = req.headers.get("authorization") ?? "";
   if (!authHeader.startsWith("Bearer ")) {
-    return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401, headers });
+    return jerr(req, cid, 401, "UNAUTHORIZED");
   }
 
   const supabase = createClient(
@@ -78,29 +68,16 @@ serve(async (req) => {
   const { data, count, error } = await query;
   if (error) {
     logger.error(`database: ${error.message}`);
-    return new Response(
-      JSON.stringify({ 
-        error: "DB_ERROR", 
-        message: error.message,
-        cid 
-      }),
-      { status: 500, headers },
-    );
+    return jerr(req, cid, 500, "DB_ERROR", { message: error.message });
   }
 
   const result = { items: data ?? [], page, limit, total: count ?? 0 };
   const resultValidation = ListaResponseSchema.safeParse(result);
   if (!resultValidation.success) {
     logger.error(`response validation: ${resultValidation.error.message}`);
-    return new Response(
-      JSON.stringify({ 
-        error: "INCONSISTENT_RESPONSE",
-        cid 
-      }),
-      { status: 500, headers },
-    );
+    return jerr(req, cid, 500, "INCONSISTENT_RESPONSE");
   }
 
   logger.info(`success: ${result.items.length} items returned`);
-  return new Response(JSON.stringify(result), { status: 200, headers });
+  return jres(req, result);
 });
