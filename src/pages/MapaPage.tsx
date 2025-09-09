@@ -92,6 +92,9 @@ const MapaPage = () => {
 
   // Stable lastUpdate state
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const MAX_RETRIES = 3;
 
   // Helper function for date formatting
   const formatDate = (date: Date) => {
@@ -158,13 +161,11 @@ const MapaPage = () => {
   useEffect(() => {
     if (!user) return;
 
-    const loadData = async () => {
+    const loadData = async (attempt = 0): Promise<void> => {
       setIsLoading(true);
       setError(false);
-      
+
       try {
-        // Apply current filters to the API calls
-        // Ensure only normalized filters are sent
         const [processosResult, testemunhasResult] = await Promise.all([
           fetchPorProcesso(
             normalizeMapaRequest({
@@ -182,51 +183,65 @@ const MapaPage = () => {
           )
         ]);
 
-        // Update store with real data
+        if (processosResult.error || testemunhasResult.error) {
+          throw new Error(processosResult.error || testemunhasResult.error);
+        }
+
         setProcessos(processosResult.data);
         setTestemunhas(testemunhasResult.data);
 
-        const errorMsg = processosResult.error || testemunhasResult.error;
-        if (errorMsg) {
-          setError(true, errorMsg);
-          toast({
-            title: "Falha ao carregar dados",
-            description: errorMsg,
-            variant: "destructive",
-          });
-        } else {
-          if (isFirstLoad) {
-            setLastUpdate(new Date());
-            setIsFirstLoad(false);
-          }
-
-          console.log('Data loaded successfully:', {
-            processos: processosResult.data.length,
-            testemunhas: testemunhasResult.data.length
-          });
+        if (isFirstLoad) {
+          setLastUpdate(new Date());
+          setIsFirstLoad(false);
         }
 
         setIsLoading(false);
-        
+        setRetryCount(0);
+        setIsRetrying(false);
+
+        console.log('Data loaded successfully:', {
+          processos: processosResult.data.length,
+          testemunhas: testemunhasResult.data.length
+        });
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
-        const message = error instanceof Error
-          ? error.message
-          : 'Verifique filtros e tente novamente.';
-        setError(true, message);
-        setIsLoading(false);
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Verifique filtros e tente novamente.';
 
-        toast({
-          title: "Falha ao carregar dados",
-          description: message,
-          variant: "destructive",
-        });
+        if (attempt < MAX_RETRIES) {
+          if (!isRetrying) setIsRetrying(true);
+          setRetryCount(attempt);
+          setTimeout(() => loadData(attempt + 1), 1000);
+        } else {
+          setError(true, message);
+          setIsLoading(false);
+          setRetryCount(0);
+          setIsRetrying(false);
+          toast({
+            title: 'Falha ao carregar dados',
+            description: message,
+            variant: 'destructive',
+          });
+        }
       }
     };
 
     loadData();
-    
-  }, [user, setProcessos, setTestemunhas, setIsLoading, setError, setLastUpdate, isFirstLoad, toast, processoFilters, testemunhaFilters]);
+
+    }, [
+      user,
+      setProcessos,
+      setTestemunhas,
+      setIsLoading,
+      setError,
+      setLastUpdate,
+      isFirstLoad,
+      toast,
+      processoFilters,
+      testemunhaFilters,
+    ]);
 
   // Show loading during auth check
   if (loading) {
@@ -411,7 +426,11 @@ const MapaPage = () => {
               <ProcessoFilters />
               {isLoading ? (
                 <div className="flex items-center justify-center p-12" aria-live="polite">
-                  <div className="animate-pulse text-muted-foreground">Carregando dados...</div>
+                  {isRetrying && retryCount > 0 ? (
+                    <div className="text-sm text-muted-foreground">Tentando novamente...</div>
+                  ) : (
+                    <div className="animate-pulse text-muted-foreground">Carregando dados...</div>
+                  )}
                 </div>
               ) : processos.length === 0 ? (
                 <Card className="rounded-2xl border-border/50">
@@ -428,7 +447,11 @@ const MapaPage = () => {
               <TestemunhaFilters />
               {isLoading ? (
                 <div className="flex items-center justify-center p-12" aria-live="polite">
-                  <div className="animate-pulse text-muted-foreground">Carregando dados...</div>
+                  {isRetrying && retryCount > 0 ? (
+                    <div className="text-sm text-muted-foreground">Tentando novamente...</div>
+                  ) : (
+                    <div className="animate-pulse text-muted-foreground">Carregando dados...</div>
+                  )}
                 </div>
               ) : testemunhas.length === 0 ? (
                 <Card className="rounded-2xl border-border/50">
