@@ -1,67 +1,37 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.56.0'
-import { getAuth } from "../_shared/auth.ts"
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getAuth } from "../_shared/auth.ts";
+import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
+import { json, jsonError } from "../_shared/http.ts";
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
+  const ch = corsHeaders(req);
+  const pre = handlePreflight(req, cid);
+  if (pre) return pre;
 
   try {
     const { user, organization_id, supa } = await getAuth(req);
     if (!user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      return json(401, { error: "Unauthorized", cid }, { ...ch, "x-correlation-id": cid });
     }
 
     if (!organization_id) {
-      return new Response(
-        JSON.stringify({ error: 'Organization not found' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      return json(400, { error: "Organization not found", cid }, { ...ch, "x-correlation-id": cid });
     }
 
-    // Call RPC function to get statistics
-    const { data: stats, error } = await supa.rpc('rpc_get_assistjur_stats', {
-      p_org_id: organization_id
+    const { data: stats, error } = await supa.rpc("rpc_get_assistjur_stats", {
+      p_org_id: organization_id,
     });
-
     if (error) {
-      console.error('RPC error:', error);
+      console.error("RPC error:", error);
       throw error;
     }
 
-    return new Response(
-      JSON.stringify(stats),
-      { 
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
-
+    return json(200, { ...stats, cid }, { ...ch, "x-correlation-id": cid });
   } catch (error) {
-    console.error('Error in assistjur-stats:', error);
-    return new Response(
-      JSON.stringify({ 
-        error: error.message || 'Internal server error' 
-      }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
+    console.error("Error in assistjur-stats:", error);
+    return jsonError(500, error.message || "Internal server error", { cid }, {
+      ...ch,
+      "x-correlation-id": cid,
+    });
   }
 });
