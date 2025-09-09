@@ -1,5 +1,3 @@
-import { buildCorsHeaders } from "./cors.ts";
-
 export function withCid(req: Request) {
   let cid = req.headers.get("x-correlation-id");
   if (!cid) {
@@ -9,54 +7,20 @@ export function withCid(req: Request) {
   return { cid };
 }
 
-export function jres(
-  req: Request,
-  body: Record<string, unknown>,
-  status = 200,
-) {
-  const { cid } = withCid(req);
-  const headers = {
-    ...buildCorsHeaders(req),
-    "content-type": "application/json; charset=utf-8",
-    "x-correlation-id": cid,
-  };
-  return new Response(JSON.stringify({ ...body, cid }), {
+export const json = (
+  status: number,
+  data: unknown,
+  extra: HeadersInit = {},
+) =>
+  new Response(JSON.stringify(data), {
     status,
-    headers,
+    headers: { "content-type": "application/json; charset=utf-8", ...extra },
   });
-}
 
-export function jerr(
-  req: Request,
-  cid: string,
-  status: number,
-  code: string,
-  details?: unknown,
-) {
-  req.headers.set("x-correlation-id", cid);
-  const payload: Record<string, unknown> = { error: code };
-  if (details !== undefined) payload.details = details;
-  return jres(req, payload, status);
-}
-
-// New helpers without Request dependency
-export function json(
-  status: number,
-  body: Record<string, unknown>,
-  headers: Record<string, string> = {},
-) {
-  const hdrs = new Headers({
-    "content-type": "application/json; charset=utf-8",
-    ...headers,
-  });
-  return new Response(JSON.stringify(body), { status, headers: hdrs });
-}
-
-export function jsonError(
+export const jsonError = (
   status: number,
   message: string,
-  details: Record<string, unknown> = {},
-  headers: Record<string, string> = {},
-) {
-  return json(status, { error: message, ...details }, headers);
-}
+  ctx: Record<string, unknown> = {},
+  extra: HeadersInit = {},
+) => json(status, { error: message, ...ctx }, extra);
+
