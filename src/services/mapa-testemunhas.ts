@@ -1,5 +1,13 @@
 import { supabase } from '@/integrations/supabase/client';
-import type { PorTestemunha, TestemunhaFilters, ProcessoFilters } from '@/types/mapa-testemunhas';
+import type {
+  PorTestemunha,
+  TestemunhaFilters,
+  ProcessoFilters,
+} from '@/types/mapa-testemunhas';
+import {
+  ProcessosRequestSchema,
+  TestemunhasRequestSchema,
+} from '@/contracts/mapa-contracts';
 
 export async function fetchTestemunhas(params: {
   page?: number;
@@ -7,14 +15,31 @@ export async function fetchTestemunhas(params: {
   search?: string;
   filters?: TestemunhaFilters;
 }): Promise<{ data: PorTestemunha[]; total: number }> {
-  const { data, error } = await supabase.functions.invoke('mapa-testemunhas-testemunhas', {
-    body: {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData?.session?.access_token;
+  if (!accessToken) throw new Error('Usuário não autenticado');
+
+  const body = TestemunhasRequestSchema.parse({
+    paginacao: {
       page: params.page || 1,
       limit: params.limit || 20,
-      search: params.search,
-      ...params.filters
-    }
+    },
+    filtros: {
+      ...(params.filters ?? {}),
+      ...(params.search ? { search: params.search } : {}),
+    },
   });
+
+  const { data, error } = await supabase.functions.invoke(
+    'mapa-testemunhas-testemunhas',
+    {
+      body,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
 
   if (error) {
     console.error('Error fetching testemunhas:', error);
@@ -29,13 +54,28 @@ export async function fetchProcessos(params: {
   limit?: number;
   filters?: ProcessoFilters;
 }): Promise<{ data: any[]; total: number }> {
-  const { data, error } = await supabase.functions.invoke('mapa-testemunhas-processos', {
-    body: {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData?.session?.access_token;
+  if (!accessToken) throw new Error('Usuário não autenticado');
+
+  const body = ProcessosRequestSchema.parse({
+    paginacao: {
       page: params.page || 1,
       limit: params.limit || 20,
-      filters: params.filters
-    }
+    },
+    filtros: params.filters ?? {},
   });
+
+  const { data, error } = await supabase.functions.invoke(
+    'mapa-testemunhas-processos',
+    {
+      body,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
 
   if (error) {
     console.error('Error fetching processos:', error);
