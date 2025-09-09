@@ -125,6 +125,13 @@ curl -X POST "$SUPABASE_URL/functions/v1/mapa-testemunhas-testemunhas" \
 npm run test
 ```
 
+### Teste manual: copiar detalhes do erro
+
+1. Force uma falha na página `/mapa` (ex.: desconecte a rede).
+2. Acesse `/mapa` e aguarde o toast de erro.
+3. Clique em **Copiar detalhes**.
+4. Cole em algum editor e verifique o objeto `{ route, status, cid, timestamp }`.
+
 ---
 
 ## 🔒 Segurança

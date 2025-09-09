@@ -225,7 +225,7 @@ const mapaRequestSchema = z.object({
 // Fetch functions with Supabase fallback to mocks
 export const fetchPorProcesso = async (
   params: MapaTestemunhasRequest<ProcessoFilters>
-): Promise<{ data: PorProcesso[]; total: number; error?: string }> => {
+): Promise<{ data: PorProcesso[]; total: number; error?: string; status?: number; cid?: string; route?: string }> => {
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<ProcessoFilters>;
   const sanitized = {
     ...parsed,
@@ -274,7 +274,14 @@ export const fetchPorProcesso = async (
         payload: sanitized,
         error: { error: err, detail, hint, example }
       });
-      return { data: [], total: 0, error: message };
+      return {
+        data: [],
+        total: 0,
+        error: message,
+        status: error.context.response.status,
+        cid,
+        route: error.context.response.url,
+      };
     }
 
     if (error) {
@@ -372,7 +379,7 @@ export const fetchPorProcesso = async (
 
 export const fetchPorTestemunha = async (
   params: MapaTestemunhasRequest<TestemunhaFilters>
-): Promise<{ data: PorTestemunha[]; total: number; error?: string }> => {
+): Promise<{ data: PorTestemunha[]; total: number; error?: string; status?: number; cid?: string; route?: string }> => {
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<TestemunhaFilters>;
   const sanitized = {
     ...parsed,
@@ -421,7 +428,14 @@ export const fetchPorTestemunha = async (
         payload: sanitized,
         error: { error: err, detail, hint, example }
       });
-      return { data: [], total: 0, error: message };
+      return {
+        data: [],
+        total: 0,
+        error: message,
+        status: error.context.response.status,
+        cid,
+        route: error.context.response.url,
+      };
     }
 
     if (error) {

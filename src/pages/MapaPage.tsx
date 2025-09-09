@@ -38,6 +38,7 @@ import { ExportCsvButton } from "@/components/mapa/ExportCsvButton";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { ToastAction } from "@/components/ui/toast";
 import { fetchPorProcesso, fetchPorTestemunha } from "@/lib/supabase";
 import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
 import { normalizeMapaRequest } from "@/lib/normalizeMapaRequest";
@@ -186,13 +187,31 @@ const MapaPage = () => {
         setProcessos(processosResult.data);
         setTestemunhas(testemunhasResult.data);
 
-        const errorMsg = processosResult.error || testemunhasResult.error;
-        if (errorMsg) {
-          setError(true, errorMsg);
+        const errorResult = processosResult.error
+          ? processosResult
+          : testemunhasResult.error
+          ? testemunhasResult
+          : null;
+        if (errorResult) {
+          const details = {
+            route: errorResult.route,
+            status: errorResult.status,
+            cid: errorResult.cid,
+            timestamp: new Date().toISOString(),
+          };
+          setError(true, errorResult.error!);
           toast({
             title: "Falha ao carregar dados",
-            description: errorMsg,
+            description: errorResult.error,
             variant: "destructive",
+            action: (
+              <ToastAction
+                altText="Copiar detalhes"
+                onClick={() => navigator.clipboard.writeText(JSON.stringify(details))}
+              >
+                Copiar detalhes
+              </ToastAction>
+            ),
           });
         } else {
           if (isFirstLoad) {
