@@ -1,118 +1,113 @@
 import { createClient } from "npm:@supabase/supabase-js@2.56.0";
+import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
+import { json, jsonError } from "../_shared/http.ts";
+import { z } from "npm:zod@3.23.8";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const supabase = createClient(
+  Deno.env.get("SUPABASE_URL") ?? "",
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+);
+
+const EXPECTED = {
+  nome: "Fulano da Silva",
+  email: "fulano@example.com",
+  cargo: "Advogado",
+  organizacao: "Org XYZ",
+  necessidades: ["feature1"],
+  outro_texto: "Texto opcional",
+  utm: { source: "newsletter", medium: "email", campaign: "beta" },
 };
 
-interface BetaSignupRequest {
-  nome: string;
-  email: string;
-  cargo?: string;
-  organizacao: string;
-  necessidades: string[];
-  outro_texto?: string;
-  utm?: {
-    source?: string;
-    medium?: string;
-    campaign?: string;
-  };
-  created_at?: string;
-}
+const ReqSchema = z.object({
+  nome: z.string(),
+  email: z.string().email(),
+  cargo: z.string().optional(),
+  organizacao: z.string(),
+  necessidades: z.array(z.string()),
+  outro_texto: z.string().optional(),
+  utm: z.object({
+    source: z.string().optional(),
+    medium: z.string().optional(),
+    campaign: z.string().optional(),
+  }).optional(),
+  created_at: z.string().optional(),
+});
 
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
-    });
-  }
+  const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
+  const ch = corsHeaders(req);
+  const pf = handlePreflight(req, cid);
+  if (pf) return pf;
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing Supabase environment variables');
-      return new Response(JSON.stringify({ error: 'Server configuration error' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
+    if (req.method !== "POST") {
+      return jsonError(405, "Method not allowed", { cid }, { ...ch, "x-correlation-id": cid });
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const body: BetaSignupRequest = await req.json();
+    const payload = await req.json().catch(() => ({}));
+    const result = ReqSchema.safeParse(payload);
+    if (!result.success) {
+      return jsonError(
+        400,
+        "Payload inválido",
+        { issues: result.error.issues, expected: EXPECTED, cid },
+        { ...ch, "x-correlation-id": cid },
+      );
+    }
+    const body = result.data;
 
-    console.log('Beta signup request:', { 
-      email: body.email, 
+    console.log("Beta signup request:", {
+      email: body.email,
       organizacao: body.organizacao,
-      necessidades: body.necessidades 
+      necessidades: body.necessidades,
+      cid,
     });
 
-    // Use the secure function to insert beta signup (includes all validation)
-    const { data, error } = await supabase.rpc('secure_insert_beta_signup', {
+    const { data, error } = await supabase.rpc("secure_insert_beta_signup", {
       p_nome: body.nome,
       p_email: body.email,
       p_cargo: body.cargo || null,
       p_organizacao: body.organizacao,
       p_necessidades: body.necessidades,
       p_outro_texto: body.outro_texto || null,
-      p_utm: body.utm || {}
+      p_utm: body.utm || {},
     });
 
     if (error) {
-      console.error('Secure function error:', error);
-      return new Response(JSON.stringify({ error: 'Erro ao salvar dados' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
+      console.error(JSON.stringify({ cid, error: String(error) }));
+      return jsonError(500, "Erro ao salvar dados", { cid }, { ...ch, "x-correlation-id": cid });
     }
 
-    // Handle function response
     if (!data.success) {
       if (data.already_exists) {
-        return new Response(JSON.stringify({ 
-          message: data.message,
-          already_exists: true 
-        }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        });
+        return json(
+          200,
+          { message: data.message, already_exists: true, cid },
+          { ...ch, "x-correlation-id": cid },
+        );
       }
-      
-      return new Response(JSON.stringify({ error: data.error }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
+      return jsonError(
+        400,
+        data.error || "Erro ao salvar dados",
+        { cid },
+        { ...ch, "x-correlation-id": cid },
+      );
     }
 
-    console.log('Beta signup successful via secure function');
+    console.log("Beta signup successful via secure function", { cid });
 
     // TODO: Send welcome email
     // await sendWelcomeEmail(data.email, data.nome);
 
-    return new Response(JSON.stringify({
-      message: data.message,
-      success: true,
-    }), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
-    });
-
+    return json(201, { message: data.message, success: true, cid }, { ...ch, "x-correlation-id": cid });
   } catch (error: any) {
-    console.error('Beta signup error:', error);
-    return new Response(JSON.stringify({ 
-      error: 'Erro interno do servidor',
-      details: error.message 
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
-    });
+    console.error(JSON.stringify({ cid, err: String(error) }));
+    return jsonError(
+      500,
+      "Erro interno do servidor",
+      { details: error.message, cid },
+      { ...ch, "x-correlation-id": cid },
+    );
   }
 };
 
