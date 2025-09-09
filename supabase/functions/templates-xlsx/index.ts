@@ -1,4 +1,3 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts'
 
 // Import XLSX for Deno - using ESM.sh for better compatibility
@@ -443,7 +442,7 @@ function buildTemplateXlsx(): Uint8Array {
   });
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
   const ch = corsHeaders(req);
   const pre = handlePreflight(req, cid);

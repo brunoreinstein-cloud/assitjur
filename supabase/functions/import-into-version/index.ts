@@ -1,10 +1,9 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2.56.0'
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts'
 
 console.log('🚀 import-into-version function starting - CORS fix applied...');
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   console.log(`📞 import-into-version called with method: ${req.method}, origin: ${req.headers.get('origin')}`);
 
   const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();

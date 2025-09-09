@@ -1,4 +1,3 @@
-import { serve } from 'https://deno.land/std@0.208.0/http/server.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.56.0';
 import * as XLSX from 'https://deno.land/x/sheetjs@v0.18.3/xlsx.mjs';
 
@@ -495,7 +494,7 @@ function calculateAnalyticFlags(processos: ProcessoRow[], testemunhas: Testemunh
   return { processosEnhanced, testemunhasEnhanced, issues };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
