@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://assistjur.ia/schemas/por_testemunha.schema.json",
+  "$id": "https://assistjur.com.br/schemas/por_testemunha.schema.json",
   "title": "AssistJur.IA - Esquema Por Testemunha",
   "description": "Schema de validação para dados de testemunha no formato canônico AssistJur.IA",
   "type": "object",

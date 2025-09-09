@@ -1,4 +1,5 @@
 # Ambiente local (não versionar nunca)
 .env
-.env.* 
+.env.*
 !.env.example
+!.env.production

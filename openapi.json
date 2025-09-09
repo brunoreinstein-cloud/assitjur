@@ -5,7 +5,7 @@
     "version": "1.0.0"
   },
   "servers": [
-    { "url": "https://assistjur.ia" }
+    { "url": "https://assistjur.com.br" }
   ],
   "paths": {
     "/api/health": {

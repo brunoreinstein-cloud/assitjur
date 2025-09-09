@@ -174,7 +174,7 @@ const handler = async (req: Request): Promise<Response> => {
           role: invitation.role,
           data_access_level: invitation.data_access_level,
           expires_at: invitation.expires_at,
-          invitation_url: `${Deno.env.get('SITE_URL') || 'http://localhost:5173'}/invite/${tokenData}`
+          invitation_url: `${Deno.env.get('NEXT_PUBLIC_SITE_URL') || 'http://localhost:3000'}/invite/${tokenData}`
         }
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
