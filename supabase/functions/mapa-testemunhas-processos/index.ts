@@ -1,9 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.56.0";
-import { handlePreflight } from "../_shared/cors.ts";
+import { buildCorsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { createLogger } from "../_shared/logger.ts";
 import { ProcessosRequestSchema, ListaResponseSchema } from "../_shared/mapa-contracts.ts";
-import { withCid, jres, jerr } from "../_shared/http.ts";
+import { json, jsonError, withCid } from "../_shared/http.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 serve(async (req) => {
@@ -13,13 +13,15 @@ serve(async (req) => {
   const pre = handlePreflight(req, cid);
   if (pre) return pre;
 
+  const headers = { ...buildCorsHeaders(req), "x-correlation-id": cid };
+
   let payload: unknown = {};
   if (req.method === "POST") {
     try {
       payload = await req.json();
     } catch (e) {
       logger.error(`invalid json: ${e.message}`);
-      return jerr(req, cid, 400, "INVALID_JSON", { message: "Corpo deve ser JSON válido" });
+      return jsonError(400, "INVALID_JSON", { message: "Corpo deve ser JSON válido" }, headers);
     }
   }
 
@@ -27,7 +29,7 @@ serve(async (req) => {
   if (!validation.success) {
     logger.error(`validation: ${validation.error.message}`);
     const fieldErrors = validation.error.flatten().fieldErrors;
-    return jerr(req, cid, 400, "INVALID_PAYLOAD", fieldErrors);
+    return jsonError(400, "INVALID_PAYLOAD", fieldErrors, headers);
   }
 
   const params = validation.data;
@@ -39,7 +41,7 @@ serve(async (req) => {
 
   const authHeader = req.headers.get("authorization") ?? "";
   if (!authHeader.startsWith("Bearer ")) {
-    return jerr(req, cid, 401, "UNAUTHORIZED");
+    return jsonError(401, "UNAUTHORIZED", {}, headers);
   }
 
   const supabase = createClient(
@@ -68,16 +70,16 @@ serve(async (req) => {
   const { data, count, error } = await query;
   if (error) {
     logger.error(`database: ${error.message}`);
-    return jerr(req, cid, 500, "DB_ERROR", { message: error.message });
+    return jsonError(500, "DB_ERROR", { message: error.message }, headers);
   }
 
   const result = { items: data ?? [], page, limit, total: count ?? 0 };
   const resultValidation = ListaResponseSchema.safeParse(result);
   if (!resultValidation.success) {
     logger.error(`response validation: ${resultValidation.error.message}`);
-    return jerr(req, cid, 500, "INCONSISTENT_RESPONSE");
+    return jsonError(500, "INCONSISTENT_RESPONSE", {}, headers);
   }
 
   logger.info(`success: ${result.items.length} items returned`);
-  return jres(req, result);
+  return json(200, result, headers);
 });
