@@ -20,9 +20,6 @@ import {
   selectProcessos,
   selectTestemunhas,
   selectIsLoading,
-  selectIsPiiMasked,
-  selectHasError,
-  selectErrorMessage,
   selectLastUpdate,
   selectProcessoFilters,
   selectTestemunhaFilters
@@ -73,9 +70,6 @@ const MapaPage = () => {
   const processos = useMapaTestemunhasStore(selectProcessos);
   const testemunhas = useMapaTestemunhasStore(selectTestemunhas);
   const isLoading = useMapaTestemunhasStore(selectIsLoading);
-  const isPiiMasked = useMapaTestemunhasStore(selectIsPiiMasked);
-  const hasError = useMapaTestemunhasStore(selectHasError);
-  const errorMessage = useMapaTestemunhasStore(selectErrorMessage);
   const lastUpdate = useMapaTestemunhasStore(selectLastUpdate);
   const processoFilters = useMapaTestemunhasStore(selectProcessoFilters);
   const testemunhaFilters = useMapaTestemunhasStore(selectTestemunhaFilters);
@@ -90,11 +84,11 @@ const MapaPage = () => {
   const setTestemunhas = useMapaTestemunhasStore(s => s.setTestemunhas);
   const setIsLoading = useMapaTestemunhasStore(s => s.setIsLoading);
   const setLastUpdate = useMapaTestemunhasStore(s => s.setLastUpdate);
-  const setError = useMapaTestemunhasStore(s => s.setError);
   const setIsImportModalOpen = useMapaTestemunhasStore(s => s.setIsImportModalOpen);
   const resetFilters = useMapaTestemunhasStore(s => s.resetFilters);
 
-  const [errorCid, setErrorCid] = useState<string | undefined>();
+  const [processosError, setProcessosError] = useState<{ message: string; cid?: string } | null>(null);
+  const [testemunhasError, setTestemunhasError] = useState<{ message: string; cid?: string } | null>(null);
 
   // Stable lastUpdate state
   const [isFirstLoad, setIsFirstLoad] = useState(true);
@@ -162,11 +156,11 @@ const MapaPage = () => {
 
   const loadData = async () => {
     setIsLoading(true);
-    setError(false);
-    setErrorCid(undefined);
+    setProcessosError(null);
+    setTestemunhasError(null);
 
     try {
-      const [processosResult, testemunhasResult] = await Promise.all([
+      const [processosRes, testemunhasRes] = await Promise.allSettled([
         fetchPorProcesso(
           normalizeMapaRequest({
             page: 1,
@@ -183,29 +177,55 @@ const MapaPage = () => {
         )
       ]);
 
-      setProcessos(processosResult.data);
-      setTestemunhas(testemunhasResult.data);
-
-      const errorMsg = processosResult.error || testemunhasResult.error;
-      const cid = processosResult.error ? processosResult.cid : testemunhasResult.cid;
-
-      if (errorMsg) {
-        setError(true, errorMsg);
-        setErrorCid(cid);
-        toast({
-          title: "Falha ao carregar dados",
-          description: errorMsg,
-          variant: "destructive",
-        });
-      } else {
-        if (isFirstLoad) {
-          setLastUpdate(new Date());
-          setIsFirstLoad(false);
+      let processosOk = false;
+      if (processosRes.status === "fulfilled") {
+        const result = processosRes.value;
+        setProcessos(result.data);
+        if (result.error) {
+          setProcessosError({ message: result.error, cid: result.cid });
+          toast({
+            title: "Falha ao carregar dados",
+            description: result.error,
+            variant: "destructive",
+          });
+        } else {
+          processosOk = true;
         }
+      } else {
+        const message = processosRes.reason instanceof Error ? processosRes.reason.message : 'Verifique filtros e tente novamente.';
+        setProcessosError({ message, cid: 'cid-mock' });
+        toast({ title: "Falha ao carregar dados", description: message, variant: "destructive" });
+      }
 
+      let testemunhasOk = false;
+      if (testemunhasRes.status === "fulfilled") {
+        const result = testemunhasRes.value;
+        setTestemunhas(result.data);
+        if (result.error) {
+          setTestemunhasError({ message: result.error, cid: result.cid });
+          toast({
+            title: "Falha ao carregar dados",
+            description: result.error,
+            variant: "destructive",
+          });
+        } else {
+          testemunhasOk = true;
+        }
+      } else {
+        const message = testemunhasRes.reason instanceof Error ? testemunhasRes.reason.message : 'Verifique filtros e tente novamente.';
+        setTestemunhasError({ message, cid: 'cid-mock' });
+        toast({ title: "Falha ao carregar dados", description: message, variant: "destructive" });
+      }
+
+      if (processosOk && testemunhasOk && isFirstLoad) {
+        setLastUpdate(new Date());
+        setIsFirstLoad(false);
+      }
+
+      if (processosOk && testemunhasOk) {
         console.log('Data loaded successfully:', {
-          processos: processosResult.data.length,
-          testemunhas: testemunhasResult.data.length
+          processos: useMapaTestemunhasStore.getState().processos.length,
+          testemunhas: useMapaTestemunhasStore.getState().testemunhas.length
         });
       }
 
@@ -215,8 +235,8 @@ const MapaPage = () => {
       const message = error instanceof Error
         ? error.message
         : 'Verifique filtros e tente novamente.';
-      setError(true, message);
-      setErrorCid('cid-mock');
+      setProcessosError({ message, cid: 'cid-mock' });
+      setTestemunhasError({ message, cid: 'cid-mock' });
       setIsLoading(false);
 
       toast({
@@ -404,8 +424,8 @@ const MapaPage = () => {
               <ProcessoFilters />
               {isLoading ? (
                 <LoadingSkeleton rows={5} />
-              ) : hasError ? (
-                <ErrorState cid={errorCid} message={errorMessage} onRetry={loadData} />
+              ) : processosError ? (
+                <ErrorState cid={processosError.cid} message={processosError.message} onRetry={loadData} />
               ) : processos.length === 0 ? (
                 <EmptyState onClear={resetFilters} />
               ) : (
@@ -417,8 +437,8 @@ const MapaPage = () => {
               <TestemunhaFilters />
               {isLoading ? (
                 <LoadingSkeleton rows={5} />
-              ) : hasError ? (
-                <ErrorState cid={errorCid} message={errorMessage} onRetry={loadData} />
+              ) : testemunhasError ? (
+                <ErrorState cid={testemunhasError.cid} message={testemunhasError.message} onRetry={loadData} />
               ) : testemunhas.length === 0 ? (
                 <EmptyState onClear={resetFilters} />
               ) : (
