@@ -38,6 +38,7 @@ import { ExportCsvButton } from "@/components/mapa/ExportCsvButton";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+// Loaders now route through fetchWithAuth
 import { fetchPorProcesso, fetchPorTestemunha } from "@/lib/supabase";
 import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
 import { normalizeMapaRequest } from "@/lib/normalizeMapaRequest";
