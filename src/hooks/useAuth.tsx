@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { ensureProfile } from '@/utils/ensureProfile';
+import { AuthErrorHandler } from '@/utils/authErrorHandler';
+import { useSessionMonitor } from '@/hooks/useSessionMonitor';
 
 export type UserRole = 'ADMIN' | 'ANALYST' | 'VIEWER';
 
@@ -47,6 +49,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Enable session monitoring for authenticated users
+  useSessionMonitor({ 
+    enabled: !!session,
+    checkInterval: 5, // Check every 5 minutes
+    preemptiveRefresh: 10 // Refresh 10 minutes before expiry
+  });
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -99,12 +108,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           // Defer profile fetching to avoid recursion
           setTimeout(async () => {
-            let profileData = await fetchProfile(session.user.id);
-            if (!profileData) {
-              profileData = (await ensureProfile(session.user)) as any;
+            try {
+              let profileData = await fetchProfile(session.user.id);
+              if (!profileData) {
+                profileData = (await ensureProfile(session.user)) as any;
+              }
+              setProfile(profileData as UserProfile);
+              setLoading(false);
+            } catch (error) {
+              if (AuthErrorHandler.isAuthError(error)) {
+                await AuthErrorHandler.handleAuthError(error, { 
+                  showNotification: false // Avoid notification spam on initial load
+                });
+              } else {
+                console.error('Profile fetch error:', error);
+              }
+              setLoading(false);
             }
-            setProfile(profileData as UserProfile);
-            setLoading(false);
           }, 0);
         } else {
           setProfile(null);
@@ -113,24 +133,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        setTimeout(async () => {
-          let profileData = await fetchProfile(session.user.id);
-          if (!profileData) {
-            profileData = (await ensureProfile(session.user)) as any;
+    // THEN check for existing session with enhanced error handling
+    const initializeSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          if (AuthErrorHandler.isAuthError(error)) {
+            await AuthErrorHandler.handleAuthError(error, { 
+              showNotification: false 
+            });
+            return;
           }
-          setProfile(profileData as UserProfile);
+          throw error;
+        }
+
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          setTimeout(async () => {
+            try {
+              let profileData = await fetchProfile(session.user.id);
+              if (!profileData) {
+                profileData = (await ensureProfile(session.user)) as any;
+              }
+              setProfile(profileData as UserProfile);
+              setLoading(false);
+            } catch (error) {
+              if (AuthErrorHandler.isAuthError(error)) {
+                await AuthErrorHandler.handleAuthError(error, { 
+                  showNotification: false
+                });
+              } else {
+                console.error('Profile fetch error:', error);
+              }
+              setLoading(false);
+            }
+          }, 0);
+        } else {
           setLoading(false);
-        }, 0);
-      } else {
+        }
+      } catch (error) {
+        console.error('Session initialization error:', error);
         setLoading(false);
       }
-    });
+    };
+
+    initializeSession();
 
     return () => subscription.unsubscribe();
   }, []);

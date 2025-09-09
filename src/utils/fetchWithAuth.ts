@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuid } from 'uuid';
+import { AuthErrorHandler } from '@/utils/authErrorHandler';
 
 export async function fetchWithAuth(url: string, init?: RequestInit) {
   const cid = uuid();
@@ -42,13 +43,26 @@ export async function fetchWithAuth(url: string, init?: RequestInit) {
     body?.cid || response.headers.get('x-correlation-id') || cid;
 
   if (!response.ok) {
-    return {
+    const errorResponse = {
       ok: false,
       status: response.status,
       cid: responseCid,
       error: body?.error || response.statusText,
       details: body?.details
     };
+
+    // Handle authentication errors globally
+    if (response.status === 401 || response.status === 403) {
+      const isAuthError = AuthErrorHandler.isAuthError(body) || 
+        AuthErrorHandler.isAuthError({ message: response.statusText });
+      
+      if (isAuthError) {
+        // Don't await to avoid blocking the response
+        AuthErrorHandler.handleAuthError(body || { message: response.statusText });
+      }
+    }
+
+    return errorResponse;
   }
 
   return {
