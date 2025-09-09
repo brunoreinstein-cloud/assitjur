@@ -1,4 +1,4 @@
-import { buildCorsHeaders } from "./cors.ts";
+import { corsHeaders } from "./cors.ts";
 
 export function withCid(req: Request) {
   let cid = req.headers.get("x-correlation-id");
@@ -16,7 +16,7 @@ export function jres(
 ) {
   const { cid } = withCid(req);
   const headers = {
-    ...buildCorsHeaders(req),
+    ...corsHeaders(req),
     "content-type": "application/json; charset=utf-8",
     "x-correlation-id": cid,
   };

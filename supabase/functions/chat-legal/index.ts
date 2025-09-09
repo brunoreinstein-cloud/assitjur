@@ -4,7 +4,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { z } from "npm:zod@3.23.8";
 import { getSystemPrompt } from "../_shared/prompt-registry.ts";
-import { buildCorsHeaders, handlePreflight } from "../_shared/cors.ts";
+import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { getAuth, adminClient } from "../_shared/auth.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 import { createLogger } from "../_shared/logger.ts";
@@ -99,7 +99,7 @@ export async function handler(request: Request) {
     if (error || !user || !organization_id) {
       return new Response(JSON.stringify({ error: "Autenticação obrigatória" }), {
         status: 401,
-        headers: { ...buildCorsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
+        headers: { ...corsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
       });
     }
 
@@ -114,7 +114,7 @@ export async function handler(request: Request) {
     if (!parsed.success) {
       return new Response(JSON.stringify({ error: "Payload inválido" }), {
         status: 400,
-        headers: { ...buildCorsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
+        headers: { ...corsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
       });
     }
     const { message, promptName } = parsed.data;
@@ -125,7 +125,7 @@ export async function handler(request: Request) {
     if (!allowed) {
       return new Response(JSON.stringify({ error: "Limite de requisições excedido" }), {
         status: 429,
-        headers: { ...buildCorsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
+        headers: { ...corsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
       });
     }
 
@@ -150,13 +150,13 @@ export async function handler(request: Request) {
 
     return new Response(JSON.stringify({ ok: true, data: completion }), {
       status: 200,
-      headers: { ...buildCorsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
+      headers: { ...corsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
     });
   } catch (err) {
     log.error(`erro no chat-legal: ${err?.message ?? err}`);
     return new Response(JSON.stringify({ error: "Erro interno" }), {
       status: 500,
-      headers: { ...buildCorsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
+      headers: { ...corsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
     });
   }
 }
