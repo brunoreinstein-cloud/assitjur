@@ -3,8 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Users, 
+import {
+  Users,
   Scale,
   AlertTriangle,
   FileText,
@@ -44,6 +44,9 @@ import { normalizeMapaRequest } from "@/lib/normalizeMapaRequest";
 import { ChatBar } from "@/features/testemunhas/ChatBar";
 import { ResultBlocks } from "@/features/testemunhas/ResultBlocks";
 import { LoadingHints } from "@/features/testemunhas/LoadingHints";
+import LoadingSkeleton from "@/components/LoadingSkeleton";
+import EmptyState from "@/components/EmptyState";
+import ErrorState from "@/components/ErrorState";
 
 // Updated types to match mapa-testemunhas structure
 type Processo = PorProcesso;
@@ -89,6 +92,9 @@ const MapaPage = () => {
   const setLastUpdate = useMapaTestemunhasStore(s => s.setLastUpdate);
   const setError = useMapaTestemunhasStore(s => s.setError);
   const setIsImportModalOpen = useMapaTestemunhasStore(s => s.setIsImportModalOpen);
+  const resetFilters = useMapaTestemunhasStore(s => s.resetFilters);
+
+  const [errorCid, setErrorCid] = useState<string | undefined>();
 
   // Stable lastUpdate state
   const [isFirstLoad, setIsFirstLoad] = useState(true);
@@ -154,79 +160,78 @@ const MapaPage = () => {
     setSearchParams({ tab: newTab });
   };
 
+  const loadData = async () => {
+    setIsLoading(true);
+    setError(false);
+    setErrorCid(undefined);
+
+    try {
+      const [processosResult, testemunhasResult] = await Promise.all([
+        fetchPorProcesso(
+          normalizeMapaRequest({
+            page: 1,
+            limit: 1000,
+            filters: processoFilters
+          })
+        ),
+        fetchPorTestemunha(
+          normalizeMapaRequest({
+            page: 1,
+            limit: 1000,
+            filters: testemunhaFilters
+          })
+        )
+      ]);
+
+      setProcessos(processosResult.data);
+      setTestemunhas(testemunhasResult.data);
+
+      const errorMsg = processosResult.error || testemunhasResult.error;
+      const cid = processosResult.error ? processosResult.cid : testemunhasResult.cid;
+
+      if (errorMsg) {
+        setError(true, errorMsg);
+        setErrorCid(cid);
+        toast({
+          title: "Falha ao carregar dados",
+          description: errorMsg,
+          variant: "destructive",
+        });
+      } else {
+        if (isFirstLoad) {
+          setLastUpdate(new Date());
+          setIsFirstLoad(false);
+        }
+
+        console.log('Data loaded successfully:', {
+          processos: processosResult.data.length,
+          testemunhas: testemunhasResult.data.length
+        });
+      }
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+      const message = error instanceof Error
+        ? error.message
+        : 'Verifique filtros e tente novamente.';
+      setError(true, message);
+      setErrorCid('cid-mock');
+      setIsLoading(false);
+
+      toast({
+        title: "Falha ao carregar dados",
+        description: message,
+        variant: "destructive",
+      });
+    }
+  };
+
   // Load real data from Supabase with filter integration
   useEffect(() => {
     if (!user) return;
-
-    const loadData = async () => {
-      setIsLoading(true);
-      setError(false);
-      
-      try {
-        // Apply current filters to the API calls
-        // Ensure only normalized filters are sent
-        const [processosResult, testemunhasResult] = await Promise.all([
-          fetchPorProcesso(
-            normalizeMapaRequest({
-              page: 1,
-              limit: 1000,
-              filters: processoFilters
-            })
-          ),
-          fetchPorTestemunha(
-            normalizeMapaRequest({
-              page: 1,
-              limit: 1000,
-              filters: testemunhaFilters
-            })
-          )
-        ]);
-
-        // Update store with real data
-        setProcessos(processosResult.data);
-        setTestemunhas(testemunhasResult.data);
-
-        const errorMsg = processosResult.error || testemunhasResult.error;
-        if (errorMsg) {
-          setError(true, errorMsg);
-          toast({
-            title: "Falha ao carregar dados",
-            description: errorMsg,
-            variant: "destructive",
-          });
-        } else {
-          if (isFirstLoad) {
-            setLastUpdate(new Date());
-            setIsFirstLoad(false);
-          }
-
-          console.log('Data loaded successfully:', {
-            processos: processosResult.data.length,
-            testemunhas: testemunhasResult.data.length
-          });
-        }
-
-        setIsLoading(false);
-        
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-        const message = error instanceof Error
-          ? error.message
-          : 'Verifique filtros e tente novamente.';
-        setError(true, message);
-        setIsLoading(false);
-
-        toast({
-          title: "Falha ao carregar dados",
-          description: message,
-          variant: "destructive",
-        });
-      }
-    };
-
     loadData();
-    
-  }, [user, setProcessos, setTestemunhas, setIsLoading, setError, setLastUpdate, isFirstLoad, toast, processoFilters, testemunhaFilters]);
+  }, [user, processoFilters, testemunhaFilters]);
 
   // Show loading during auth check
   if (loading) {
@@ -291,18 +296,6 @@ const MapaPage = () => {
       </div>
 
       <div className="container mx-auto px-6 py-6">
-        {/* Error State */}
-        {hasError && (
-          <Card className="rounded-2xl border-destructive/50 bg-destructive/5 mb-6">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 text-destructive">
-                <AlertTriangle className="h-4 w-4" aria-hidden="true" />
-                <span className="font-medium">Erro:</span>
-                <span className="text-sm">{errorMessage}</span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -410,15 +403,11 @@ const MapaPage = () => {
             <TabsContent value="processos" className="space-y-6">
               <ProcessoFilters />
               {isLoading ? (
-                <div className="flex items-center justify-center p-12" aria-live="polite">
-                  <div className="animate-pulse text-muted-foreground">Carregando dados...</div>
-                </div>
+                <LoadingSkeleton rows={5} />
+              ) : hasError ? (
+                <ErrorState cid={errorCid} message={errorMessage} onRetry={loadData} />
               ) : processos.length === 0 ? (
-                <Card className="rounded-2xl border-border/50">
-                  <CardContent className="p-8 text-center text-muted-foreground">
-                    Nenhum registro encontrado.
-                  </CardContent>
-                </Card>
+                <EmptyState onClear={resetFilters} />
               ) : (
                 <ProcessoTable data={processos} />
               )}
@@ -427,15 +416,11 @@ const MapaPage = () => {
             <TabsContent value="testemunhas" className="space-y-6">
               <TestemunhaFilters />
               {isLoading ? (
-                <div className="flex items-center justify-center p-12" aria-live="polite">
-                  <div className="animate-pulse text-muted-foreground">Carregando dados...</div>
-                </div>
+                <LoadingSkeleton rows={5} />
+              ) : hasError ? (
+                <ErrorState cid={errorCid} message={errorMessage} onRetry={loadData} />
               ) : testemunhas.length === 0 ? (
-                <Card className="rounded-2xl border-border/50">
-                  <CardContent className="p-8 text-center text-muted-foreground">
-                    Nenhum registro encontrado.
-                  </CardContent>
-                </Card>
+                <EmptyState onClear={resetFilters} />
               ) : (
                 <TestemunhaTable data={testemunhas} />
               )}
