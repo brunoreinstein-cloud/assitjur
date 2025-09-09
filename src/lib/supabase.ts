@@ -225,7 +225,7 @@ const mapaRequestSchema = z.object({
 // Fetch functions with Supabase fallback to mocks
 export const fetchPorProcesso = async (
   params: MapaTestemunhasRequest<ProcessoFilters>
-): Promise<{ data: PorProcesso[]; total: number; error?: string }> => {
+): Promise<{ data: PorProcesso[]; total: number; error?: string; cid?: string }> => {
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<ProcessoFilters>;
   const sanitized = {
     ...parsed,
@@ -274,7 +274,7 @@ export const fetchPorProcesso = async (
         payload: sanitized,
         error: { error: err, detail, hint, example }
       });
-      return { data: [], total: 0, error: message };
+      return { data: [], total: 0, error: message, cid };
     }
 
     if (error) {
@@ -295,7 +295,8 @@ export const fetchPorProcesso = async (
 
     return {
       data: payload.data || [],
-      total: payload.count || payload.total || 0
+      total: payload.count || payload.total || 0,
+      cid
     };
   } catch (error) {
     if (error instanceof FunctionsHttpError) {
@@ -365,14 +366,15 @@ export const fetchPorProcesso = async (
 
     return {
       data: filteredData.slice(start, end),
-      total: filteredData.length
+      total: filteredData.length,
+      cid
     };
   }
 };
 
 export const fetchPorTestemunha = async (
   params: MapaTestemunhasRequest<TestemunhaFilters>
-): Promise<{ data: PorTestemunha[]; total: number; error?: string }> => {
+): Promise<{ data: PorTestemunha[]; total: number; error?: string; cid?: string }> => {
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<TestemunhaFilters>;
   const sanitized = {
     ...parsed,
@@ -421,7 +423,7 @@ export const fetchPorTestemunha = async (
         payload: sanitized,
         error: { error: err, detail, hint, example }
       });
-      return { data: [], total: 0, error: message };
+      return { data: [], total: 0, error: message, cid };
     }
 
     if (error) {
@@ -442,7 +444,8 @@ export const fetchPorTestemunha = async (
 
     return {
       data: payload.data || [],
-      total: payload.count || payload.total || 0
+      total: payload.count || payload.total || 0,
+      cid
     };
   } catch (error) {
     if (error instanceof FunctionsHttpError) {
@@ -483,7 +486,8 @@ export const fetchPorTestemunha = async (
 
     return {
       data: filteredData.slice(start, end),
-      total: filteredData.length
+      total: filteredData.length,
+      cid
     };
   }
 };
