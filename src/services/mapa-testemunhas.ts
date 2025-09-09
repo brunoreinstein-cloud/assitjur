@@ -1,15 +1,24 @@
 import { supabase } from '@/integrations/supabase/client';
-import type { PorTestemunha, TestemunhaFilters, ProcessoFilters } from '@/types/mapa-testemunhas';
+import type {
+  PorTestemunha,
+  TestemunhaFilters,
+  ProcessoFilters,
+  PaginatedResponse,
+  Cursor
+} from '@/types/mapa-testemunhas';
 
 export async function fetchTestemunhas(params: {
-  page?: number;
+  cursor?: Cursor | null;
   limit?: number;
   search?: string;
   filters?: TestemunhaFilters;
-}): Promise<{ data: PorTestemunha[]; total: number }> {
-  const { data, error } = await supabase.functions.invoke('mapa-testemunhas-testemunhas', {
+}): Promise<PaginatedResponse<PorTestemunha>> {
+  const { data, error } = await supabase.functions.invoke<{
+    data?: PorTestemunha[];
+    next_cursor?: Cursor | null;
+  }>('mapa-testemunhas-testemunhas', {
     body: {
-      page: params.page || 1,
+      cursor: params.cursor,
       limit: params.limit || 20,
       search: params.search,
       ...params.filters
@@ -21,17 +30,23 @@ export async function fetchTestemunhas(params: {
     throw new Error('Erro ao buscar testemunhas');
   }
 
-  return data;
+  return {
+    data: data?.data || [],
+    next_cursor: data?.next_cursor ?? null,
+  };
 }
 
 export async function fetchProcessos(params: {
-  page?: number;
+  cursor?: Cursor | null;
   limit?: number;
   filters?: ProcessoFilters;
-}): Promise<{ data: any[]; total: number }> {
-  const { data, error } = await supabase.functions.invoke('mapa-testemunhas-processos', {
+}): Promise<PaginatedResponse<any>> {
+  const { data, error } = await supabase.functions.invoke<{
+    data?: any[];
+    next_cursor?: Cursor | null;
+  }>('mapa-testemunhas-processos', {
     body: {
-      page: params.page || 1,
+      cursor: params.cursor,
       limit: params.limit || 20,
       filters: params.filters
     }
@@ -42,5 +57,8 @@ export async function fetchProcessos(params: {
     throw new Error('Erro ao buscar processos');
   }
 
-  return data;
+  return {
+    data: data?.data || [],
+    next_cursor: data?.next_cursor ?? null,
+  };
 }

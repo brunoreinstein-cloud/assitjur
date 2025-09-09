@@ -1,7 +1,8 @@
 import {
   MapaTestemunhasRequest,
   ProcessoFilters,
-  TestemunhaFilters
+  TestemunhaFilters,
+  Cursor
 } from '@/types/mapa-testemunhas'
 
 type KnownFilters = ProcessoFilters & TestemunhaFilters
@@ -30,9 +31,6 @@ const BOOLEAN_FILTER_KEYS = new Set<keyof KnownFilters>([
 ])
 
 export function normalizeMapaRequest<F = Record<string, unknown>>(input: any): MapaTestemunhasRequest<F> {
-  let page = Number(input?.page ?? 1)
-  if (!Number.isFinite(page) || page < 1) page = 1
-
   let limit = Number(input?.limit ?? 20)
   if (!Number.isFinite(limit) || limit < 1) limit = 20
   if (limit > 200) limit = 200
@@ -63,8 +61,16 @@ export function normalizeMapaRequest<F = Record<string, unknown>>(input: any): M
     }
   }
 
+  let cursor: Cursor | undefined
+  if (input?.cursor && typeof input.cursor === 'object') {
+    const c = input.cursor as any
+    if (typeof c.id === 'string' && typeof c.created_at === 'string') {
+      cursor = { id: c.id, created_at: c.created_at }
+    }
+  }
+
   const output: MapaTestemunhasRequest<F> = {
-    page,
+    cursor,
     limit,
     filters: filters as F
   }

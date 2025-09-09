@@ -1,4 +1,5 @@
 export type PorProcesso = {
+  id?: string;
   cnj: string;
   status: string | null;
   uf: string | null;
@@ -33,6 +34,7 @@ export type PorProcesso = {
 };
 
 export type PorTestemunha = {
+  id?: string;
   nome_testemunha: string;
   qtd_depoimentos: number | null;
   cnjs_como_testemunha: string[] | null;
@@ -78,8 +80,19 @@ export type TestemunhaFilters = {
   temTroca?: boolean;
 };
 
+export interface Cursor {
+  id: string;
+  created_at: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  next_cursor: Cursor | null;
+  error?: string;
+}
+
 export type MapaTestemunhasRequest<F = ProcessoFilters | TestemunhaFilters> = {
-  page: number;
+  cursor?: Cursor | null;
   limit: number;
   sortBy?: string;
   sortDir?: 'asc' | 'desc';

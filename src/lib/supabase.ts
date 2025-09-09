@@ -6,6 +6,8 @@ import {
   ProcessoFilters,
   TestemunhaFilters,
   MapaTestemunhasRequest,
+  Cursor,
+  PaginatedResponse,
 } from "@/types/mapa-testemunhas";
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { mapFunctionsError } from './functions-errors';
@@ -183,6 +185,8 @@ const mockTestemunhas: PorTestemunha[] = [
   },
 ];
 
+const getId = (item: any) => (item?.id ?? item?.cnj ?? item?.nome_testemunha ?? '') as string;
+
 // Check if Supabase is configured
 const isSupabaseConfigured = () => {
   try {
@@ -193,8 +197,13 @@ const isSupabaseConfigured = () => {
 };
 
 // Zod schema to coerce and sanitize request params before sending
+const cursorSchema = z.object({
+  id: z.string(),
+  created_at: z.string(),
+});
+
 const mapaRequestSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
+  cursor: cursorSchema.nullish(),
   limit: z
     .coerce.number()
     .int()
@@ -225,7 +234,7 @@ const mapaRequestSchema = z.object({
 // Fetch functions with Supabase fallback to mocks
 export const fetchPorProcesso = async (
   params: MapaTestemunhasRequest<ProcessoFilters>
-): Promise<{ data: PorProcesso[]; total: number; error?: string }> => {
+): Promise<PaginatedResponse<PorProcesso>> => {
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<ProcessoFilters>;
   const sanitized = {
     ...parsed,
@@ -247,8 +256,7 @@ export const fetchPorProcesso = async (
 
     const { data, error } = await supabase.functions.invoke<{
       data?: PorProcesso[];
-      count?: number;
-      total?: number;
+      next_cursor?: Cursor | null;
     }>('mapa-testemunhas-processos', {
       body: parsed,
       headers: {
@@ -274,7 +282,7 @@ export const fetchPorProcesso = async (
         payload: sanitized,
         error: { error: err, detail, hint, example }
       });
-      return { data: [], total: 0, error: message };
+      return { data: [], next_cursor: null, error: message };
     }
 
     if (error) {
@@ -283,19 +291,18 @@ export const fetchPorProcesso = async (
       throw error;
     }
 
-    const payload = data as { data?: PorProcesso[]; count?: number; total?: number };
+    const payload = data as { data?: PorProcesso[]; next_cursor?: Cursor | null };
     if (!payload?.data || payload.data.length === 0) {
       console.log(`[cid=${cid}] 📊 Supabase returned empty processos dataset`);
     } else {
       console.log(`[cid=${cid}] 📊 Fetched processos from API:`, {
         count: payload.data.length,
-        total: payload.count || payload.total || 0
       });
     }
 
     return {
       data: payload.data || [],
-      total: payload.count || payload.total || 0
+      next_cursor: payload.next_cursor ?? null
     };
   } catch (error) {
     if (error instanceof FunctionsHttpError) {
@@ -359,20 +366,36 @@ export const fetchPorProcesso = async (
       );
     }
 
-    // Mock pagination
-    const start = (parsed.page - 1) * parsed.limit;
-    const end = start + parsed.limit;
+    // Sort by created_at desc then id
+    filteredData.sort((a, b) => {
+      if (a.created_at === b.created_at) {
+        return getId(b).localeCompare(getId(a));
+      }
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
+    let startIndex = 0;
+    if (parsed.cursor) {
+      startIndex = filteredData.findIndex(
+        p => p.created_at === parsed.cursor!.created_at && getId(p) === parsed.cursor!.id
+      ) + 1;
+    }
+
+    const slice = filteredData.slice(startIndex, startIndex + parsed.limit + 1);
+    const nextCursor = slice.length > parsed.limit
+      ? { id: getId(slice[parsed.limit]), created_at: slice[parsed.limit].created_at }
+      : null;
 
     return {
-      data: filteredData.slice(start, end),
-      total: filteredData.length
+      data: slice.slice(0, parsed.limit),
+      next_cursor: nextCursor
     };
   }
 };
 
 export const fetchPorTestemunha = async (
   params: MapaTestemunhasRequest<TestemunhaFilters>
-): Promise<{ data: PorTestemunha[]; total: number; error?: string }> => {
+): Promise<PaginatedResponse<PorTestemunha>> => {
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<TestemunhaFilters>;
   const sanitized = {
     ...parsed,
@@ -394,8 +417,7 @@ export const fetchPorTestemunha = async (
 
     const { data, error } = await supabase.functions.invoke<{
       data?: PorTestemunha[];
-      count?: number;
-      total?: number;
+      next_cursor?: Cursor | null;
     }>('mapa-testemunhas-testemunhas', {
       body: parsed,
       headers: {
@@ -421,7 +443,7 @@ export const fetchPorTestemunha = async (
         payload: sanitized,
         error: { error: err, detail, hint, example }
       });
-      return { data: [], total: 0, error: message };
+      return { data: [], next_cursor: null, error: message };
     }
 
     if (error) {
@@ -430,19 +452,18 @@ export const fetchPorTestemunha = async (
       throw error;
     }
 
-    const payload = data as { data?: PorTestemunha[]; count?: number; total?: number };
+    const payload = data as { data?: PorTestemunha[]; next_cursor?: Cursor | null };
     if (!payload?.data || payload.data.length === 0) {
       console.log(`[cid=${cid}] 📊 Supabase returned empty testemunhas dataset`);
     } else {
       console.log(`[cid=${cid}] 📊 Fetched testemunhas from API:`, {
         count: payload.data.length,
-        total: payload.count || payload.total || 0
       });
     }
 
     return {
       data: payload.data || [],
-      total: payload.count || payload.total || 0
+      next_cursor: payload.next_cursor ?? null
     };
   } catch (error) {
     if (error instanceof FunctionsHttpError) {
@@ -477,13 +498,29 @@ export const fetchPorTestemunha = async (
       filteredData = filteredData.filter(t => t.participou_troca_favor === parsed.filters.temTroca);
     }
 
-    // Mock pagination
-    const start = (parsed.page - 1) * parsed.limit;
-    const end = start + parsed.limit;
+    // Sort by created_at desc then id
+    filteredData.sort((a, b) => {
+      if (a.created_at === b.created_at) {
+        return getId(b).localeCompare(getId(a));
+      }
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
+    let startIndex = 0;
+    if (parsed.cursor) {
+      startIndex = filteredData.findIndex(
+        t => t.created_at === parsed.cursor!.created_at && getId(t) === parsed.cursor!.id
+      ) + 1;
+    }
+
+    const slice = filteredData.slice(startIndex, startIndex + parsed.limit + 1);
+    const nextCursor = slice.length > parsed.limit
+      ? { id: getId(slice[parsed.limit]), created_at: slice[parsed.limit].created_at }
+      : null;
 
     return {
-      data: filteredData.slice(start, end),
-      total: filteredData.length
+      data: slice.slice(0, parsed.limit),
+      next_cursor: nextCursor
     };
   }
 };

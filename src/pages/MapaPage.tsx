@@ -168,14 +168,12 @@ const MapaPage = () => {
         const [processosResult, testemunhasResult] = await Promise.all([
           fetchPorProcesso(
             normalizeMapaRequest({
-              page: 1,
               limit: 1000,
               filters: processoFilters
             })
           ),
           fetchPorTestemunha(
             normalizeMapaRequest({
-              page: 1,
               limit: 1000,
               filters: testemunhaFilters
             })

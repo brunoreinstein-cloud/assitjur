@@ -60,7 +60,7 @@ describe('Supabase integration', () => {
         'Content-Type': 'application/json',
         'x-correlation-id': crypto.randomUUID(),
       },
-      body: JSON.stringify({ page: 1, limit: 1 }),
+      body: JSON.stringify({ limit: 1 }),
     })
 
     console.log('edge function status', response.status)
