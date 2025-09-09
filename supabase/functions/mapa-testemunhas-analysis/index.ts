@@ -1,9 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.56.0'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders, handlePreflight } from '../_shared/cors.ts'
 
 // Types for analysis results
 interface AnalysisResult {
@@ -74,9 +70,10 @@ interface PadroesAgregados {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  const ch = corsHeaders(req);
+  const pre = handlePreflight(req, cid);
+  if (pre) return pre;
 
   try {
     const supabase = createClient(
@@ -129,7 +126,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify(analysisResult),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' },
         status: 200,
       },
     )
@@ -139,7 +136,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ error: error.message }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' },
         status: 500,
       },
     )

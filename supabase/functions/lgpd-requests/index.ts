@@ -1,15 +1,11 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.56.0';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  const ch = corsHeaders(req);
+  const pre = handlePreflight(req, cid);
+  if (pre) return pre;
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -24,7 +20,7 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: 'E-mail e tipo de solicitação são obrigatórios' }),
         { 
           status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' } 
         }
       );
     }
@@ -36,7 +32,7 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: 'Tipo de solicitação inválido' }),
         { 
           status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' } 
         }
       );
     }
@@ -55,7 +51,7 @@ Deno.serve(async (req) => {
         }),
         { 
           status: 404, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' } 
         }
       );
     }
@@ -80,7 +76,7 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: 'Erro interno do servidor' }),
         { 
           status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' } 
         }
       );
     }
@@ -142,7 +138,7 @@ Deno.serve(async (req) => {
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' }
       }
     );
 
@@ -152,7 +148,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ error: 'Erro interno do servidor' }),
       { 
         status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' } 
       }
     );
   }

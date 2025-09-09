@@ -1,10 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.56.0';
 import * as XLSX from 'https://deno.land/x/sheetjs@v0.18.3/xlsx.mjs';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
 
 // Tipos do AssistJur.IA
 interface ProcessoRow {
@@ -495,10 +491,10 @@ function calculateAnalyticFlags(processos: ProcessoRow[], testemunhas: Testemunh
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  const ch = corsHeaders(req);
+  const pre = handlePreflight(req, cid);
+  if (pre) return pre;
 
   try {
     const supabase = createClient(
@@ -711,7 +707,7 @@ Deno.serve(async (req) => {
       upload_id: uploadId,
       report
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
@@ -722,7 +718,7 @@ Deno.serve(async (req) => {
       error: error.message
     }), {
       status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' }
     });
   }
 });

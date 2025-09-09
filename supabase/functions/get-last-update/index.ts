@@ -1,14 +1,11 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.56.0'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders, handlePreflight } from '../_shared/cors.ts'
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  const ch = corsHeaders(req);
+  const pre = handlePreflight(req, cid);
+  if (pre) return pre;
 
   try {
     const supabase = createClient(
@@ -31,7 +28,7 @@ Deno.serve(async (req) => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -45,7 +42,7 @@ Deno.serve(async (req) => {
     if (!profile) {
       return new Response(
         JSON.stringify({ error: 'Profile not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 404, headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -65,14 +62,14 @@ Deno.serve(async (req) => {
         publishedAtUTC: version?.published_at || null,
         summary: version?.summary || {}
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error in get-last-update:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' } }
     );
   }
 });

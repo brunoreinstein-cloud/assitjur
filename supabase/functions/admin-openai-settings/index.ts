@@ -1,11 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.56.0';
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS'
-};
+import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
 
 // JWT verification function
 function decodeJWT(token: string) {

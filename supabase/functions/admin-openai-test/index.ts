@@ -1,18 +1,15 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.56.0';
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
 
 Deno.serve(async (req) => {
   console.log('🧪 OpenAI Test Function Started');
   console.log('Method:', req.method);
-
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
+  
+  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  const ch = corsHeaders(req);
+  const pre = handlePreflight(req, cid);
+  if (pre) return pre;
 
   try {
     const supabaseClient = createClient(

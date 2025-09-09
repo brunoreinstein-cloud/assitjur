@@ -1,12 +1,7 @@
 import { getAuth } from "../_shared/auth.ts"
 import * as XLSX from "https://deno.land/x/sheetjs@v0.18.3/xlsx.mjs"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS'
-}
+import { corsHeaders, handlePreflight } from '../_shared/cors.ts'
 
 interface ProcessedRow {
   cnj: string
