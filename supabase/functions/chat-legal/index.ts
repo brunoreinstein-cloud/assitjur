@@ -1,7 +1,6 @@
 // supabase/functions/chat-legal/index.ts
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { z } from "npm:zod@3.23.8";
 import { getSystemPrompt } from "../_shared/prompt-registry.ts";
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
@@ -161,4 +160,4 @@ export async function handler(request: Request) {
   }
 }
 
-serve(handler);
+Deno.serve(handler);

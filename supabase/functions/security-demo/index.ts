@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, validateJWT, createSecureErrorResponse, checkRateLimit, sanitizeAndValidate, secureLog, withTimeout, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS } from "../_shared/security.ts";
 import { z } from "npm:zod@4.1.3";
 
@@ -44,4 +43,4 @@ export async function handler(req: Request): Promise<Response> {
   }
 }
 
-serve(handler);
+Deno.serve(handler);

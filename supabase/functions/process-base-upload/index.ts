@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts"
 import { getAuth } from "../_shared/auth.ts"
 import * as XLSX from "https://deno.land/x/sheetjs@v0.18.3/xlsx.mjs"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
@@ -64,7 +63,7 @@ interface ValidationResult {
 
 // CNJ validation and duplicate checking will be handled by the advanced functions later in the file
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   console.log('📊 Base Upload Function Started');
   console.log('Method:', req.method, 'URL:', req.url);
 
