@@ -16,6 +16,7 @@ Deno.test("allows listed origin", () => {
   });
   const headers = corsHeaders(req, origins);
   assertEquals(headers["Access-Control-Allow-Origin"], "https://a.com");
+  assertEquals(headers["Access-Control-Allow-Credentials"], "true");
 });
 
 Deno.test("blocks unlisted origin", () => {
@@ -39,6 +40,7 @@ Deno.test("preflight returns CORS headers", () => {
   assertEquals(res.status, 204);
   assertEquals(res.headers.get("Access-Control-Allow-Origin"), "https://a.com");
   assertEquals(res.headers.get("Access-Control-Allow-Headers"), "authorization,apikey");
+  assertEquals(res.headers.get("Access-Control-Allow-Credentials"), "true");
 });
 
 Deno.test("authorization and apikey headers exposed", () => {
