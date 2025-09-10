@@ -27,7 +27,7 @@ import {
 import { ProcessoRow, ProcessoQuery, ExportFormat, ExportOptions } from '@/types/processos-explorer';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { logAudit } from '@/lib/audit';
 
 interface ExportManagerProps {
   open: boolean;
@@ -75,16 +75,11 @@ export function ExportManager({
       }, 100);
 
       // Log audit entry
-      console.log('🎯 Logging export action...');
-      await supabase.from('audit_logs').insert({
-        user_id: user.id,
-        email: user.email,
-        role: profile.role,
-        organization_id: profile.organization_id,
-        action: 'EXPORT_PROCESSOS',
-        resource: 'processos',
-        result: 'SUCCESS',
-        metadata: {
+      await logAudit(
+        'EXPORT_PROCESSOS',
+        'processos',
+        null,
+        {
           format: exportOptions.format,
           records_count: exportCount,
           filters_applied: filters,
@@ -92,7 +87,7 @@ export function ExportManager({
           selected_only: exportOptions.selectedOnly,
           include_filters: exportOptions.includeFilters
         }
-      });
+      );
 
       // Generate export based on format
       let fileName = '';

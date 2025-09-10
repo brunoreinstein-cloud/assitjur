@@ -126,7 +126,7 @@ const App = () => (
           <Route path="/admin/compliance" element={<Compliance />} />
           <Route path="/admin/marketing" element={<MarketingCompliance />} />
                          <Route path="/admin/retencao" element={<DataRetention />} />
-                         <Route path="/admin/auditoria" element={<AuditPanel />} />
+                         <Route path="/admin/audit" element={<AuditPanel />} />
                          <Route path="/admin/config" element={<SystemConfig />} />
                         <Route path="/relatorio" element={<ReportDemo />} />
                         
