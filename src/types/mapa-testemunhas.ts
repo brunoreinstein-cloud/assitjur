@@ -86,6 +86,47 @@ export type MapaTestemunhasRequest<F = ProcessoFilters | TestemunhaFilters> = {
   filters: F;
 };
 
+// ---------------------------------------------------------------------------
+// API payload types (snake_case)
+// ---------------------------------------------------------------------------
+
+export type ProcessoFiltersApi = {
+  uf?: string;
+  status?: string;
+  fase?: string;
+  search?: string;
+  testemunha?: string;
+  qtd_depoimentos_min?: number;
+  qtd_depoimentos_max?: number;
+  tem_triangulacao?: boolean;
+  tem_troca?: boolean;
+  tem_prova_emprestada?: boolean;
+};
+
+export type TestemunhaFiltersApi = {
+  ambos_polos?: boolean;
+  ja_foi_reclamante?: boolean;
+  qtd_depoimentos_min?: number;
+  qtd_depoimentos_max?: number;
+  search?: string;
+  tem_triangulacao?: boolean;
+  tem_troca?: boolean;
+};
+
+/**
+ * Estrutura enviada ao backend. Utilize `toMapaEdgeRequest` para converter um
+ * {@link MapaTestemunhasRequest} interno (camelCase) para este formato antes de
+ * realizar requisições.
+ */
+export type MapaTestemunhasRequestApi<
+  F = ProcessoFiltersApi | TestemunhaFiltersApi
+> = {
+  paginacao: { page: number; limit: number };
+  sort_by?: string;
+  sort_dir?: 'asc' | 'desc';
+  filtros: F;
+};
+
 export type ImportResult = {
   stagingRows: number;
   upserts: number;

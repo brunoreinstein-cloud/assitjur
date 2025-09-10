@@ -8,6 +8,7 @@ import {
   TestemunhaFilters,
   MapaTestemunhasRequest,
 } from "@/types/mapa-testemunhas";
+import { toMapaEdgeRequest } from "@/lib/normalizeMapaRequest";
 import { z } from "zod";
 
 // Mock data for offline functionality
@@ -221,41 +222,13 @@ const mapaRequestSchema = z.object({
     .default({}),
 });
 
-function toSnakeCaseFilters(filters?: Record<string, any>) {
-  if (!filters) return filters;
-  const map: Record<string, string> = {
-    temTriangulacao: 'tem_triangulacao',
-    temTroca: 'tem_troca',
-    temProvaEmprestada: 'tem_prova_emprestada',
-    qtdDeposMin: 'qtd_depoimentos_min',
-    qtdDeposMax: 'qtd_depoimentos_max',
-    ambosPolos: 'ambos_polos',
-    jaFoiReclamante: 'ja_foi_reclamante'
-  };
-  return Object.fromEntries(
-    Object.entries(filters).map(([key, value]) => [
-      map[key] ?? key.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`),
-      value
-    ])
-  );
-}
-
-function toEdgePayload<F>(req: MapaTestemunhasRequest<F>) {
-  const { page, limit, filters, ...rest } = req;
-  return {
-    paginacao: { page, limit },
-    filtros: toSnakeCaseFilters(filters as Record<string, any>),
-    ...rest
-  };
-}
-
 // Fetch functions with Supabase fallback to mocks
 export const fetchPorProcesso = async (
   params: MapaTestemunhasRequest<ProcessoFilters>,
   signal?: AbortSignal
 ): Promise<{ data: PorProcesso[]; total: number; error?: string }> => {
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<ProcessoFilters>;
-  const sanitized = toEdgePayload({
+  const sanitized = toMapaEdgeRequest({
     ...parsed,
     filters: parsed.filters
       ? Object.fromEntries(Object.keys(parsed.filters).map(k => [k, '[redacted]']))
@@ -277,7 +250,7 @@ export const fetchPorProcesso = async (
     const fnUrl = `https://${projectRef}.functions.supabase.co/mapa-testemunhas-processos`;
     const response = await fetch(fnUrl, {
       method: 'POST',
-      body: JSON.stringify(toEdgePayload(parsed)),
+      body: JSON.stringify(toMapaEdgeRequest(parsed)),
       headers: {
         'Content-Type': 'application/json',
         'x-correlation-id': cid,
@@ -396,7 +369,7 @@ export const fetchPorTestemunha = async (
   signal?: AbortSignal
 ): Promise<{ data: PorTestemunha[]; total: number; error?: string }> => {
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<TestemunhaFilters>;
-  const sanitized = toEdgePayload({
+  const sanitized = toMapaEdgeRequest({
     ...parsed,
     filters: parsed.filters
       ? Object.fromEntries(Object.keys(parsed.filters).map(k => [k, '[redacted]']))
@@ -418,7 +391,7 @@ export const fetchPorTestemunha = async (
     const fnUrl = `https://${projectRef}.functions.supabase.co/mapa-testemunhas-testemunhas`;
     const response = await fetch(fnUrl, {
       method: 'POST',
-      body: JSON.stringify(toEdgePayload(parsed)),
+      body: JSON.stringify(toMapaEdgeRequest(parsed)),
       headers: {
         'Content-Type': 'application/json',
         'x-correlation-id': cid,
