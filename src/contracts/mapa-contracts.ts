@@ -10,6 +10,15 @@ const ProcessosFiltroSchema = z
     search: z.string().trim().optional(),
     data_inicio: z.string().trim().optional(),
     data_fim: z.string().trim().optional(),
+    uf: z.string().trim().optional(),
+    status: z.string().trim().optional(),
+    fase: z.string().trim().optional(),
+    testemunha: z.string().trim().optional(),
+    qtd_depoimentos_min: z.coerce.number().int().optional(),
+    qtd_depoimentos_max: z.coerce.number().int().optional(),
+    tem_triangulacao: z.coerce.boolean().optional(),
+    tem_troca: z.coerce.boolean().optional(),
+    tem_prova_emprestada: z.coerce.boolean().optional(),
   })
   .default({});
 
@@ -29,10 +38,14 @@ const TestemunhasFiltroSchema = z
     search: z.string().trim().optional(),
     data_inicio: z.string().trim().optional(),
     data_fim: z.string().trim().optional(),
+    ambos_polos: z.coerce.boolean().optional(),
+    ja_foi_reclamante: z.coerce.boolean().optional(),
+    qtd_depoimentos_min: z.coerce.number().int().optional(),
+    qtd_depoimentos_max: z.coerce.number().int().optional(),
+    tem_triangulacao: z.coerce.boolean().optional(),
+    tem_troca: z.coerce.boolean().optional(),
   })
-  .refine((f) => !!(f.nome || f.documento || f.search), {
-    message: 'Pelo menos um filtro é obrigatório (nome, documento ou search)',
-  });
+  .default({});
 
 export const TestemunhasRequestSchema = z
   .object({
