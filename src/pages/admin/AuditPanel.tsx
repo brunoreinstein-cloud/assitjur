@@ -36,14 +36,11 @@ interface AccessLog {
 
 interface AuditLog {
   id: string;
-  user_id: string;
+  actor: string;
   action: string;
-  entity: string;
-  entity_id?: string;
-  fields_masked?: any;
-  ip?: string;
-  ua?: string;
-  created_at: string;
+  resource: string;
+  metadata?: any;
+  ts: string;
   profiles?: any;
 }
 
@@ -90,28 +87,25 @@ export default function AuditPanel() {
 
       // Fetch audit logs
       const { data: auditData, error: auditError } = await supabase
-        .from('audit_logs')
+        .from('audit_log')
         .select(`
           id,
-          user_id,
+          actor,
           action,
-          entity,
-          entity_id,
-          fields_masked,
-          ip,
-          ua,
-          created_at,
-          profiles:user_id (email)
+          resource,
+          metadata,
+          ts,
+          profiles:actor (email)
         `)
-        .gte('created_at', startDate.toISOString())
-        .order('created_at', { ascending: false })
+        .gte('ts', startDate.toISOString())
+        .order('ts', { ascending: false })
         .limit(100);
 
-      if (auditError) {
-        console.error('Error fetching audit logs:', auditError);
-      } else {
-        setAuditLogs([]); // TODO: Re-enable when audit_logs entity column exists
-      }
+        if (auditError) {
+          console.error('Error fetching audit logs:', auditError);
+        } else {
+          setAuditLogs(auditData || []);
+        }
     } catch (error) {
       console.error('Error fetching logs:', error);
       toast.error('Erro ao carregar logs de auditoria');
@@ -122,33 +116,26 @@ export default function AuditPanel() {
 
   const handleExportReport = async () => {
     try {
-      const reportData = {
-        period: dateFilter,
-        generated_at: new Date().toISOString(),
-        access_logs: accessLogs.length,
-        audit_logs: auditLogs.length,
-        summary: {
-          unique_users: new Set(accessLogs.map(log => log.user_id)).size,
-          tables_accessed: new Set(accessLogs.map(log => log.accessed_table)).size,
-          most_accessed_table: getMostAccessedTable(),
-          peak_activity_hour: getPeakActivityHour()
-        },
-        details: {
-          access_logs: accessLogs,
-          audit_logs: auditLogs
-        }
-      };
-
-      const blob = new Blob([JSON.stringify(reportData, null, 2)], {
-        type: 'application/json'
-      });
+      const rows = [
+        ['actor', 'action', 'resource', 'metadata', 'ts'],
+        ...auditLogs.map(log => [
+          log.profiles?.email || log.actor,
+          log.action,
+          log.resource,
+          JSON.stringify(log.metadata ?? {}),
+          log.ts
+        ])
+      ];
+      const csv = rows
+        .map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `audit-report-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `audit-report-${new Date().toISOString().split('T')[0]}.csv`;
       a.click();
       URL.revokeObjectURL(url);
-
       toast.success('Relatório de auditoria exportado com sucesso');
     } catch (error) {
       console.error('Error exporting report:', error);
@@ -183,7 +170,7 @@ export default function AuditPanel() {
     const names = {
       processos: 'Processos',
       pessoas: 'Pessoas',
-      audit_logs: 'Logs de Auditoria',
+      audit_log: 'Logs de Auditoria',
       data_access_logs: 'Logs de Acesso',
       lgpd_requests: 'Solicitações LGPD'
     };
@@ -216,7 +203,7 @@ export default function AuditPanel() {
   const filteredAuditLogs = auditLogs.filter(log => {
     const matchesSearch = !searchTerm ||
       log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.entity.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.resource.toLowerCase().includes(searchTerm.toLowerCase()) ||
       log.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesAction = actionFilter === 'all' || log.action === actionFilter;
@@ -341,7 +328,7 @@ export default function AuditPanel() {
                   <SelectItem value="all">Todas as tabelas</SelectItem>
                   <SelectItem value="processos">Processos</SelectItem>
                   <SelectItem value="pessoas">Pessoas</SelectItem>
-                  <SelectItem value="audit_logs">Logs de Auditoria</SelectItem>
+                  <SelectItem value="audit_log">Logs de Auditoria</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -461,11 +448,11 @@ export default function AuditPanel() {
                           <span className="font-medium">{log.action}</span>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          Por: {log.profiles?.email || 'Sistema'} • Entidade: {log.entity}
+                          Por: {log.profiles?.email || 'Sistema'} • Recurso: {log.resource}
                         </p>
                       </div>
                       <div className="text-right text-sm text-muted-foreground">
-                        {new Date(log.created_at).toLocaleString('pt-BR')}
+                        {new Date(log.ts).toLocaleString('pt-BR')}
                       </div>
                     </div>
                   </CardContent>

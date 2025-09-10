@@ -34,17 +34,11 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface AuditLog {
   id: string;
+  actor: string;
   action: string;
-  resource?: string;
-  user_id?: string;
-  email?: string;
-  role?: 'ADMIN' | 'ANALYST' | 'VIEWER';
-  result: string;
-  ip_address?: unknown;
-  user_agent?: string;
+  resource: string;
   metadata?: any;
-  organization_id?: string;
-  created_at: string;
+  ts: string;
 }
 
 interface OpenAILog {
@@ -126,11 +120,10 @@ const Logs = () => {
     const dateFilter = getDateFilter();
     
     const { data, error } = await supabase
-      .from('audit_logs')
+      .from('audit_log')
       .select('*')
-      .eq('organization_id', profile?.organization_id)
-      .gte('created_at', dateFilter)
-      .order('created_at', { ascending: false })
+      .gte('ts', dateFilter)
+      .order('ts', { ascending: false })
       .limit(100);
 
     if (error) throw error;
@@ -256,11 +249,11 @@ const Logs = () => {
     return `R$ ${(costCents / 100).toFixed(4)}`;
   };
 
-  const filteredAuditLogs = auditLogs.filter(log => 
-    searchTerm === '' || 
+  const filteredAuditLogs = auditLogs.filter(log =>
+    searchTerm === '' ||
     log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    log.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    log.resource?.toLowerCase().includes(searchTerm.toLowerCase())
+    log.actor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    log.resource.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredOpenAILogs = openaiLogs.filter(log => 
@@ -375,30 +368,25 @@ const Logs = () => {
                     <TableRow>
                       <TableHead>Data/Hora</TableHead>
                       <TableHead>Ação</TableHead>
-                      <TableHead>Usuário</TableHead>
+                      <TableHead>Ator</TableHead>
                       <TableHead>Recurso</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>IP</TableHead>
+                      <TableHead>Metadados</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredAuditLogs.map((log) => (
                       <TableRow key={log.id}>
                         <TableCell className="font-mono text-sm">
-                          {formatDateTime(log.created_at)}
+                          {formatDateTime(log.ts)}
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">{log.action}</Badge>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className="text-sm">{log.email || 'Sistema'}</span>
-                            {log.role && <span className="text-xs text-muted-foreground">{log.role}</span>}
-                          </div>
+                        <TableCell>{log.actor}</TableCell>
+                        <TableCell>{log.resource}</TableCell>
+                        <TableCell className="font-mono text-xs">
+                          {JSON.stringify(log.metadata ?? {})}
                         </TableCell>
-                        <TableCell>{log.resource || '-'}</TableCell>
-                        <TableCell>{getStatusBadge(log.result)}</TableCell>
-                        <TableCell className="font-mono text-xs">{log.ip_address?.toString() || '-'}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

@@ -1,4 +1,5 @@
 import { getAuth } from "../_shared/auth.ts"
+import { audit } from "../_shared/audit.ts"
 import * as XLSX from "https://deno.land/x/sheetjs@v0.18.3/xlsx.mjs"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts'
@@ -447,24 +448,19 @@ async function processFileInChunks(
       .eq('org_id', orgId)
       .neq('id', version.id);
 
-    // Log audit trail
-    await supabase
-      .from('audit_logs')
-      .insert({
-        user_id: userId,
+    await audit({
+      actor: userId,
+      action: 'base_published',
+      resource: 'dataset_versions',
+      metadata: {
         organization_id: orgId,
         email: userEmail,
-        role: 'ADMIN',
-        action: 'base_published',
-        resource: 'dataset_versions',
-        result: 'success',
-        metadata: {
-          version_id: version.id,
-          hash: versionHash,
-          rows_imported: validRows,
-          filename: file.name
-        }
-      });
+        version_id: version.id,
+        hash: versionHash,
+        rows_imported: validRows,
+        filename: file.name
+      }
+    });
 
     console.log('🎉 Publish completed successfully!');
     

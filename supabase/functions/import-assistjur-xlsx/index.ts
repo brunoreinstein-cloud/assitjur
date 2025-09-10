@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.56.0';
 import * as XLSX from 'https://deno.land/x/sheetjs@v0.18.3/xlsx.mjs';
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
+import { audit } from '../_shared/audit.ts';
 
 // Tipos do AssistJur.IA
 interface ProcessoRow {
@@ -701,6 +702,17 @@ Deno.serve(async (req) => {
         completed_at: new Date().toISOString()
       })
       .eq('upload_id', uploadId);
+
+    await audit({
+      actor: user.id,
+      action: 'IMPORT',
+      resource: 'assistjur_xlsx',
+      metadata: {
+        upload_id: uploadId,
+        processos: processosEnhanced.length,
+        testemunhas: testemunhasEnhanced.length
+      }
+    });
 
     return new Response(JSON.stringify({
       success: true,
