@@ -20,8 +20,9 @@ export function DetailDrawer() {
   const { toast } = useToast();
 
   const copyToClipboard = async (text: string, label: string) => {
+    const maskedText = applyPIIMask(text, isPiiMasked);
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(maskedText);
       toast({
         title: "Copiado!",
         description: `${label} copiado para a área de transferência.`,
