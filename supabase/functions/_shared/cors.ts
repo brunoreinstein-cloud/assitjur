@@ -22,12 +22,10 @@ function matchOrigin(origin: string, patterns: string[]) {
 }
 
 export function corsHeaders(req: Request) {
-  const { raw, patterns } = parseAllowedOrigins();
+  const { patterns } = parseAllowedOrigins();
   const origin = req.headers.get("origin") ?? "";
   const headers: Record<string, string> = { ...DEFAULT_HEADERS };
-  if (raw.length === 0) {
-    headers["Access-Control-Allow-Origin"] = "*";
-  } else if (matchOrigin(origin, patterns)) {
+  if (matchOrigin(origin, patterns)) {
     headers["Access-Control-Allow-Origin"] = origin;
   }
   return headers;
