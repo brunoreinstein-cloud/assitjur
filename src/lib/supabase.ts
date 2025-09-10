@@ -222,18 +222,27 @@ const mapaRequestSchema = z.object({
     .default({}),
 });
 
+function toEdgePayload<F>(req: MapaTestemunhasRequest<F>) {
+  const { page, limit, filters, ...rest } = req;
+  return {
+    paginacao: { page, limit },
+    filtros: filters,
+    ...rest
+  };
+}
+
 // Fetch functions with Supabase fallback to mocks
 export const fetchPorProcesso = async (
   params: MapaTestemunhasRequest<ProcessoFilters>,
   signal?: AbortSignal
 ): Promise<{ data: PorProcesso[]; total: number; error?: string }> => {
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<ProcessoFilters>;
-  const sanitized = {
+  const sanitized = toEdgePayload({
     ...parsed,
     filters: parsed.filters
       ? Object.fromEntries(Object.keys(parsed.filters).map(k => [k, '[redacted]']))
       : undefined
-  };
+  });
   console.debug('mapa-testemunhas-processos payload', sanitized);
   let cid = uuidv4();
   try {
@@ -251,7 +260,7 @@ export const fetchPorProcesso = async (
       count?: number;
       total?: number;
     }>('mapa-testemunhas-processos', {
-      body: parsed,
+      body: toEdgePayload(parsed),
       headers: {
         'Content-Type': 'application/json',
         'x-correlation-id': cid,
@@ -379,12 +388,12 @@ export const fetchPorTestemunha = async (
   signal?: AbortSignal
 ): Promise<{ data: PorTestemunha[]; total: number; error?: string }> => {
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<TestemunhaFilters>;
-  const sanitized = {
+  const sanitized = toEdgePayload({
     ...parsed,
     filters: parsed.filters
       ? Object.fromEntries(Object.keys(parsed.filters).map(k => [k, '[redacted]']))
       : undefined
-  };
+  });
   console.debug('mapa-testemunhas-testemunhas payload', sanitized);
   let cid = uuidv4();
   try {
@@ -402,7 +411,7 @@ export const fetchPorTestemunha = async (
       count?: number;
       total?: number;
     }>('mapa-testemunhas-testemunhas', {
-      body: parsed,
+      body: toEdgePayload(parsed),
       headers: {
         'Content-Type': 'application/json',
         'x-correlation-id': cid,

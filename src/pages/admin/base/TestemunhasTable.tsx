@@ -38,12 +38,19 @@ export default function TestemunhasTable() {
     queryFn: async () => {
       if (!profile?.organization_id) throw new Error('Organização não encontrada');
 
+      const { data: sessionData } = await supabase.auth.getSession();
+      const access_token = sessionData?.session?.access_token;
+      if (!access_token) throw new Error('Usuário não autenticado');
+
       const { data, error } = await supabase.functions.invoke('mapa-testemunhas-testemunhas', {
         body: {
-          search: searchTerm.trim() || undefined,
-          page,
-          limit,
+          paginacao: { page, limit },
+          filtros: { search: searchTerm.trim() || undefined }
         },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${access_token}`
+        }
       });
 
       if (error) throw error;
