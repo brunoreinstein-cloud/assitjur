@@ -23,6 +23,7 @@ export interface UserProfile {
   two_factor_enabled?: boolean;
   two_factor_secret?: string | null;
   two_factor_backup_code?: string | null;
+  plan?: string;
 }
 
 interface AuthContextType {

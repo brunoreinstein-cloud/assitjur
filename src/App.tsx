@@ -15,6 +15,7 @@ import { FooterLegal } from "@/components/common/FooterLegal";
 import { ServiceHealthProvider } from "@/hooks/useServiceHealth";
 import { StatusBanner } from "@/components/common/StatusBanner";
 import SessionExpiredModal from "@/components/auth/SessionExpiredModal";
+import FeatureFlagGuard from "@/components/FeatureFlagGuard";
 
 const MapaPage = lazy(() => import("./pages/MapaPage"));
 const PublicHome = lazy(() => import("./pages/PublicHome"));
@@ -103,7 +104,14 @@ const App = () => (
                                     {/* Admin routes */}
                                     <AdminRoutes />
                                     <Route path="/import" element={<Navigate to="/admin/base-import" replace />} />
-                                    <Route path="/relatorio" element={<ReportDemo />} />
+                                    <Route
+                                      path="/relatorio"
+                                      element={
+                                        <FeatureFlagGuard flag="advanced-report">
+                                          <ReportDemo />
+                                        </FeatureFlagGuard>
+                                      }
+                                    />
                                     <Route path="/account/2fa" element={<TwoFactorSetup />} />
 
                                     <Route path="*" element={<NotFound />} />
