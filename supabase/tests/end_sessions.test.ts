@@ -15,3 +15,14 @@ Deno.test("rejects invalid jwt", async () => {
   const res = await handler(new Request("http://localhost", { method: "POST", body: "{}" }));
   assertEquals(res.status, 401);
 });
+
+Deno.test("requires session id even with valid jwt", async () => {
+  const res = await handler(
+    new Request("http://localhost", {
+      method: "POST",
+      headers: { authorization: `Bearer ${validJWT}` },
+      body: "{}",
+    }),
+  );
+  assertEquals(res.status, 400);
+});

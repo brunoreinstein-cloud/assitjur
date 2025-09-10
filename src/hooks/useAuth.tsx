@@ -245,10 +245,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProfile(profileData);
 
         // Rotate refresh token and record session context
-        const risk = await recordSession(data.user.id).catch(() => 0);
+        const riskScore = await recordSession(data.user.id).catch(() => 0);
         await supabase.auth.refreshSession();
 
-        if (risk >= 70) {
+        if (riskScore >= 70) {
           return { error: { message: 'STEP_UP_REQUIRED' } };
         }
       }

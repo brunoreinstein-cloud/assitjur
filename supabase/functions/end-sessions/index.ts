@@ -5,6 +5,10 @@ export async function handler(req: Request): Promise<Response> {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  if (req.method !== "POST") {
+    return createSecureErrorResponse("method_not_allowed", 405);
+  }
+
   const token = req.headers.get("authorization")?.replace("Bearer ", "") ?? "";
   if (!(await validateJWT(token))) {
     return createSecureErrorResponse("unauthorized", 401);

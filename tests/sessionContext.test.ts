@@ -14,4 +14,9 @@ describe('session context', () => {
     const score = calculateRiskScore({ last_ip: '1.1.1.1', timezone: 'UTC', hour: 2 }, []);
     expect(score).toBeGreaterThan(0);
   });
+
+  it('flags suspicious ASN patterns', () => {
+    const score = calculateRiskScore({ last_ip: 'vpn-host', timezone: 'UTC', hour: 12 }, []);
+    expect(score).toBeGreaterThanOrEqual(80);
+  });
 });

@@ -11,11 +11,11 @@ export interface SessionContext {
  */
 export function getSessionContext(): SessionContext {
   const nav = typeof navigator !== 'undefined' ? navigator : undefined;
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
   return {
-    userAgent: nav?.userAgent || 'unknown',
-    timezone: timezone || 'UTC',
-    language: nav?.language || 'unknown',
+    userAgent: nav?.userAgent ?? 'unknown',
+    timezone,
+    language: (nav as any)?.language || (nav as any)?.languages?.[0] || 'unknown',
     platform: (nav as any)?.userAgentData?.platform || nav?.platform || 'unknown',
   };
 }
