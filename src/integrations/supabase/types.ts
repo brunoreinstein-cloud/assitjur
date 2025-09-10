@@ -958,6 +958,9 @@ export type Database = {
           organization_id: string | null
           role: Database["public"]["Enums"]["user_role"]
           terms_accepted_at: string | null
+          two_factor_enabled: boolean | null
+          two_factor_secret: string | null
+          two_factor_backup_code: string | null
           updated_at: string
           user_id: string
         }
@@ -973,6 +976,9 @@ export type Database = {
           organization_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           terms_accepted_at?: string | null
+          two_factor_enabled?: boolean | null
+          two_factor_secret?: string | null
+          two_factor_backup_code?: string | null
           updated_at?: string
           user_id: string
         }
@@ -988,6 +994,9 @@ export type Database = {
           organization_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           terms_accepted_at?: string | null
+          two_factor_enabled?: boolean | null
+          two_factor_secret?: string | null
+          two_factor_backup_code?: string | null
           updated_at?: string
           user_id?: string
         }

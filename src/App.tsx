@@ -31,6 +31,7 @@ const ReportDemo = lazy(() => import("./pages/ReportDemo"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
 const LGPD = lazy(() => import("./pages/LGPD"));
+const TwoFactorSetup = lazy(() => import("./pages/TwoFactorSetup"));
 
 // React Query client configuration
 const queryClient = new QueryClient({
@@ -101,6 +102,7 @@ const App = () => (
                                     <AdminRoutes />
                                     <Route path="/import" element={<Navigate to="/admin/base-import" replace />} />
                                     <Route path="/relatorio" element={<ReportDemo />} />
+                                    <Route path="/account/2fa" element={<TwoFactorSetup />} />
 
                                     <Route path="*" element={<NotFound />} />
                                   </Routes>

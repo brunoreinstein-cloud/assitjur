@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ShieldCheck, ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { verifyTOTP } from "@/utils/totp";
 
 const twoFactorSchema = z.object({
   code: z.string()
@@ -20,9 +21,11 @@ interface TwoFactorFormProps {
   onBack: () => void;
   onSuccess: () => void;
   userEmail?: string;
+  secret: string;
+  backupCode?: string;
 }
 
-export const TwoFactorForm = ({ onBack, onSuccess, userEmail }: TwoFactorFormProps) => {
+export const TwoFactorForm = ({ onBack, onSuccess, userEmail, secret, backupCode }: TwoFactorFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [attempts, setAttempts] = useState(0);
 
@@ -37,11 +40,8 @@ export const TwoFactorForm = ({ onBack, onSuccess, userEmail }: TwoFactorFormPro
     setIsLoading(true);
     
     try {
-      // Mock 2FA verification
-      // In production, this would call Supabase MFA verify
-      
-      // Mock: accept 123456 as valid code
-      if (data.code === '123456') {
+      const isValid = verifyTOTP(data.code, secret) || (backupCode && data.code === backupCode);
+      if (isValid) {
         toast.success("Verificação concluída!", {
           description: "Acesso autorizado com sucesso."
         });
@@ -69,13 +69,6 @@ export const TwoFactorForm = ({ onBack, onSuccess, userEmail }: TwoFactorFormPro
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleResendCode = async () => {
-    // Mock resend
-    toast.success("Novo código enviado", {
-      description: "Verifique seu aplicativo autenticador."
-    });
   };
 
   const formatCodeInput = (value: string) => {
@@ -145,17 +138,7 @@ export const TwoFactorForm = ({ onBack, onSuccess, userEmail }: TwoFactorFormPro
             )}
           </Button>
 
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleResendCode}
-              disabled={isLoading}
-              className="text-xs"
-            >
-              Reenviar código
-            </Button>
-            
+          <div className="flex justify-center">
             <Button
               type="button"
               variant="ghost"
@@ -171,26 +154,8 @@ export const TwoFactorForm = ({ onBack, onSuccess, userEmail }: TwoFactorFormPro
       </form>
 
       {/* Help text */}
-      <div className="text-center space-y-2">
-        <div className="text-xs text-muted-foreground">
-          <p>Não consegue acessar seu autenticador?</p>
-          <button 
-            type="button"
-            className="text-primary hover:underline"
-            onClick={() => {
-              toast.info("Suporte disponível", {
-                description: "Entre em contato com o administrador do sistema."
-              });
-            }}
-          >
-            Entrar em contato com suporte
-          </button>
-        </div>
-        
-        {/* Mock hint for demo */}
-        <div className="text-xs bg-muted/30 p-2 rounded border">
-          <strong>Demo:</strong> Use o código <code className="font-mono">123456</code> para testar
-        </div>
+      <div className="text-center text-xs text-muted-foreground">
+        <p>Não consegue acessar seu autenticador? Utilize o código de backup fornecido ao habilitar o 2FA.</p>
       </div>
     </div>
   );
