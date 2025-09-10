@@ -69,10 +69,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   // Enable session monitoring for authenticated users
-  useSessionMonitor({ 
+  const inactivity = Number(import.meta.env.VITE_INACTIVITY_TIMEOUT_MINUTES || 30);
+  useSessionMonitor({
     enabled: !!session,
     checkInterval: 5, // Check every 5 minutes
-    preemptiveRefresh: 10 // Refresh 10 minutes before expiry
+    preemptiveRefresh: 10, // Refresh 10 minutes before expiry
+    inactivityTimeout: inactivity
   });
 
   const fetchProfile = async (userId: string) => {

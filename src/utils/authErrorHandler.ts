@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { useSessionStore } from '@/stores/useSessionStore';
 import { toast } from '@/hooks/use-toast';
 
 export interface AuthErrorHandlerOptions {
@@ -10,11 +11,13 @@ export interface AuthErrorHandlerOptions {
 export class AuthErrorHandler {
   private static readonly AUTH_ERROR_TYPES = [
     'Invalid Refresh Token',
-    'refresh_token_not_found', 
+    'refresh_token_not_found',
     'invalid_token',
     'jwt_invalid',
     'token_expired'
   ];
+
+  private static isHandling = false;
 
   static isAuthError(error: any): boolean {
     if (!error) return false;
@@ -26,12 +29,15 @@ export class AuthErrorHandler {
   }
 
   static async handleAuthError(
-    error: any, 
+    error: any,
     options: AuthErrorHandlerOptions = {}
   ): Promise<void> {
+    if (this.isHandling) return;
+    this.isHandling = true;
+
     const {
       redirectToLogin = true,
-      showNotification = true,
+      showNotification = false,
       preserveCurrentUrl = true
     } = options;
 
@@ -48,15 +54,13 @@ export class AuthErrorHandler {
       });
     }
 
-    if (redirectToLogin) {
-      const currentUrl = preserveCurrentUrl ? window.location.pathname : '/';
-      const redirectUrl = currentUrl !== '/login' ? `?redirect=${encodeURIComponent(currentUrl)}` : '';
-      
-      // Small delay to allow toast to show
-      setTimeout(() => {
-        window.location.href = `/login${redirectUrl}`;
-      }, 500);
-    }
+    const currentUrl = preserveCurrentUrl ? window.location.pathname : '/';
+    const redirectUrl =
+      redirectToLogin && currentUrl !== '/login'
+        ? `?redirect=${encodeURIComponent(currentUrl)}`
+        : '';
+
+    useSessionStore.getState().showExpired(`/login${redirectUrl}`);
   }
 
   static async clearAuthData(): Promise<void> {
@@ -65,7 +69,7 @@ export class AuthErrorHandler {
       await supabase.auth.signOut();
       
       // Clear any residual localStorage items
-      const keysToRemove = [];
+      const keysToRemove: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && (key.startsWith('supabase.') || key.includes('auth'))) {
@@ -73,9 +77,16 @@ export class AuthErrorHandler {
         }
       }
       keysToRemove.forEach(key => localStorage.removeItem(key));
-      
-      // Clear sessionStorage as well
-      sessionStorage.clear();
+
+      // Clear auth-related sessionStorage keys without touching drafts
+      const sessionKeys: string[] = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && (key.startsWith('supabase.') || key.includes('auth'))) {
+          sessionKeys.push(key);
+        }
+      }
+      sessionKeys.forEach(key => sessionStorage.removeItem(key));
     } catch (error) {
       console.error('Error clearing auth data:', error);
     }

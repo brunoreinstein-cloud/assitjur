@@ -5,6 +5,7 @@ import { AuthErrorHandler } from '@/utils/authErrorHandler';
 interface SessionMonitorOptions {
   checkInterval?: number; // minutes
   preemptiveRefresh?: number; // minutes before expiry
+  inactivityTimeout?: number; // minutes of inactivity before logout
   enabled?: boolean;
 }
 
@@ -12,10 +13,13 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
   const {
     checkInterval = 5, // Check every 5 minutes
     preemptiveRefresh = 10, // Refresh 10 minutes before expiry
+    inactivityTimeout = 0,
     enabled = true
   } = options;
 
   const intervalRef = useRef<NodeJS.Timeout>();
+  const inactivityRef = useRef<NodeJS.Timeout>();
+  const lastActivityRef = useRef(Date.now());
   const isCheckingRef = useRef(false);
 
   const checkAndRefreshSession = async () => {
@@ -79,6 +83,30 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
       }
     };
   }, [enabled, checkInterval, preemptiveRefresh]);
+
+  // Inactivity auto-logout
+  useEffect(() => {
+    if (!enabled || !inactivityTimeout) return;
+
+    const resetActivity = () => {
+      lastActivityRef.current = Date.now();
+    };
+
+    const events = ['mousemove', 'keydown', 'click'];
+    events.forEach((e) => window.addEventListener(e, resetActivity));
+
+    inactivityRef.current = setInterval(() => {
+      const now = Date.now();
+      if (now - lastActivityRef.current > inactivityTimeout * 60 * 1000) {
+        AuthErrorHandler.handleAuthError({ message: 'session_inactive' });
+      }
+    }, 60 * 1000);
+
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, resetActivity));
+      if (inactivityRef.current) clearInterval(inactivityRef.current);
+    };
+  }, [enabled, inactivityTimeout]);
 
   return {
     checkSession: checkAndRefreshSession

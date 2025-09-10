@@ -14,6 +14,7 @@ import AdminRoutes from "./routes/AdminRoutes";
 import { FooterLegal } from "@/components/common/FooterLegal";
 import { ServiceHealthProvider } from "@/hooks/useServiceHealth";
 import { StatusBanner } from "@/components/common/StatusBanner";
+import SessionExpiredModal from "@/components/auth/SessionExpiredModal";
 
 const MapaPage = lazy(() => import("./pages/MapaPage"));
 const PublicHome = lazy(() => import("./pages/PublicHome"));
@@ -52,6 +53,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <SessionExpiredModal />
             <ConsentProvider>
               <ConsentDialog />
               <BrowserRouter

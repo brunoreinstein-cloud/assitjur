@@ -7,21 +7,45 @@ export async function fetchWithAuth(url: string, init?: RequestInit) {
   const headers = new Headers(init?.headers || {});
   headers.set('x-correlation-id', cid);
 
+  let token: string | undefined;
   try {
-    const {
-      data: { session }
-    } = await supabase.auth.getSession();
-    const token = session?.access_token;
-    if (token) {
-      headers.set('Authorization', `Bearer ${token}`);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const now = Math.floor(Date.now() / 1000);
+      const expiresIn = session.expires_at ? session.expires_at - now : 0;
+      if (expiresIn < 60) {
+        const { data: refreshed, error } = await supabase.auth.refreshSession();
+        if (!error && refreshed.session) {
+          token = refreshed.session.access_token;
+        } else if (error && AuthErrorHandler.isAuthError(error)) {
+          AuthErrorHandler.handleAuthError(error);
+        } else {
+          token = session.access_token;
+        }
+      } else {
+        token = session.access_token;
+      }
     }
   } catch {
-    // Ignore session retrieval errors
+    // ignore
+  }
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
   }
 
   let response: Response;
-  try {
+  let body: any;
+  const execute = async () => {
     response = await fetch(url, { ...init, headers });
+    try {
+      body = await response.clone().json();
+    } catch {
+      body = undefined;
+    }
+  };
+
+  try {
+    await execute();
   } catch (err) {
     return {
       ok: false,
@@ -32,11 +56,20 @@ export async function fetchWithAuth(url: string, init?: RequestInit) {
     };
   }
 
-  let body: any;
-  try {
-    body = await response.clone().json();
-  } catch {
-    body = undefined;
+  let refreshAttempted = false;
+  if ((response.status === 401 || response.status === 403) && !refreshAttempted) {
+    refreshAttempted = true;
+    try {
+      const { data: refreshed, error } = await supabase.auth.refreshSession();
+      if (!error && refreshed.session) {
+        headers.set('Authorization', `Bearer ${refreshed.session.access_token}`);
+        await execute();
+      } else if (error && AuthErrorHandler.isAuthError(error)) {
+        AuthErrorHandler.handleAuthError(error);
+      }
+    } catch {
+      // ignore
+    }
   }
 
   const responseCid =
@@ -51,13 +84,12 @@ export async function fetchWithAuth(url: string, init?: RequestInit) {
       details: body?.details
     };
 
-    // Handle authentication errors globally
     if (response.status === 401 || response.status === 403) {
-      const isAuthError = AuthErrorHandler.isAuthError(body) || 
+      const isAuthError =
+        AuthErrorHandler.isAuthError(body) ||
         AuthErrorHandler.isAuthError({ message: response.statusText });
-      
+
       if (isAuthError) {
-        // Don't await to avoid blocking the response
         AuthErrorHandler.handleAuthError(body || { message: response.statusText });
       }
     }
