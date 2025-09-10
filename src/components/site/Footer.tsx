@@ -1,11 +1,14 @@
 import React from 'react';
 import { Separator } from '@/components/ui/separator';
+import { useConsent } from '@/hooks/useConsent';
 import { useNavigate } from 'react-router-dom';
 
 export function Footer() {
   const navigate = useNavigate();
+  const { setOpen } = useConsent();
   
   const footerLinks = [
+    { label: 'Privacidade / Gerenciar cookies', action: () => setOpen(true) },
     { label: 'Sobre o AssistJur.IA', action: () => navigate('/sobre') },
     { label: 'Sobre Bianca', action: () => navigate('/sobre') },
     { label: 'Segurança & Conformidade', action: () => navigate('/sobre#seguranca') },
