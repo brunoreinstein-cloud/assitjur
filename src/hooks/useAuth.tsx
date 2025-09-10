@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ensureProfile } from '@/utils/ensureProfile';
 import { AuthErrorHandler } from '@/utils/authErrorHandler';
 import { useSessionMonitor } from '@/hooks/useSessionMonitor';
+import { recordSession } from '@/security/sessionService';
 
 export type UserRole = 'ADMIN' | 'ANALYST' | 'VIEWER';
 
@@ -242,6 +243,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         await logAuthAttempt(email, 'login', 'success', { role, user_role: profileData.role });
         setProfile(profileData);
+
+        // Rotate refresh token and record session context
+        const risk = await recordSession(data.user.id).catch(() => 0);
+        await supabase.auth.refreshSession();
+
+        if (risk >= 70) {
+          return { error: { message: 'STEP_UP_REQUIRED' } };
+        }
       }
 
       return { error: null };

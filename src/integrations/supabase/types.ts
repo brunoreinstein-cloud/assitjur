@@ -1347,6 +1347,36 @@ export type Database = {
         }
         Relationships: []
       }
+      sessions: {
+        Row: {
+          created_at: string | null
+          device_label: string | null
+          id: string
+          last_ip: unknown | null
+          last_seen: string | null
+          risk_score: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_label?: string | null
+          id?: string
+          last_ip?: unknown | null
+          last_seen?: string | null
+          risk_score?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          device_label?: string | null
+          id?: string
+          last_ip?: unknown | null
+          last_seen?: string | null
+          risk_score?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_sessions: {
         Row: {
           created_at: string | null

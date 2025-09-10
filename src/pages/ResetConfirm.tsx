@@ -105,6 +105,8 @@ const ResetConfirm = () => {
         throw error;
       }
 
+      await supabase.auth.refreshSession();
+
       toast.success("Senha atualizada!", {
         description: "Sua senha foi redefinida com sucesso. Faça login com a nova senha."
       });
