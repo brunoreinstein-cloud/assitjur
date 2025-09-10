@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Scale } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
@@ -11,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { getDefaultRedirect, AUTH_CONFIG } from '@/config/auth';
 import heroImage from "@/assets/hero-legal-tech.jpg";
 import { BrandLogo } from '@/components/brand/BrandLogo';
+import LoginBreadcrumb from '@/components/navigation/LoginBreadcrumb';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -49,13 +49,16 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-subtle lg:grid lg:grid-cols-2">
       {/* SEO and Accessibility */}
       <div className="sr-only">
-        <h1>Login - AssistJur.IA</h1>
+        <h1>Login</h1>
         <p>Acesse sua conta do AssistJur.IA para análise avançada de testemunhas com conformidade LGPD</p>
       </div>
 
       {/* Left side - Form */}
       <div className="flex flex-col justify-center px-6 py-12 lg:px-8">
         <div className="mx-auto w-full max-w-md">
+          <header className="mb-6">
+            <LoginBreadcrumb />
+          </header>
           {/* Logo */}
           <div className="flex items-center justify-center mb-8 lg:hidden">
             <div className="flex items-center space-x-3">
