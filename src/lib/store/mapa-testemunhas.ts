@@ -170,23 +170,27 @@ export const useMapaTestemunhasStore = create<MapaTestemunhasStore>((set, get) =
   setLastUpdate: (date) => set({ lastUpdate: date }),
   setProcessoFilters: (filters) =>
     set((state) => {
-      const merged = { ...state.processoFilters, ...filters } as Record<string, unknown>;
-      const cleaned = Object.fromEntries(
-        Object.entries(merged).filter(([, v]) => v !== undefined)
-      ) as FilterProcesso;
+      const merged = { ...state.processoFilters, ...filters };
+      Object.keys(filters).forEach((k) => {
+        if (filters[k as keyof FilterProcesso] === undefined) {
+          delete (merged as any)[k];
+        }
+      });
       return {
-        processoFilters: cleaned,
+        processoFilters: merged,
         processosPage: 1,
       };
     }),
   setTestemunhaFilters: (filters) =>
     set((state) => {
-      const merged = { ...state.testemunhaFilters, ...filters } as Record<string, unknown>;
-      const cleaned = Object.fromEntries(
-        Object.entries(merged).filter(([, v]) => v !== undefined)
-      ) as FilterTestemunha;
+      const merged = { ...state.testemunhaFilters, ...filters };
+      Object.keys(filters).forEach((k) => {
+        if (filters[k as keyof FilterTestemunha] === undefined) {
+          delete (merged as any)[k];
+        }
+      });
       return {
-        testemunhaFilters: cleaned,
+        testemunhaFilters: merged,
         testemunhasPage: 1,
       };
     }),

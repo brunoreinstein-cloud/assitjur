@@ -10,7 +10,7 @@ import {
 import { Download, FileSpreadsheet, Loader2 } from "lucide-react";
 import { exportProcessosToCSV, exportTestemunhasToCSV, validateExportSize, estimateCSVSize } from "@/lib/csv";
 import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
-import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
+import { useMapaTestemunhasStore, selectIsPiiMasked } from "@/lib/store/mapa-testemunhas";
 
 // Type aliases for backward compatibility
 type Processo = PorProcesso;
@@ -30,7 +30,7 @@ export const ExportCsvButton = ({
   disabled = false
 }: ExportCsvButtonProps) => {
   const [isExporting, setIsExporting] = useState(false);
-  const isPiiMasked = useMapaTestemunhasStore(s => s.isPiiMasked);
+  const isPiiMasked = useMapaTestemunhasStore(selectIsPiiMasked);
   
   const isProcessoData = (data: ExportData): data is Processo[] => {
     return data.length > 0 && 'cnj' in data[0] && 'reclamante_limpo' in data[0];
