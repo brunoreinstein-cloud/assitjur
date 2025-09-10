@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BRAND } from '@/branding/brand';
 
@@ -33,15 +33,30 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
     setIsMobileMenuOpen(false);
   };
 
-  const navItems = [
+  type NavItem = {
+    label: string;
+    action?: () => void;
+    children?: { label: string; action: () => void }[];
+  };
+
+  const navItems: NavItem[] = [
     { label: 'Início', action: () => scrollToSection('hero') },
     { label: 'Para Quem', action: () => scrollToSection('publico') },
     { label: 'Diferenciais', action: () => scrollToSection('diferenciais') },
     { label: 'ROI', action: () => scrollToSection('roi') },
     { label: 'Agentes', action: () => scrollToSection('agentes') },
     { label: 'Segurança', action: () => scrollToSection('seguranca') },
-    { label: 'Sobre', action: () => navigate('/sobre') }
+    {
+      label: 'Sobre',
+      action: () => scrollToSection('sobre'),
+      children: [
+        { label: 'O AssistJur.IA', action: () => scrollToSection('sobre') },
+        { label: 'Bianca Reinstein', action: () => scrollToSection('bianca') }
+      ]
+    }
   ];
+
+  const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -114,18 +129,46 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
             <div className="px-6 py-6 space-y-4">
               {/* Mobile Navigation Items */}
               {navItems.map((item, index) => (
-                <button
-                  key={index}
-                  onClick={item.action}
-                  className="block w-full text-left px-4 py-3 text-foreground/80 hover:text-primary hover:bg-muted/50 rounded-lg transition-all duration-200 font-medium"
-                >
-                  {item.label}
-                </button>
+                <div key={index}>
+                  <button
+                    onClick={() => {
+                      if (item.children) {
+                        setOpenSubmenu(openSubmenu === index ? null : index);
+                      } else {
+                        item.action?.();
+                      }
+                    }}
+                    className="flex w-full items-center justify-between text-left px-4 py-4 text-foreground/80 hover:text-primary hover:bg-muted/50 rounded-lg transition-all duration-200 font-medium"
+                  >
+                    {item.label}
+                    {item.children && (
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform ${openSubmenu === index ? 'rotate-180' : ''}`}
+                      />
+                    )}
+                  </button>
+                  {item.children && openSubmenu === index && (
+                    <div className="pl-4">
+                      {item.children.map((child, cIndex) => (
+                        <button
+                          key={cIndex}
+                          onClick={() => {
+                            child.action();
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className="block w-full text-left px-4 py-4 text-foreground/70 hover:text-primary hover:bg-muted/50 rounded-lg transition-all duration-200"
+                        >
+                          {child.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
-              
+
               {/* Mobile Action Buttons */}
               <div className="pt-4 space-y-3 border-t border-border/20">
-                <Button 
+                <Button
                   onClick={() => {
                     navigate('/login');
                     setIsMobileMenuOpen(false);
@@ -135,7 +178,7 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
                 >
                   Login
                 </Button>
-                <Button 
+                <Button
                   onClick={() => {
                     navigate('/beta');
                     setIsMobileMenuOpen(false);
