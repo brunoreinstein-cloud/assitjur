@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function BackToTopFAB() {
+interface BackToTopFABProps {
+  className?: string;
+}
+
+export function BackToTopFAB({ className }: BackToTopFABProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -25,7 +30,10 @@ export function BackToTopFAB() {
     <Button
       size="icon"
       aria-label="Voltar ao topo"
-      className="fixed bottom-6 right-6 rounded-full shadow-lg z-50"
+      className={cn(
+        'fixed bottom-6 right-6 rounded-full shadow-lg z-50',
+        className
+      )}
       onClick={scrollToTop}
     >
       <ArrowUp className="h-5 w-5" />

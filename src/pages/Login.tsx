@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { getDefaultRedirect, AUTH_CONFIG } from '@/config/auth';
 import heroImage from "@/assets/hero-legal-tech.jpg";
 import { BrandHeader } from '@/components/brand/BrandHeader';
+import { BackToTopFAB } from '@/components/site/BackToTopFAB';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -50,13 +51,38 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-subtle lg:grid lg:grid-cols-2">
       {/* SEO and Accessibility */}
       <div className="sr-only">
-        <h1>Login - AssistJur.IA</h1>
+        <h1 id="main-heading" tabIndex={-1}>Login - AssistJur.IA</h1>
         <p>Acesse sua conta do AssistJur.IA para análise avançada de testemunhas com conformidade LGPD</p>
       </div>
 
       {/* Left side - Form */}
       <div className="flex flex-col justify-center px-6 py-12 lg:px-8">
         <div className="mx-auto w-full max-w-md">
+          <nav aria-label="breadcrumb" className="mb-4 text-sm">
+            <ol className="flex items-center text-muted-foreground">
+              <li>
+                <Link
+                  to="/"
+                  className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm"
+                >
+                  AssistJur IA
+                </Link>
+              </li>
+              <li aria-hidden="true" className="mx-2">
+                ›
+              </li>
+              <li>
+                <Link
+                  to="/login"
+                  aria-current="page"
+                  className="focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm"
+                >
+                  Login
+                </Link>
+              </li>
+            </ol>
+          </nav>
+
           {/* Logo */}
           <div className="flex items-center justify-center mb-8 lg:hidden">
             <BrandHeader size="lg" className="gap-3" />
@@ -197,6 +223,8 @@ const Login = () => {
           </footer>
         </div>
       </div>
+
+      <BackToTopFAB className="bottom-24" />
 
       {/* Right side - Hero (hidden on mobile) */}
       <aside className="hidden lg:block relative" role="complementary">
