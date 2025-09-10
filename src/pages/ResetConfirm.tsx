@@ -109,7 +109,10 @@ const ResetConfirm = () => {
         description: "Sua senha foi redefinida com sucesso. Faça login com a nova senha."
       });
 
-      // Sign out and redirect to login
+      // Rotate refresh token and sign out
+      try {
+        await supabase.auth.refreshSession();
+      } catch {}
       await supabase.auth.signOut();
       navigate('/login');
 
