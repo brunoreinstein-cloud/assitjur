@@ -1,8 +1,56 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, ArrowRight, Target, TrendingUp, Shield, Award, Users, Brain } from 'lucide-react';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselApi
+} from '@/components/ui/carousel';
 
 export function ValueProps() {
+  const [diffApi, setDiffApi] = React.useState<CarouselApi>();
+  const [diffCurrent, setDiffCurrent] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!diffApi) return;
+    const onSelect = () => setDiffCurrent(diffApi.selectedScrollSnap());
+    onSelect();
+    diffApi.on('select', onSelect);
+    return () => diffApi.off('select', onSelect);
+  }, [diffApi]);
+
+  const diferentials = [
+    {
+      icon: Brain,
+      iconBg: 'bg-primary/20',
+      iconColor: 'text-primary',
+      title: 'Especialização Jurídica',
+      text: 'Desenvolvido por especialistas com mais de 20 anos de experiência em gestão de contencioso.'
+    },
+    {
+      icon: Award,
+      iconBg: 'bg-accent/20',
+      iconColor: 'text-accent',
+      title: 'Conhecimento de Jurisprudência',
+      text: 'Estrutura pensado para interpretar dados jurídicos, decisões e padrões processuais.'
+    },
+    {
+      icon: TrendingUp,
+      iconBg: 'bg-success/20',
+      iconColor: 'text-success',
+      title: 'Integração com Bases Jurídicas',
+      text: 'Capacidade de cruzar dados internos da empresa com informações de tribunais e sistemas públicos.'
+    },
+    {
+      icon: Shield,
+      iconBg: 'bg-primary/20',
+      iconColor: 'text-primary',
+      title: 'Supervisão Especializada',
+      text: 'Outputs sempre validados por advogados — tecnologia que apoia, mas não substitui a análise humana.'
+    }
+  ];
+
   return (
     <section id="diferenciais" className="py-20 bg-muted/20">
       <div className="container mx-auto px-6">
@@ -188,79 +236,78 @@ export function ValueProps() {
             <h3 className="text-2xl font-bold text-center text-foreground">
               Nossos Diferenciais
             </h3>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                      <Brain className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-semibold mb-2 text-foreground">
-                        Especialização Jurídica
-                      </h4>
-                      <p className="text-muted-foreground text-sm">
-                        Desenvolvido por especialistas com mais de 20 anos de experiência em gestão de contencioso.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
 
-              <Card className="border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
-                      <Award className="h-5 w-5 text-accent" />
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-semibold mb-2 text-foreground">
-                        Conhecimento de Jurisprudência
-                      </h4>
-                      <p className="text-muted-foreground text-sm">
-                        Estrutura pensado para interpretar dados jurídicos, decisões e padrões processuais.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Mobile Carousel */}
+            <div className="md:hidden">
+              <Carousel setApi={setDiffApi} opts={{ align: 'start' }} className="-mx-6">
+                <CarouselContent>
+                  {diferentials.map((diff, index) => (
+                    <CarouselItem key={index} className="pl-6">
+                      <Card className="border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300">
+                        <CardContent className="p-6">
+                          <div className="flex items-start space-x-4">
+                            <div className={`w-10 h-10 rounded-full ${diff.iconBg} flex items-center justify-center flex-shrink-0`}>
+                              <diff.icon className={`h-5 w-5 ${diff.iconColor}`} />
+                            </div>
+                            <div>
+                              <h4 className="text-lg font-semibold mb-2 text-foreground">
+                                {diff.title}
+                              </h4>
+                              <p className="text-muted-foreground text-sm">
+                                {diff.text}
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+              </Carousel>
+              <div className="flex justify-center mt-4 gap-2">
+                {diferentials.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => diffApi?.scrollTo(index)}
+                    className="p-4"
+                    aria-label={`Ir para diferencial ${index + 1}`}
+                  >
+                    <span
+                      className={`block w-3 h-3 rounded-full ${
+                        diffCurrent === index
+                          ? 'bg-primary'
+                          : 'bg-muted-foreground/20'
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
 
-              <Card className="border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0">
-                      <TrendingUp className="h-5 w-5 text-success" />
+            {/* Desktop Grid */}
+            <div className="hidden md:grid md:grid-cols-2 gap-6">
+              {diferentials.map((diff, index) => (
+                <Card
+                  key={index}
+                  className="border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300"
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-start space-x-4">
+                      <div className={`w-10 h-10 rounded-full ${diff.iconBg} flex items-center justify-center flex-shrink-0`}>
+                        <diff.icon className={`h-5 w-5 ${diff.iconColor}`} />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-semibold mb-2 text-foreground">
+                          {diff.title}
+                        </h4>
+                        <p className="text-muted-foreground text-sm">
+                          {diff.text}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-lg font-semibold mb-2 text-foreground">
-                        Integração com Bases Jurídicas
-                      </h4>
-                      <p className="text-muted-foreground text-sm">
-                        Capacidade de cruzar dados internos da empresa com informações de tribunais e sistemas públicos.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                      <Shield className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-semibold mb-2 text-foreground">
-                        Supervisão Especializada
-                      </h4>
-                      <p className="text-muted-foreground text-sm">
-                        Outputs sempre validados por advogados — tecnologia que apoia, mas não substitui a análise humana.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </div>
