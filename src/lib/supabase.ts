@@ -211,9 +211,9 @@ const mapaRequestSchema = z.object({
       testemunha: z.string().trim().optional(),
       ambosPolos: z.coerce.boolean().optional(),
       jaFoiReclamante: z.coerce.boolean().optional(),
-      temTriangulacao: z.coerce.boolean().optional(),
-      temTroca: z.coerce.boolean().optional(),
-      temProvaEmprestada: z.coerce.boolean().optional(),
+      tem_triangulacao: z.coerce.boolean().optional(),
+      tem_troca: z.coerce.boolean().optional(),
+      tem_prova_emprestada: z.coerce.boolean().optional(),
       qtdDeposMin: z.coerce.number().optional(),
       qtdDeposMax: z.coerce.number().optional(),
     })
@@ -346,11 +346,11 @@ export const fetchPorProcesso = async (
       );
     }
 
-    if (parsed.filters.temTriangulacao) {
+    if (parsed.filters.tem_triangulacao) {
       filteredData = filteredData.filter(p => p.triangulacao_confirmada === true);
     }
 
-    if (parsed.filters.temProvaEmprestada) {
+    if (parsed.filters.tem_prova_emprestada) {
       filteredData = filteredData.filter(p => p.contem_prova_emprestada === true);
     }
 
@@ -465,12 +465,12 @@ export const fetchPorTestemunha = async (
       filteredData = filteredData.filter(t => t.ja_foi_reclamante === parsed.filters.jaFoiReclamante);
     }
 
-    if (parsed.filters.temTriangulacao !== undefined) {
-      filteredData = filteredData.filter(t => t.participou_triangulacao === parsed.filters.temTriangulacao);
+    if (parsed.filters.tem_triangulacao !== undefined) {
+      filteredData = filteredData.filter(t => t.participou_triangulacao === parsed.filters.tem_triangulacao);
     }
 
-    if (parsed.filters.temTroca !== undefined) {
-      filteredData = filteredData.filter(t => t.participou_troca_favor === parsed.filters.temTroca);
+    if (parsed.filters.tem_troca !== undefined) {
+      filteredData = filteredData.filter(t => t.participou_troca_favor === parsed.filters.tem_troca);
     }
 
     // Mock pagination

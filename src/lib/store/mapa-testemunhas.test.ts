@@ -18,11 +18,11 @@ describe('mapa-testemunhas store filters', () => {
 
   it('removes testemunha filters when set to undefined', () => {
     const { setTestemunhaFilters } = useMapaTestemunhasStore.getState();
-    setTestemunhaFilters({ search: 'joao', temTroca: true });
-    expect(useMapaTestemunhasStore.getState().testemunhaFilters).toEqual({ search: 'joao', temTroca: true });
+    setTestemunhaFilters({ search: 'joao', tem_troca: true });
+    expect(useMapaTestemunhasStore.getState().testemunhaFilters).toEqual({ search: 'joao', tem_troca: true });
 
-    setTestemunhaFilters({ temTroca: undefined });
+    setTestemunhaFilters({ tem_troca: undefined });
     expect(useMapaTestemunhasStore.getState().testemunhaFilters).toEqual({ search: 'joao' });
-    expect(useMapaTestemunhasStore.getState().testemunhaFilters).not.toHaveProperty('temTroca');
+    expect(useMapaTestemunhasStore.getState().testemunhaFilters).not.toHaveProperty('tem_troca');
   });
 });

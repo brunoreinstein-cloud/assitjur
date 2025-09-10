@@ -52,7 +52,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   });
 
   // Pagination State
-  const [cursor, setCursor] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
   const [items, setItems] = useState<ProcessoRow[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -132,7 +132,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   });
 
   // Fetch processos data
-  const fetchProcessos = async (cursorParam: string | null) => {
+  const fetchProcessos = async (pageParam: number) => {
     if (!profile?.organization_id) throw new Error('No organization');
 
     const queryParams = buildQuery;
@@ -141,11 +141,15 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
       ...(queryParams.uf && queryParams.uf.length > 0 ? { uf: queryParams.uf[0] } : {}),
       ...(queryParams.status && queryParams.status.length > 0 ? { status: queryParams.status[0] } : {}),
       ...(queryParams.fase && queryParams.fase.length > 0 ? { fase: queryParams.fase[0] } : {}),
-      ...(queryParams.flags?.triang ? { temTriangulacao: true } : {}),
-      ...(queryParams.flags?.troca ? { temTroca: true } : {}),
-      ...(queryParams.flags?.prova ? { temProvaEmprestada: true } : {})
+      ...(queryParams.flags?.triang ? { tem_triangulacao: true } : {}),
+      ...(queryParams.flags?.troca ? { tem_troca: true } : {}),
+      ...(queryParams.flags?.prova ? { tem_prova_emprestada: true } : {})
     };
     console.log('🔍 Fetching processos with filters:', apiFilters);
+
+    const mappedFilters = Object.fromEntries(
+      Object.entries(apiFilters).map(([key, value]) => [key.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`), value])
+    );
 
     const { data: sessionData } = await supabase.auth.getSession();
     const access_token = sessionData?.session?.access_token;
@@ -153,8 +157,8 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
 
     const { data, error } = await supabase.functions.invoke('mapa-testemunhas-processos', {
       body: {
-        paginacao: { cursor: cursorParam ?? undefined, limit },
-        filtros: apiFilters
+        paginacao: { page: pageParam, limit },
+        filtros: mappedFilters
       },
       headers: {
         'Content-Type': 'application/json',
@@ -164,17 +168,17 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
 
     if (error) throw error;
 
-    const newItems = isPiiMasked ? applyPIIMask(data.data, true) : data.data;
-    setItems(prev => cursorParam ? [...prev, ...newItems] : newItems);
-    setCursor(data.next_cursor ?? null);
-    setTotalCount(data.count ?? 0);
+    const newItems = isPiiMasked ? applyPIIMask(data.items, true) : data.items;
+    setItems(prev => pageParam > 1 ? [...prev, ...newItems] : newItems);
+    setPage(pageParam);
+    setTotalCount(data.total ?? 0);
     console.log('✅ Processos loaded:', data);
   };
 
   const loadInitial = async () => {
     setIsInitialLoading(true);
     try {
-      await fetchProcessos(null);
+      await fetchProcessos(1);
     } catch (err) {
       setError(err as Error);
     } finally {
@@ -184,7 +188,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
 
   useEffect(() => {
     setItems([]);
-    setCursor(null);
+    setPage(1);
     setSelectedRows(new Set());
     setError(null);
     if (profile?.organization_id) {
@@ -194,17 +198,17 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
 
   const refetch = () => {
     setItems([]);
-    setCursor(null);
+    setPage(1);
     setSelectedRows(new Set());
     setError(null);
     loadInitial();
   };
 
   const handleLoadMore = async () => {
-    if (!cursor) return;
+    if (items.length >= totalCount) return;
     setIsLoadingMore(true);
     try {
-      await fetchProcessos(cursor);
+      await fetchProcessos(page + 1);
     } catch (err) {
       setError(err as Error);
     } finally {
@@ -380,13 +384,13 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
           orderDir={orderDir}
           onSort={(field, direction) => {
             setOrderBy(field);
-            setOrderDir(direction);
-            setItems([]);
-            setCursor(null);
+              setOrderDir(direction);
+              setItems([]);
+              setPage(1);
           }}
           isPiiMasked={isPiiMasked}
           onLoadMore={handleLoadMore}
-          hasMore={cursor !== null}
+          hasMore={items.length < totalCount}
           isLoadingMore={isLoadingMore}
           total={totalCount}
         />
