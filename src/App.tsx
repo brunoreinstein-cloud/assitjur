@@ -15,6 +15,7 @@ import { FooterLegal } from "@/components/common/FooterLegal";
 import { ServiceHealthProvider } from "@/hooks/useServiceHealth";
 import { StatusBanner } from "@/components/common/StatusBanner";
 import SessionExpiredModal from "@/components/auth/SessionExpiredModal";
+import { Seo } from "@/components/Seo";
 
 const MapaPage = lazy(() => import("./pages/MapaPage"));
 const PublicHome = lazy(() => import("./pages/PublicHome"));
@@ -45,6 +46,13 @@ const queryClient = new QueryClient({
   },
 });
 
+const withSeo = (path: string, element: React.ReactNode) => (
+  <>
+    <Seo path={path} />
+    {element}
+  </>
+);
+
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
@@ -68,19 +76,19 @@ const App = () => (
                   <Suspense fallback={<div className="p-4">Carregando...</div>}>
                     <Routes>
                       {/* Public routes */}
-                      <Route path="/" element={<PublicHome />} />
-                      <Route path="/sobre" element={<About />} />
-                      <Route path="/beta" element={<Beta />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/reset" element={<Reset />} />
-                      <Route path="/reset/confirm" element={<ResetConfirm />} />
-                      <Route path="/verify-otp" element={<VerifyOtp />} />
-                      <Route path="/portal-titular" element={<PortalTitular />} />
-                      <Route path="/import/template" element={<TemplatePage />} />
-                      <Route path="/demo/mapa-testemunhas" element={<DemoMapaTestemunhas />} />
-                      <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
-                      <Route path="/termos-de-uso" element={<TermsOfUse />} />
-                      <Route path="/lgpd" element={<LGPD />} />
+                      <Route path="/" element={withSeo("/", <PublicHome />)} />
+                      <Route path="/sobre" element={withSeo("/sobre", <About />)} />
+                      <Route path="/beta" element={withSeo("/beta", <Beta />)} />
+                      <Route path="/login" element={withSeo("/login", <Login />)} />
+                      <Route path="/reset" element={withSeo("/reset", <Reset />)} />
+                      <Route path="/reset/confirm" element={withSeo("/reset/confirm", <ResetConfirm />)} />
+                      <Route path="/verify-otp" element={withSeo("/verify-otp", <VerifyOtp />)} />
+                      <Route path="/portal-titular" element={withSeo("/portal-titular", <PortalTitular />)} />
+                      <Route path="/import/template" element={withSeo("/import/template", <TemplatePage />)} />
+                      <Route path="/demo/mapa-testemunhas" element={withSeo("/demo/mapa-testemunhas", <DemoMapaTestemunhas />)} />
+                      <Route path="/politica-de-privacidade" element={withSeo("/politica-de-privacidade", <PrivacyPolicy />)} />
+                      <Route path="/termos-de-uso" element={withSeo("/termos-de-uso", <TermsOfUse />)} />
+                      <Route path="/lgpd" element={withSeo("/lgpd", <LGPD />)} />
 
                       {/* Protected routes with app layout */}
                       <Route
@@ -92,8 +100,8 @@ const App = () => (
                                 <Suspense fallback={<div className="p-4">Carregando...</div>}>
                                   <Routes>
                                     <Route path="/dashboard" element={<Navigate to="/mapa" replace />} />
-                                    <Route path="/mapa" element={<MapaPage />} />
-                                    <Route path="/mapa-testemunhas" element={<MapaPage />} />
+                                    <Route path="/mapa" element={withSeo("/mapa", <MapaPage />)} />
+                                    <Route path="/mapa-testemunhas" element={withSeo("/mapa-testemunhas", <MapaPage />)} />
                                     <Route path="/dados" element={<Navigate to="/mapa" replace />} />
                                     <Route path="/dados/mapa" element={<Navigate to="/mapa" replace />} />
                                     {/* Redirect deprecated chat route to mapa-testemunhas */}
@@ -103,10 +111,10 @@ const App = () => (
                                     {/* Admin routes */}
                                     <AdminRoutes />
                                     <Route path="/import" element={<Navigate to="/admin/base-import" replace />} />
-                                    <Route path="/relatorio" element={<ReportDemo />} />
-                                    <Route path="/account/2fa" element={<TwoFactorSetup />} />
+                                    <Route path="/relatorio" element={withSeo("/relatorio", <ReportDemo />)} />
+                                    <Route path="/account/2fa" element={withSeo("/account/2fa", <TwoFactorSetup />)} />
 
-                                    <Route path="*" element={<NotFound />} />
+                                    <Route path="*" element={withSeo("/404", <NotFound />)} />
                                   </Routes>
                                 </Suspense>
                               </ErrorBoundary>

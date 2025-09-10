@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:integration": "vitest run tests/integration.supabase.test.ts",
-    "generate:types": "node scripts/generate-api-types.js"
+    "generate:types": "node scripts/generate-api-types.js",
+    "sitemap": "node scripts/generate-sitemap.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",

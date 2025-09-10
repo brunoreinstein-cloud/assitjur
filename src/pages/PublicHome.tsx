@@ -26,18 +26,6 @@ export default function PublicHome() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* SEO Metadata será adicionado via Helmet ou similar */}
-      <head>
-        <title>AssistJur.IA - O primeiro hub de agentes de IA para gestão estratégica do contencioso</title>
-        <meta 
-          name="description" 
-          content="Gestão do contencioso com inovação e olhar estratégico. Hub único de agentes de IA especializados testado em grandes carteiras." 
-        />
-        <meta property="og:title" content="AssistJur.IA - Gestão do contencioso com IA" />
-        <meta property="og:description" content="O primeiro hub de agentes de IA especializados em gestão estratégica do contencioso." />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </head>
-
       {/* Header Navigation */}
       <PublicHeader onBetaClick={openBetaModal} />
 
