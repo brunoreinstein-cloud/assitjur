@@ -14,7 +14,7 @@ export const BRAND = {
     mark: "/lovable-uploads/7a3da188-83da-4e1d-b4e2-30254d487fae.png", // Hub icon version
   },
   
-  favicon: "/lovable-uploads/7a3da188-83da-4e1d-b4e2-30254d487fae.png",
+  favicon: "/brand/assistjur-favicon.png",
   
   openGraph: {
     image: "/brand/og-assistjur.png",
