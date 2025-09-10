@@ -21,24 +21,39 @@ function matchOrigin(origin: string, patterns: string[]) {
   return patterns.some((rx) => new RegExp(rx).test(origin));
 }
 
-export function corsHeaders(req: Request) {
+function getAllowedOrigin(req: Request) {
   const { patterns } = parseAllowedOrigins();
   const origin = req.headers.get("origin") ?? "";
+  return matchOrigin(origin, patterns) ? origin : null;
+}
+
+export function corsHeaders(req: Request, origin?: string | null) {
+  const { patterns } = parseAllowedOrigins();
+  const o = origin ?? req.headers.get("origin") ?? "";
   const headers: Record<string, string> = { ...DEFAULT_HEADERS };
-  if (matchOrigin(origin, patterns)) {
-    headers["Access-Control-Allow-Origin"] = origin;
+  if (matchOrigin(o, patterns)) {
+    headers["Access-Control-Allow-Origin"] = o;
   }
   return headers;
 }
 
 export function handlePreflight(req: Request, cid?: string) {
-  if (req.method === "OPTIONS") {
-    const headers = {
-      ...corsHeaders(req),
-      "Cache-Control": "max-age=600",
-    } as Record<string, string>;
+  const origin = getAllowedOrigin(req);
+  if (!origin) {
+    const headers = { ...DEFAULT_HEADERS, "Content-Type": "application/json" };
     if (cid) headers["x-correlation-id"] = cid;
-    return new Response(null, { status: 200, headers });
+    return new Response(JSON.stringify({ error: "origin_not_allowed" }), {
+      status: 403,
+      headers,
+    });
+  }
+
+  if (req.method === "OPTIONS") {
+    const headers = corsHeaders(req, origin);
+    const acrh = req.headers.get("Access-Control-Request-Headers");
+    if (acrh) headers["Access-Control-Allow-Headers"] = acrh;
+    if (cid) headers["x-correlation-id"] = cid;
+    return new Response(null, { status: 204, headers });
   }
   return null;
 }
