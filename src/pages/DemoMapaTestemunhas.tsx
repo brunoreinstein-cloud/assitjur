@@ -31,15 +31,40 @@ export default function DemoMapaTestemunhas() {
   const next = () => setStep((s) => Math.min(s + 1, 4));
 
   const resetTour = () => setStep(0);
-  const handleOpenChange = (currentStep: number) => (open: boolean) =>
-    setStep(open ? currentStep : -1);
+  const handleOpenChange = (currentStep: number) => (open: boolean) => {
+    // Permite fechar popovers, mas só fecha se estiver no passo atual
+    if (!open && step === currentStep) {
+      setStep(-1);
+    }
+  };
 
   const riskColor = (risco: Witness['risco']) =>
     risco === 'Alto' ? 'text-red-600' : risco === 'Médio' ? 'text-yellow-600' : 'text-green-600';
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Mapa de Testemunhas (Demo)</h1>
+      <header>
+        <h1 className="text-2xl font-bold">Mapa de Testemunhas (Demo)</h1>
+        <p className="text-muted-foreground mt-2">
+          Demonstração interativa do sistema de mapeamento de testemunhas
+        </p>
+      </header>
+
+      {/* Indicador de progresso */}
+      <div className="flex items-center justify-center space-x-2 mb-6">
+        {[0, 1, 2, 3, 4].map((stepIndex) => (
+          <div
+            key={stepIndex}
+            className={`h-2 w-8 rounded-full transition-colors ${
+              stepIndex === step 
+                ? 'bg-primary' 
+                : stepIndex < step 
+                  ? 'bg-primary/60' 
+                  : 'bg-muted'
+            }`}
+          />
+        ))}
+      </div>
 
       <div className="flex gap-4">
         <Popover open={step === 0} onOpenChange={handleOpenChange(0)}>
