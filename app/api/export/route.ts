@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/integrations/supabase/client';
 import { SITE_URL } from '@/config/site';
+import { corsHeaders, handleOptions } from '@/middleware/cors';
 
 export async function POST(request: NextRequest) {
+  const headers = corsHeaders(request);
   try {
     const { messageId, type, blocks } = await request.json();
     
@@ -11,7 +13,7 @@ export async function POST(request: NextRequest) {
     if (!authHeader) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 }
+        { status: 401, headers }
       );
     }
 
@@ -22,7 +24,7 @@ export async function POST(request: NextRequest) {
     if (userError || !user) {
       return NextResponse.json(
         { error: 'Invalid authentication' },
-        { status: 401 }
+        { status: 401, headers }
       );
     }
 
@@ -36,7 +38,7 @@ export async function POST(request: NextRequest) {
     if (!profile) {
       return NextResponse.json(
         { error: 'User profile not found' },
-        { status: 404 }
+        { status: 404, headers }
       );
     }
 
@@ -64,7 +66,7 @@ export async function POST(request: NextRequest) {
       default:
         return NextResponse.json(
           { error: 'Invalid export type' },
-          { status: 400 }
+          { status: 400, headers }
         );
     }
 
@@ -100,26 +102,20 @@ export async function POST(request: NextRequest) {
       type,
       size: exportData.length,
       createdAt: new Date().toISOString()
-    });
+    }, { headers });
 
   } catch (error) {
     console.error('Export API Error:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Export failed' },
-      { status: 500 }
+      { status: 500, headers }
     );
   }
 }
 
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
+export async function OPTIONS(request: NextRequest) {
+  const res = handleOptions(request);
+  return res ?? new NextResponse(null, { status: 200, headers: corsHeaders(request) });
 }
 
 async function generatePDF(blocks: any[], messageId: string): Promise<string> {

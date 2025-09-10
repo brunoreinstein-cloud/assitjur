@@ -22,3 +22,8 @@ Evite curingas amplos na configuração de CORS. O curinga `https://*.lovable.de
 
 ## 4. Redeploy das funções
 Após atualizar o segredo, faça o redeploy das functions pelo Dashboard ou via CLI.
+
+## 5. Middleware no Next.js
+O mesmo segredo `ALLOWED_ORIGINS` é lido pelo middleware em `src/middleware/cors.ts`,
+aplicado nas rotas `app/api/*`. Certifique-se de definir o segredo no ambiente
+do servidor para que o CORS funcione tanto nas Edge Functions quanto nas rotas Next.js.
