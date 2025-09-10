@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
 import { applyPIIMask } from "@/utils/pii-mask";
 import { RiskBadge } from "@/components/RiskBadge";
 import { useUndoDelete } from "@/hooks/useUndoDelete";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 
 interface ProcessoTableProps {
   data: PorProcesso[];
@@ -16,19 +18,30 @@ interface ProcessoTableProps {
 export function ProcessoTable({ data }: ProcessoTableProps) {
   const { setSelectedProcesso, setIsDetailDrawerOpen, isPiiMasked, removeProcesso, restoreProcesso } = useMapaTestemunhasStore();
   const { remove } = useUndoDelete<PorProcesso>('Processo');
+  const [toDelete, setToDelete] = useState<PorProcesso | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const handleViewDetail = (processo: PorProcesso) => {
     setSelectedProcesso(processo);
     setIsDetailDrawerOpen(true);
   };
 
-  const handleDelete = (processo: PorProcesso) => {
-    remove({
-      key: processo.cnj,
-      label: processo.cnj,
-      onDelete: () => removeProcesso(processo.cnj),
-      onRestore: restoreProcesso,
-    });
+  const requestDelete = (processo: PorProcesso) => {
+    setToDelete(processo);
+    setIsConfirmOpen(true);
+  };
+
+  const handleDelete = () => {
+    if (toDelete) {
+      remove({
+        key: toDelete.cnj,
+        label: toDelete.cnj,
+        onDelete: () => removeProcesso(toDelete.cnj),
+        onRestore: restoreProcesso,
+      });
+    }
+    setIsConfirmOpen(false);
+    setToDelete(null);
   };
 
   const getStatusColor = (status: string | null) => {
@@ -54,6 +67,7 @@ export function ProcessoTable({ data }: ProcessoTableProps) {
   }
 
   return (
+    <>
     <div className="border border-border/50 rounded-2xl overflow-hidden">
       <Table>
         <TableHeader>
@@ -140,7 +154,7 @@ export function ProcessoTable({ data }: ProcessoTableProps) {
                     variant="ghost"
                     size="sm"
                     className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                    onClick={() => handleDelete(processo)}
+                    onClick={() => requestDelete(processo)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -151,5 +165,14 @@ export function ProcessoTable({ data }: ProcessoTableProps) {
         </TableBody>
       </Table>
     </div>
+    <ConfirmDialog
+      open={isConfirmOpen}
+      title="Excluir processo?"
+      description={toDelete ? `Deseja excluir o processo ${toDelete.cnj}?` : undefined}
+      confirmText="Excluir"
+      onConfirm={handleDelete}
+      onCancel={() => { setIsConfirmOpen(false); setToDelete(null); }}
+    />
+    </>
   );
 }
