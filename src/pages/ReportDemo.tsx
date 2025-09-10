@@ -3,7 +3,7 @@ import { ReportGenerator } from '@/components/reports/ReportGenerator';
 import { mockReportData } from '@/lib/mock-data/report-sample';
 import { AppLayout } from '@/components/navigation/AppLayout';
 
-export function ReportDemo() {
+function ReportDemo() {
   return (
     <AppLayout>
       <div className="container mx-auto p-6 space-y-6">
@@ -23,3 +23,5 @@ export function ReportDemo() {
     </AppLayout>
   );
 }
+
+export default ReportDemo;

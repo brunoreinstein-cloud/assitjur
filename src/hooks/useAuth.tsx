@@ -239,13 +239,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Ajusta a persistência da sessão conforme a opção "Lembrar-me"
         const sessionToPersist = refreshed.session ?? data.session;
         if (sessionToPersist) {
-          await supabase.auth.setSession(
-            {
-              access_token: sessionToPersist.access_token,
-              refresh_token: sessionToPersist.refresh_token,
-            },
-            { persistSession: rememberMe }
-          );
+          await supabase.auth.setSession({
+            access_token: sessionToPersist.access_token,
+            refresh_token: sessionToPersist.refresh_token,
+          });
         }
 
         // Collect session context and previous timezone

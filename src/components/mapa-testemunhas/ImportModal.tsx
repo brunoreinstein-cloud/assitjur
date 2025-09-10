@@ -315,13 +315,14 @@ export function ImportModal() {
   const isImportModalOpen = useMapaTestemunhasStore(selectIsImportModalOpen);
   const setIsImportModalOpen = useMapaTestemunhasStore(s => s.setIsImportModalOpen);
   const { toast } = useToast();
-  
   const [currentStep, setCurrentStep] = useState<'upload' | 'validation' | 'preview' | 'publish'>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [validationResults, setValidationResults] = useState<ValidationResults | null>(null);
   const [finalResult, setFinalResult] = useState<any | null>(null);
+  const [status, setStatus] = useState<DataStatus>('empty');
+  const [cnjFailed, setCnjFailed] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const uploadedFile = acceptedFiles[0];
@@ -939,7 +940,7 @@ export function ImportModal() {
         )}
 
         {status !== 'empty' && status !== 'success' && (
-          <DataState status={status} onRetry={handlePublish} />
+          <DataState status={status as DataStatus} onRetry={handlePublish} />
         )}
 
         <WizardSteps

@@ -14,9 +14,11 @@ export function ValueProps() {
 
   React.useEffect(() => {
     if (!diffApi) return;
+
     const onSelect = () => setDiffCurrent(diffApi.selectedScrollSnap());
     onSelect();
     diffApi.on('select', onSelect);
+    
     return () => diffApi.off('select', onSelect);
   }, [diffApi]);
 
