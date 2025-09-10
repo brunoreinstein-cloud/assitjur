@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { User, Session, AuthApiError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { ensureProfile } from '@/utils/ensureProfile';
 import { AuthErrorHandler } from '@/utils/authErrorHandler';
@@ -221,12 +221,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         await logAuthAttempt(email, 'login', 'failure', { role, error: error.message });
 
-        if (error.message.includes('Invalid login credentials')) {
-          return { error: { message: 'E-mail ou senha incorretos.' } };
-        }
+        if (error instanceof AuthApiError) {
+          const statusMessageMap: Record<number, string> = {
+            400: 'E-mail ou senha incorretos.',
+            401: 'E-mail não confirmado. Verifique sua caixa de entrada.',
+          };
 
-        if (error.message.includes('Email not confirmed')) {
-          return { error: { message: 'E-mail não confirmado. Verifique sua caixa de entrada.' } };
+          const translated = statusMessageMap[error.status];
+          if (translated) {
+            return { error: { message: translated } };
+          }
         }
 
         return { error };
