@@ -30,16 +30,21 @@ const BOOLEAN_FILTER_KEYS = new Set<keyof KnownFilters>([
 ])
 
 export function normalizeMapaRequest<F = Record<string, unknown>>(input: any): MapaTestemunhasRequest<F> {
-  let page = Number(input?.page ?? 1)
+  let page = Number(input?.paginacao?.page ?? input?.page ?? 1)
   if (!Number.isFinite(page) || page < 1) page = 1
 
-  let limit = Number(input?.limit ?? 20)
+  let limit = Number(input?.paginacao?.limit ?? input?.limit ?? 20)
   if (!Number.isFinite(limit) || limit < 1) limit = 20
   if (limit > 200) limit = 200
 
   const filters: Record<string, any> = {}
-  if (input?.filters && typeof input.filters === 'object') {
-    for (const [key, value] of Object.entries(input.filters)) {
+  const rawFilters = (input?.filtros && typeof input.filtros === 'object')
+    ? input.filtros
+    : (input?.filters && typeof input.filters === 'object')
+      ? input.filters
+      : undefined
+  if (rawFilters) {
+    for (const [key, value] of Object.entries(rawFilters)) {
       if (!ALLOWED_FILTER_KEYS.includes(key as keyof KnownFilters)) continue
       let v: any = value
 
@@ -64,9 +69,8 @@ export function normalizeMapaRequest<F = Record<string, unknown>>(input: any): M
   }
 
   const output: MapaTestemunhasRequest<F> = {
-    page,
-    limit,
-    filters: filters as F
+    paginacao: { page, limit },
+    filtros: filters as F
   }
 
   if (typeof input?.sortBy === 'string') {

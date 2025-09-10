@@ -7,13 +7,14 @@ export async function fetchTestemunhas(params: {
   search?: string;
   filters?: TestemunhaFilters;
 }): Promise<{ data: PorTestemunha[]; total: number }> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData?.session?.access_token;
   const { data, error } = await supabase.functions.invoke('mapa-testemunhas-testemunhas', {
     body: {
-      page: params.page || 1,
-      limit: params.limit || 20,
-      search: params.search,
-      ...params.filters
-    }
+      paginacao: { page: params.page || 1, limit: params.limit || 20 },
+      filtros: { ...(params.filters || {}), search: params.search }
+    },
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined
   });
 
   if (error) {
@@ -21,7 +22,7 @@ export async function fetchTestemunhas(params: {
     throw new Error('Erro ao buscar testemunhas');
   }
 
-  return data;
+  return { data: data.items, total: data.total };
 }
 
 export async function fetchProcessos(params: {
@@ -29,12 +30,14 @@ export async function fetchProcessos(params: {
   limit?: number;
   filters?: ProcessoFilters;
 }): Promise<{ data: any[]; total: number }> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData?.session?.access_token;
   const { data, error } = await supabase.functions.invoke('mapa-testemunhas-processos', {
     body: {
-      page: params.page || 1,
-      limit: params.limit || 20,
-      filters: params.filters
-    }
+      paginacao: { page: params.page || 1, limit: params.limit || 20 },
+      filtros: params.filters
+    },
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined
   });
 
   if (error) {
@@ -42,5 +45,5 @@ export async function fetchProcessos(params: {
     throw new Error('Erro ao buscar processos');
   }
 
-  return data;
+  return { data: data.items, total: data.total };
 }

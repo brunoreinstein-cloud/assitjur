@@ -79,11 +79,13 @@ export type TestemunhaFilters = {
 };
 
 export type MapaTestemunhasRequest<F = ProcessoFilters | TestemunhaFilters> = {
-  page: number;
-  limit: number;
+  paginacao: {
+    page: number;
+    limit: number;
+  };
+  filtros: F;
   sortBy?: string;
   sortDir?: 'asc' | 'desc';
-  filters: F;
 };
 
 export type ImportResult = {

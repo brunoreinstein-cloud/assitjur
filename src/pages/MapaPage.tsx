@@ -182,17 +182,15 @@ const MapaPage = () => {
         const [processosResult, testemunhasResult] = await Promise.all([
           fetchPorProcesso(
             normalizeMapaRequest({
-              page: 1,
-              limit: 1000,
-              filters: debouncedProcessFilters
+              paginacao: { page: 1, limit: 1000 },
+              filtros: debouncedProcessFilters
             }),
             processoController.signal
           ),
           fetchPorTestemunha(
             normalizeMapaRequest({
-              page: 1,
-              limit: 1000,
-              filters: debouncedTestemunhaFilters
+              paginacao: { page: 1, limit: 1000 },
+              filtros: debouncedTestemunhaFilters
             }),
             testemunhaController.signal
           )

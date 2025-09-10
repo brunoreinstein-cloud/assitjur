@@ -38,12 +38,15 @@ export default function TestemunhasTable() {
     queryFn: async () => {
       if (!profile?.organization_id) throw new Error('Organização não encontrada');
 
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
       const { data, error } = await supabase.functions.invoke('mapa-testemunhas-testemunhas', {
         body: {
-          search: searchTerm.trim() || undefined,
-          page,
-          limit,
+          paginacao: { page, limit },
+          filtros: { search: searchTerm.trim() || undefined }
         },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
 
       if (error) throw error;
@@ -52,8 +55,8 @@ export default function TestemunhasTable() {
     enabled: !!profile?.organization_id,
   });
 
-  const testemunhasData: PorTestemunha[] = testemunhasResponse?.data || [];
-  const totalWitnesses = testemunhasResponse?.total_witnesses || 0;
+  const testemunhasData: PorTestemunha[] = testemunhasResponse?.items || [];
+  const totalWitnesses = testemunhasResponse?.total || 0;
   const totalProcessos = testemunhasResponse?.total_processos || 0;
 
   // Ações em massa específicas para testemunhas

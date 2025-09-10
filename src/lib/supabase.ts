@@ -194,16 +194,20 @@ const isSupabaseConfigured = () => {
 
 // Zod schema to coerce and sanitize request params before sending
 const mapaRequestSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z
-    .coerce.number()
-    .int()
-    .min(1)
-    .default(20)
-    .transform(n => (n > 200 ? 200 : n)),
+  paginacao: z
+    .object({
+      page: z.coerce.number().int().min(1).default(1),
+      limit: z
+        .coerce.number()
+        .int()
+        .min(1)
+        .default(20)
+        .transform(n => (n > 200 ? 200 : n)),
+    })
+    .default({ page: 1, limit: 20 }),
   sortBy: z.string().trim().optional(),
   sortDir: z.enum(["asc", "desc"]).optional(),
-  filters: z
+  filtros: z
     .object({
       uf: z.string().trim().optional(),
       status: z.string().trim().optional(),
@@ -230,8 +234,8 @@ export const fetchPorProcesso = async (
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<ProcessoFilters>;
   const sanitized = {
     ...parsed,
-    filters: parsed.filters
-      ? Object.fromEntries(Object.keys(parsed.filters).map(k => [k, '[redacted]']))
+    filtros: parsed.filtros
+      ? Object.fromEntries(Object.keys(parsed.filtros).map(k => [k, '[redacted]']))
       : undefined
   };
   console.debug('mapa-testemunhas-processos payload', sanitized);
@@ -247,8 +251,7 @@ export const fetchPorProcesso = async (
     if (!access_token) throw new Error("Usuário não autenticado");
 
     const { data, error } = await supabase.functions.invoke<{
-      data?: PorProcesso[];
-      count?: number;
+      items?: PorProcesso[];
       total?: number;
     }>('mapa-testemunhas-processos', {
       body: parsed,
@@ -284,19 +287,19 @@ export const fetchPorProcesso = async (
       throw error;
     }
 
-    const payload = data as { data?: PorProcesso[]; count?: number; total?: number };
-    if (!payload?.data || payload.data.length === 0) {
+    const payload = data as { items?: PorProcesso[]; total?: number };
+    if (!payload?.items || payload.items.length === 0) {
       console.log(`[cid=${cid}] 📊 Supabase returned empty processos dataset`);
     } else {
       console.log(`[cid=${cid}] 📊 Fetched processos from API:`, {
-        count: payload.data.length,
-        total: payload.count || payload.total || 0
+        count: payload.items.length,
+        total: payload.total || 0
       });
     }
 
     return {
-      data: payload.data || [],
-      total: payload.count || payload.total || 0
+      data: payload.items || [],
+      total: payload.total || 0
     };
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
@@ -311,8 +314,8 @@ export const fetchPorProcesso = async (
     // Mock filtering logic
     let filteredData = [...mockProcessos];
 
-    if (parsed.filters.search) {
-      const search = parsed.filters.search.toLowerCase();
+    if (parsed.filtros.search) {
+      const search = parsed.filtros.search.toLowerCase();
       filteredData = filteredData.filter(p =>
         p.cnj?.toLowerCase().includes(search) ||
         p.reclamante_limpo?.toLowerCase().includes(search) ||
@@ -320,27 +323,27 @@ export const fetchPorProcesso = async (
       );
     }
 
-    if (parsed.filters.testemunha) {
-      const search = parsed.filters.testemunha.toLowerCase();
+    if (parsed.filtros.testemunha) {
+      const search = parsed.filtros.testemunha.toLowerCase();
       filteredData = filteredData.filter(p =>
         p.todas_testemunhas?.some(t => t.toLowerCase().includes(search))
       );
     }
 
-    if (parsed.filters.uf?.length) {
-      filteredData = filteredData.filter(p => parsed.filters.uf!.includes(p.uf!));
+    if (parsed.filtros.uf?.length) {
+      filteredData = filteredData.filter(p => parsed.filtros.uf!.includes(p.uf!));
     }
 
-    if (parsed.filters.status?.length) {
-      filteredData = filteredData.filter(p => parsed.filters.status!.includes(p.status!));
+    if (parsed.filtros.status?.length) {
+      filteredData = filteredData.filter(p => parsed.filtros.status!.includes(p.status!));
     }
 
-    if (parsed.filters.fase?.length) {
-      filteredData = filteredData.filter(p => parsed.filters.fase!.includes(p.fase!));
+    if (parsed.filtros.fase?.length) {
+      filteredData = filteredData.filter(p => parsed.filtros.fase!.includes(p.fase!));
     }
 
-    if (parsed.filters.testemunha) {
-      const search = parsed.filters.testemunha.toLowerCase();
+    if (parsed.filtros.testemunha) {
+      const search = parsed.filtros.testemunha.toLowerCase();
       filteredData = filteredData.filter(p =>
         p.testemunhas_ativo_limpo?.some(t => t.toLowerCase().includes(search)) ||
         p.testemunhas_passivo_limpo?.some(t => t.toLowerCase().includes(search)) ||
@@ -348,24 +351,24 @@ export const fetchPorProcesso = async (
       );
     }
 
-    if (parsed.filters.temTriangulacao) {
+    if (parsed.filtros.temTriangulacao) {
       filteredData = filteredData.filter(p => p.triangulacao_confirmada === true);
     }
 
-    if (parsed.filters.temProvaEmprestada) {
+    if (parsed.filtros.temProvaEmprestada) {
       filteredData = filteredData.filter(p => p.contem_prova_emprestada === true);
     }
 
-    if (parsed.filters.testemunha) {
-      const witness = parsed.filters.testemunha.toLowerCase();
+    if (parsed.filtros.testemunha) {
+      const witness = parsed.filtros.testemunha.toLowerCase();
       filteredData = filteredData.filter(p =>
         p.todas_testemunhas?.some(t => t.toLowerCase().includes(witness))
       );
     }
 
     // Mock pagination
-    const start = (parsed.page - 1) * parsed.limit;
-    const end = start + parsed.limit;
+    const start = (parsed.paginacao.page - 1) * parsed.paginacao.limit;
+    const end = start + parsed.paginacao.limit;
 
     return {
       data: filteredData.slice(start, end),
@@ -381,8 +384,8 @@ export const fetchPorTestemunha = async (
   const parsed = mapaRequestSchema.parse(params) as MapaTestemunhasRequest<TestemunhaFilters>;
   const sanitized = {
     ...parsed,
-    filters: parsed.filters
-      ? Object.fromEntries(Object.keys(parsed.filters).map(k => [k, '[redacted]']))
+    filtros: parsed.filtros
+      ? Object.fromEntries(Object.keys(parsed.filtros).map(k => [k, '[redacted]']))
       : undefined
   };
   console.debug('mapa-testemunhas-testemunhas payload', sanitized);
@@ -435,19 +438,19 @@ export const fetchPorTestemunha = async (
       throw error;
     }
 
-    const payload = data as { data?: PorTestemunha[]; count?: number; total?: number };
-    if (!payload?.data || payload.data.length === 0) {
+    const payload = data as { items?: PorTestemunha[]; total?: number };
+    if (!payload?.items || payload.items.length === 0) {
       console.log(`[cid=${cid}] 📊 Supabase returned empty testemunhas dataset`);
     } else {
       console.log(`[cid=${cid}] 📊 Fetched testemunhas from API:`, {
-        count: payload.data.length,
-        total: payload.count || payload.total || 0
+        count: payload.items.length,
+        total: payload.total || 0
       });
     }
 
     return {
-      data: payload.data || [],
-      total: payload.count || payload.total || 0
+      data: payload.items || [],
+      total: payload.total || 0
     };
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
@@ -462,32 +465,32 @@ export const fetchPorTestemunha = async (
     // Mock filtering logic
     let filteredData = [...mockTestemunhas];
 
-    if (parsed.filters.search) {
-      const search = parsed.filters.search.toLowerCase();
+    if (parsed.filtros.search) {
+      const search = parsed.filtros.search.toLowerCase();
       filteredData = filteredData.filter(t =>
         t.nome_testemunha?.toLowerCase().includes(search)
       );
     }
 
-    if (parsed.filters.ambosPolos !== undefined) {
-      filteredData = filteredData.filter(t => t.foi_testemunha_em_ambos_polos === parsed.filters.ambosPolos);
+    if (parsed.filtros.ambosPolos !== undefined) {
+      filteredData = filteredData.filter(t => t.foi_testemunha_em_ambos_polos === parsed.filtros.ambosPolos);
     }
 
-    if (parsed.filters.jaFoiReclamante !== undefined) {
-      filteredData = filteredData.filter(t => t.ja_foi_reclamante === parsed.filters.jaFoiReclamante);
+    if (parsed.filtros.jaFoiReclamante !== undefined) {
+      filteredData = filteredData.filter(t => t.ja_foi_reclamante === parsed.filtros.jaFoiReclamante);
     }
 
-    if (parsed.filters.temTriangulacao !== undefined) {
-      filteredData = filteredData.filter(t => t.participou_triangulacao === parsed.filters.temTriangulacao);
+    if (parsed.filtros.temTriangulacao !== undefined) {
+      filteredData = filteredData.filter(t => t.participou_triangulacao === parsed.filtros.temTriangulacao);
     }
 
-    if (parsed.filters.temTroca !== undefined) {
-      filteredData = filteredData.filter(t => t.participou_troca_favor === parsed.filters.temTroca);
+    if (parsed.filtros.temTroca !== undefined) {
+      filteredData = filteredData.filter(t => t.participou_troca_favor === parsed.filtros.temTroca);
     }
 
     // Mock pagination
-    const start = (parsed.page - 1) * parsed.limit;
-    const end = start + parsed.limit;
+    const start = (parsed.paginacao.page - 1) * parsed.paginacao.limit;
+    const end = start + parsed.paginacao.limit;
 
     return {
       data: filteredData.slice(start, end),

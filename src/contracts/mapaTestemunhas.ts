@@ -13,8 +13,7 @@ const filtersSchema = z
   })
   .default({});
 
-export const mapaTestemunhasSchema = z.object({
-  filters: filtersSchema,
+const paginacaoSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z
     .coerce.number()
@@ -22,6 +21,11 @@ export const mapaTestemunhasSchema = z.object({
     .min(1)
     .default(20)
     .transform((n) => (n > 200 ? 200 : n)),
+});
+
+export const mapaTestemunhasSchema = z.object({
+  paginacao: paginacaoSchema.default({ page: 1, limit: 20 }),
+  filtros: filtersSchema,
   sortBy: z.string().trim().optional(),
   sortDir: z.enum(["asc", "desc"]).optional(),
 });
@@ -33,8 +37,8 @@ export function normalizeMapaRequest(payload: unknown): MapaTestemunhasRequest {
 }
 
 export const MapaResponseSchema = z.object({
-  data: z.array(z.unknown()),
-  total: z.number().int(),
+  items: z.array(z.unknown()),
+  total: z.number().int().optional(),
 });
 
 export type MapaResponse = z.infer<typeof MapaResponseSchema>;
