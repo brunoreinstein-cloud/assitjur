@@ -40,6 +40,7 @@ export function corsHeaders(
   };
   if (isAllowed(origin, origins)) {
     headers["Access-Control-Allow-Origin"] = origin!;
+    headers["Access-Control-Allow-Credentials"] = "true";
   }
   return headers;
 }
