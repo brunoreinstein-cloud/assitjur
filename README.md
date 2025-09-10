@@ -55,6 +55,30 @@ RATE_LIMIT_WINDOW_MS="60000"
 
 👉 Nunca exponha chaves privadas no repositório. Use `.env.example` para documentação.
 
+### CORS nas Edge Functions
+
+Defina o segredo `ALLOWED_ORIGINS` no projeto Supabase para controlar quais origens podem chamar as Edge Functions:
+
+```
+ALLOWED_ORIGINS="https://assistjur.com.br,https://*.lovable.dev"
+```
+
+Uso no handler:
+
+```ts
+import { parseAllowedOrigins, corsHeaders, handlePreflight } from "../_shared/cors.ts";
+
+const origins = parseAllowedOrigins(Deno.env.get("ALLOWED_ORIGINS"));
+
+Deno.serve(async (req) => {
+  const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
+  const ch = corsHeaders(req, origins);
+  const pf = handlePreflight(req, origins, { "x-correlation-id": cid });
+  if (pf) return pf;
+  // ...
+});
+```
+
 ### 4. Rodar em modo dev
 
 ```bash

@@ -1,10 +1,12 @@
 import { createClient } from "npm:@supabase/supabase-js@2.56.0";
-import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
+import { corsHeaders, handlePreflight, parseAllowedOrigins } from "../_shared/cors.ts";
+
+const origins = parseAllowedOrigins(Deno.env.get('ALLOWED_ORIGINS'));
 
 Deno.serve(async (req) => {
   const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
-  const ch = corsHeaders(req);
-  const pre = handlePreflight(req, cid);
+  const ch = corsHeaders(req, origins);
+  const pre = handlePreflight(req, origins, { 'x-correlation-id': cid });
   if (pre) return pre;
 
   try {

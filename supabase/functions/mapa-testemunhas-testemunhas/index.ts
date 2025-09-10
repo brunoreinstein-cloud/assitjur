@@ -1,17 +1,18 @@
 import { createClient } from "npm:@supabase/supabase-js@2.56.0";
-import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
+import { corsHeaders, handlePreflight, parseAllowedOrigins } from "../_shared/cors.ts";
 import { createLogger } from "../_shared/logger.ts";
 import { ListaResponseSchema, TestemunhasRequestSchema } from "../_shared/mapa-contracts.ts";
 import { applyTestemunhasFilters } from "../_shared/mapa-filters.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { toFieldErrors } from "../_shared/validation.ts";
 
+const origins = parseAllowedOrigins(Deno.env.get("ALLOWED_ORIGINS"));
+
 Deno.serve(async (req) => {
   const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
   const logger = createLogger(cid);
-  const origin = req.headers.get("origin") ?? "";
-  const ch = corsHeaders(req, origin);
-  const pf = handlePreflight(req, cid);
+  const ch = corsHeaders(req, origins);
+  const pf = handlePreflight(req, origins, { "x-correlation-id": cid });
   if (pf) return pf;
 
   let payload: unknown = {};
