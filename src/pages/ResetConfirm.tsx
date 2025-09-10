@@ -12,19 +12,18 @@ import { AlertBox } from '@/components/auth/AlertBox';
 import { PasswordStrength } from '@/components/auth/PasswordStrength';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { validatePassword, MIN_PASSWORD_LENGTH } from '@/utils/security/passwordPolicy';
 
 const confirmResetSchema = z.object({
-  password: z.string()
-    .min(8, 'Senha deve ter pelo menos 8 caracteres')
-    .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
-    .regex(/[0-9]/, 'Senha deve conter pelo menos um número'),
-  confirmPassword: z.string()
+  password: z.string().min(MIN_PASSWORD_LENGTH, `Senha deve ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres`),
+  confirmPassword: z.string(),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Senhas não conferem",
   path: ["confirmPassword"]
 });
 
 type ConfirmResetFormData = z.infer<typeof confirmResetSchema>;
+
 
 const ResetConfirm = () => {
   const navigate = useNavigate();
@@ -82,6 +81,13 @@ const ResetConfirm = () => {
     setIsLoading(true);
     
     try {
+      const policy = await validatePassword(data.password);
+      if (!policy.valid) {
+        toast.error("Senha fraca", { description: policy.errors.join(' ') });
+        return;
+      }
+
+      
       if (!supabase) {
         // Mock password update for development
         toast.success("Senha atualizada!", {
@@ -110,7 +116,7 @@ const ResetConfirm = () => {
     } catch (error: any) {
       console.error('Password update error:', error);
       toast.error("Erro ao atualizar senha", {
-        description: error.message || "Não foi possível atualizar a senha. Tente novamente."
+        description: "Não foi possível atualizar a senha. Tente novamente."
       });
     } finally {
       setIsLoading(false);
