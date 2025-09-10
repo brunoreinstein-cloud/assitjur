@@ -1,16 +1,16 @@
 export const CONSENT_VERSION = '1.0.0'
-const STORAGE_KEY = `assistjur_consent_v${CONSENT_VERSION}`
+const STORAGE_VERSION_KEY = 'assistjur_consent_v'
+const STORAGE_PAYLOAD_KEY = 'assistjur_consent_payload'
 const MAX_AGE_DAYS = 180
 
 export interface ConsentPreferences {
   analytics: boolean
   ads: boolean
-  sharing?: boolean
   version: string
   ts: string
 }
 
-export type ConsentFlags = Pick<ConsentPreferences, 'analytics' | 'ads' | 'sharing'>
+export type ConsentFlags = Pick<ConsentPreferences, 'analytics' | 'ads'>
 
 const msInDay = 24 * 60 * 60 * 1000
 
@@ -22,11 +22,13 @@ function isExpired(ts: string) {
 export function getStoredConsent(): ConsentPreferences | null {
   if (typeof window === 'undefined') return null
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const version = localStorage.getItem(STORAGE_VERSION_KEY)
+    if (version !== CONSENT_VERSION) return null
+    const raw = localStorage.getItem(STORAGE_PAYLOAD_KEY)
     if (!raw) return null
-    const data = JSON.parse(raw) as ConsentPreferences
-    if (data.version !== CONSENT_VERSION || isExpired(data.ts)) return null
-    return data
+    const data = JSON.parse(raw) as { analytics: boolean; ads: boolean; ts: string }
+    if (isExpired(data.ts)) return null
+    return { ...data, version: CONSENT_VERSION }
   } catch {
     return null
   }
@@ -34,15 +36,14 @@ export function getStoredConsent(): ConsentPreferences | null {
 
 export function storeConsent(prefs: ConsentFlags): ConsentPreferences {
   if (typeof window === 'undefined') throw new Error('window is undefined')
-  const stored: ConsentPreferences = {
+  const payload = {
     analytics: prefs.analytics,
     ads: prefs.ads,
-    sharing: prefs.sharing ?? false,
-    version: CONSENT_VERSION,
     ts: new Date().toISOString(),
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(stored))
-  return stored
+  localStorage.setItem(STORAGE_VERSION_KEY, CONSENT_VERSION)
+  localStorage.setItem(STORAGE_PAYLOAD_KEY, JSON.stringify(payload))
+  return { ...payload, version: CONSENT_VERSION }
 }
 
 export function applyDefaultConsent() {
