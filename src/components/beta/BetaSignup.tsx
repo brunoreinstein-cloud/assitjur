@@ -12,13 +12,21 @@ import { EmailHint } from './EmailHint';
 import { Fieldset } from './Fieldset';
 import { supabase } from '@/integrations/supabase/client';
 
+const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
 const betaSignupSchema = z.object({
   nome: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
-  email: z.string().email('E-mail inválido'),
+  email: z.string().regex(emailRegex, 'E-mail inválido'),
   cargo: z.string().optional(),
   organizacao: z.string().min(2, 'Organização deve ter pelo menos 2 caracteres'),
   necessidades: z.array(z.string()).min(1, 'Selecione pelo menos uma necessidade'),
   outro_texto: z.string().max(120, 'Máximo 120 caracteres').optional(),
+  consentimento: z.boolean().refine(val => val === true, {
+    message: 'É necessário seu consentimento',
+  }),
+  termos: z.boolean().refine(val => val === true, {
+    message: 'Você deve aceitar os termos',
+  }),
 });
 
 type BetaSignupForm = z.infer<typeof betaSignupSchema>;
@@ -41,6 +49,35 @@ const necessidadeOptions = [
 
 const publicDomains = ['gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 'uol.com.br', 'bol.com.br'];
 
+function levenshtein(a: string, b: string) {
+  const matrix = Array.from({ length: a.length + 1 }, () =>
+    Array(b.length + 1).fill(0)
+  );
+  for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
+  for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
+      );
+    }
+  }
+  return matrix[a.length][b.length];
+}
+
+async function hasMxRecord(domain: string): Promise<boolean> {
+  try {
+    const res = await fetch(`https://dns.google/resolve?name=${domain}&type=MX`);
+    const data = await res.json();
+    return Array.isArray(data.Answer) && data.Answer.length > 0;
+  } catch {
+    return true; // ignore network errors
+  }
+}
+
 interface BetaSignupProps {
   compact?: boolean;
   className?: string;
@@ -51,6 +88,7 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [showEmailHint, setShowEmailHint] = useState(false);
+  const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null);
   const [showOutroText, setShowOutroText] = useState(false);
   const { toast } = useToast();
 
@@ -60,21 +98,64 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
     watch,
     setValue,
     reset,
-    formState: { errors },
+    setError,
+    clearErrors,
+    formState: { errors, isValid },
   } = useForm<BetaSignupForm>({
     resolver: zodResolver(betaSignupSchema),
+    mode: 'onChange',
+    defaultValues: {
+      consentimento: false,
+      termos: false,
+    },
   });
 
   const watchEmail = watch('email');
   const watchNecessidades = watch('necessidades', []);
 
-  // Check for public domain
+  // Check for public domain and suggest corrections
   React.useEffect(() => {
     if (watchEmail) {
       const domain = watchEmail.split('@')[1];
-      setShowEmailHint(domain && publicDomains.includes(domain.toLowerCase()));
+      if (domain) {
+        const lower = domain.toLowerCase();
+        setShowEmailHint(publicDomains.includes(lower));
+        const suggestion = publicDomains.find(d =>
+          levenshtein(lower, d) <= 2
+        );
+        setEmailSuggestion(
+          suggestion && suggestion !== lower ? suggestion : null
+        );
+      } else {
+        setShowEmailHint(false);
+        setEmailSuggestion(null);
+      }
+    } else {
+      setShowEmailHint(false);
+      setEmailSuggestion(null);
     }
   }, [watchEmail]);
+
+  // Optional MX record validation
+  React.useEffect(() => {
+    const domain = watchEmail?.split('@')[1]?.toLowerCase();
+    if (
+      domain &&
+      emailRegex.test(watchEmail) &&
+      !publicDomains.includes(domain)
+    ) {
+      hasMxRecord(domain).then(valid => {
+        if (!valid) {
+          setError('email', {
+            type: 'custom',
+            message: 'Domínio de e-mail inválido',
+          });
+        } else if (errors.email?.type === 'custom') {
+          clearErrors('email');
+        }
+      });
+    }
+  }, [watchEmail, setError, clearErrors, errors.email]);
 
   // Show outro text field when "Outro" is selected
   React.useEffect(() => {
@@ -206,6 +287,11 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
             aria-describedby={errors.email ? 'email-error' : 'email-help'}
           />
           {showEmailHint && <EmailHint />}
+          {emailSuggestion && (
+            <p className="text-xs text-muted-foreground mt-2" aria-live="polite">
+              Você quis dizer {emailSuggestion}?
+            </p>
+          )}
         </Fieldset>
 
         {/* Cargo (opcional se compact) */}
@@ -282,10 +368,58 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
           </Fieldset>
         )}
 
+        {/* Consentimento LGPD */}
+        <div className="space-y-2">
+          <label className="flex items-start space-x-2 text-sm">
+            <input
+              type="checkbox"
+              {...register('consentimento')}
+              className="rounded border-border text-primary focus:ring-primary focus:ring-2 mt-1"
+              aria-describedby={errors.consentimento ? 'consentimento-error' : undefined}
+            />
+            <span className="text-foreground">
+              Autorizo o uso dos meus dados para contato sobre o AssistJur.IA.
+            </span>
+          </label>
+          {errors.consentimento && (
+            <p
+              id="consentimento-error"
+              className="text-xs text-destructive font-medium"
+              role="alert"
+              aria-live="polite"
+            >
+              {errors.consentimento.message}
+            </p>
+          )}
+        </div>
+
+        {/* Termos de uso */}
+        <div className="space-y-2">
+          <label className="flex items-start space-x-2 text-sm">
+            <input
+              type="checkbox"
+              {...register('termos')}
+              className="rounded border-border text-primary focus:ring-primary focus:ring-2 mt-1"
+              aria-describedby={errors.termos ? 'termos-error' : undefined}
+            />
+            <span className="text-foreground">Li e concordo com os termos de uso.</span>
+          </label>
+          {errors.termos && (
+            <p
+              id="termos-error"
+              className="text-xs text-destructive font-medium"
+              role="alert"
+              aria-live="polite"
+            >
+              {errors.termos.message}
+            </p>
+          )}
+        </div>
+
         {/* Submit Button */}
         <Button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || !isValid}
           className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground py-3 rounded-xl font-medium transition-all shadow-lg hover:shadow-xl"
         >
           {isSubmitting ? (

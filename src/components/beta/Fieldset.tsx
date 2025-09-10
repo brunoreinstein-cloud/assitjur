@@ -39,7 +39,12 @@ export function Fieldset({ label, children, error, help, required }: FieldsetPro
       )}
 
       {error && (
-        <p id={errorId} className="text-xs text-destructive font-medium" role="alert">
+        <p
+          id={errorId}
+          className="text-xs text-destructive font-medium"
+          role="alert"
+          aria-live="polite"
+        >
           {error}
         </p>
       )}
