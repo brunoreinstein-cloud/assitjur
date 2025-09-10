@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   ProcessosRequestSchema,
   TestemunhasRequestSchema,
-} from '../supabase/functions/_shared/mapa-contracts';
+} from '../src/contracts/mapa-contracts';
 import { toFieldErrors } from '../supabase/functions/_shared/validation';
 
 describe('ProcessosRequestSchema', () => {
