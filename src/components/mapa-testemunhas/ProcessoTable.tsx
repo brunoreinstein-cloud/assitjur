@@ -7,17 +7,28 @@ import { ArrayField } from "./ArrayField";
 import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
 import { applyPIIMask } from "@/utils/pii-mask";
 import { RiskBadge } from "@/components/RiskBadge";
+import { useUndoDelete } from "@/hooks/useUndoDelete";
 
 interface ProcessoTableProps {
   data: PorProcesso[];
 }
 
 export function ProcessoTable({ data }: ProcessoTableProps) {
-  const { setSelectedProcesso, setIsDetailDrawerOpen, isPiiMasked } = useMapaTestemunhasStore();
+  const { setSelectedProcesso, setIsDetailDrawerOpen, isPiiMasked, removeProcesso, restoreProcesso } = useMapaTestemunhasStore();
+  const { remove } = useUndoDelete<PorProcesso>('Processo');
 
   const handleViewDetail = (processo: PorProcesso) => {
     setSelectedProcesso(processo);
     setIsDetailDrawerOpen(true);
+  };
+
+  const handleDelete = (processo: PorProcesso) => {
+    remove({
+      key: processo.cnj,
+      label: processo.cnj,
+      onDelete: () => removeProcesso(processo.cnj),
+      onRestore: restoreProcesso,
+    });
   };
 
   const getStatusColor = (status: string | null) => {
@@ -125,10 +136,11 @@ export function ProcessoTable({ data }: ProcessoTableProps) {
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="sm"
                     className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                    onClick={() => handleDelete(processo)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
