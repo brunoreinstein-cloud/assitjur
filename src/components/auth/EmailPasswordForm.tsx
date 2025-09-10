@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { validatePassword, MIN_PASSWORD_LENGTH } from "@/utils/security/passwordPolicy";
 
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -20,9 +21,7 @@ const signupSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').optional(),
   email: z.string().email('E-mail inválido'),
   password: z.string()
-    .min(8, 'Senha deve ter pelo menos 8 caracteres')
-    .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
-    .regex(/[0-9]/, 'Senha deve conter pelo menos um número'),
+    .min(MIN_PASSWORD_LENGTH, `Senha deve ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres`),
   confirmPassword: z.string(),
   acceptTerms: z.boolean().refine(val => val, 'Você deve aceitar os termos')
 }).refine(data => data.password === data.confirmPassword, {
@@ -71,7 +70,7 @@ export const EmailPasswordForm = ({
 
   const handleSignIn = async (data: LoginFormData) => {
     setIsLoading(true);
-    
+
     try {
       const { error } = await signIn(data.email, data.password, 'OFFICE');
 
@@ -97,8 +96,14 @@ export const EmailPasswordForm = ({
 
   const handleSignUp = async (data: SignupFormData) => {
     setIsLoading(true);
-    
+
     try {
+      const policy = await validatePassword(data.password);
+      if (!policy.valid) {
+        toast.error("Senha fraca", { description: policy.errors.join(' ') });
+        return;
+      }
+
       const { error } = await signUp(data.email, data.password, data.name);
 
       if (error) {
@@ -114,7 +119,7 @@ export const EmailPasswordForm = ({
     } catch (error: any) {
       console.error('Signup error:', error);
       toast.error("Erro no cadastro", {
-        description: error.message || "Não foi possível criar a conta."
+        description: "Não foi possível criar a conta. Verifique os dados e tente novamente.",
       });
     } finally {
       setIsLoading(false);
