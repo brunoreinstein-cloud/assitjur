@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
 import { applyPIIMask } from "@/utils/pii-mask";
 import { DataState, DataStatus } from "@/components/ui/data-state";
 import { useUndoDelete } from "@/hooks/useUndoDelete";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 
 interface TestemunhaTableProps {
   data: PorTestemunha[];
@@ -18,6 +20,8 @@ interface TestemunhaTableProps {
 export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps) {
   const { setSelectedTestemunha, setIsDetailDrawerOpen, isPiiMasked, removeTestemunha, restoreTestemunha } = useMapaTestemunhasStore();
   const { remove } = useUndoDelete<PorTestemunha>('Testemunha');
+  const [toDelete, setToDelete] = useState<PorTestemunha | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const handleViewDetail = (testemunha: PorTestemunha) => {
     setSelectedTestemunha(testemunha);
@@ -50,16 +54,26 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
     return <DataState status="empty" onRetry={onRetry} />;
   }
 
-  const handleDelete = (t: PorTestemunha) => {
-    remove({
-      key: t.nome_testemunha,
-      label: t.nome_testemunha,
-      onDelete: () => removeTestemunha(t.nome_testemunha),
-      onRestore: restoreTestemunha,
-    });
+  const requestDelete = (t: PorTestemunha) => {
+    setToDelete(t);
+    setIsConfirmOpen(true);
+  };
+
+  const handleDelete = () => {
+    if (toDelete) {
+      remove({
+        key: toDelete.nome_testemunha,
+        label: toDelete.nome_testemunha,
+        onDelete: () => removeTestemunha(toDelete.nome_testemunha),
+        onRestore: restoreTestemunha,
+      });
+    }
+    setIsConfirmOpen(false);
+    setToDelete(null);
   };
 
   return (
+    <>
     <div className="border border-border/50 rounded-2xl overflow-hidden">
       <Table>
         <TableHeader>
@@ -125,7 +139,7 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
                     variant="ghost"
                     size="sm"
                     className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                    onClick={() => handleDelete(testemunha)}
+                    onClick={() => requestDelete(testemunha)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -136,5 +150,14 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
         </TableBody>
       </Table>
     </div>
+    <ConfirmDialog
+      open={isConfirmOpen}
+      title="Excluir testemunha?"
+      description={toDelete ? `Deseja excluir ${toDelete.nome_testemunha}?` : undefined}
+      confirmText="Excluir"
+      onConfirm={handleDelete}
+      onCancel={() => { setIsConfirmOpen(false); setToDelete(null); }}
+    />
+    </>
   );
 }

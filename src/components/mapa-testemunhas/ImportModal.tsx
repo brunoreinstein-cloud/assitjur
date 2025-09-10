@@ -33,6 +33,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
 import { DataState, DataStatus } from "@/components/ui/data-state";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
+import { useBeforeUnload } from "@/hooks/useBeforeUnload";
 
 // Utils
 const onlyDigits = (s: any) => String(s ?? "").replace(/\D/g, "");
@@ -323,6 +325,34 @@ export function ImportModal() {
   const [finalResult, setFinalResult] = useState<any | null>(null);
   const [status, setStatus] = useState<DataStatus>('empty');
   const [cnjFailed, setCnjFailed] = useState(false);
+  const [confirmClose, setConfirmClose] = useState(false);
+
+  const resetState = () => {
+    setCurrentStep('upload');
+    setFile(null);
+    setIsProcessing(false);
+    setUploadProgress(0);
+    setValidationResults(null);
+    setFinalResult(null);
+    setStatus('empty');
+    setCnjFailed(false);
+  };
+
+  const isDirty = !!file || currentStep !== 'upload';
+  useBeforeUnload(isDirty);
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      if (isDirty) {
+        setConfirmClose(true);
+      } else {
+        resetState();
+        setIsImportModalOpen(false);
+      }
+    } else {
+      setIsImportModalOpen(true);
+    }
+  };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const uploadedFile = acceptedFiles[0];
@@ -921,7 +951,8 @@ export function ImportModal() {
   );
 
   return (
-    <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
+    <>
+    <Dialog open={isImportModalOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -957,5 +988,14 @@ export function ImportModal() {
         </div>
       </DialogContent>
     </Dialog>
+    <ConfirmDialog
+      open={confirmClose}
+      title="Descartar alterações?"
+      description="Você possui alterações não salvas. Deseja realmente sair?"
+      confirmText="Sair"
+      onConfirm={() => { setConfirmClose(false); resetState(); setIsImportModalOpen(false); }}
+      onCancel={() => setConfirmClose(false)}
+    />
+    </>
   );
 }
