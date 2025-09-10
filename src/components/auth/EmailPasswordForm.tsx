@@ -87,7 +87,7 @@ export const EmailPasswordForm = ({
     } catch (error: any) {
       console.error('Login error:', error);
       toast.error("Erro no login", {
-        description: "Não foi possível entrar. Verifique suas credenciais."
+        description: error?.message || "Não foi possível entrar. Verifique suas credenciais."
       });
     } finally {
       setIsLoading(false);
@@ -119,7 +119,7 @@ export const EmailPasswordForm = ({
     } catch (error: any) {
       console.error('Signup error:', error);
       toast.error("Erro no cadastro", {
-        description: "Não foi possível criar a conta. Verifique os dados e tente novamente.",
+        description: error?.message || "Não foi possível criar a conta. Verifique os dados e tente novamente.",
       });
     } finally {
       setIsLoading(false);
