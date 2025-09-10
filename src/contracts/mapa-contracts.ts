@@ -18,7 +18,7 @@ export const ProcessosRequestSchema = z
     paginacao: PaginacaoSchema.default({ page: 1, limit: 20 }),
     filtros: ProcessosFiltroSchema,
   })
-  .default({ paginacao: {}, filtros: {} });
+  .default(() => ({ paginacao: { page: 1, limit: 20 }, filtros: {} }));
 
 export type ProcessosRequest = z.infer<typeof ProcessosRequestSchema>;
 
@@ -39,6 +39,6 @@ export const TestemunhasRequestSchema = z
     paginacao: PaginacaoSchema.default({ page: 1, limit: 20 }),
     filtros: TestemunhasFiltroSchema,
   })
-  .default({ paginacao: {}, filtros: {} });
+  .default(() => ({ paginacao: { page: 1, limit: 20 }, filtros: {} }));
 
 export type TestemunhasRequest = z.infer<typeof TestemunhasRequestSchema>;

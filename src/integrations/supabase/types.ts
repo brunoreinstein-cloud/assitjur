@@ -840,6 +840,7 @@ export type Database = {
           deleted_by: string | null
           fase: string | null
           id: string
+          numero_cnj: string | null
           observacoes: string | null
           org_id: string
           prova_emprestada: boolean | null
@@ -873,6 +874,7 @@ export type Database = {
           deleted_by?: string | null
           fase?: string | null
           id?: string
+          numero_cnj?: string | null
           observacoes?: string | null
           org_id: string
           prova_emprestada?: boolean | null
@@ -906,6 +908,7 @@ export type Database = {
           deleted_by?: string | null
           fase?: string | null
           id?: string
+          numero_cnj?: string | null
           observacoes?: string | null
           org_id?: string
           prova_emprestada?: boolean | null
@@ -1275,21 +1278,32 @@ export type Database = {
           created_at: string
           id: string
           name: string | null
+          org_id: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
           name?: string | null
+          org_id?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
           name?: string | null
+          org_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "testemunhas_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_invitations: {
         Row: {
@@ -1473,6 +1487,10 @@ export type Database = {
       cleanup_staging: {
         Args: { p_import_job_id?: string }
         Returns: undefined
+      }
+      current_user_org_ids: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
       }
       execute_retention_cleanup: {
         Args: { p_policy_id: string }
