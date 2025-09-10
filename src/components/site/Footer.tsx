@@ -11,7 +11,7 @@ export function Footer() {
     { label: 'Privacidade / Gerenciar cookies', action: () => setOpen(true) },
     { label: 'Sobre o AssistJur.IA', action: () => navigate('/sobre') },
     { label: 'Sobre Bianca', action: () => navigate('/sobre') },
-    { label: 'Segurança & Conformidade', action: () => navigate('/sobre#seguranca') },
+    { label: 'Segurança de Dados', action: () => navigate('/seguranca') },
   ];
 
   return (

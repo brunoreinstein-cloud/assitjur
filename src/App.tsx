@@ -25,6 +25,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const DemoMapaTestemunhas = lazy(() => import("./pages/DemoMapaTestemunhas"));
 const TemplatePage = lazy(() => import("./pages/TemplatePage"));
 const ReportDemo = lazy(() => import("./pages/ReportDemo"));
+const Seguranca = lazy(() => import("./pages/Seguranca"));
 
 // React Query client configuration
 const queryClient = new QueryClient({
@@ -63,6 +64,7 @@ const App = () => (
                   <Route path="/reset/confirm" element={<ResetConfirm />} />
                   <Route path="/verify-otp" element={<VerifyOtp />} />
                   <Route path="/portal-titular" element={<PortalTitular />} />
+                  <Route path="/seguranca" element={<Seguranca />} />
                   <Route path="/import/template" element={<TemplatePage />} />
                   <Route path="/demo/mapa-testemunhas" element={<DemoMapaTestemunhas />} />
 
