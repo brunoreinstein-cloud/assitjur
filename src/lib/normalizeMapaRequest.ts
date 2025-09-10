@@ -1,5 +1,6 @@
 import {
   MapaTestemunhasRequest,
+  MapaTestemunhasRequestApi,
   ProcessoFilters,
   TestemunhaFilters
 } from '@/types/mapa-testemunhas'
@@ -78,6 +79,46 @@ export function normalizeMapaRequest<F = Record<string, unknown>>(input: any): M
   }
 
   return output
+}
+
+/**
+ * Converte filtros camelCase em snake_case.
+ */
+export function toSnakeCaseFilters(filters?: Record<string, any>) {
+  if (!filters) return filters
+  const map: Record<string, string> = {
+    temTriangulacao: 'tem_triangulacao',
+    temTroca: 'tem_troca',
+    temProvaEmprestada: 'tem_prova_emprestada',
+    qtdDeposMin: 'qtd_depoimentos_min',
+    qtdDeposMax: 'qtd_depoimentos_max',
+    ambosPolos: 'ambos_polos',
+    jaFoiReclamante: 'ja_foi_reclamante'
+  }
+  return Object.fromEntries(
+    Object.entries(filters).map(([key, value]) => [
+      map[key] ?? key.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`),
+      value
+    ])
+  )
+}
+
+/**
+ * Converte uma requisição interna para o formato esperado pelo backend.
+ * Deve ser utilizado antes de qualquer chamada HTTP relacionada ao
+ * mapa de testemunhas.
+ */
+export function toMapaEdgeRequest<F = ProcessoFilters | TestemunhaFilters>(
+  req: MapaTestemunhasRequest<F>
+): MapaTestemunhasRequestApi<any> {
+  const { page, limit, filters, sortBy, sortDir } = req
+  const payload: MapaTestemunhasRequestApi<any> = {
+    paginacao: { page, limit },
+    filtros: toSnakeCaseFilters(filters as Record<string, any>)
+  }
+  if (sortBy) payload.sort_by = sortBy
+  if (sortDir) payload.sort_dir = sortDir
+  return payload
 }
 
 export default normalizeMapaRequest
