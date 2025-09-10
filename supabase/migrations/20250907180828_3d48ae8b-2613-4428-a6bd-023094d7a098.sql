@@ -92,7 +92,7 @@ BEGIN
   
   -- Get data with safe transformations
   RETURN QUERY
-  SELECT 
+  SELECT
     jsonb_agg(
       jsonb_build_object(
         'cnj', COALESCE(p.cnj, ''),
@@ -128,7 +128,15 @@ BEGIN
     ) as data,
     v_total_count as total_count
   FROM (
-    SELECT *
+    SELECT
+      cnj,
+      reclamante_limpo,
+      reu_nome,
+      testemunhas_ativo_limpo,
+      testemunhas_passivo_limpo,
+      classificacao_final,
+      insight_estrategico,
+      created_at
     FROM assistjur.por_processo_staging
     WHERE org_id = p_org_id
       AND (v_search = '' OR v_search IS NULL OR (
