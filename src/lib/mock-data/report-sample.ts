@@ -299,5 +299,11 @@ export const mockReportData: ConclusiveReportData = {
       "Criar metodologia de scoring preventivo para novos casos",
       "Implementar auditoria trimestral de padrões emergentes"
     ]
+  },
+
+  roi: {
+    investimento: 50000,
+    retorno: 150000,
+    percentual: 200
   }
 };

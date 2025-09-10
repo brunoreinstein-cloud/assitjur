@@ -62,17 +62,29 @@ export interface ConclusiveReportData {
     curto_prazo: string[];
     longo_prazo: string[];
   };
+
+  // Dados de ROI opcional
+  roi?: {
+    investimento: number;
+    retorno: number;
+    percentual: number;
+  };
+}
+
+interface ReportSections {
+  summary: boolean;
+  risks: boolean;
+  roi: boolean;
 }
 
 interface ConclusiveReportTemplateProps {
   data: ConclusiveReportData;
   onExport?: (format: 'pdf' | 'csv' | 'docx' | 'json') => void;
+  sections?: ReportSections;
 }
 
-export function ConclusiveReportTemplate({ 
-  data, 
-  onExport 
-}: ConclusiveReportTemplateProps) {
+export const ConclusiveReportTemplate = React.forwardRef<HTMLDivElement, ConclusiveReportTemplateProps>(
+({ data, onExport, sections = { summary: true, risks: true, roi: true } }, ref) => {
   const { toast } = useToast();
   
   const handlePrint = () => {
@@ -110,7 +122,7 @@ export function ConclusiveReportTemplate({
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 print:space-y-4">
+    <div ref={ref} className="max-w-4xl mx-auto space-y-6 print:space-y-4">
       {/* Cabeçalho do Relatório */}
       <Card className="print:shadow-none">
         <CardHeader className="pb-4">
@@ -167,35 +179,36 @@ export function ConclusiveReportTemplate({
         </CardContent>
       </Card>
 
-      {/* Resumo Executivo */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary" />
-            Resumo Executivo
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Confiabilidade da Análise:</span>
-              <Progress 
-                value={data.resumo_executivo.confiabilidade_analise} 
-                className="w-24 h-2" 
-              />
-              <span className="text-sm text-muted-foreground">
-                {data.resumo_executivo.confiabilidade_analise}%
-              </span>
+      {sections.summary && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              Resumo Executivo
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Confiabilidade da Análise:</span>
+                <Progress
+                  value={data.resumo_executivo.confiabilidade_analise}
+                  className="w-24 h-2"
+                />
+                <span className="text-sm text-muted-foreground">
+                  {data.resumo_executivo.confiabilidade_analise}%
+                </span>
+              </div>
             </div>
-          </div>
-          
-          <div className="prose prose-sm max-w-none">
-            <p className="text-muted-foreground leading-relaxed">
-              {data.resumo_executivo.observacoes_gerais}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+
+            <div className="prose prose-sm max-w-none">
+              <p className="text-muted-foreground leading-relaxed">
+                {data.resumo_executivo.observacoes_gerais}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Análise de Padrões */}
       <Card>
@@ -272,56 +285,73 @@ export function ConclusiveReportTemplate({
         </CardContent>
       </Card>
 
-      {/* Casos Críticos */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-destructive" />
-            Casos Críticos (Score ≥ 85)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {data.processos_scores
-              .filter(p => p.score_final >= 85)
-              .slice(0, 10) // Mostrar top 10
-              .map((processo, index) => (
-                <div 
-                  key={processo.cnj} 
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div className="flex-1">
-                    <div className="font-mono text-sm font-medium">
-                      {processo.cnj}
+      {sections.risks && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Casos Críticos (Score ≥ 85)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {data.processos_scores
+                .filter(p => p.score_final >= 85)
+                .slice(0, 10)
+                .map((processo) => (
+                  <div
+                    key={processo.cnj}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
+                    <div className="flex-1">
+                      <div className="font-mono text-sm font-medium">
+                        {processo.cnj}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {processo.classificacao_estrategica}
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {processo.classificacao_estrategica}
+
+                    <div className="flex items-center gap-3">
+                      <Badge
+                        variant={processo.score_final >= 85 ? 'destructive' : processo.score_final >= 70 ? 'destructive' : 'secondary'}
+                        className="font-mono"
+                      >
+                        {processo.score_final}
+                      </Badge>
+                      <Badge variant="destructive" className="text-xs">
+                        {processo.prioridade_contradita}
+                      </Badge>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <Badge 
-                      variant={processo.score_final >= 85 ? 'destructive' : processo.score_final >= 70 ? 'destructive' : 'secondary'}
-                      className="font-mono"
-                    >
-                      {processo.score_final}
-                    </Badge>
-                    <Badge variant="destructive" className="text-xs">
-                      {processo.prioridade_contradita}
-                    </Badge>
-                  </div>
+                ))}
+
+              {data.processos_scores.filter(p => p.score_final >= 85).length === 0 && (
+                <div className="text-center py-4 text-muted-foreground">
+                  <CheckCircle className="h-6 w-6 mx-auto mb-2 text-green-600" />
+                  <p>Nenhum caso crítico identificado</p>
                 </div>
-              ))}
-            
-            {data.processos_scores.filter(p => p.score_final >= 85).length === 0 && (
-              <div className="text-center py-4 text-muted-foreground">
-                <CheckCircle className="h-6 w-6 mx-auto mb-2 text-green-600" />
-                <p>Nenhum caso crítico identificado</p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {sections.roi && data.roi && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              ROI Estimado
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div>Investimento: R$ {data.roi.investimento.toLocaleString()}</div>
+            <div>Retorno: R$ {data.roi.retorno.toLocaleString()}</div>
+            <div className="font-medium">ROI: {data.roi.percentual}%</div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recomendações Estratégicas */}
       <Card>
@@ -446,11 +476,11 @@ export function ConclusiveReportTemplate({
       </Card>
 
       {/* Rodapé do Relatório */}
-      <LGPDFooter 
+      <LGPDFooter
         organization={data.organizacao}
         showTimestamp={true}
         showVersion={true}
       />
     </div>
   );
-}
+});
