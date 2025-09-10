@@ -15,6 +15,15 @@ describe('BetaSignup form validation', () => {
     expect(await screen.findByText('E-mail inválido')).toBeInTheDocument();
   });
 
+  it('rejects disposable email domains', async () => {
+    render(<BetaSignup />);
+    const emailInput = screen.getByLabelText(/E-mail corporativo/i);
+    await userEvent.type(emailInput, 'user@mailinator.com');
+    expect(
+      await screen.findByText('Domínio de e-mail descartável não permitido')
+    ).toBeInTheDocument();
+  });
+
   it('disables submit until consent checkboxes are checked', async () => {
     render(<BetaSignup />);
 
