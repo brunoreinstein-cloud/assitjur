@@ -88,12 +88,12 @@ export function TestemunhaFilters() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tem_triangulacao">Participou Triangulação</Label>
+            <Label htmlFor="temTriangulacao">Participou Triangulação</Label>
             <Select
-              value={testemunhaFilters.tem_triangulacao !== undefined ? testemunhaFilters.tem_triangulacao.toString() : 'TODOS'}
-              onValueChange={(value) => updateFilter('tem_triangulacao', value === 'TODOS' ? undefined : value === 'true')}
+              value={testemunhaFilters.temTriangulacao !== undefined ? testemunhaFilters.temTriangulacao.toString() : 'TODOS'}
+              onValueChange={(value) => updateFilter('temTriangulacao', value === 'TODOS' ? undefined : value === 'true')}
             >
-              <SelectTrigger id="tem_triangulacao">
+              <SelectTrigger id="temTriangulacao">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>
@@ -105,12 +105,12 @@ export function TestemunhaFilters() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tem_troca">Participou Troca</Label>
+            <Label htmlFor="temTroca">Participou Troca</Label>
             <Select
-              value={testemunhaFilters.tem_troca !== undefined ? testemunhaFilters.tem_troca.toString() : 'TODOS'}
-              onValueChange={(value) => updateFilter('tem_troca', value === 'TODOS' ? undefined : value === 'true')}
+              value={testemunhaFilters.temTroca !== undefined ? testemunhaFilters.temTroca.toString() : 'TODOS'}
+              onValueChange={(value) => updateFilter('temTroca', value === 'TODOS' ? undefined : value === 'true')}
             >
-              <SelectTrigger id="tem_troca">
+              <SelectTrigger id="temTroca">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>

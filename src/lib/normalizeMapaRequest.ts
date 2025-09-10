@@ -14,17 +14,17 @@ const ALLOWED_FILTER_KEYS: (keyof KnownFilters)[] = [
   'testemunha',
   'qtdDeposMin',
   'qtdDeposMax',
-  'tem_triangulacao',
-  'tem_troca',
-  'tem_prova_emprestada',
+  'temTriangulacao',
+  'temTroca',
+  'temProvaEmprestada',
   'ambosPolos',
   'jaFoiReclamante'
 ]
 
 const BOOLEAN_FILTER_KEYS = new Set<keyof KnownFilters>([
-  'tem_triangulacao',
-  'tem_troca',
-  'tem_prova_emprestada',
+  'temTriangulacao',
+  'temTroca',
+  'temProvaEmprestada',
   'ambosPolos',
   'jaFoiReclamante'
 ])

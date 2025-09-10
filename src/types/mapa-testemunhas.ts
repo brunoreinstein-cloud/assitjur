@@ -63,9 +63,9 @@ export type ProcessoFilters = {
   testemunha?: string;
   qtdDeposMin?: number;
   qtdDeposMax?: number;
-  tem_triangulacao?: boolean;
-  tem_troca?: boolean;
-  tem_prova_emprestada?: boolean;
+  temTriangulacao?: boolean;
+  temTroca?: boolean;
+  temProvaEmprestada?: boolean;
 };
 
 export type TestemunhaFilters = {
@@ -74,8 +74,8 @@ export type TestemunhaFilters = {
   qtdDeposMin?: number;
   qtdDeposMax?: number;
   search?: string;
-  tem_triangulacao?: boolean;
-  tem_troca?: boolean;
+  temTriangulacao?: boolean;
+  temTroca?: boolean;
 };
 
 export type MapaTestemunhasRequest<F = ProcessoFilters | TestemunhaFilters> = {

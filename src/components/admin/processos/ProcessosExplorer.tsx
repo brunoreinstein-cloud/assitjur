@@ -141,14 +141,21 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
       ...(queryParams.uf && queryParams.uf.length > 0 ? { uf: queryParams.uf[0] } : {}),
       ...(queryParams.status && queryParams.status.length > 0 ? { status: queryParams.status[0] } : {}),
       ...(queryParams.fase && queryParams.fase.length > 0 ? { fase: queryParams.fase[0] } : {}),
-      ...(queryParams.flags?.triang ? { tem_triangulacao: true } : {}),
-      ...(queryParams.flags?.troca ? { tem_troca: true } : {}),
-      ...(queryParams.flags?.prova ? { tem_prova_emprestada: true } : {})
+      ...(queryParams.flags?.triang ? { temTriangulacao: true } : {}),
+      ...(queryParams.flags?.troca ? { temTroca: true } : {}),
+      ...(queryParams.flags?.prova ? { temProvaEmprestada: true } : {})
     };
     console.log('🔍 Fetching processos with filters:', apiFilters);
 
+    const specialMap: Record<string, string> = {
+      qtdDeposMin: 'qtd_depoimentos_min',
+      qtdDeposMax: 'qtd_depoimentos_max'
+    };
     const mappedFilters = Object.fromEntries(
-      Object.entries(apiFilters).map(([key, value]) => [key.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`), value])
+      Object.entries(apiFilters).map(([key, value]) => [
+        specialMap[key] ?? key.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`),
+        value
+      ])
     );
 
     const { data: sessionData } = await supabase.auth.getSession();
