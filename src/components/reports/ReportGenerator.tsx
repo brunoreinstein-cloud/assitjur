@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { DataState, DataStatus } from '@/components/ui/data-state';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ListChecks } from 'lucide-react';
 import { 
   FileText, 
   Settings, 
@@ -38,6 +40,11 @@ interface ReportConfig {
     curto_prazo: string[];
     longo_prazo: string[];
   };
+  sections: {
+    summary: boolean;
+    risks: boolean;
+    roi: boolean;
+  };
 }
 
 interface ReportGeneratorProps {
@@ -66,6 +73,11 @@ export function ReportGenerator({ onGenerate, mockData }: ReportGeneratorProps) 
       imediatas: [],
       curto_prazo: [],
       longo_prazo: []
+    },
+    sections: {
+      summary: true,
+      risks: true,
+      roi: true
     }
   });
   
@@ -73,6 +85,24 @@ export function ReportGenerator({ onGenerate, mockData }: ReportGeneratorProps) 
     type: 'imediatas' as keyof typeof config.recomendacoes_personalizadas,
     text: ''
   });
+
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('report_sections');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setConfig(prev => ({ ...prev, sections: { ...prev.sections, ...parsed } }));
+      } catch {
+        /* ignore */
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('report_sections', JSON.stringify(config.sections));
+  }, [config.sections]);
   
   const handleGenerateReport = async () => {
     if (!config.organizacao || !config.periodo_inicio || !config.periodo_fim || !config.analista_responsavel) {
@@ -177,7 +207,10 @@ export function ReportGenerator({ onGenerate, mockData }: ReportGeneratorProps) 
   };
   
   const handleExportReport = (format: 'pdf' | 'docx' | 'json') => {
-    // Implementar exportação real aqui
+    if (format === 'pdf') {
+      window.print();
+      return;
+    }
     toast({
       title: "Exportando",
       description: `Gerando relatório em ${format.toUpperCase()}...`,
@@ -213,8 +246,10 @@ export function ReportGenerator({ onGenerate, mockData }: ReportGeneratorProps) 
           </div>
         </div>
         
-        <ConclusiveReportTemplate 
+        <ConclusiveReportTemplate
+          ref={previewRef}
           data={generatedReport}
+          sections={config.sections}
           onExport={handleExportReport}
         />
       </div>
@@ -286,7 +321,7 @@ export function ReportGenerator({ onGenerate, mockData }: ReportGeneratorProps) 
           </div>
           
           <Separator />
-          
+
           {/* Configurações do Conteúdo */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm font-medium">
@@ -337,7 +372,58 @@ export function ReportGenerator({ onGenerate, mockData }: ReportGeneratorProps) 
               )}
             </div>
           </div>
-          
+
+          <Separator />
+
+          {/* Seções do Relatório */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <ListChecks className="h-4 w-4" />
+              Seções do Relatório
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="section-summary"
+                  checked={config.sections.summary}
+                  onCheckedChange={(checked) =>
+                    setConfig(prev => ({
+                      ...prev,
+                      sections: { ...prev.sections, summary: Boolean(checked) }
+                    }))
+                  }
+                />
+                <Label htmlFor="section-summary">Sumário</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="section-risks"
+                  checked={config.sections.risks}
+                  onCheckedChange={(checked) =>
+                    setConfig(prev => ({
+                      ...prev,
+                      sections: { ...prev.sections, risks: Boolean(checked) }
+                    }))
+                  }
+                />
+                <Label htmlFor="section-risks">Riscos</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="section-roi"
+                  checked={config.sections.roi}
+                  onCheckedChange={(checked) =>
+                    setConfig(prev => ({
+                      ...prev,
+                      sections: { ...prev.sections, roi: Boolean(checked) }
+                    }))
+                  }
+                />
+                <Label htmlFor="section-roi">ROI</Label>
+              </div>
+            </div>
+          </div>
+
           <Separator />
           
           {/* Observações Gerais */}
