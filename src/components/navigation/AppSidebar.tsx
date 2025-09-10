@@ -28,6 +28,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { NAV_GROUPS } from '@/config/sidebar';
+import { BRAND } from '@/branding/brand';
 import { ThemeToggle } from './ThemeToggle';
 import { CommandPalette } from './CommandPalette';
 import { 
@@ -104,8 +105,8 @@ export function AppSidebar() {
         <SidebarHeader className="border-b border-sidebar-border p-4">
           <div className="flex items-center gap-3">
             <img
-              src="/lovable-uploads/7a3da188-83da-4e1d-b4e2-30254d487fae.png"
-              alt="AssistJur.IA"
+              src={BRAND.logo.mark}
+              alt={BRAND.name}
               className="h-8 w-8 object-contain flex-shrink-0"
               loading="lazy"
             />
