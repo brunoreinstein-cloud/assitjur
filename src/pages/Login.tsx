@@ -6,6 +6,8 @@ import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { EmailPasswordForm } from '@/components/auth/EmailPasswordForm';
 import { MagicLinkForm } from '@/components/auth/MagicLinkForm';
 import { AlertBox } from '@/components/auth/AlertBox';
+import { ErrorBanner } from '@/components/common/ErrorBanner';
+import { ERROR_MESSAGES } from '@/utils/errorMessages';
 import { useAuth } from '@/hooks/useAuth';
 import { getDefaultRedirect, AUTH_CONFIG } from '@/config/auth';
 import heroImage from "@/assets/hero-legal-tech.jpg";
@@ -61,16 +63,14 @@ const Login = () => {
           </div>
 
           {/* Error Banner */}
-          {error && (
-            <div className="mb-6">
-              <AlertBox variant="error" title="Erro de autenticação">
-                {error === 'access_denied' ? 
-                  'Acesso negado. Verifique suas credenciais.' :
-                  'Ocorreu um erro durante o login. Tente novamente.'
-                }
-              </AlertBox>
-            </div>
-          )}
+            {error && (
+              <div className="mb-6">
+                <ErrorBanner
+                  message={error === 'access_denied' ? ERROR_MESSAGES.INCORRECT_PASSWORD : ERROR_MESSAGES.NOT_FOUND}
+                  onRetry={() => window.location.reload()}
+                />
+              </div>
+            )}
 
           {/* Confirmation Banner */}
           {confirm === '1' && (

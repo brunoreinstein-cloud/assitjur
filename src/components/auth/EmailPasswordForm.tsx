@@ -10,16 +10,19 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { validatePassword, MIN_PASSWORD_LENGTH } from "@/utils/security/passwordPolicy";
+import { ErrorBanner } from "@/components/common/ErrorBanner";
+import { useStatus } from "@/hooks/useStatus";
+import { ERROR_MESSAGES } from "@/utils/errorMessages";
 
 const loginSchema = z.object({
-  email: z.string().email('Formato de email inválido'),
+  email: z.string().email(ERROR_MESSAGES.INVALID_EMAIL),
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
   rememberMe: z.boolean().optional()
 });
 
 const signupSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').optional(),
-  email: z.string().email('Formato de email inválido'),
+  email: z.string().email(ERROR_MESSAGES.INVALID_EMAIL),
   password: z.string()
     .min(MIN_PASSWORD_LENGTH, `Senha deve ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres`),
   confirmPassword: z.string(),
@@ -38,15 +41,17 @@ interface EmailPasswordFormProps {
   onForgotPassword: () => void;
 }
 
-export const EmailPasswordForm = ({ 
-  mode, 
-  onModeChange, 
-  onForgotPassword 
+export const EmailPasswordForm = ({
+  mode,
+  onModeChange,
+  onForgotPassword
 }: EmailPasswordFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const { signIn, signUp } = useAuth();
+  const status = useStatus({ loading: isLoading, error: formError, data: null });
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -72,6 +77,7 @@ export const EmailPasswordForm = ({
 
   const handleSignIn = async (data: LoginFormData) => {
     setIsLoading(true);
+    setFormError(null);
 
     try {
       // Passa o valor de "Lembrar-me" para controlar a persistência da sessão
@@ -79,10 +85,13 @@ export const EmailPasswordForm = ({
 
       if (error) {
         if (error.message?.toLowerCase().includes('invalid login credentials')) {
-          loginForm.setError('password', { type: 'manual', message: 'Senha incorreta, tente novamente' });
+          const msg = ERROR_MESSAGES.INCORRECT_PASSWORD;
+          loginForm.setError('password', { type: 'manual', message: msg });
+          setFormError(msg);
           return;
         }
-        throw error;
+        setFormError(error.message || ERROR_MESSAGES.NOT_FOUND);
+        return;
       }
 
       toast.success("Login realizado!", {
@@ -93,8 +102,10 @@ export const EmailPasswordForm = ({
 
     } catch (error: any) {
       console.error('Login error:', error);
+      const msg = error?.message || ERROR_MESSAGES.NOT_FOUND;
+      setFormError(msg);
       toast.error("Erro no login", {
-        description: error?.message || "Não foi possível entrar. Verifique suas credenciais."
+        description: msg
       });
     } finally {
       setIsLoading(false);
@@ -103,6 +114,7 @@ export const EmailPasswordForm = ({
 
   const handleSignUp = async (data: SignupFormData) => {
     setIsLoading(true);
+    setFormError(null);
 
     try {
       const policy = await validatePassword(data.password);
@@ -114,7 +126,10 @@ export const EmailPasswordForm = ({
       const { error } = await signUp(data.email, data.password, data.name);
 
       if (error) {
-        throw error;
+        const msg = error.message || ERROR_MESSAGES.NOT_FOUND;
+        setFormError(msg);
+        toast.error("Erro no cadastro", { description: msg });
+        return;
       }
 
       toast.success("Conta criada!", {
@@ -124,10 +139,9 @@ export const EmailPasswordForm = ({
       onModeChange('signin');
 
     } catch (error: any) {
-      console.error('Signup error:', error);
-      toast.error("Erro no cadastro", {
-        description: error?.message || "Não foi possível criar a conta. Verifique os dados e tente novamente.",
-      });
+      const msg = error?.message || ERROR_MESSAGES.NOT_FOUND;
+      setFormError(msg);
+      toast.error("Erro no cadastro", { description: msg });
     } finally {
       setIsLoading(false);
     }
@@ -136,6 +150,12 @@ export const EmailPasswordForm = ({
   if (mode === 'signup') {
     return (
       <form onSubmit={signupForm.handleSubmit(handleSignUp)} className="space-y-4">
+        {status === 'offline' && (
+          <ErrorBanner message={ERROR_MESSAGES.NETWORK} onRetry={() => window.location.reload()} />
+        )}
+        {status === 'error' && formError && (
+          <ErrorBanner message={formError} onRetry={() => setFormError(null)} />
+        )}
         {/* Name */}
         <div className="space-y-2">
           <Label htmlFor="name">Nome (opcional)</Label>
@@ -279,12 +299,18 @@ export const EmailPasswordForm = ({
     );
   }
 
-  return (
-    <form onSubmit={loginForm.handleSubmit(handleSignIn)} className="space-y-4">
-      {/* Email */}
-      <div className="space-y-2">
-        <Label htmlFor="email">E-mail</Label>
-        <Input
+    return (
+      <form onSubmit={loginForm.handleSubmit(handleSignIn)} className="space-y-4">
+        {status === 'offline' && (
+          <ErrorBanner message={ERROR_MESSAGES.NETWORK} onRetry={() => window.location.reload()} />
+        )}
+        {status === 'error' && formError && (
+          <ErrorBanner message={formError} onRetry={() => setFormError(null)} />
+        )}
+        {/* Email */}
+        <div className="space-y-2">
+          <Label htmlFor="email">E-mail</Label>
+          <Input
           id="email"
           type="email"
           placeholder="seu@email.com"
