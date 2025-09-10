@@ -2,20 +2,15 @@
  * @vitest-environment node
  */
 import { describe, it, expect, afterEach } from 'vitest';
-import { corsHeaders } from '../supabase/functions/_shared/cors';
+import { corsHeaders } from '@/middleware/cors';
 
 function setAllowedOrigins(value?: string) {
-  (globalThis as any).Deno = {
-    env: {
-      get: (name: string) => (name === 'ALLOWED_ORIGINS' ? value : undefined),
-    },
-  } as any;
+  if (value === undefined) delete process.env.ALLOWED_ORIGINS;
+  else process.env.ALLOWED_ORIGINS = value;
 }
 
 afterEach(() => {
-  // clean up Deno mock
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-  delete (globalThis as any).Deno;
+  delete process.env.ALLOWED_ORIGINS;
 });
 
 describe('corsHeaders', () => {
