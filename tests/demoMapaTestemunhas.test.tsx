@@ -14,6 +14,7 @@ vi.mock('@/hooks/useAuth', () => ({
     profile: null,
     session: null,
     loading: false,
+    // signIn(email, password, role, rememberMe?, orgCode?)
     signIn: vi.fn(),
     signUp: vi.fn(),
     signOut: vi.fn(),
