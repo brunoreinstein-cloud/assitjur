@@ -50,8 +50,7 @@ const BaseLayout = lazy(() => import("./pages/admin/base/BaseLayout"));
 const ProcessosTable = lazy(() => import("./pages/admin/base/ProcessosTable"));
 const TestemunhasTable = lazy(() => import("./pages/admin/base/TestemunhasTable"));
 
-
-// Analytics component import and routes
+// React Query client configuration
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
