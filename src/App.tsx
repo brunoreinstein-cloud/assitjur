@@ -33,6 +33,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
 const LGPD = lazy(() => import("./pages/LGPD"));
 const TwoFactorSetup = lazy(() => import("./pages/TwoFactorSetup"));
+const ServerError = lazy(() => import("./pages/ServerError"));
 
 // React Query client configuration
 const queryClient = new QueryClient({
@@ -81,6 +82,7 @@ const App = () => (
                       <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
                       <Route path="/termos-de-uso" element={<TermsOfUse />} />
                       <Route path="/lgpd" element={<LGPD />} />
+                      <Route path="/500" element={<ServerError />} />
 
                       {/* Protected routes with app layout */}
                       <Route
