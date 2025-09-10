@@ -58,10 +58,11 @@ const Login = () => {
           {/* Logo */}
           <div className="flex items-center justify-center mb-8 lg:hidden">
             <div className="flex items-center space-x-3">
-              <img 
-                src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png" 
-                alt="AssistJur.IA Logo" 
+              <img
+                src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png"
+                alt="AssistJur.IA Logo"
                 className="w-10 h-10 object-contain"
+                loading="lazy"
               />
               <div>
                 <h2 className="text-2xl font-bold text-foreground">AssistJur.IA</h2>
@@ -221,10 +222,11 @@ const Login = () => {
           <div className="absolute inset-0 flex flex-col justify-center p-12 text-primary-foreground">
             {/* Logo */}
             <div className="flex items-center space-x-3 mb-12">
-              <img 
-                src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png" 
-                alt="AssistJur.IA Logo" 
+              <img
+                src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png"
+                alt="AssistJur.IA Logo"
                 className="w-12 h-12 object-contain"
+                loading="lazy"
               />
               <div>
                 <h3 className="text-2xl font-bold">AssistJur.IA</h3>
