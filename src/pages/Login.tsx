@@ -95,7 +95,7 @@ const Login = () => {
           {/* Magic Link Form or Auth Form */}
           {showMagicLink && AUTH_CONFIG.FEATURES.MAGIC_LINK_ENABLED ? (
             <AuthCard
-              title="Entrar com link"
+              title="Acessar área segura com link"
               description="Acesso seguro sem senha"
             >
               <MagicLinkForm onBack={() => setShowMagicLink(false)} />
@@ -116,13 +116,13 @@ const Login = () => {
                   className="w-full"
                 >
                   <TabsList className="grid w-full grid-cols-2" role="tablist">
-                    <TabsTrigger 
-                      value="signin" 
+                    <TabsTrigger
+                      value="signin"
                       role="tab"
                       aria-selected={activeTab === 'signin'}
                       aria-controls="signin-panel"
                     >
-                      Entrar
+                      Acessar área segura
                     </TabsTrigger>
                     <TabsTrigger 
                       value="signup"
@@ -154,9 +154,9 @@ const Login = () => {
                           type="button"
                           onClick={handleMagicLinkToggle}
                           className="text-sm text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm px-1 py-0.5"
-                          aria-label="Alternar para login com link de e-mail"
+                          aria-label="Alternar para acesso com link de e-mail"
                         >
-                          Entrar com link de e-mail
+                          Acessar área segura com link de e-mail
                         </button>
                       </div>
                     )}

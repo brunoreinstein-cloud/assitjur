@@ -128,7 +128,7 @@ export const OAuthButtons = ({ disabled, next }: OAuthButtonsProps) => {
             onClick={() => handleOAuthSignIn('google')}
             disabled={disabled || loadingProvider !== null}
             className="w-full transition-all duration-200 hover:shadow-md"
-            aria-label="Entrar com Google"
+            aria-label="Acessar área segura com Google"
           >
             {loadingProvider === 'google' ? (
               <div className="flex items-center space-x-2">

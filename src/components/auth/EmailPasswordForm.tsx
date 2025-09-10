@@ -12,14 +12,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { validatePassword, MIN_PASSWORD_LENGTH } from "@/utils/security/passwordPolicy";
 
 const loginSchema = z.object({
-  email: z.string().email('E-mail inválido'),
+  email: z.string().email('Formato de email inválido'),
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
   rememberMe: z.boolean().optional()
 });
 
 const signupSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').optional(),
-  email: z.string().email('E-mail inválido'),
+  email: z.string().email('Formato de email inválido'),
   password: z.string()
     .min(MIN_PASSWORD_LENGTH, `Senha deve ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres`),
   confirmPassword: z.string(),
@@ -50,6 +50,8 @@ export const EmailPasswordForm = ({
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues: {
       email: '',
       password: '',
@@ -76,6 +78,10 @@ export const EmailPasswordForm = ({
       const { error } = await signIn(data.email, data.password, 'OFFICE', data.rememberMe);
 
       if (error) {
+        if (error.message?.toLowerCase().includes('invalid login credentials')) {
+          loginForm.setError('password', { type: 'manual', message: 'Senha incorreta, tente novamente' });
+          return;
+        }
         throw error;
       }
 
@@ -140,7 +146,7 @@ export const EmailPasswordForm = ({
             className={signupForm.formState.errors.name ? 'border-destructive' : ''}
           />
           {signupForm.formState.errors.name && (
-            <p className="text-sm text-destructive">{signupForm.formState.errors.name.message}</p>
+            <p className="text-sm text-destructive" aria-live="polite">{signupForm.formState.errors.name.message}</p>
           )}
         </div>
 
@@ -155,7 +161,7 @@ export const EmailPasswordForm = ({
             className={signupForm.formState.errors.email ? 'border-destructive' : ''}
           />
           {signupForm.formState.errors.email && (
-            <p className="text-sm text-destructive">{signupForm.formState.errors.email.message}</p>
+            <p className="text-sm text-destructive" aria-live="polite">{signupForm.formState.errors.email.message}</p>
           )}
         </div>
 
@@ -185,7 +191,7 @@ export const EmailPasswordForm = ({
             </Button>
           </div>
           {signupForm.formState.errors.password && (
-            <p className="text-sm text-destructive">{signupForm.formState.errors.password.message}</p>
+            <p className="text-sm text-destructive" aria-live="polite">{signupForm.formState.errors.password.message}</p>
           )}
         </div>
 
@@ -215,7 +221,7 @@ export const EmailPasswordForm = ({
             </Button>
           </div>
           {signupForm.formState.errors.confirmPassword && (
-            <p className="text-sm text-destructive">{signupForm.formState.errors.confirmPassword.message}</p>
+            <p className="text-sm text-destructive" aria-live="polite">{signupForm.formState.errors.confirmPassword.message}</p>
           )}
         </div>
 
@@ -239,7 +245,7 @@ export const EmailPasswordForm = ({
           </Label>
         </div>
         {signupForm.formState.errors.acceptTerms && (
-          <p className="text-sm text-destructive">{signupForm.formState.errors.acceptTerms.message}</p>
+            <p className="text-sm text-destructive" aria-live="polite">{signupForm.formState.errors.acceptTerms.message}</p>
         )}
 
         {/* Submit Button */}
@@ -266,7 +272,7 @@ export const EmailPasswordForm = ({
             onClick={() => onModeChange('signin')}
             className="text-primary hover:underline font-medium"
           >
-            Entrar
+            Acessar área segura
           </button>
         </div>
       </form>
@@ -286,7 +292,7 @@ export const EmailPasswordForm = ({
           className={loginForm.formState.errors.email ? 'border-destructive' : ''}
         />
         {loginForm.formState.errors.email && (
-          <p className="text-sm text-destructive">{loginForm.formState.errors.email.message}</p>
+          <p className="text-sm text-destructive" aria-live="polite">{loginForm.formState.errors.email.message}</p>
         )}
       </div>
 
@@ -316,7 +322,7 @@ export const EmailPasswordForm = ({
           </Button>
         </div>
         {loginForm.formState.errors.password && (
-          <p className="text-sm text-destructive">{loginForm.formState.errors.password.message}</p>
+          <p className="text-sm text-destructive" aria-live="polite">{loginForm.formState.errors.password.message}</p>
         )}
       </div>
 
@@ -346,15 +352,15 @@ export const EmailPasswordForm = ({
       <Button 
         type="submit" 
         className="w-full" 
-        disabled={isLoading}
+        disabled={isLoading || !loginForm.formState.isValid}
       >
         {isLoading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            Entrando...
+            Acessando...
           </>
         ) : (
-          'Entrar'
+          'Acessar área segura'
         )}
       </Button>
 
