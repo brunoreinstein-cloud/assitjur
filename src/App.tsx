@@ -12,6 +12,8 @@ import { AppLayout } from "@/components/navigation/AppLayout";
 import { ErrorBoundary } from "@/components/core/ErrorBoundary";
 import AdminRoutes from "./routes/AdminRoutes";
 import { FooterLegal } from "@/components/common/FooterLegal";
+import { ServiceHealthProvider } from "@/hooks/useServiceHealth";
+import { StatusBanner } from "@/components/common/StatusBanner";
 
 const MapaPage = lazy(() => import("./pages/MapaPage"));
 const PublicHome = lazy(() => import("./pages/PublicHome"));
@@ -44,19 +46,21 @@ const queryClient = new QueryClient({
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <ConsentProvider>
-            <ConsentDialog />
-            <BrowserRouter
+      <ServiceHealthProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <ConsentProvider>
+              <ConsentDialog />
+              <BrowserRouter
               future={{
                 v7_startTransition: true,
                 v7_relativeSplatPath: true,
               }}
             >
               <div className="min-h-screen flex flex-col">
+                <StatusBanner />
                 <div className="flex-1">
                   <Suspense fallback={<div className="p-4">Carregando...</div>}>
                     <Routes>
@@ -113,8 +117,9 @@ const App = () => (
               </div>
             </BrowserRouter>
           </ConsentProvider>
-        </TooltipProvider>
-      </AuthProvider>
+          </TooltipProvider>
+        </AuthProvider>
+      </ServiceHealthProvider>
     </QueryClientProvider>
   </ErrorBoundary>
 );
