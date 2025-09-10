@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Scale } from 'lucide-react';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { TwoFactorForm } from '@/components/auth/TwoFactorForm';
 import { AlertBox } from '@/components/auth/AlertBox';
