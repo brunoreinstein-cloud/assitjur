@@ -72,7 +72,8 @@ export const EmailPasswordForm = ({
     setIsLoading(true);
 
     try {
-      const { error } = await signIn(data.email, data.password, 'OFFICE');
+      // Passa o valor de "Lembrar-me" para controlar a persistência da sessão
+      const { error } = await signIn(data.email, data.password, 'OFFICE', data.rememberMe);
 
       if (error) {
         throw error;

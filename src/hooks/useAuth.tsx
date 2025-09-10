@@ -27,7 +27,21 @@ interface AuthContextType {
   profile: UserProfile | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string, role: 'OFFICE' | 'ADMIN', orgCode?: string) => Promise<{ error: any }>;
+  /**
+   * Realiza login por e-mail e senha.
+   * @param email E-mail do usuário
+   * @param password Senha do usuário
+   * @param role Perfil de acesso solicitado
+   * @param rememberMe Define se a sessão deve ser persistida entre reinícios do navegador
+   * @param orgCode Código da organização (apenas para administradores)
+   */
+  signIn: (
+    email: string,
+    password: string,
+    role: 'OFFICE' | 'ADMIN',
+    rememberMe?: boolean,
+    orgCode?: string
+  ) => Promise<{ error: any }>;
   signUp: (email: string, password: string, name?: string, orgCode?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
@@ -186,7 +200,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string, role: 'OFFICE' | 'ADMIN', orgCode?: string) => {
+  /**
+   * Realiza login e ajusta a persistência da sessão conforme "rememberMe".
+   */
+  const signIn = async (
+    email: string,
+    password: string,
+    role: 'OFFICE' | 'ADMIN',
+    rememberMe = true,
+    orgCode?: string
+  ) => {
     try {
       setLoading(true);
 
@@ -211,7 +234,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (data.user) {
         // Rotate refresh token on login
-        await supabase.auth.refreshSession();
+        const { data: refreshed } = await supabase.auth.refreshSession();
+
+        // Ajusta a persistência da sessão conforme a opção "Lembrar-me"
+        const sessionToPersist = refreshed.session ?? data.session;
+        if (sessionToPersist) {
+          await supabase.auth.setSession(
+            {
+              access_token: sessionToPersist.access_token,
+              refresh_token: sessionToPersist.refresh_token,
+            },
+            { persistSession: rememberMe }
+          );
+        }
 
         // Collect session context and previous timezone
         const ctx = getSessionContext();
