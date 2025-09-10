@@ -63,6 +63,13 @@ export const NAV_GROUPS: NavGroup[] = [
         description: "Análises detalhadas",
         permission: "canViewAnalytics"
       },
+      {
+        label: "Métricas",
+        to: "/admin/metrics",
+        icon: BarChart3,
+        description: "Eventos e TTFV",
+        permission: "canViewAnalytics"
+      },
     ]
   },
   { 

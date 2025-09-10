@@ -29,6 +29,7 @@ import ImportBase from "./pages/admin/ImportBase";
 import TemplatePage from "./pages/TemplatePage";
 import Versions from "./pages/admin/Versions";
 import Organization from "./pages/admin/Organization";
+import Metrics from "./pages/admin/Metrics";
 
 import SystemConfig from "./pages/admin/SystemConfig";
 import Compliance from "./pages/admin/Compliance";
@@ -108,6 +109,7 @@ const App = () => (
                         {/* Admin routes */}
                         <Route path="/admin" element={<Dashboard />} />
                         <Route path="/admin/analytics" element={<Analytics />} />
+                        <Route path="/admin/metrics" element={<Metrics />} />
                         <Route path="/admin/ia" element={<OpenAI />} />
                         <Route path="/admin/ia/chaves" element={<OpenAIKeys />} />
                         <Route path="/admin/ia/modelos" element={<OpenAIModels />} />
