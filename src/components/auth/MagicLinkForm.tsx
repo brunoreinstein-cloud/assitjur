@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const magicLinkSchema = z.object({
-  email: z.string().email('E-mail inválido')
+  email: z.string().email('Formato de email inválido')
 });
 
 type MagicLinkFormData = z.infer<typeof magicLinkSchema>;
@@ -25,6 +25,8 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
 
   const form = useForm<MagicLinkFormData>({
     resolver: zodResolver(magicLinkSchema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues: {
       email: ''
     }
@@ -128,7 +130,7 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
         <div className="mx-auto p-3 bg-primary/10 rounded-full w-fit">
           <Mail className="h-6 w-6 text-primary" />
         </div>
-        <h3 className="text-lg font-semibold">Entrar com link</h3>
+        <h3 className="text-lg font-semibold">Acessar área segura com link</h3>
         <p className="text-sm text-muted-foreground">
           Enviaremos um link de acesso seguro para o seu e-mail
         </p>
@@ -146,7 +148,7 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
             autoFocus
           />
           {form.formState.errors.email && (
-            <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
+            <p className="text-sm text-destructive" aria-live="polite">{form.formState.errors.email.message}</p>
           )}
         </div>
 

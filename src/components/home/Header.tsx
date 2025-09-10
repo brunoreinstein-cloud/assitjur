@@ -62,11 +62,11 @@ export const Header = () => {
               <User className="w-5 h-5" />
             </Button>
           ) : (
-            <Button 
-              variant="professional" 
+            <Button
+              variant="professional"
               onClick={() => navigate('/login')}
             >
-              Entrar
+              Acessar área segura
             </Button>
           )}
         </div>
