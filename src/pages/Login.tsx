@@ -28,11 +28,18 @@ const Login = () => {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (user) {
-      const redirectTo = getDefaultRedirect(profile?.role, next);
-      navigate(redirectTo);
+    if (user && profile) {
+      if (profile.two_factor_enabled && sessionStorage.getItem('mfa_verified') !== 'true') {
+        const params = new URLSearchParams();
+        params.set('email', user.email ?? '');
+        if (next) params.set('next', next);
+        navigate(`/verify-otp?${params.toString()}`);
+      } else {
+        const redirectTo = getDefaultRedirect(profile.role, next);
+        navigate(redirectTo);
+      }
     }
-  }, [user, profile?.role, navigate, next]);
+  }, [user, profile, navigate, next]);
 
   const handleForgotPassword = () => {
     navigate('/reset');

@@ -20,6 +20,9 @@ export interface UserProfile {
   updated_at: string;
   last_login_at?: string | null;
   data_access_level: 'FULL' | 'MASKED' | 'NONE';
+  two_factor_enabled?: boolean;
+  two_factor_secret?: string | null;
+  two_factor_backup_code?: string | null;
 }
 
 interface AuthContextType {
@@ -395,6 +398,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setProfile(null);
       setSession(null);
+      sessionStorage.removeItem('mfa_verified');
     } catch (error) {
       console.error('Error signing out:', error);
     }

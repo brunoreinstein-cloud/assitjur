@@ -9,19 +9,19 @@ import { BrandHeader } from '@/components/brand/BrandHeader';
 const VerifyOtp = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [userEmail, setUserEmail] = useState<string>('');
 
   const next = searchParams.get('next');
   const email = searchParams.get('email');
 
-  // Check if user is already fully authenticated
+  // Redirect if user is authenticated and 2FA not required
   useEffect(() => {
-    if (user) {
+    if (user && profile && !profile.two_factor_enabled) {
       const redirectTo = next ? decodeURIComponent(next) : '/dados/mapa';
       navigate(redirectTo);
     }
-  }, [user, navigate, next]);
+  }, [user, profile, navigate, next]);
 
   // Set email from params or session
   useEffect(() => {
@@ -32,23 +32,15 @@ const VerifyOtp = () => {
     }
   }, [email, user]);
 
-  // Check if MFA is enabled (mock check)
-  const isMfaEnabled = () => {
-    // In production, this would check user's MFA settings
-    // For now, we'll check localStorage or environment
-    return localStorage.getItem('mfa_enabled') === 'true' || 
-           import.meta.env.VITE_MFA_ENABLED === 'true';
-  };
-
-  // Redirect if MFA is not enabled
   useEffect(() => {
-    if (!isMfaEnabled()) {
+    if (profile && !profile.two_factor_enabled) {
       const redirectTo = next ? decodeURIComponent(next) : '/dados/mapa';
       navigate(redirectTo);
     }
-  }, [navigate, next]);
+  }, [profile, navigate, next]);
 
   const handleVerificationSuccess = () => {
+    sessionStorage.setItem('mfa_verified', 'true');
     const redirectTo = next ? decodeURIComponent(next) : '/dados/mapa';
     navigate(redirectTo);
   };
@@ -57,8 +49,7 @@ const VerifyOtp = () => {
     navigate('/login');
   };
 
-  // Don't render if MFA is not enabled
-  if (!isMfaEnabled()) {
+  if (!profile?.two_factor_enabled || !profile.two_factor_secret) {
     return null;
   }
 
@@ -85,6 +76,8 @@ const VerifyOtp = () => {
             onBack={handleBack}
             onSuccess={handleVerificationSuccess}
             userEmail={userEmail}
+            secret={profile.two_factor_secret}
+            backupCode={profile.two_factor_backup_code ?? undefined}
           />
         </AuthCard>
 

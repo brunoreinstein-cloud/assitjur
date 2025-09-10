@@ -26,6 +26,12 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
         return;
       }
 
+      if (profile.two_factor_enabled && sessionStorage.getItem('mfa_verified') !== 'true') {
+        const nextPath = window.location.pathname + window.location.search;
+        navigate(`/verify-otp?next=${encodeURIComponent(nextPath)}`);
+        return;
+      }
+
       // Account not active
       if (!profile.is_active) {
         toast({
