@@ -9,7 +9,8 @@ import { z } from "npm:zod@3.23.8";
 Deno.serve(async (req) => {
   const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
   const logger = createLogger(cid);
-  const ch = corsHeaders(req);
+  const origin = req.headers.get("origin") ?? "";
+  const ch = corsHeaders(req, origin);
   const pf = handlePreflight(req, cid);
   if (pf) return pf;
 

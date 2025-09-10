@@ -71,7 +71,8 @@ interface PadroesAgregados {
 
 Deno.serve(async (req) => {
   const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
-  const ch = corsHeaders(req);
+  const origin = req.headers.get('origin') ?? '';
+  const ch = corsHeaders(req, origin);
   const pre = handlePreflight(req, cid);
   if (pre) return pre;
 
