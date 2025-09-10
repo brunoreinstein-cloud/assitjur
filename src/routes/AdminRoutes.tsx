@@ -18,6 +18,7 @@ const PromptStudio = lazy(() => import("@/pages/admin/openai/PromptStudio"));
 const OpenAIPlayground = lazy(() => import("@/pages/admin/openai/Playground"));
 const Logs = lazy(() => import("@/pages/admin/Logs"));
 const ValidationTest = lazy(() => import("@/pages/admin/ValidationTest"));
+const Metrics = lazy(() => import("@/pages/admin/Metrics"));
 
 // Data Explorer components
 const BaseRedirect = lazy(() => import("@/pages/admin/base/index"));
@@ -29,6 +30,7 @@ const AdminRoutes = () => (
   <>
     <Route path="/admin" element={<Dashboard />} />
     <Route path="/admin/analytics" element={<Analytics />} />
+    <Route path="/admin/metrics" element={<Metrics />} />
     <Route path="/admin/ia" element={<OpenAI />} />
     <Route path="/admin/ia/chaves" element={<OpenAIKeys />} />
     <Route path="/admin/ia/modelos" element={<OpenAIModels />} />
