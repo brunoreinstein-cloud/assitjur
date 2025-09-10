@@ -4,7 +4,7 @@ import { createLogger } from "../_shared/logger.ts";
 import { ListaResponseSchema, TestemunhasRequestSchema } from "../_shared/mapa-contracts.ts";
 import { applyTestemunhasFilters } from "../_shared/mapa-filters.ts";
 import { json, jsonError } from "../_shared/http.ts";
-import { z } from "npm:zod@3.23.8";
+import { toFieldErrors } from "../_shared/validation.ts";
 
 Deno.serve(async (req) => {
   const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
@@ -14,25 +14,25 @@ Deno.serve(async (req) => {
   const pf = handlePreflight(req, cid);
   if (pf) return pf;
 
-  const EXPECTED: z.infer<typeof TestemunhasRequestSchema> = {
-    paginacao: { page: 1, limit: 20 },
-    filtros: { search: "term" },
-  };
-
   let payload: unknown = {};
   if (req.method === "POST") {
     try {
       payload = await req.json();
     } catch (e) {
       logger.error(`invalid json: ${e.message}`);
-      return jsonError(400, "INVALID_JSON", { message: "Corpo deve ser JSON válido", cid }, { ...ch, "x-correlation-id": cid });
+      return jsonError(400, "INVALID_JSON", { fieldErrors: {}, cid }, { ...ch, "x-correlation-id": cid });
     }
   }
 
   const validation = TestemunhasRequestSchema.safeParse(payload);
   if (!validation.success) {
     logger.error(`validation: ${validation.error.message}`);
-    return jsonError(400, "INVALID_PAYLOAD", { issues: validation.error.issues, expected: EXPECTED, cid }, { ...ch, "x-correlation-id": cid });
+    return jsonError(
+      400,
+      "INVALID_PAYLOAD",
+      { fieldErrors: toFieldErrors(validation.error), cid },
+      { ...ch, "x-correlation-id": cid },
+    );
   }
 
   const {

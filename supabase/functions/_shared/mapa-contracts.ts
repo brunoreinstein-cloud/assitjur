@@ -1,4 +1,13 @@
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { z } from "zod";
+
+const isDate = (s: string) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const d = new Date(s);
+  return !isNaN(d.valueOf());
+};
+
+export const MAPA_TESTEMUNHAS_PROCESSOS_FN = "mapa-testemunhas-processos" as const;
+export const MAPA_TESTEMUNHAS_TESTEMUNHAS_FN = "mapa-testemunhas-testemunhas" as const;
 
 // Paginação padrão
 export const PaginacaoSchema = z.object({
@@ -12,8 +21,16 @@ export type Paginacao = z.infer<typeof PaginacaoSchema>;
 const ProcessosFiltroSchema = z
   .object({
     search: z.string().trim().optional(),
-    data_inicio: z.string().trim().optional(),
-    data_fim: z.string().trim().optional(),
+    data_inicio: z
+      .string()
+      .trim()
+      .optional()
+      .refine((v) => !v || isDate(v), { message: "data inválida" }),
+    data_fim: z
+      .string()
+      .trim()
+      .optional()
+      .refine((v) => !v || isDate(v), { message: "data inválida" }),
     uf: z.string().trim().optional(),
     status: z.string().trim().optional(),
     fase: z.string().trim().optional(),
@@ -23,6 +40,28 @@ const ProcessosFiltroSchema = z
     tem_triangulacao: z.coerce.boolean().optional(),
     tem_troca: z.coerce.boolean().optional(),
     tem_prova_emprestada: z.coerce.boolean().optional(),
+  })
+  .superRefine((val, ctx) => {
+    if (val.data_inicio && val.data_fim) {
+      if (new Date(val.data_inicio) > new Date(val.data_fim)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "data_inicio deve ser menor ou igual a data_fim",
+          path: ["data_inicio"],
+        });
+      }
+    }
+    if (
+      val.qtd_depoimentos_min !== undefined &&
+      val.qtd_depoimentos_max !== undefined &&
+      val.qtd_depoimentos_min > val.qtd_depoimentos_max
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "qtd_depoimentos_min deve ser menor ou igual a qtd_depoimentos_max",
+        path: ["qtd_depoimentos_min"],
+      });
+    }
   })
   .default({});
 
@@ -45,14 +84,44 @@ const TestemunhasFiltroSchema = z
     nome: z.string().trim().optional(),
     documento: z.string().trim().optional(),
     search: z.string().trim().optional(),
-    data_inicio: z.string().trim().optional(),
-    data_fim: z.string().trim().optional(),
+    data_inicio: z
+      .string()
+      .trim()
+      .optional()
+      .refine((v) => !v || isDate(v), { message: "data inválida" }),
+    data_fim: z
+      .string()
+      .trim()
+      .optional()
+      .refine((v) => !v || isDate(v), { message: "data inválida" }),
     ambos_polos: z.coerce.boolean().optional(),
     ja_foi_reclamante: z.coerce.boolean().optional(),
     qtd_depoimentos_min: z.coerce.number().int().optional(),
     qtd_depoimentos_max: z.coerce.number().int().optional(),
     tem_triangulacao: z.coerce.boolean().optional(),
     tem_troca: z.coerce.boolean().optional(),
+  })
+  .superRefine((val, ctx) => {
+    if (val.data_inicio && val.data_fim) {
+      if (new Date(val.data_inicio) > new Date(val.data_fim)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "data_inicio deve ser menor ou igual a data_fim",
+          path: ["data_inicio"],
+        });
+      }
+    }
+    if (
+      val.qtd_depoimentos_min !== undefined &&
+      val.qtd_depoimentos_max !== undefined &&
+      val.qtd_depoimentos_min > val.qtd_depoimentos_max
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "qtd_depoimentos_min deve ser menor ou igual a qtd_depoimentos_max",
+        path: ["qtd_depoimentos_min"],
+      });
+    }
   })
   .default({});
 

@@ -7,6 +7,10 @@ import type {
 import {
   ProcessosRequestSchema,
   TestemunhasRequestSchema,
+  type ProcessosRequest,
+  type TestemunhasRequest,
+  MAPA_TESTEMUNHAS_PROCESSOS_FN,
+  MAPA_TESTEMUNHAS_TESTEMUNHAS_FN,
 } from '@/contracts/mapa-contracts';
 
 export async function fetchTestemunhas(params: {
@@ -19,7 +23,7 @@ export async function fetchTestemunhas(params: {
   const accessToken = sessionData?.session?.access_token;
   if (!accessToken) throw new Error('Usuário não autenticado');
 
-  const body = TestemunhasRequestSchema.parse({
+  const body = {
     paginacao: {
       page: params.page || 1,
       limit: params.limit || 20,
@@ -28,10 +32,11 @@ export async function fetchTestemunhas(params: {
       ...(params.filters ?? {}),
       ...(params.search ? { search: params.search } : {}),
     },
-  });
+  } satisfies TestemunhasRequest;
+  TestemunhasRequestSchema.parse(body);
 
   const { data, error } = await supabase.functions.invoke(
-    'mapa-testemunhas-testemunhas',
+    MAPA_TESTEMUNHAS_TESTEMUNHAS_FN,
     {
       body,
       headers: {
@@ -58,16 +63,17 @@ export async function fetchProcessos(params: {
   const accessToken = sessionData?.session?.access_token;
   if (!accessToken) throw new Error('Usuário não autenticado');
 
-  const body = ProcessosRequestSchema.parse({
+  const body = {
     paginacao: {
       page: params.page || 1,
       limit: params.limit || 20,
     },
     filtros: params.filters ?? {},
-  });
+  } satisfies ProcessosRequest;
+  ProcessosRequestSchema.parse(body);
 
   const { data, error } = await supabase.functions.invoke(
-    'mapa-testemunhas-processos',
+    MAPA_TESTEMUNHAS_PROCESSOS_FN,
     {
       body,
       headers: {
