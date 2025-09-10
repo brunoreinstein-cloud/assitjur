@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { DataState, DataStatus } from '@/components/ui/data-state';
 import { 
   FileText, 
   Settings, 
@@ -47,6 +48,7 @@ interface ReportGeneratorProps {
 export function ReportGenerator({ onGenerate, mockData }: ReportGeneratorProps) {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [status, setStatus] = useState<DataStatus>('empty');
   const [generatedReport, setGeneratedReport] = useState<ConclusiveReportData | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   
@@ -82,7 +84,13 @@ export function ReportGenerator({ onGenerate, mockData }: ReportGeneratorProps) 
       return;
     }
     
+    if (!navigator.onLine) {
+      setStatus('offline');
+      return;
+    }
+
     setIsGenerating(true);
+    setStatus('loading');
     
     try {
       let reportData: ConclusiveReportData;
@@ -122,7 +130,8 @@ export function ReportGenerator({ onGenerate, mockData }: ReportGeneratorProps) 
       
       setGeneratedReport(reportData);
       setShowPreview(true);
-      
+      setStatus('success');
+
       toast({
         title: "Relatório gerado",
         description: "Relatório conclusivo gerado com sucesso.",
@@ -130,6 +139,7 @@ export function ReportGenerator({ onGenerate, mockData }: ReportGeneratorProps) 
       
     } catch (error) {
       console.error('Erro ao gerar relatório:', error);
+      setStatus(navigator.onLine ? 'error' : 'offline');
       toast({
         title: "Erro",
         description: "Falha ao gerar o relatório. Tente novamente.",
@@ -213,6 +223,9 @@ export function ReportGenerator({ onGenerate, mockData }: ReportGeneratorProps) 
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {status !== 'empty' && status !== 'success' && (
+        <DataState status={status} onRetry={handleGenerateReport} />
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

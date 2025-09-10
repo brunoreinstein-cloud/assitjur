@@ -25,13 +25,14 @@ import {
   Clock
 } from "lucide-react";
 import { useDropzone } from "react-dropzone";
-import { 
-  useMapaTestemunhasStore, 
-  selectIsImportModalOpen 
+import {
+  useMapaTestemunhasStore,
+  selectIsImportModalOpen
 } from "@/lib/store/mapa-testemunhas";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
+import { DataState, DataStatus } from "@/components/ui/data-state";
 
 // Utils
 const onlyDigits = (s: any) => String(s ?? "").replace(/\D/g, "");
@@ -215,6 +216,8 @@ const ErrorReportGenerator: React.FC<ErrorReportGeneratorProps> = ({
   fileName
 }) => {
   const { toast } = useToast();
+  const [status, setStatus] = useState<DataStatus>('empty');
+  const [cnjFailed, setCnjFailed] = useState(false);
 
   const generateCSVReport = () => {
     try {
@@ -531,10 +534,16 @@ export function ImportModal() {
 
   const handlePublish = async () => {
     if (!validationResults) return;
+    if (!navigator.onLine) {
+      setStatus('offline');
+      setCnjFailed(true);
+      return;
+    }
 
     setIsProcessing(true);
     setUploadProgress(0);
     setCurrentStep('publish');
+    setStatus('loading');
 
     try {
       const progressInterval = setInterval(() => {
@@ -568,12 +577,16 @@ export function ImportModal() {
       if (error) throw error;
 
       setFinalResult(data);
+      setStatus('success');
+      setCnjFailed(false);
       toast({
         title: "Importação concluída!",
         description: `${data?.upserts ?? 0} registros processados com sucesso.`,
       });
     } catch (error: any) {
       console.error('Import error:', error);
+      setStatus(navigator.onLine ? 'error' : 'offline');
+      setCnjFailed(true);
       toast({
         title: "Erro na importação",
         description: error.message || "Ocorreu um erro durante a importação.",
@@ -919,8 +932,18 @@ export function ImportModal() {
           </DialogDescription>
         </DialogHeader>
 
-        <WizardSteps 
-          currentStep={currentStep} 
+        {cnjFailed && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>Integração CNJ indisponível</AlertDescription>
+          </Alert>
+        )}
+
+        {status !== 'empty' && status !== 'success' && (
+          <DataState status={status} onRetry={handlePublish} />
+        )}
+
+        <WizardSteps
+          currentStep={currentStep}
           validationResults={validationResults}
           isProcessing={isProcessing}
         />

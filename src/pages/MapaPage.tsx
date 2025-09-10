@@ -45,6 +45,7 @@ import { ChatBar } from "@/features/testemunhas/ChatBar";
 import { ResultBlocks } from "@/features/testemunhas/ResultBlocks";
 import { LoadingHints } from "@/features/testemunhas/LoadingHints";
 import { useDebounce } from "@/hooks/useDebounce";
+import { DataState, DataStatus } from "@/components/ui/data-state";
 
 // Updated types to match mapa-testemunhas structure
 type Processo = PorProcesso;
@@ -129,6 +130,15 @@ const MapaPage = () => {
     };
   }, [processos, testemunhas]);
 
+  const computeStatus = (items: any[]): DataStatus => {
+    if (isLoading) return 'loading';
+    if (hasError) return navigator.onLine ? 'error' : 'offline';
+    return items.length ? 'success' : 'empty';
+  };
+
+  const processoStatus = computeStatus(processos);
+  const testemunhaStatus = computeStatus(testemunhas);
+
   // Authentication guard - improved with loading check
   useEffect(() => {
     if (!loading && !user) {
@@ -162,10 +172,9 @@ const MapaPage = () => {
   };
 
   // Load real data from Supabase with filter integration
-  useEffect(() => {
+  const loadData = useCallback(async () => {
     if (!user) return;
 
-    // abort previous requests
     processoAbortRef.current?.abort();
     testemunhaAbortRef.current?.abort();
 
@@ -174,97 +183,95 @@ const MapaPage = () => {
     processoAbortRef.current = processoController;
     testemunhaAbortRef.current = testemunhaController;
 
-    const loadData = async () => {
-      setIsLoading(true);
-      setError(false);
+    setIsLoading(true);
+    setError(false);
 
-      try {
-        const [processosResult, testemunhasResult] = await Promise.all([
-          fetchPorProcesso(
-            normalizeMapaRequest({
-              page: 1,
-              limit: 1000,
-              filters: debouncedProcessFilters
-            }),
-            processoController.signal
-          ),
-          fetchPorTestemunha(
-            normalizeMapaRequest({
-              page: 1,
-              limit: 1000,
-              filters: debouncedTestemunhaFilters
-            }),
-            testemunhaController.signal
-          )
-        ]);
+    try {
+      const [processosResult, testemunhasResult] = await Promise.all([
+        fetchPorProcesso(
+          normalizeMapaRequest({
+            page: 1,
+            limit: 1000,
+            filters: debouncedProcessFilters
+          }),
+          processoController.signal
+        ),
+        fetchPorTestemunha(
+          normalizeMapaRequest({
+            page: 1,
+            limit: 1000,
+            filters: debouncedTestemunhaFilters
+          }),
+          testemunhaController.signal
+        )
+      ]);
 
-        if (processoController.signal.aborted || testemunhaController.signal.aborted) {
-          return;
-        }
+      if (processoController.signal.aborted || testemunhaController.signal.aborted) {
+        return;
+      }
 
-        // Update store with real data
-        setProcessos(processosResult.data);
-        setTestemunhas(testemunhasResult.data);
+      setProcessos(processosResult.data);
+      setTestemunhas(testemunhasResult.data);
 
-        const errorMsg = processosResult.error || testemunhasResult.error;
-        if (errorMsg) {
-          setError(true, errorMsg);
-          toast({
-            title: "Falha ao carregar dados",
-            description: errorMsg,
-            variant: "destructive",
-          });
-        } else {
-          if (isFirstLoad) {
-            setLastUpdate(new Date());
-            setIsFirstLoad(false);
-          }
-
-          console.log('Data loaded successfully:', {
-            processos: processosResult.data.length,
-            testemunhas: testemunhasResult.data.length
-          });
-        }
-      } catch (error) {
-        if ((error as any)?.name === 'AbortError') {
-          return;
-        }
-        console.error('Erro ao carregar dados:', error);
-        const message = error instanceof Error
-          ? error.message
-          : 'Verifique filtros e tente novamente.';
-        setError(true, message);
-
+      const errorMsg = processosResult.error || testemunhasResult.error;
+      if (errorMsg) {
+        setError(true, errorMsg);
         toast({
           title: "Falha ao carregar dados",
-          description: message,
+          description: errorMsg,
           variant: "destructive",
         });
-      } finally {
-        if (!processoController.signal.aborted && !testemunhaController.signal.aborted) {
-          setIsLoading(false);
+      } else {
+        if (isFirstLoad) {
+          setLastUpdate(new Date());
+          setIsFirstLoad(false);
         }
+
+        console.log('Data loaded successfully:', {
+          processos: processosResult.data.length,
+          testemunhas: testemunhasResult.data.length
+        });
       }
-    };
+    } catch (error) {
+      if ((error as any)?.name === 'AbortError') {
+        return;
+      }
+      console.error('Erro ao carregar dados:', error);
+      const message = error instanceof Error
+        ? error.message
+        : 'Verifique filtros e tente novamente.';
+      setError(true, message);
 
-    loadData();
-
-    return () => {
-      processoAbortRef.current?.abort();
-      testemunhaAbortRef.current?.abort();
-    };
+      toast({
+        title: "Falha ao carregar dados",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      if (!processoController.signal.aborted && !testemunhaController.signal.aborted) {
+        setIsLoading(false);
+      }
+    }
   }, [
     user,
+    debouncedProcessFilters,
+    debouncedTestemunhaFilters,
     setProcessos,
     setTestemunhas,
     setIsLoading,
     setError,
     setLastUpdate,
     isFirstLoad,
-    toast,
-    debouncedProcessFilters,
-    debouncedTestemunhaFilters
+    toast
   ]);
+
+  useEffect(() => {
+    loadData();
+    return () => {
+      processoAbortRef.current?.abort();
+      testemunhaAbortRef.current?.abort();
+    };
+  }, [loadData]);
 
   // Show loading during auth check
   if (loading) {
@@ -447,16 +454,8 @@ const MapaPage = () => {
 
             <TabsContent value="processos" className="space-y-6">
               <ProcessoFilters />
-              {isLoading ? (
-                <div className="flex items-center justify-center p-12" aria-live="polite">
-                  <div className="animate-pulse text-muted-foreground">Carregando dados...</div>
-                </div>
-              ) : processos.length === 0 ? (
-                <Card className="rounded-2xl border-border/50">
-                  <CardContent className="p-8 text-center text-muted-foreground">
-                    Nenhum registro encontrado.
-                  </CardContent>
-                </Card>
+              {processoStatus !== 'success' ? (
+                <DataState status={processoStatus} onRetry={loadData} />
               ) : (
                 <ProcessoTable data={processos} />
               )}
@@ -464,18 +463,10 @@ const MapaPage = () => {
 
             <TabsContent value="testemunhas" className="space-y-6">
               <TestemunhaFilters />
-              {isLoading ? (
-                <div className="flex items-center justify-center p-12" aria-live="polite">
-                  <div className="animate-pulse text-muted-foreground">Carregando dados...</div>
-                </div>
-              ) : testemunhas.length === 0 ? (
-                <Card className="rounded-2xl border-border/50">
-                  <CardContent className="p-8 text-center text-muted-foreground">
-                    Nenhum registro encontrado.
-                  </CardContent>
-                </Card>
+              {testemunhaStatus !== 'success' ? (
+                <DataState status={testemunhaStatus} onRetry={loadData} />
               ) : (
-                <TestemunhaTable data={testemunhas} />
+                <TestemunhaTable data={testemunhas} status={testemunhaStatus} onRetry={loadData} />
               )}
             </TabsContent>
           </Tabs>
