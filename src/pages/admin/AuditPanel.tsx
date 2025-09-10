@@ -37,13 +37,14 @@ interface AccessLog {
 interface AuditLog {
   id: string;
   user_id: string;
-  email: string;
-  role: string;
   action: string;
-  resource: string;
-  result: string;
-  metadata: any;
+  entity: string;
+  entity_id?: string;
+  fields_masked?: any;
+  ip?: string;
+  ua?: string;
   created_at: string;
+  profiles?: any;
 }
 
 export default function AuditPanel() {
@@ -54,6 +55,8 @@ export default function AuditPanel() {
   const [dateFilter, setDateFilter] = useState('30');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTable, setSelectedTable] = useState('all');
+  const [actionFilter, setActionFilter] = useState('all');
+  const [userFilter, setUserFilter] = useState('');
 
   useEffect(() => {
     fetchLogs();
@@ -88,7 +91,18 @@ export default function AuditPanel() {
       // Fetch audit logs
       const { data: auditData, error: auditError } = await supabase
         .from('audit_logs')
-        .select('*')
+        .select(`
+          id,
+          user_id,
+          action,
+          entity,
+          entity_id,
+          fields_masked,
+          ip,
+          ua,
+          created_at,
+          profiles:user_id (email)
+        `)
         .gte('created_at', startDate.toISOString())
         .order('created_at', { ascending: false })
         .limit(100);
@@ -200,10 +214,16 @@ export default function AuditPanel() {
   });
 
   const filteredAuditLogs = auditLogs.filter(log => {
-    return !searchTerm || 
+    const matchesSearch = !searchTerm ||
       log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.resource.toLowerCase().includes(searchTerm.toLowerCase());
+      log.entity.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesAction = actionFilter === 'all' || log.action === actionFilter;
+    const matchesUser = !userFilter ||
+      log.profiles?.email?.toLowerCase().includes(userFilter.toLowerCase());
+
+    return matchesSearch && matchesAction && matchesUser;
   });
 
   if (loading) {
@@ -327,6 +347,31 @@ export default function AuditPanel() {
             </div>
 
             <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              <Select value={actionFilter} onValueChange={setActionFilter}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Filtrar por ação" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as ações</SelectItem>
+                  <SelectItem value="EXPORT_PROCESSOS">Exportação</SelectItem>
+                  <SelectItem value="DELETE">Deleção</SelectItem>
+                  <SelectItem value="UPDATE_PERMISSION">Permissões</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              <Input
+                placeholder="Filtrar por usuário"
+                value={userFilter}
+                onChange={(e) => setUserFilter(e.target.value)}
+                className="w-48"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
               <Search className="h-4 w-4" />
               <Input
                 placeholder="Buscar por email, ação ou tabela..."
@@ -414,12 +459,9 @@ export default function AuditPanel() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{log.action}</span>
-                          <Badge variant={log.result === 'SUCCESS' ? 'default' : 'destructive'}>
-                            {log.result}
-                          </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          Por: {log.email} ({log.role}) • Recurso: {log.resource}
+                          Por: {log.profiles?.email || 'Sistema'} • Entidade: {log.entity}
                         </p>
                       </div>
                       <div className="text-right text-sm text-muted-foreground">

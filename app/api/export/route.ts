@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/integrations/supabase/client';
+import { logAudit } from '@/lib/audit';
 import { SITE_URL } from '@/config/site';
 import { corsHeaders, handleOptions } from '@/middleware/cors';
 
@@ -76,21 +77,16 @@ export async function POST(request: NextRequest) {
 
     // Log audit entry
     try {
-      await supabaseClient.from('audit_logs').insert({
-        user_id: user.id,
-        email: profile.email,
-        role: profile.role,
-        organization_id: profile.organization_id,
-        action: `EXPORT_${type.toUpperCase()}`,
-        resource: 'chat_message',
-        result: 'SUCCESS',
-        metadata: {
-          messageId,
+      await logAudit(
+        `EXPORT_${type.toUpperCase()}`,
+        'chat_message',
+        messageId,
+        {
           exportType: type,
           filename,
           timestamp: new Date().toISOString()
         }
-      });
+      );
     } catch (auditError) {
       console.error('Failed to log audit entry:', auditError);
       // Don't fail the export if audit logging fails
