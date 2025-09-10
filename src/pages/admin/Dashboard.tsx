@@ -27,6 +27,8 @@ import {
 import { ReviewUpdateButton } from '@/components/admin/ReviewUpdateButton';
 import { DatabaseCleanupButton } from '@/components/admin/DatabaseCleanupButton';
 import { WitnessDataProcessor } from '@/components/admin/WitnessDataProcessor';
+import { DataCardSkeleton } from '@/components/core/LoadingStates';
+import { useLoadingDelay } from '@/hooks/useLoadingDelay';
 
 interface OverviewData {
   counts: {
@@ -65,6 +67,7 @@ interface RiskPatternData {
 const Dashboard = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const showSkeleton = useLoadingDelay(loading);
   const [overviewData, setOverviewData] = useState<OverviewData | null>(null);
   const [usageData, setUsageData] = useState<UsageData | null>(null);
   const [riskPatternData, setRiskPatternData] = useState<RiskPatternData | null>(null);
@@ -108,10 +111,13 @@ const Dashboard = () => {
     }
   };
 
-  if (loading) {
+  if (showSkeleton) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" aria-busy="true">
+        <span className="sr-only">Carregando dados jurídicos…</span>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <DataCardSkeleton key={i} />
+        ))}
       </div>
     );
   }

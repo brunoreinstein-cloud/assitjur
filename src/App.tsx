@@ -10,6 +10,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import AuthGuard from "@/components/AuthGuard";
 import { AppLayout } from "@/components/navigation/AppLayout";
 import { ErrorBoundary } from "@/components/core/ErrorBoundary";
+import { RouteProgressBar } from '@/components/navigation/RouteProgressBar';
 
 import MapaPage from "./pages/MapaPage";
 import PublicHome from "./pages/PublicHome";
@@ -77,6 +78,7 @@ const App = () => (
               v7_relativeSplatPath: true,
             }}
           >
+            <RouteProgressBar />
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<PublicHome />} />

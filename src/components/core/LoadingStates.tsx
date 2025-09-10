@@ -88,7 +88,8 @@ export function ConversationListSkeleton() {
 // Skeleton for data cards
 export function DataCardSkeleton() {
   return (
-    <Card>
+    <Card aria-busy="true">
+      <span className="sr-only">Carregando dados jurídicos…</span>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -121,14 +122,15 @@ export function DataCardSkeleton() {
 // Table loading skeleton
 export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" aria-busy="true">
+      <span className="sr-only">Carregando dados jurídicos…</span>
       {/* Header */}
       <div className="flex gap-4">
         {[...Array(cols)].map((_, i) => (
           <Skeleton key={i} className="h-6 flex-1" />
         ))}
       </div>
-      
+
       {/* Rows */}
       {[...Array(rows)].map((_, rowIndex) => (
         <div key={rowIndex} className="flex gap-4">

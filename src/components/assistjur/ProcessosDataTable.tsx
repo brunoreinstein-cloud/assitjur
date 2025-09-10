@@ -12,21 +12,23 @@ import { Eye, Download, Filter, X, ExternalLink, Bug } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { useLoadingDelay } from '@/hooks/useLoadingDelay';
 
 export function ProcessosDataTable() {
   const [filters, setFilters] = useState<ProcessosFilters>({});
   const [isPiiMasked, setIsPiiMasked] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
-  const { 
-    data: processos, 
-    totalCount, 
-    currentPage, 
-    totalPages, 
-    isLoading, 
-    error, 
-    setPage 
+  const {
+    data: processos,
+    totalCount,
+    currentPage,
+    totalPages,
+    isLoading,
+    error,
+    setPage
   } = useAssistJurProcessos(filters);
+  const showSkeleton = useLoadingDelay(isLoading);
 
   const handleSearchChange = (search: string) => {
     setFilters(prev => ({ ...prev, search: search.trim() || undefined }));
@@ -210,9 +212,11 @@ export function ProcessosDataTable() {
                 <TableHead className="font-semibold text-center">Ações</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
+            <TableBody aria-busy={showSkeleton}>
+              {showSkeleton ? (
+                <>
+                <span className="sr-only">Carregando dados jurídicos…</span>
+                {Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell className="h-16">
                       <div className="animate-pulse bg-muted rounded h-4 w-24" />
@@ -242,7 +246,8 @@ export function ProcessosDataTable() {
                       <div className="animate-pulse bg-muted rounded h-4 w-8" />
                     </TableCell>
                   </TableRow>
-                ))
+                ))}
+                </>
               ) : processos.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className="text-center py-8">
