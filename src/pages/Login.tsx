@@ -8,26 +8,28 @@ import { EmailPasswordForm } from '@/components/auth/EmailPasswordForm';
 import { MagicLinkForm } from '@/components/auth/MagicLinkForm';
 import { AlertBox } from '@/components/auth/AlertBox';
 import { useAuth } from '@/hooks/useAuth';
+import { getDefaultRedirect, AUTH_CONFIG } from '@/config/auth';
 import heroImage from "@/assets/hero-legal-tech.jpg";
 
 const Login = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
   const [showMagicLink, setShowMagicLink] = useState(false);
 
   // Check for URL parameters
   const next = searchParams.get('next');
   const confirm = searchParams.get('confirm');
+  const error = searchParams.get('error');
 
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      const redirectTo = next ? decodeURIComponent(next) : '/dados/mapa';
+      const redirectTo = getDefaultRedirect(profile?.role, next);
       navigate(redirectTo);
     }
-  }, [user, navigate, next]);
+  }, [user, profile?.role, navigate, next]);
 
   const handleForgotPassword = () => {
     navigate('/reset');
@@ -44,6 +46,12 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle lg:grid lg:grid-cols-2">
+      {/* SEO and Accessibility */}
+      <div className="sr-only">
+        <h1>Login - AssistJur.IA</h1>
+        <p>Acesse sua conta do AssistJur.IA para análise avançada de testemunhas com conformidade LGPD</p>
+      </div>
+
       {/* Left side - Form */}
       <div className="flex flex-col justify-center px-6 py-12 lg:px-8">
         <div className="mx-auto w-full max-w-md">
@@ -52,15 +60,27 @@ const Login = () => {
             <div className="flex items-center space-x-3">
               <img 
                 src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png" 
-                alt="AssistJur.IA" 
+                alt="AssistJur.IA Logo" 
                 className="w-10 h-10 object-contain"
               />
               <div>
-                <h1 className="text-2xl font-bold text-foreground">AssistJur.IA</h1>
+                <h2 className="text-2xl font-bold text-foreground">AssistJur.IA</h2>
                 <p className="text-sm text-muted-foreground">Assistente de Testemunhas</p>
               </div>
             </div>
           </div>
+
+          {/* Error Banner */}
+          {error && (
+            <div className="mb-6">
+              <AlertBox variant="error" title="Erro de autenticação">
+                {error === 'access_denied' ? 
+                  'Acesso negado. Verifique suas credenciais.' :
+                  'Ocorreu um erro durante o login. Tente novamente.'
+                }
+              </AlertBox>
+            </div>
+          )}
 
           {/* Confirmation Banner */}
           {confirm === '1' && (
@@ -72,30 +92,54 @@ const Login = () => {
           )}
 
           {/* Magic Link Form or Auth Form */}
-          {showMagicLink ? (
+          {showMagicLink && AUTH_CONFIG.FEATURES.MAGIC_LINK_ENABLED ? (
             <AuthCard
               title="Entrar com link"
-              description="Acesso seguro"
+              description="Acesso seguro sem senha"
             >
               <MagicLinkForm onBack={() => setShowMagicLink(false)} />
             </AuthCard>
           ) : (
             <AuthCard
               title={activeTab === 'signin' ? 'Acesse sua conta' : 'Comece gratuitamente'}
-              description="Acesso seguro"
+              description="Acesso seguro e conformidade LGPD"
             >
               <div className="space-y-6">
                 {/* OAuth Buttons */}
-                <OAuthButtons />
+                <OAuthButtons next={next} />
 
                 {/* Tabs */}
-                <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'signin' | 'signup')}>
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="signin">Entrar</TabsTrigger>
-                    <TabsTrigger value="signup">Criar conta</TabsTrigger>
+                <Tabs 
+                  value={activeTab} 
+                  onValueChange={(value) => setActiveTab(value as 'signin' | 'signup')}
+                  className="w-full"
+                >
+                  <TabsList className="grid w-full grid-cols-2" role="tablist">
+                    <TabsTrigger 
+                      value="signin" 
+                      role="tab"
+                      aria-selected={activeTab === 'signin'}
+                      aria-controls="signin-panel"
+                    >
+                      Entrar
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="signup"
+                      role="tab"
+                      aria-selected={activeTab === 'signup'}
+                      aria-controls="signup-panel"
+                    >
+                      Criar conta
+                    </TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="signin" className="mt-6">
+                  <TabsContent 
+                    value="signin" 
+                    className="mt-6"
+                    role="tabpanel"
+                    id="signin-panel"
+                    aria-labelledby="signin-tab"
+                  >
                     <EmailPasswordForm
                       mode="signin"
                       onModeChange={handleModeChange}
@@ -103,18 +147,27 @@ const Login = () => {
                     />
                     
                     {/* Magic Link Toggle */}
-                    <div className="mt-4 text-center">
-                      <button
-                        type="button"
-                        onClick={handleMagicLinkToggle}
-                        className="text-sm text-primary hover:underline"
-                      >
-                        Entrar com link de e-mail
-                      </button>
-                    </div>
+                    {AUTH_CONFIG.FEATURES.MAGIC_LINK_ENABLED && (
+                      <div className="mt-4 text-center">
+                        <button
+                          type="button"
+                          onClick={handleMagicLinkToggle}
+                          className="text-sm text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm px-1 py-0.5"
+                          aria-label="Alternar para login com link de e-mail"
+                        >
+                          Entrar com link de e-mail
+                        </button>
+                      </div>
+                    )}
                   </TabsContent>
 
-                  <TabsContent value="signup" className="mt-6">
+                  <TabsContent 
+                    value="signup" 
+                    className="mt-6"
+                    role="tabpanel"
+                    id="signup-panel"
+                    aria-labelledby="signup-tab"
+                  >
                     <EmailPasswordForm
                       mode="signup"
                       onModeChange={handleModeChange}
@@ -127,69 +180,86 @@ const Login = () => {
           )}
 
           {/* Footer */}
-          <div className="mt-8 text-center">
+          <footer className="mt-8 text-center">
             <p className="text-xs text-muted-foreground">
               Dados tratados conforme{' '}
-              <button className="text-primary hover:underline">LGPD</button>
+              <button 
+                className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm px-1"
+                aria-label="Abrir informações sobre LGPD"
+              >
+                LGPD
+              </button>
               {' • '}
-              <button className="text-primary hover:underline">Política de Privacidade</button>
+              <button 
+                className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm px-1"
+                aria-label="Abrir política de privacidade"
+              >
+                Política de Privacidade
+              </button>
               {' • '}
-              <button className="text-primary hover:underline">Termos</button>
+              <button 
+                className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm px-1"
+                aria-label="Abrir termos de uso"
+              >
+                Termos
+              </button>
             </p>
-          </div>
+          </footer>
         </div>
       </div>
 
       {/* Right side - Hero (hidden on mobile) */}
-      <div className="hidden lg:block relative">
+      <aside className="hidden lg:block relative" role="complementary">
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage: `linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary-light) / 0.8)), url(${heroImage})`
           }}
+          role="img"
+          aria-label="Imagem de fundo mostrando tecnologia jurídica"
         >
           <div className="absolute inset-0 flex flex-col justify-center p-12 text-primary-foreground">
             {/* Logo */}
             <div className="flex items-center space-x-3 mb-12">
               <img 
                 src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png" 
-                alt="AssistJur.IA" 
+                alt="AssistJur.IA Logo" 
                 className="w-12 h-12 object-contain"
               />
               <div>
-                <h1 className="text-2xl font-bold">AssistJur.IA</h1>
+                <h3 className="text-2xl font-bold">AssistJur.IA</h3>
                 <p className="text-sm opacity-80">Assistente de Testemunhas</p>
               </div>
             </div>
 
             {/* Headline */}
             <div className="space-y-6">
-              <h2 className="text-4xl font-bold leading-tight">
+              <h4 className="text-4xl font-bold leading-tight">
                 Análise avançada de testemunhas com LGPD by design
-              </h2>
+              </h4>
               <p className="text-xl opacity-90 leading-relaxed">
                 Detecte padrões suspeitos, triangulações e provas emprestadas com total conformidade às normas de proteção de dados.
               </p>
               
               {/* Features */}
-              <div className="space-y-3 pt-8">
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
+              <ul className="space-y-3 pt-8" role="list">
+                <li className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-primary-foreground rounded-full" aria-hidden="true"></div>
                   <span>Mascaramento automático de PII</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
+                </li>
+                <li className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-primary-foreground rounded-full" aria-hidden="true"></div>
                   <span>Trilha de auditoria completa</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
+                </li>
+                <li className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-primary-foreground rounded-full" aria-hidden="true"></div>
                   <span>Criptografia end-to-end</span>
-                </div>
-              </div>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
-      </div>
+      </aside>
     </div>
   );
 };
