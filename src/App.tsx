@@ -19,6 +19,7 @@ import ResetConfirm from "./pages/ResetConfirm";
 import VerifyOtp from "./pages/VerifyOtp";
 import PortalTitular from "./pages/PortalTitular";
 import NotFound from "./pages/NotFound";
+import DemoMapaTestemunhas from "./pages/DemoMapaTestemunhas";
 
 import Dashboard from "./pages/admin/Dashboard";
 import Analytics from "./pages/admin/Analytics";
@@ -83,6 +84,7 @@ const App = () => (
               <Route path="/verify-otp" element={<VerifyOtp />} />
               <Route path="/portal-titular" element={<PortalTitular />} />
               <Route path="/import/template" element={<TemplatePage />} />
+              <Route path="/demo/mapa-testemunhas" element={<DemoMapaTestemunhas />} />
               
               {/* Protected routes with app layout */}
               <Route path="/*" element={
