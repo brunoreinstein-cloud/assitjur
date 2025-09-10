@@ -68,10 +68,11 @@ const VerifyOtp = () => {
         {/* Logo */}
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center space-x-3">
-            <img 
-              src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png" 
-              alt="AssistJur.IA" 
+            <img
+              src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png"
+              alt="AssistJur.IA"
               className="w-10 h-10 object-contain"
+              loading="lazy"
             />
             <div>
             <h1 className="text-2xl font-bold text-foreground">AssistJur.IA</h1>
