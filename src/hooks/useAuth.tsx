@@ -201,6 +201,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (error.message.includes('Invalid login credentials')) {
           return { error: { message: 'E-mail ou senha incorretos.' } };
         }
+
+        if (error.message.includes('Email not confirmed')) {
+          return { error: { message: 'E-mail não confirmado. Verifique sua caixa de entrada.' } };
+        }
+
         return { error };
       }
 
@@ -302,7 +307,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, name?: string, orgCode?: string) => {
     try {
       setLoading(true);
-      const redirectUrl = `${window.location.origin}/`;
+      // Redirect users back to the login page with a confirmation flag
+      // so the UI can display the proper message after e-mail verification.
+      const redirectUrl = `${window.location.origin}/login?confirm=1`;
 
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -315,6 +322,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         await logAuthAttempt(email, 'signup', 'failure', { error: error.message });
+        if (error.message.includes('User already registered')) {
+          return { error: { message: 'E-mail já cadastrado. Faça login.' } };
+        }
         return { error };
       }
 
