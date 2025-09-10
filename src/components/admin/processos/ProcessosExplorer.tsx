@@ -147,11 +147,18 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
     };
     console.log('🔍 Fetching processos with filters:', apiFilters);
 
+    const { data: sessionData } = await supabase.auth.getSession();
+    const access_token = sessionData?.session?.access_token;
+    if (!access_token) throw new Error('Usuário não autenticado');
+
     const { data, error } = await supabase.functions.invoke('mapa-testemunhas-processos', {
       body: {
-        cursor: cursorParam,
-        limit,
-        filters: apiFilters
+        paginacao: { cursor: cursorParam ?? undefined, limit },
+        filtros: apiFilters
+      },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${access_token}`
       }
     });
 
