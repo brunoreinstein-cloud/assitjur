@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.56.0";
-import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
+import { corsHeaders, handlePreflight, parseAllowedOrigins } from "../_shared/cors.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { z } from "npm:zod@3.23.8";
 
@@ -8,10 +8,12 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 );
 
+const origins = parseAllowedOrigins(Deno.env.get('ALLOWED_ORIGINS'));
+
 const handler = async (req: Request): Promise<Response> => {
   const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
-  const ch = corsHeaders(req);
-  const pf = handlePreflight(req, cid);
+  const ch = corsHeaders(req, origins);
+  const pf = handlePreflight(req, origins, { 'x-correlation-id': cid });
   if (pf) return pf;
 
   try {

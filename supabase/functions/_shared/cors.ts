@@ -1,58 +1,66 @@
-export const METHODS = ["GET", "POST", "OPTIONS"];
+export const METHODS = ["GET", "POST", "OPTIONS"] as const;
 
-export const DEFAULT_HEADERS: Record<string, string> = {
-  "Vary": "Origin",
-  "Access-Control-Allow-Methods": METHODS.join(","),
-  "Access-Control-Allow-Headers":
-    "authorization,apikey,content-type,x-correlation-id,x-client-info",
-};
+const DEFAULT_ALLOWED_HEADERS =
+  "authorization,apikey,content-type,x-correlation-id,x-client-info";
 
-function parseAllowedOrigins() {
-  const env = Deno.env.get("ALLOWED_ORIGINS") ?? "";
-  const raw = env.split(",").map((s) => s.trim()).filter(Boolean);
-  const patterns = raw
-    .map((o) => o.replace(/\./g, "\\.").replace(/\*/g, ".*"))
-    .map((rx) => `^${rx}$`);
+export interface AllowedOrigins {
+  raw: string[];
+  patterns: RegExp[];
+}
+
+export function parseAllowedOrigins(env: string | undefined): AllowedOrigins {
+  const raw = (env ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const patterns = raw.map((o) =>
+    new RegExp(`^${o.replace(/\./g, "\\.").replace(/\*/g, ".*")}$`)
+  );
   return { raw, patterns };
 }
 
-function matchOrigin(origin: string, patterns: string[]) {
+export const ALLOWED_ORIGINS = parseAllowedOrigins(
+  Deno.env.get("ALLOWED_ORIGINS"),
+);
+
+function isAllowed(origin: string | null, origins: AllowedOrigins): boolean {
   if (!origin) return false;
-  return patterns.some((rx) => new RegExp(rx).test(origin));
+  return origins.patterns.some((rx) => rx.test(origin));
 }
 
-function getAllowedOrigin(req: Request) {
-  const { patterns } = parseAllowedOrigins();
-  const origin = req.headers.get("origin") ?? "";
-  return matchOrigin(origin, patterns) ? origin : null;
-}
-
-export function corsHeaders(req: Request, origin?: string | null) {
-  const { patterns } = parseAllowedOrigins();
-  const o = origin ?? req.headers.get("origin") ?? "";
-  const headers: Record<string, string> = { ...DEFAULT_HEADERS };
-  if (matchOrigin(o, patterns)) {
-    headers["Access-Control-Allow-Origin"] = o;
+export function corsHeaders(
+  req: Request,
+  origins: AllowedOrigins = ALLOWED_ORIGINS,
+): Record<string, string> {
+  const origin = req.headers.get("origin");
+  const headers: Record<string, string> = {
+    Vary: "Origin",
+    "Access-Control-Allow-Methods": METHODS.join(","),
+    "Access-Control-Allow-Headers": DEFAULT_ALLOWED_HEADERS,
+  };
+  if (isAllowed(origin, origins)) {
+    headers["Access-Control-Allow-Origin"] = origin!;
   }
   return headers;
 }
 
-export function handlePreflight(req: Request, cid?: string) {
-  const origin = getAllowedOrigin(req);
-  if (!origin) {
-    const headers = { ...DEFAULT_HEADERS, "Content-Type": "application/json" };
-    if (cid) headers["x-correlation-id"] = cid;
+export function handlePreflight(
+  req: Request,
+  origins: AllowedOrigins = ALLOWED_ORIGINS,
+  extraHeaders: Record<string, string> = {},
+): Response | null {
+  const headers = { ...corsHeaders(req, origins), ...extraHeaders };
+  const origin = req.headers.get("origin");
+  if (!isAllowed(origin, origins)) {
     return new Response(JSON.stringify({ error: "origin_not_allowed" }), {
       status: 403,
-      headers,
+      headers: { ...headers, "Content-Type": "application/json" },
     });
   }
 
   if (req.method === "OPTIONS") {
-    const headers = corsHeaders(req, origin);
     const acrh = req.headers.get("Access-Control-Request-Headers");
     if (acrh) headers["Access-Control-Allow-Headers"] = acrh;
-    if (cid) headers["x-correlation-id"] = cid;
     return new Response(null, { status: 204, headers });
   }
   return null;

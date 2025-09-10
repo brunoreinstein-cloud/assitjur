@@ -1,5 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.56.0'
-import { corsHeaders, handlePreflight } from '../_shared/cors.ts'
+import { corsHeaders, handlePreflight, parseAllowedOrigins } from '../_shared/cors.ts'
 
 // Types for analysis results
 interface AnalysisResult {
@@ -69,11 +69,12 @@ interface PadroesAgregados {
   concentracao_uf: { [key: string]: number }
 }
 
+const origins = parseAllowedOrigins(Deno.env.get('ALLOWED_ORIGINS'));
+
 Deno.serve(async (req) => {
   const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
-  const origin = req.headers.get('origin') ?? '';
-  const ch = corsHeaders(req, origin);
-  const pre = handlePreflight(req, cid);
+  const ch = corsHeaders(req, origins);
+  const pre = handlePreflight(req, origins, { 'x-correlation-id': cid });
   if (pre) return pre;
 
   try {
