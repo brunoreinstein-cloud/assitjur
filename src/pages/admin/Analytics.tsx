@@ -19,6 +19,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { analyticsAllowed } from '@/middleware/consent';
 import { toast } from 'sonner';
 import { 
   UsageChart, 
@@ -52,6 +53,7 @@ const Analytics = () => {
   const [patternsData, setPatternsData] = useState<any>(null);
 
   const fetchDetailedAnalytics = async (period: string) => {
+    if (!(await analyticsAllowed())) return;
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('admin-analytics', {
@@ -72,6 +74,7 @@ const Analytics = () => {
   };
 
   const fetchUsageData = async () => {
+    if (!(await analyticsAllowed())) return;
     try {
       const { data, error } = await supabase.functions.invoke('admin-analytics', {
         body: { type: 'usage', period: selectedPeriod }
@@ -84,6 +87,7 @@ const Analytics = () => {
   };
 
   const fetchPatternsData = async () => {
+    if (!(await analyticsAllowed())) return;
     try {
       const { data, error } = await supabase.functions.invoke('admin-analytics', {
         body: { type: 'ai_patterns' }
@@ -96,6 +100,7 @@ const Analytics = () => {
   };
 
   const exportReport = async (format: 'pdf' | 'excel') => {
+    if (!(await analyticsAllowed())) return;
     setExportLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('admin-analytics', {
