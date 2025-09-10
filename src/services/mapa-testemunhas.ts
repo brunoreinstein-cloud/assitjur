@@ -13,6 +13,30 @@ import {
   MAPA_TESTEMUNHAS_TESTEMUNHAS_FN,
 } from '@/contracts/mapa-contracts';
 
+/**
+ * Converte filtros em camelCase para snake_case aceito pela API
+ */
+function toSnakeCaseFilters(
+  filters: TestemunhaFilters | ProcessoFilters | undefined
+) {
+  const map: Record<string, string> = {
+    temTriangulacao: 'tem_triangulacao',
+    temTroca: 'tem_troca',
+    temProvaEmprestada: 'tem_prova_emprestada',
+    qtdDeposMin: 'qtd_depoimentos_min',
+    qtdDeposMax: 'qtd_depoimentos_max',
+    ambosPolos: 'ambos_polos',
+    jaFoiReclamante: 'ja_foi_reclamante',
+  };
+
+  return Object.fromEntries(
+    Object.entries(filters ?? {}).map(([key, value]) => [
+      map[key] ?? key,
+      value,
+    ])
+  );
+}
+
 export async function fetchTestemunhas(params: {
   page?: number;
   limit?: number;
@@ -23,15 +47,17 @@ export async function fetchTestemunhas(params: {
   const accessToken = sessionData?.session?.access_token;
   if (!accessToken) throw new Error('Usuário não autenticado');
 
+  const filtros = toSnakeCaseFilters({
+    ...(params.filters ?? {}),
+    ...(params.search ? { search: params.search } : {}),
+  });
+
   const body = {
     paginacao: {
       page: params.page || 1,
       limit: params.limit || 20,
     },
-    filtros: {
-      ...(params.filters ?? {}),
-      ...(params.search ? { search: params.search } : {}),
-    },
+    filtros,
   } satisfies TestemunhasRequest;
   TestemunhasRequestSchema.parse(body);
 
@@ -63,12 +89,14 @@ export async function fetchProcessos(params: {
   const accessToken = sessionData?.session?.access_token;
   if (!accessToken) throw new Error('Usuário não autenticado');
 
+  const filtros = toSnakeCaseFilters(params.filters);
+
   const body = {
     paginacao: {
       page: params.page || 1,
       limit: params.limit || 20,
     },
-    filtros: params.filters ?? {},
+    filtros,
   } satisfies ProcessosRequest;
   ProcessosRequestSchema.parse(body);
 
