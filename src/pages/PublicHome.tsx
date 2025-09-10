@@ -11,6 +11,7 @@ import { AboutBianca } from '@/components/site/AboutBianca';
 import { Footer } from '@/components/site/Footer';
 import { BetaModal } from '@/components/sobre/BetaModal';
 import { Toaster } from '@/components/ui/toaster';
+import { BackToTopFAB } from '@/components/site/BackToTopFAB';
 
 export default function PublicHome() {
   const [isBetaModalOpen, setIsBetaModalOpen] = useState(false);
@@ -86,6 +87,8 @@ export default function PublicHome() {
 
       {/* Toast notifications */}
       <Toaster />
+
+      <BackToTopFAB />
     </div>
   );
 }

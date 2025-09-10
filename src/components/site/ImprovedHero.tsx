@@ -49,7 +49,11 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
 
             {/* Main Headline */}
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
+              <h1
+                id="main-heading"
+                tabIndex={-1}
+                className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight"
+              >
                 AssistJur.IA —{' '}
                 <span className="relative">
                   <span className="text-primary">
