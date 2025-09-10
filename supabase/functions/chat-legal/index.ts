@@ -7,6 +7,8 @@ import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { getAuth, adminClient } from "../_shared/auth.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 import { createLogger } from "../_shared/logger.ts";
+import { json, jsonError } from "../_shared/http.ts";
+import { toFieldErrors } from "../_shared/validation.ts";
 
 /**
  * =========================
@@ -96,36 +98,40 @@ export async function handler(request: Request) {
   try {
     const { user, organization_id, supa, error } = await getAuth(request);
     if (error || !user || !organization_id) {
-      return new Response(JSON.stringify({ error: "Autenticação obrigatória" }), {
-        status: 401,
-        headers: { ...corsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
-      });
+      return jsonError(401, "UNAUTHORIZED", { cid }, { ...corsHeaders(request), "x-correlation-id": cid });
     }
 
     const admin = adminClient();
 
-    const body = await request.json().catch(() => ({}));
-    const schema = z.object({
+    let payload: unknown = {};
+    try {
+      payload = await request.json();
+    } catch (e) {
+      log.error(`invalid json: ${e.message}`);
+      return jsonError(400, "INVALID_JSON", { fieldErrors: {}, cid }, { ...corsHeaders(request), "x-correlation-id": cid });
+    }
+
+    const ChatLegalRequestSchema = z.object({
       message: z.string().min(1).max(MAX_MESSAGE_LENGTH),
       promptName: z.string().optional(),
     });
-    const parsed = schema.safeParse(body);
-    if (!parsed.success) {
-      return new Response(JSON.stringify({ error: "Payload inválido" }), {
-        status: 400,
-        headers: { ...corsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
-      });
+    const validation = ChatLegalRequestSchema.safeParse(payload);
+    if (!validation.success) {
+      log.error(`validation: ${validation.error.message}`);
+      return jsonError(
+        400,
+        "INVALID_PAYLOAD",
+        { fieldErrors: toFieldErrors(validation.error), cid },
+        { ...corsHeaders(request), "x-correlation-id": cid },
+      );
     }
-    const { message, promptName } = parsed.data;
+    const { message, promptName } = validation.data;
 
     const ip = request.headers.get("x-forwarded-for") || "unknown";
     const rlKey = `${ip}:${organization_id}:${user.id}:chat-legal`;
     const allowed = await checkRateLimit(admin, rlKey, undefined, undefined, cid);
     if (!allowed) {
-      return new Response(JSON.stringify({ error: "Limite de requisições excedido" }), {
-        status: 429,
-        headers: { ...corsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
-      });
+      return jsonError(429, "RATE_LIMIT", { cid }, { ...corsHeaders(request), "x-correlation-id": cid });
     }
 
     const wantedName = promptName ?? "System: Mapa de Testemunhas - v1";
@@ -147,16 +153,10 @@ export async function handler(request: Request) {
       OPENAI_TIMEOUT_MS,
     );
 
-    return new Response(JSON.stringify({ ok: true, data: completion }), {
-      status: 200,
-      headers: { ...corsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
-    });
+    return json(200, { ok: true, data: completion, cid }, { ...corsHeaders(request), "x-correlation-id": cid });
   } catch (err) {
     log.error(`erro no chat-legal: ${err?.message ?? err}`);
-    return new Response(JSON.stringify({ error: "Erro interno" }), {
-      status: 500,
-      headers: { ...corsHeaders(request), "x-correlation-id": cid, "content-type": "application/json; charset=utf-8" },
-    });
+    return jsonError(500, "INTERNAL_ERROR", { cid }, { ...corsHeaders(request), "x-correlation-id": cid });
   }
 }
 
