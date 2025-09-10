@@ -1,13 +1,13 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit, Trash2, CheckCircle, XCircle, Undo2 } from "lucide-react";
+import { Eye, Edit, Trash2, CheckCircle, XCircle } from "lucide-react";
 import { PorTestemunha } from "@/types/mapa-testemunhas";
 import { ArrayField } from "./ArrayField";
 import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
 import { applyPIIMask } from "@/utils/pii-mask";
 import { DataState, DataStatus } from "@/components/ui/data-state";
-import { useToast } from "@/hooks/use-toast";
+import { useUndoDelete } from "@/hooks/useUndoDelete";
 
 interface TestemunhaTableProps {
   data: PorTestemunha[];
@@ -17,7 +17,7 @@ interface TestemunhaTableProps {
 
 export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps) {
   const { setSelectedTestemunha, setIsDetailDrawerOpen, isPiiMasked, removeTestemunha, restoreTestemunha } = useMapaTestemunhasStore();
-  const { toast } = useToast();
+  const { remove } = useUndoDelete<PorTestemunha>('Testemunha');
 
   const handleViewDetail = (testemunha: PorTestemunha) => {
     setSelectedTestemunha(testemunha);
@@ -51,30 +51,12 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
   }
 
   const handleDelete = (t: PorTestemunha) => {
-    const removed = removeTestemunha(t.nome_testemunha);
-    const toastRes = toast({
-      title: "Testemunha removida",
-      description: (
-        <div className="flex items-center justify-between">
-          <span>{t.nome_testemunha}</span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              if (removed) restoreTestemunha(removed);
-            }}
-            className="ml-2 h-6 px-2 text-xs"
-          >
-            <Undo2 className="h-3 w-3 mr-1" />
-            Desfazer
-          </Button>
-        </div>
-      ),
-      duration: 5000,
+    remove({
+      key: t.nome_testemunha,
+      label: t.nome_testemunha,
+      onDelete: () => removeTestemunha(t.nome_testemunha),
+      onRestore: restoreTestemunha,
     });
-
-    // ensure toast returns id to satisfy types (unused)
-    return toastRes;
   };
 
   return (
