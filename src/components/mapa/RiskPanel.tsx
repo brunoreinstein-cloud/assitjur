@@ -44,7 +44,7 @@ export const RiskPanel = () => {
       color: 'text-destructive',
       bgColor: 'bg-destructive/5 hover:bg-destructive/10',
       borderColor: 'border-destructive/20',
-      onClick: () => setProcessoFilters({ tem_triangulacao: true })
+      onClick: () => setProcessoFilters({ temTriangulacao: true })
     },
     {
       id: 'troca',
@@ -56,7 +56,7 @@ export const RiskPanel = () => {
       color: 'text-warning',
       bgColor: 'bg-warning/5 hover:bg-warning/10',
       borderColor: 'border-warning/20',
-      onClick: () => setProcessoFilters({ tem_troca: true })
+      onClick: () => setProcessoFilters({ temTroca: true })
     },
     {
       id: 'prova',
@@ -68,7 +68,7 @@ export const RiskPanel = () => {
       color: 'text-orange-600',
       bgColor: 'bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/10 dark:hover:bg-orange-900/20',
       borderColor: 'border-orange-200 dark:border-orange-900/30',
-      onClick: () => setProcessoFilters({ tem_prova_emprestada: true })
+      onClick: () => setProcessoFilters({ temProvaEmprestada: true })
     }
   ];
 

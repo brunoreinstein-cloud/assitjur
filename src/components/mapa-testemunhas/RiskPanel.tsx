@@ -45,9 +45,9 @@ export const RiskPanel = memo(() => {
 
   // ✅ Callbacks memoizados para filtros
   const filterCallbacks = useMemo(() => ({
-    triangulacao: () => setProcessoFilters({ tem_triangulacao: true }),
-    troca: () => setProcessoFilters({ tem_troca: true }),
-    prova: () => setProcessoFilters({ tem_prova_emprestada: true })
+    triangulacao: () => setProcessoFilters({ temTriangulacao: true }),
+    troca: () => setProcessoFilters({ temTroca: true }),
+    prova: () => setProcessoFilters({ temProvaEmprestada: true })
   }), [setProcessoFilters]);
 
   // ✅ Memoizar configuração dos itens de risco

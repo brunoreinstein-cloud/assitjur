@@ -211,9 +211,9 @@ const mapaRequestSchema = z.object({
       testemunha: z.string().trim().optional(),
       ambosPolos: z.coerce.boolean().optional(),
       jaFoiReclamante: z.coerce.boolean().optional(),
-      tem_triangulacao: z.coerce.boolean().optional(),
-      tem_troca: z.coerce.boolean().optional(),
-      tem_prova_emprestada: z.coerce.boolean().optional(),
+      temTriangulacao: z.coerce.boolean().optional(),
+      temTroca: z.coerce.boolean().optional(),
+      temProvaEmprestada: z.coerce.boolean().optional(),
       qtdDeposMin: z.coerce.number().optional(),
       qtdDeposMax: z.coerce.number().optional(),
     })
@@ -221,11 +221,30 @@ const mapaRequestSchema = z.object({
     .default({}),
 });
 
+function toSnakeCaseFilters(filters?: Record<string, any>) {
+  if (!filters) return filters;
+  const map: Record<string, string> = {
+    temTriangulacao: 'tem_triangulacao',
+    temTroca: 'tem_troca',
+    temProvaEmprestada: 'tem_prova_emprestada',
+    qtdDeposMin: 'qtd_depoimentos_min',
+    qtdDeposMax: 'qtd_depoimentos_max',
+    ambosPolos: 'ambos_polos',
+    jaFoiReclamante: 'ja_foi_reclamante'
+  };
+  return Object.fromEntries(
+    Object.entries(filters).map(([key, value]) => [
+      map[key] ?? key.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`),
+      value
+    ])
+  );
+}
+
 function toEdgePayload<F>(req: MapaTestemunhasRequest<F>) {
   const { page, limit, filters, ...rest } = req;
   return {
     paginacao: { page, limit },
-    filtros: filters,
+    filtros: toSnakeCaseFilters(filters as Record<string, any>),
     ...rest
   };
 }
@@ -346,11 +365,11 @@ export const fetchPorProcesso = async (
       );
     }
 
-    if (parsed.filters.tem_triangulacao) {
+    if (parsed.filters.temTriangulacao) {
       filteredData = filteredData.filter(p => p.triangulacao_confirmada === true);
     }
 
-    if (parsed.filters.tem_prova_emprestada) {
+    if (parsed.filters.temProvaEmprestada) {
       filteredData = filteredData.filter(p => p.contem_prova_emprestada === true);
     }
 
@@ -465,12 +484,12 @@ export const fetchPorTestemunha = async (
       filteredData = filteredData.filter(t => t.ja_foi_reclamante === parsed.filters.jaFoiReclamante);
     }
 
-    if (parsed.filters.tem_triangulacao !== undefined) {
-      filteredData = filteredData.filter(t => t.participou_triangulacao === parsed.filters.tem_triangulacao);
+    if (parsed.filters.temTriangulacao !== undefined) {
+      filteredData = filteredData.filter(t => t.participou_triangulacao === parsed.filters.temTriangulacao);
     }
 
-    if (parsed.filters.tem_troca !== undefined) {
-      filteredData = filteredData.filter(t => t.participou_troca_favor === parsed.filters.tem_troca);
+    if (parsed.filters.temTroca !== undefined) {
+      filteredData = filteredData.filter(t => t.participou_troca_favor === parsed.filters.temTroca);
     }
 
     // Mock pagination
