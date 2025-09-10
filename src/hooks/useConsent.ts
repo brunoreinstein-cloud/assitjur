@@ -1,14 +1,12 @@
-import { createContext, useContext, useEffect, useState, ReactNode, createElement } from 'react'
-
-export interface ConsentPreferences {
-  analytics: boolean
-  ads: boolean
-  sharing?: boolean
-  version: string
-  ts: string
-}
-
-export type ConsentFlags = Pick<ConsentPreferences, 'analytics' | 'ads' | 'sharing'>
+import { createContext, useContext, useEffect, useState } from 'react'
+import {
+  applyConsentToGtag,
+  applyDefaultConsent,
+  getStoredConsent,
+  storeConsent,
+  type ConsentFlags,
+  type ConsentPreferences,
+} from '@/lib/privacy/consent'
 
 interface ConsentContextValue {
   preferences: ConsentPreferences | null
@@ -19,56 +17,36 @@ interface ConsentContextValue {
 
 const ConsentContext = createContext<ConsentContextValue | undefined>(undefined)
 
-interface ConsentProviderProps {
-  children: ReactNode
-}
-
-export function ConsentProvider({ children }: ConsentProviderProps) {
+export function ConsentProvider({ children }: { children: React.ReactNode }) {
   const [preferences, setPreferences] = useState<ConsentPreferences | null>(null)
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    // Initialize consent
-    const stored = localStorage.getItem('assistjur_consent_v1.0.0')
+    applyDefaultConsent()
+    const stored = getStoredConsent()
     if (stored) {
-      try {
-        const data = JSON.parse(stored) as ConsentPreferences
-        setPreferences(data)
-      } catch {
-        setOpen(true)
-      }
+      setPreferences(stored)
+      applyConsentToGtag(stored)
     } else {
       setOpen(true)
     }
   }, [])
 
   const save = (prefs: ConsentFlags) => {
-    const stored: ConsentPreferences = {
-      analytics: prefs.analytics,
-      ads: prefs.ads,
-      sharing: prefs.sharing ?? false,
-      version: '1.0.0',
-      ts: new Date().toISOString(),
-    }
-    localStorage.setItem('assistjur_consent_v1.0.0', JSON.stringify(stored))
+    const stored = storeConsent(prefs)
     setPreferences(stored)
-    setOpen(false)
+    applyConsentToGtag(prefs)
   }
 
-  const contextValue: ConsentContextValue = {
-    preferences,
-    open,
-    setOpen,
-    save
-  }
-
-  return createElement(ConsentContext.Provider, { value: contextValue }, children)
+  return (
+    <ConsentContext.Provider value={{ preferences, open, setOpen, save }}>
+      {children}
+    </ConsentContext.Provider>
+  )
 }
 
 export function useConsent(): ConsentContextValue {
-  const context = useContext(ConsentContext)
-  if (!context) {
-    throw new Error('useConsent must be used within ConsentProvider')
-  }
-  return context
+  const ctx = useContext(ConsentContext)
+  if (!ctx) throw new Error('useConsent must be used within ConsentProvider')
+  return ctx
 }
