@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import {
@@ -128,7 +129,7 @@ export default function DemoMapaTestemunhas() {
           <p>Gere um PDF demonstrativo.</p>
           <div className="mt-2 flex gap-2">
             <Button size="sm" asChild>
-              <a href="/beta">Entrar na Beta</a>
+              <Link to="/beta">Entrar na Beta</Link>
             </Button>
             <Button size="sm" variant="ghost" onClick={resetTour}>
               Reiniciar
