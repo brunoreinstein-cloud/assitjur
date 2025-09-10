@@ -2,6 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.56.0";
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { createLogger } from "../_shared/logger.ts";
 import { ListaResponseSchema, ProcessosRequestSchema } from "../_shared/mapa-contracts.ts";
+import { applyProcessosFilters } from "../_shared/mapa-filters.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { z } from "npm:zod@3.23.8";
 
@@ -56,15 +57,7 @@ Deno.serve(async (req) => {
     .select("*", { count: "exact" })
     .range(from, to);
 
-  if (filtros.search) {
-    query = query.ilike("search", `%${filtros.search}%`);
-  }
-  if (filtros.data_inicio) {
-    query = query.gte("data", filtros.data_inicio);
-  }
-  if (filtros.data_fim) {
-    query = query.lte("data", filtros.data_fim);
-  }
+  query = applyProcessosFilters(query, filtros);
 
   const { data, count, error } = await query;
   if (error) {
@@ -82,3 +75,4 @@ Deno.serve(async (req) => {
   logger.info(`success: ${result.items.length} items returned`);
   return json(200, result, { ...ch, "x-correlation-id": cid });
 });
+
