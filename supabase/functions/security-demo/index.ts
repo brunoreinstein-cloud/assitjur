@@ -7,7 +7,7 @@ export async function handler(req: Request): Promise<Response> {
   }
 
   const token = req.headers.get("authorization")?.replace("Bearer ", "") ?? null;
-  if (!validateJWT(token)) {
+  if (!(await validateJWT(token))) {
     return createSecureErrorResponse("unauthorized", 401);
   }
 

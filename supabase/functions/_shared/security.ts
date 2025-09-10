@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.56.0";
 import type { ZodSchema } from "npm:zod@4.1.3";
+import { validateJWT } from "./jwt.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -14,22 +15,7 @@ export const corsHeaders = {
   Vary: "Origin"
 } as const;
 
-export function validateJWT(token: string | null): boolean {
-  if (!token) return false;
-  const parts = token.split(".");
-  if (parts.length !== 3) return false;
-  try {
-    const payload = JSON.parse(
-      atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"))
-    );
-    if (typeof payload.exp === "number") {
-      return Math.floor(Date.now() / 1000) < payload.exp;
-    }
-    return true;
-  } catch {
-    return false;
-  }
-}
+export { validateJWT };
 
 export function createSecureErrorResponse(message: string, status = 400): Response {
   const body = JSON.stringify({ error: message });
