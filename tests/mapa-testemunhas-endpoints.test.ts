@@ -51,6 +51,25 @@ describe('mapa-testemunhas-processos endpoint', () => {
     expect(res.status).toBe(400)
   })
 
+  it('rejects camelCase filters devido à adesão estrita ao schema', () => {
+    const res = processosEndpoint({ filtros: { temTriangulacao: true } })
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects cursor field devido à adesão estrita ao schema', () => {
+    const res = processosEndpoint({ cursor: { id: 1, created_at: '2020-01-01' } })
+    expect(res.status).toBe(400)
+  })
+
+  it('aceita filtros em snake_case', () => {
+    const res = processosEndpoint({ filtros: { tem_triangulacao: true } })
+    expect(res.status).toBe(200)
+    expect(res.body).toMatchObject({
+      paginacao: { page: 1, limit: 20 },
+      filtros: { tem_triangulacao: true },
+    })
+  })
+
   it('handles empty payload using defaults', () => {
     const res = processosEndpoint({})
     expect(res.status).toBe(200)
