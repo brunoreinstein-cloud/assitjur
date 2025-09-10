@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useMapaTestemunhasStore } from '@/lib/store/mapa-testemunhas';
 import { Bot, Loader2 } from 'lucide-react';
@@ -6,13 +6,26 @@ import { Bot, Loader2 } from 'lucide-react';
 export function LoadingHints() {
   const { loadingHints, currentHintIndex, nextHint } = useMapaTestemunhasStore();
 
+  // Store interval reference to allow proper cleanup
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
   // Rotate hints every 800ms
   useEffect(() => {
-    const interval = setInterval(() => {
+    // Clear any existing interval before setting a new one
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    intervalRef.current = setInterval(() => {
       nextHint();
     }, 800);
 
-    return () => clearInterval(interval);
+    // Clean up on unmount
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, [nextHint]);
 
   return (
