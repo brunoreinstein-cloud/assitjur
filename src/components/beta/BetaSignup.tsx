@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,16 +11,24 @@ import { BetaSuccess } from './BetaSuccess';
 import { EmailHint } from './EmailHint';
 import { Fieldset } from './Fieldset';
 import { supabase } from '@/integrations/supabase/client';
+import { disposableDomains } from '@/config/disposableDomains';
 
 const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
 const betaSignupSchema = z.object({
   nome: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
-  email: z.string().regex(emailRegex, 'E-mail inválido'),
+  email: z
+    .string()
+    .regex(emailRegex, 'E-mail inválido')
+    .refine(val => {
+      const domain = val.split('@')[1]?.toLowerCase();
+      return domain ? !disposableDomains.includes(domain) : true;
+    }, 'Domínio de e-mail descartável não permitido'),
   cargo: z.string().optional(),
   organizacao: z.string().min(2, 'Organização deve ter pelo menos 2 caracteres'),
   necessidades: z.array(z.string()).min(1, 'Selecione pelo menos uma necessidade'),
   outro_texto: z.string().max(120, 'Máximo 120 caracteres').optional(),
+  honeypot: z.string().max(0).optional(),
   consentimento: z.boolean().refine(val => val === true, {
     message: 'É necessário seu consentimento',
   }),
@@ -91,6 +99,7 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
   const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null);
   const [showOutroText, setShowOutroText] = useState(false);
   const { toast } = useToast();
+  const lastSubmitRef = useRef(0);
 
   const {
     register,
@@ -107,6 +116,7 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
     defaultValues: {
       consentimento: false,
       termos: false,
+      honeypot: '',
     },
   });
 
@@ -176,6 +186,11 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
   };
 
   const onSubmit = async (data: BetaSignupForm) => {
+    const now = Date.now();
+    if (now - lastSubmitRef.current < 1000) {
+      return;
+    }
+    lastSubmitRef.current = now;
     setIsSubmitting(true);
     
     try {
@@ -202,7 +217,16 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
           body: payload,
         });
 
-        if (error) throw error;
+        if (error) {
+          if (error.status === 429) {
+            toast({
+              title: 'Calma aí!',
+              description: 'Muitas inscrições em pouco tempo. Tente novamente mais tarde.',
+            });
+            return;
+          }
+          throw error;
+        }
 
         console.log('beta_form_success', result);
         setIsSuccess(true);
@@ -257,6 +281,14 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
 
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="hidden" aria-hidden="true">
+          <input
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            {...register('honeypot')}
+          />
+        </div>
         {/* Nome */}
         <Fieldset
           label="Nome completo"

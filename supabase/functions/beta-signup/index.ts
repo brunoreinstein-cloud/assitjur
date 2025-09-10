@@ -2,6 +2,8 @@ import { createClient } from "npm:@supabase/supabase-js@2.56.0";
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { z } from "npm:zod@3.23.8";
+import { checkRateLimit } from "../_shared/rate-limit.ts";
+import { DISPOSABLE_DOMAINS } from "../_shared/disposable-domains.ts";
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
@@ -31,6 +33,7 @@ const ReqSchema = z.object({
     campaign: z.string().optional(),
   }).optional(),
   created_at: z.string().optional(),
+  honeypot: z.string().optional(),
 });
 
 const handler = async (req: Request): Promise<Response> => {
@@ -55,6 +58,31 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
     const body = result.data;
+
+    if (body.honeypot) {
+      return jsonError(400, "Bot detectado", { cid }, { ...ch, "x-correlation-id": cid });
+    }
+
+    const domain = body.email.split("@")[1]?.toLowerCase();
+    if (domain && DISPOSABLE_DOMAINS.has(domain)) {
+      return jsonError(
+        400,
+        "Domínio de e-mail descartável não permitido",
+        { cid },
+        { ...ch, "x-correlation-id": cid },
+      );
+    }
+
+    const ip = req.headers.get("x-forwarded-for") ?? "unknown";
+    const allowed = await checkRateLimit(supabase, `beta-signup:${ip}`, 5, 60_000, cid);
+    if (!allowed) {
+      return jsonError(
+        429,
+        "Muitas tentativas. Tente novamente mais tarde.",
+        { cid },
+        { ...ch, "x-correlation-id": cid },
+      );
+    }
 
     console.log("Beta signup request:", {
       email: body.email,
