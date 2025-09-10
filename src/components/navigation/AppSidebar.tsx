@@ -16,6 +16,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/use-toast';
+import { useConsent } from '@/hooks/useConsent';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -38,6 +39,7 @@ import {
 export function AppSidebar() {
   const { open, setOpen, openMobile, setOpenMobile, isMobile, state } = useSidebar();
   const location = useLocation();
+  const { setOpen: setConsentOpen } = useConsent();
   const { user, signOut } = useAuth();
   const { canAccess, getPermissionTooltip, hasAnyPermissionInGroup, userRole } = usePermissions();
   const { toast } = useToast();
@@ -208,6 +210,7 @@ export function AppSidebar() {
             <ThemeToggle />
             <CommandPalette />
           </div>
+          <button onClick={() => setConsentOpen(true)} className="text-xs underline text-sidebar-foreground">Privacidade / Gerenciar cookies</button>
 
           {/* User Profile */}
           <DropdownMenu>
