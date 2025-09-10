@@ -7,7 +7,8 @@ export const BRAND = {
   name: "AssistJur.IA",
   shortName: "AssistJur",
   fullName: "AssistJur.IA - Assistente de Testemunhas",
-  
+  tagline: "Legal Intelligence",
+
   logo: {
     light: "/lovable-uploads/6cb71517-cb9b-4957-bafc-cb7d61604973.png",
     dark: "/lovable-uploads/6cb71517-cb9b-4957-bafc-cb7d61604973.png", // Same logo for both themes

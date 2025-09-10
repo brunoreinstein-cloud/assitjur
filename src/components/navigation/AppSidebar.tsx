@@ -112,8 +112,8 @@ export function AppSidebar() {
             />
             {open && (
               <div className="min-w-0">
-                <h2 className="text-lg font-semibold text-sidebar-foreground truncate">AssistJur.IA</h2>
-                <p className="text-xs text-sidebar-foreground/60">Legal Intelligence</p>
+                <h2 className="text-lg font-semibold text-sidebar-foreground truncate">{BRAND.name}</h2>
+                <p className="text-xs text-sidebar-foreground/60">{BRAND.tagline}</p>
               </div>
             )}
           </div>
