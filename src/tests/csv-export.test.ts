@@ -11,8 +11,8 @@ const mockDom = () => {
     style: {},
     click: vi.fn(),
   } as any);
-  vi.spyOn(document.body, 'appendChild').mockImplementation(() => {});
-  vi.spyOn(document.body, 'removeChild').mockImplementation(() => {});
+  vi.spyOn(document.body, 'appendChild').mockImplementation(() => null as any);
+  vi.spyOn(document.body, 'removeChild').mockImplementation(() => null as any);
 };
 
 describe('CSV export with PII masking', () => {
