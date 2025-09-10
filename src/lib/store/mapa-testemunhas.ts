@@ -168,16 +168,28 @@ export const useMapaTestemunhasStore = create<MapaTestemunhasStore>((set, get) =
   setIsPiiMasked: (masked) => set({ isPiiMasked: masked }),
   setError: (error, message = '') => set({ hasError: error, errorMessage: message }),
   setLastUpdate: (date) => set({ lastUpdate: date }),
-  setProcessoFilters: (filters) => 
-    set((state) => ({ 
-      processoFilters: { ...state.processoFilters, ...filters },
-      processosPage: 1 
-    })),
-  setTestemunhaFilters: (filters) => 
-    set((state) => ({ 
-      testemunhaFilters: { ...state.testemunhaFilters, ...filters },
-      testemunhasPage: 1 
-    })),
+  setProcessoFilters: (filters) =>
+    set((state) => {
+      const merged = { ...state.processoFilters, ...filters } as Record<string, unknown>;
+      const cleaned = Object.fromEntries(
+        Object.entries(merged).filter(([, v]) => v !== undefined)
+      ) as FilterProcesso;
+      return {
+        processoFilters: cleaned,
+        processosPage: 1,
+      };
+    }),
+  setTestemunhaFilters: (filters) =>
+    set((state) => {
+      const merged = { ...state.testemunhaFilters, ...filters } as Record<string, unknown>;
+      const cleaned = Object.fromEntries(
+        Object.entries(merged).filter(([, v]) => v !== undefined)
+      ) as FilterTestemunha;
+      return {
+        testemunhaFilters: cleaned,
+        testemunhasPage: 1,
+      };
+    }),
   setProcessosPage: (page) => set({ processosPage: page }),
   setTestemunhasPage: (page) => set({ testemunhasPage: page }),
   setTotalProcessos: (total) => set({ totalProcessos: total }),
