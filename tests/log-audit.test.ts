@@ -4,9 +4,11 @@
 import { describe, it, expect, vi } from 'vitest';
 import { logAudit } from '@/lib/audit';
 
+const insert = vi.fn().mockResolvedValue({ error: null });
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    rpc: vi.fn().mockResolvedValue({ error: null })
+    auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user-123' } } }) },
+    from: vi.fn().mockReturnValue({ insert })
   }
 }));
 
@@ -15,14 +17,16 @@ vi.mock('@/utils/pii-mask', () => ({
 }));
 
 describe('logAudit', () => {
-  it('masks PII fields before logging', async () => {
-    const { supabase } = await import('@/integrations/supabase/client');
-    await logAudit('TEST', 'entity', '123', { email: 'test@example.com' });
-    expect(supabase.rpc).toHaveBeenCalledWith('log_audit', {
-      p_action: 'TEST',
-      p_entity: 'entity',
-      p_entity_id: '123',
-      p_fields_masked: { email: 'te***@example.com' }
+  it('masks PII fields and logs entries', async () => {
+    await logAudit('CREATE', 'entity', '1', { email: 'test1@example.com' });
+    await logAudit('UPDATE', 'entity', '2', { email: 'test2@example.com' });
+    await logAudit('DELETE', 'entity', '3', { email: 'test3@example.com' });
+    expect(insert).toHaveBeenCalledTimes(3);
+    expect(insert).toHaveBeenCalledWith({
+      actor: 'user-123',
+      action: 'CREATE',
+      resource: 'entity',
+      metadata: { email: 'te***@example.com', resourceId: '1' }
     });
   });
 });
