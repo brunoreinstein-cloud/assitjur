@@ -100,6 +100,8 @@ interface MapaTestemunhasStore {
   setTestemunhasPage: (page: number) => void;
   setTotalProcessos: (total: number) => void;
   setTotalTestemunhas: (total: number) => void;
+  removeTestemunha: (nome: string) => PorTestemunha | null;
+  restoreTestemunha: (testemunha: PorTestemunha) => void;
   resetFilters: () => void;
 
   // Chat Actions
@@ -198,6 +200,20 @@ export const useMapaTestemunhasStore = create<MapaTestemunhasStore>((set, get) =
   setTestemunhasPage: (page) => set({ testemunhasPage: page }),
   setTotalProcessos: (total) => set({ totalProcessos: total }),
   setTotalTestemunhas: (total) => set({ totalTestemunhas: total }),
+  removeTestemunha: (nome) => {
+    let removed: PorTestemunha | null = null;
+    set((state) => {
+      const index = state.testemunhas.findIndex(t => t.nome_testemunha === nome);
+      if (index === -1) return {} as any;
+      removed = state.testemunhas[index];
+      const arr = [...state.testemunhas];
+      arr.splice(index, 1);
+      return { testemunhas: arr, totalTestemunhas: state.totalTestemunhas - 1 } as any;
+    });
+    return removed;
+  },
+  restoreTestemunha: (testemunha) =>
+    set((state) => ({ testemunhas: [testemunha, ...state.testemunhas], totalTestemunhas: state.totalTestemunhas + 1 })),
   resetFilters: () => set({ 
     processoFilters: {}, 
     testemunhaFilters: {},
