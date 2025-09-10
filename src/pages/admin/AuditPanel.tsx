@@ -110,7 +110,7 @@ export default function AuditPanel() {
       if (auditError) {
         console.error('Error fetching audit logs:', auditError);
       } else {
-        setAuditLogs(auditData || []);
+        setAuditLogs([]); // TODO: Re-enable when audit_logs entity column exists
       }
     } catch (error) {
       console.error('Error fetching logs:', error);

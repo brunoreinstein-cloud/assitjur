@@ -211,29 +211,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Collect session context and previous timezone
         const ctx = getSessionContext();
         let previousTz: string | null = null;
-        try {
-          const { data: last } = await supabase
-            .from('sessions')
-            .select('device_label')
-            .eq('user_id', data.user.id)
-            .order('last_seen', { ascending: false })
-            .limit(1)
-            .single();
-          if (last?.device_label) {
-            const parts = last.device_label.split('|');
-            previousTz = parts[2]?.trim() || null;
-          }
-        } catch {}
-        const risk = calculateRisk(previousTz, ctx);
-        await supabase
-          .from('sessions')
-          .upsert({
-            user_id: data.user.id,
-            device_label: `${ctx.platform} | ${ctx.language} | ${ctx.timezone}`,
-            last_ip: null,
-            last_seen: new Date().toISOString(),
-            risk_score: risk,
-          } as any);
+        // TODO: Re-enable when sessions table exists
+        // try {
+        //   const { data: last } = await supabase
+        //     .from('sessions')
+        //     .select('device_label')
+        //     .eq('user_id', data.user.id)
+        //     .order('last_seen', { ascending: false })
+        //     .limit(1)
+        //     .single();
+        //   if (last?.device_label) {
+        //     const parts = last.device_label.split('|');
+        //     previousTz = parts[2]?.trim() || null;
+        //   }
+        // } catch {}
+        const risk = 0; // TODO: Re-implement calculateRisk when sessions table exists
+        // TODO: Re-enable when sessions table exists
+        // await supabase
+        //   .from('sessions')
+        //   .upsert({
+        //     user_id: data.user.id,
+        //     device_label: `${ctx.platform} | ${ctx.language} | ${ctx.timezone}`,
+        //     last_ip: null,
+        //     last_seen: new Date().toISOString(),
+        //     risk_score: risk,
+        //   } as any);
 
         if (risk >= 70) {
           // Log anomaly in audit log

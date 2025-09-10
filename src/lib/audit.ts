@@ -8,13 +8,14 @@ export async function logAudit(
   fields: Record<string, any> = {}
 ) {
   const masked = applyPIIMask(fields, true);
-  const { error } = await supabase.rpc('log_audit', {
-    p_action: action,
-    p_entity: entity,
-    p_entity_id: entityId,
-    p_fields_masked: masked
-  });
-  if (error) {
-    console.error('logAudit error', error);
-  }
+  // TODO: Re-enable when log_audit function exists  
+  // const { error } = await supabase.rpc('log_audit', {
+  //   p_action: action,
+  //   p_entity: entity,
+  //   p_entity_id: entityId,
+  //   p_fields_masked: masked
+  // });
+  // if (error) {
+  //   console.error('logAudit error', error);
+  // }
 }
