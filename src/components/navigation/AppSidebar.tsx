@@ -17,12 +17,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/use-toast';
 import { useConsent } from '@/hooks/useConsent';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -30,11 +30,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { NAV_GROUPS } from '@/config/sidebar';
 import { ThemeToggle } from './ThemeToggle';
 import { CommandPalette } from './CommandPalette';
-import { 
+import {
   User,
   LogOut,
   UserCog
 } from 'lucide-react';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 export function AppSidebar() {
   const { open, setOpen, openMobile, setOpenMobile, isMobile, state } = useSidebar();
@@ -103,11 +104,10 @@ export function AppSidebar() {
       >
         <SidebarHeader className="border-b border-sidebar-border p-4">
           <div className="flex items-center gap-3">
-            <img
-              src="/lovable-uploads/7a3da188-83da-4e1d-b4e2-30254d487fae.png"
-              alt="AssistJur.IA"
-              className="h-8 w-8 object-contain flex-shrink-0"
-              loading="lazy"
+            <BrandLogo
+              variation="mark"
+              size="md"
+              className="flex-shrink-0"
             />
             {open && (
               <div className="min-w-0">

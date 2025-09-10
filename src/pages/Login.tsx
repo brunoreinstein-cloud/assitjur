@@ -10,6 +10,7 @@ import { AlertBox } from '@/components/auth/AlertBox';
 import { useAuth } from '@/hooks/useAuth';
 import { getDefaultRedirect, AUTH_CONFIG } from '@/config/auth';
 import heroImage from "@/assets/hero-legal-tech.jpg";
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -58,12 +59,7 @@ const Login = () => {
           {/* Logo */}
           <div className="flex items-center justify-center mb-8 lg:hidden">
             <div className="flex items-center space-x-3">
-              <img
-                src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png"
-                alt="AssistJur.IA Logo"
-                className="w-10 h-10 object-contain"
-                loading="lazy"
-              />
+              <BrandLogo size="md" className="w-10 h-10" />
               <div>
                 <h2 className="text-2xl font-bold text-foreground">AssistJur.IA</h2>
                 <p className="text-sm text-muted-foreground">Assistente de Testemunhas</p>
@@ -222,17 +218,12 @@ const Login = () => {
           <div className="absolute inset-0 flex flex-col justify-center p-12 text-primary-foreground">
             {/* Logo */}
             <div className="flex items-center space-x-3 mb-12">
-              <img
-                src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png"
-                alt="AssistJur.IA Logo"
-                className="w-12 h-12 object-contain"
-                loading="lazy"
-              />
-              <div>
-                <h3 className="text-2xl font-bold">AssistJur.IA</h3>
-                <p className="text-sm opacity-80">Assistente de Testemunhas</p>
-              </div>
+            <BrandLogo size="lg" className="w-12 h-12" />
+            <div>
+              <h3 className="text-2xl font-bold">AssistJur.IA</h3>
+              <p className="text-sm opacity-80">Assistente de Testemunhas</p>
             </div>
+          </div>
 
             {/* Headline */}
             <div className="space-y-6">

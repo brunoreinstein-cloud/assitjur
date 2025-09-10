@@ -5,7 +5,7 @@ import { Scale, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { GlobalSearch } from "./GlobalSearch";
 import { LastUpdateBadge } from "@/components/ui/LastUpdateBadge";
-import { BRAND } from "@/branding/brand";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -28,11 +28,7 @@ export const Header = () => {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
         {/* Logo */}
         <div className="flex items-center gap-3 min-w-fit cursor-pointer transition-transform duration-200 hover:scale-105" onClick={() => navigate('/')}>
-          <img 
-            src={BRAND.logo.light}
-            alt={BRAND.name} 
-            className="h-10 md:h-12 object-contain"
-          />
+          <BrandLogo size="lg" className="h-10 md:h-12" />
         </div>
 
         {/* Search */}

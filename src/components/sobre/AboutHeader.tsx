@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { BRAND } from '@/branding/brand';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 interface AboutHeaderProps {
   onOpenBetaModal?: () => void;
@@ -36,11 +36,7 @@ export function AboutHeader({ onOpenBetaModal }: AboutHeaderProps) {
           {/* Logo */}
           <div className="flex items-center">
             <button onClick={() => navigate('/')} className="flex items-center transition-transform duration-200 hover:scale-105">
-              <img 
-                src={BRAND.logo.light}
-                alt={BRAND.name} 
-                className="h-10 md:h-12 object-contain"
-              />
+              <BrandLogo size="lg" className="md:h-12" />
             </button>
           </div>
 
