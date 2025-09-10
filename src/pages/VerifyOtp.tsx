@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Scale } from 'lucide-react';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { TwoFactorForm } from '@/components/auth/TwoFactorForm';
 import { AlertBox } from '@/components/auth/AlertBox';
 import { useAuth } from '@/hooks/useAuth';
-import { BrandLogo } from '@/components/brand/BrandLogo';
+import { BrandHeader } from '@/components/brand/BrandHeader';
 
 const VerifyOtp = () => {
   const navigate = useNavigate();
@@ -68,13 +67,7 @@ const VerifyOtp = () => {
       <div className="mx-auto w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center space-x-3">
-            <BrandLogo size="md" className="w-10 h-10" />
-            <div>
-            <h1 className="text-2xl font-bold text-foreground">AssistJur.IA</h1>
-            <p className="text-sm text-muted-foreground">Assistente de Testemunhas</p>
-            </div>
-          </div>
+          <BrandHeader size="lg" className="gap-3" />
         </div>
 
         {/* MFA Info */}

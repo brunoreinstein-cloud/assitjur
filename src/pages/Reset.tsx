@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Scale, ArrowLeft, Mail, Loader2, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Mail, Loader2, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,7 +11,7 @@ import { AuthCard } from '@/components/auth/AuthCard';
 import { AlertBox } from '@/components/auth/AlertBox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { BrandLogo } from '@/components/brand/BrandLogo';
+import { BrandHeader } from '@/components/brand/BrandHeader';
 
 const resetSchema = z.object({
   email: z.string().email('E-mail inválido')
@@ -84,13 +84,7 @@ const Reset = () => {
         <div className="mx-auto w-full max-w-md">
           {/* Logo */}
           <div className="flex items-center justify-center mb-8">
-            <div className="flex items-center space-x-3">
-              <BrandLogo size="md" className="w-10 h-10" />
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">AssistJur.IA</h1>
-                <p className="text-sm text-muted-foreground">Assistente de Testemunhas</p>
-              </div>
-            </div>
+            <BrandHeader size="lg" className="gap-3" />
           </div>
 
           <AuthCard
@@ -158,13 +152,7 @@ const Reset = () => {
         <div className="mx-auto w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center space-x-3">
-            <BrandLogo size="md" className="w-10 h-10" />
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">AssistJur.IA</h1>
-              <p className="text-sm text-muted-foreground">Assistente de Testemunhas</p>
-            </div>
-          </div>
+          <BrandHeader size="lg" className="gap-3" />
         </div>
 
         <AuthCard

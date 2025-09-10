@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Scale } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
@@ -10,7 +9,7 @@ import { AlertBox } from '@/components/auth/AlertBox';
 import { useAuth } from '@/hooks/useAuth';
 import { getDefaultRedirect, AUTH_CONFIG } from '@/config/auth';
 import heroImage from "@/assets/hero-legal-tech.jpg";
-import { BrandLogo } from '@/components/brand/BrandLogo';
+import { BrandHeader } from '@/components/brand/BrandHeader';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -58,13 +57,7 @@ const Login = () => {
         <div className="mx-auto w-full max-w-md">
           {/* Logo */}
           <div className="flex items-center justify-center mb-8 lg:hidden">
-            <div className="flex items-center space-x-3">
-              <BrandLogo size="md" className="w-10 h-10" />
-              <div>
-                <h2 className="text-2xl font-bold text-foreground">AssistJur.IA</h2>
-                <p className="text-sm text-muted-foreground">Assistente de Testemunhas</p>
-              </div>
-            </div>
+            <BrandHeader size="lg" className="gap-3" />
           </div>
 
           {/* Error Banner */}
@@ -217,13 +210,7 @@ const Login = () => {
         >
           <div className="absolute inset-0 flex flex-col justify-center p-12 text-primary-foreground">
             {/* Logo */}
-            <div className="flex items-center space-x-3 mb-12">
-            <BrandLogo size="lg" className="w-12 h-12" />
-            <div>
-              <h3 className="text-2xl font-bold">AssistJur.IA</h3>
-              <p className="text-sm opacity-80">Assistente de Testemunhas</p>
-            </div>
-          </div>
+            <BrandHeader size="lg" className="mb-12 gap-3" />
 
             {/* Headline */}
             <div className="space-y-6">
