@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Scale, Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react';
+import { BRAND } from '@/branding/brand';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -148,11 +149,14 @@ const ResetConfirm = () => {
           {/* Logo */}
           <div className="flex items-center justify-center mb-8">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-md">
-                <Scale className="w-6 h-6 text-primary-foreground" />
-              </div>
+              <img
+                src={BRAND.logo.mark}
+                alt={BRAND.name}
+                className="w-10 h-10 object-contain"
+                loading="lazy"
+              />
               <div>
-                <h1 className="text-2xl font-bold text-foreground">AssistJur.IA</h1>
+                <h1 className="text-2xl font-bold text-foreground">{BRAND.name}</h1>
                 <p className="text-sm text-muted-foreground">Assistente de Testemunhas</p>
               </div>
             </div>
@@ -200,11 +204,14 @@ const ResetConfirm = () => {
         {/* Logo */}
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-md">
-              <Scale className="w-6 h-6 text-primary-foreground" />
-            </div>
+            <img
+              src={BRAND.logo.mark}
+              alt={BRAND.name}
+              className="w-10 h-10 object-contain"
+              loading="lazy"
+            />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">AssistJur.IA</h1>
+              <h1 className="text-2xl font-bold text-foreground">{BRAND.name}</h1>
               <p className="text-sm text-muted-foreground">Assistente de Testemunhas</p>
             </div>
           </div>
