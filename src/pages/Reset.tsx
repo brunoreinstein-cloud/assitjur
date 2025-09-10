@@ -11,6 +11,7 @@ import { AuthCard } from '@/components/auth/AuthCard';
 import { AlertBox } from '@/components/auth/AlertBox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 const resetSchema = z.object({
   email: z.string().email('E-mail inválido')
@@ -84,12 +85,7 @@ const Reset = () => {
           {/* Logo */}
           <div className="flex items-center justify-center mb-8">
             <div className="flex items-center space-x-3">
-              <img
-                src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png"
-                alt="AssistJur.IA"
-                className="w-10 h-10 object-contain"
-                loading="lazy"
-              />
+              <BrandLogo size="md" className="w-10 h-10" />
               <div>
                 <h1 className="text-2xl font-bold text-foreground">AssistJur.IA</h1>
                 <p className="text-sm text-muted-foreground">Assistente de Testemunhas</p>
@@ -159,16 +155,11 @@ const Reset = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle flex flex-col justify-center px-6 py-12">
-      <div className="mx-auto w-full max-w-md">
+        <div className="mx-auto w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center space-x-3">
-            <img
-              src="/lovable-uploads/857f118f-dfc5-4d37-a64d-5f5caf7565f8.png"
-              alt="AssistJur.IA"
-              className="w-10 h-10 object-contain"
-              loading="lazy"
-            />
+            <BrandLogo size="md" className="w-10 h-10" />
             <div>
               <h1 className="text-2xl font-bold text-foreground">AssistJur.IA</h1>
               <p className="text-sm text-muted-foreground">Assistente de Testemunhas</p>

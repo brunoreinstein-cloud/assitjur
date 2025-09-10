@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { BRAND } from '@/branding/brand';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 export function BetaHeader() {
   const navigate = useNavigate();
@@ -13,11 +13,7 @@ export function BetaHeader() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3 cursor-pointer transition-transform duration-200 hover:scale-105" onClick={() => navigate('/')}>
-            <img 
-              src={BRAND.logo.light}
-              alt={BRAND.name} 
-              className="h-10 md:h-12 object-contain"
-            />
+            <BrandLogo size="lg" className="h-10 md:h-12" />
           </div>
 
           {/* Navigation */}

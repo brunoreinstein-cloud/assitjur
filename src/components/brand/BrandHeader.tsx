@@ -1,5 +1,6 @@
 import React from 'react';
 import { BRAND } from '@/branding/brand';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 interface BrandHeaderProps {
   size?: 'sm' | 'md' | 'lg';
@@ -39,11 +40,7 @@ export function BrandHeader({
 
   return (
     <div className={`${classes.container} ${className}`}>
-      <img 
-        src={BRAND.logo.light} 
-        alt={`${BRAND.name} Logo`}
-        className={classes.logo}
-      />
+      <BrandLogo size={size} className={classes.logo} />
       <div>
         <h1 className={`${classes.title} text-brand-ink`}>
           {BRAND.name}

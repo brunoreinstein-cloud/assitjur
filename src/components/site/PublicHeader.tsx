@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { BRAND } from '@/branding/brand';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 interface PublicHeaderProps {
   onBetaClick?: () => void;
@@ -68,10 +68,9 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
         <div className="flex items-center justify-between h-18">
           {/* Logo */}
           <div className="flex items-center cursor-pointer transition-transform duration-200 hover:scale-105 mr-8" onClick={() => scrollToSection('hero')}>
-            <img 
-              src={BRAND.logo.light}
-              alt={BRAND.name} 
-              className="h-14 md:h-16 object-contain filter brightness-0 saturate-100 hue-rotate-258 contrast-125"
+            <BrandLogo
+              size="lg"
+              className="h-14 md:h-16 filter brightness-0 saturate-100 hue-rotate-258 contrast-125"
             />
           </div>
 
