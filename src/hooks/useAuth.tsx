@@ -330,12 +330,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       let orgId: string | undefined;
       if (orgCode) {
-        const { data: orgData } = await supabase
+        const { data: orgData, error: orgError } = await supabase
           .from('organizations')
           .select('id')
           .eq('code', orgCode)
           .single();
-        orgId = orgData?.id;
+
+        if (orgError || !orgData) {
+          await logAuthAttempt(email, 'signup', 'failure', { orgCode, error: 'Invalid org code' });
+          return { error: { message: 'Código da organização não encontrado.' } };
+        }
+        orgId = orgData.id;
       }
 
       if (data.user) {
