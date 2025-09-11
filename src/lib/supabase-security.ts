@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
  * @param orgId Optional organization ID to filter by
  */
 export async function getMaskedPessoas(orgId?: string) {
-  const { data, error } = await supabase.rpc('get_pessoas_masked', {
+  const { data, error } = await supabase.rpc('get_pessoas_with_access_control', {
     org_uuid: orgId || null
   });
   
@@ -24,7 +24,7 @@ export async function getMaskedPessoas(orgId?: string) {
  * @param orgId Optional organization ID to filter by
  */
 export async function getMaskedProcessos(orgId?: string) {
-  const { data, error } = await supabase.rpc('get_processos_masked', {
+  const { data, error } = await supabase.rpc('get_processos_with_access_control', {
     org_uuid: orgId || null
   });
   

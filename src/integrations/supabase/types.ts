@@ -153,6 +153,36 @@ export type Database = {
           },
         ]
       }
+      cogs_monthly: {
+        Row: {
+          db: number | null
+          hosting: number | null
+          infra_other: number | null
+          llm_tokens: number | null
+          month: string
+          support: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          db?: number | null
+          hosting?: number | null
+          infra_other?: number | null
+          llm_tokens?: number | null
+          month: string
+          support?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          db?: number | null
+          hosting?: number | null
+          infra_other?: number | null
+          llm_tokens?: number | null
+          month?: string
+          support?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string | null
@@ -450,6 +480,42 @@ export type Database = {
           },
         ]
       }
+      invoices: {
+        Row: {
+          amount: number
+          created_at: string
+          customer_id: string
+          discounts: number
+          id: number
+          issued_at: string
+          metadata: Json | null
+          status: string
+          tax_amount: number
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          customer_id: string
+          discounts?: number
+          id?: never
+          issued_at: string
+          metadata?: Json | null
+          status: string
+          tax_amount?: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          customer_id?: string
+          discounts?: number
+          id?: never
+          issued_at?: string
+          metadata?: Json | null
+          status?: string
+          tax_amount?: number
+        }
+        Relationships: []
+      }
       lgpd_requests: {
         Row: {
           completed_at: string | null
@@ -688,6 +754,36 @@ export type Database = {
         }
         Relationships: []
       }
+      opex_monthly: {
+        Row: {
+          admin: number | null
+          month: string
+          other: number | null
+          payroll: number | null
+          sales_marketing: number | null
+          tools: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          admin?: number | null
+          month: string
+          other?: number | null
+          payroll?: number | null
+          sales_marketing?: number | null
+          tools?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          admin?: number | null
+          month?: string
+          other?: number | null
+          payroll?: number | null
+          sales_marketing?: number | null
+          tools?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       org_settings: {
         Row: {
           ab_weights: Json | null
@@ -835,6 +931,7 @@ export type Database = {
           cnj_normalizado: string
           comarca: string | null
           created_at: string | null
+          created_by: string | null
           data_audiencia: string | null
           deleted_at: string | null
           deleted_by: string | null
@@ -869,6 +966,7 @@ export type Database = {
           cnj_normalizado: string
           comarca?: string | null
           created_at?: string | null
+          created_by?: string | null
           data_audiencia?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
@@ -903,6 +1001,7 @@ export type Database = {
           cnj_normalizado?: string
           comarca?: string | null
           created_at?: string | null
+          created_by?: string | null
           data_audiencia?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
@@ -957,11 +1056,7 @@ export type Database = {
           last_login_at: string | null
           organization_id: string | null
           role: Database["public"]["Enums"]["user_role"]
-          plan: string | null
           terms_accepted_at: string | null
-          two_factor_enabled: boolean | null
-          two_factor_secret: string | null
-          two_factor_backup_code: string | null
           updated_at: string
           user_id: string
         }
@@ -976,11 +1071,7 @@ export type Database = {
           last_login_at?: string | null
           organization_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
-          plan?: string | null
           terms_accepted_at?: string | null
-          two_factor_enabled?: boolean | null
-          two_factor_secret?: string | null
-          two_factor_backup_code?: string | null
           updated_at?: string
           user_id: string
         }
@@ -995,11 +1086,7 @@ export type Database = {
           last_login_at?: string | null
           organization_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
-          plan?: string | null
           terms_accepted_at?: string | null
-          two_factor_enabled?: boolean | null
-          two_factor_secret?: string | null
-          two_factor_backup_code?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -1247,6 +1334,33 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: number
+          plan: string | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: never
+          plan?: string | null
+          started_at: string
+          status: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: never
+          plan?: string | null
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       system_parameters: {
         Row: {
           description: string | null
@@ -1288,6 +1402,7 @@ export type Database = {
       testemunhas: {
         Row: {
           created_at: string
+          created_by: string | null
           id: string
           name: string | null
           org_id: string | null
@@ -1295,6 +1410,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           id?: string
           name?: string | null
           org_id?: string | null
@@ -1302,6 +1418,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           id?: string
           name?: string | null
           org_id?: string | null
@@ -1469,7 +1586,39 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_arpa_by_month: {
+        Row: {
+          arpa: number | null
+          month: string | null
+        }
+        Relationships: []
+      }
+      v_burn_runway: {
+        Row: {
+          cogs: number | null
+          month: string | null
+          net_cash_flow: number | null
+          opex: number | null
+          revenue: number | null
+        }
+        Relationships: []
+      }
+      v_gross_margin: {
+        Row: {
+          cogs: number | null
+          gm_pct: number | null
+          month: string | null
+          revenue: number | null
+        }
+        Relationships: []
+      }
+      v_mrr_by_month: {
+        Row: {
+          month: string | null
+          revenue: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_invitation: {
@@ -1539,7 +1688,7 @@ export type Database = {
         Args: { p_org_id: string }
         Returns: number
       }
-      get_pessoas_masked: {
+      get_pessoas_with_access_control: {
         Args: { org_uuid?: string }
         Returns: {
           apelidos: string[]
@@ -1586,41 +1735,7 @@ export type Database = {
           version_id: string
         }[]
       }
-      get_processos_masked: {
-        Args: { org_uuid?: string }
-        Returns: {
-          advogados_ativo: string[]
-          advogados_passivo: string[]
-          classificacao_final: string
-          cnj: string
-          cnj_normalizado: string
-          comarca: string
-          created_at: string
-          data_audiencia: string
-          deleted_at: string
-          deleted_by: string
-          fase: string
-          id: string
-          observacoes: string
-          org_id: string
-          prova_emprestada: boolean
-          reclamante_cpf_mask: string
-          reclamante_foi_testemunha: boolean
-          reclamante_nome: string
-          reu_nome: string
-          score_risco: number
-          status: string
-          testemunhas_ativo: string[]
-          testemunhas_passivo: string[]
-          triangulacao_confirmada: boolean
-          tribunal: string
-          troca_direta: boolean
-          updated_at: string
-          vara: string
-          version_id: string
-        }[]
-      }
-      get_processos_publicos: {
+      get_processos_public_safe: {
         Args: Record<PropertyKey, never>
         Returns: {
           advogados_ativo: string[]
@@ -1643,6 +1758,40 @@ export type Database = {
           reu_nome: string
           score_risco: number
           segredo_justica: boolean
+          status: string
+          testemunhas_ativo: string[]
+          testemunhas_passivo: string[]
+          triangulacao_confirmada: boolean
+          tribunal: string
+          troca_direta: boolean
+          updated_at: string
+          vara: string
+          version_id: string
+        }[]
+      }
+      get_processos_with_access_control: {
+        Args: { org_uuid?: string }
+        Returns: {
+          advogados_ativo: string[]
+          advogados_passivo: string[]
+          classificacao_final: string
+          cnj: string
+          cnj_normalizado: string
+          comarca: string
+          created_at: string
+          data_audiencia: string
+          deleted_at: string
+          deleted_by: string
+          fase: string
+          id: string
+          observacoes: string
+          org_id: string
+          prova_emprestada: boolean
+          reclamante_cpf_mask: string
+          reclamante_foi_testemunha: boolean
+          reclamante_nome: string
+          reu_nome: string
+          score_risco: number
           status: string
           testemunhas_ativo: string[]
           testemunhas_passivo: string[]

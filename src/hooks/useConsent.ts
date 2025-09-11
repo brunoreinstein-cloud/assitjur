@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 import {
   applyConsentToGtag,
   applyDefaultConsent,
@@ -38,10 +38,10 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
     applyConsentToGtag(prefs)
   }
 
-  return (
-    <ConsentContext.Provider value={{ preferences, open, setOpen, save }}>
-      {children}
-    </ConsentContext.Provider>
+  return React.createElement(
+    ConsentContext.Provider,
+    { value: { preferences, open, setOpen, save } },
+    children
   )
 }
 
