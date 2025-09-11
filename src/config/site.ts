@@ -10,4 +10,4 @@ export const ALL_PUBLIC_ORIGINS = [
   export const ALLOWED_ORIGINS = [...ALL_PUBLIC_ORIGINS, ...EXTRA_ORIGINS];
 
   export const SITE_URL =
-    import.meta.env.VITE_SITE_URL || `https://${PRIMARY_DOMAIN}`;
+    import.meta.env.VITE_PUBLIC_SITE_URL || `https://${PRIMARY_DOMAIN}`;
