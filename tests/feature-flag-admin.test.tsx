@@ -81,14 +81,14 @@ describe('FeatureFlagAdmin', () => {
         flag: {
           flag: 'new-flag',
           enabled: true,
-          percentage: 100,
+          rollout_percentage: 100,
           environment: 'development'
         }
       }
     });
   });
 
-  it('sets percentage via quick button', () => {
+  it('sets rollout percentage via quick button', () => {
     render(<FeatureFlagAdmin />);
     fireEvent.click(screen.getByText('50%'));
     const input = screen.getByDisplayValue('50') as HTMLInputElement;
@@ -96,7 +96,7 @@ describe('FeatureFlagAdmin', () => {
   });
 
   it('disables an existing flag', async () => {
-    flagsData = [{ id: '1', flag: 'test', enabled: true, percentage: 100, environment: 'development' }];
+    flagsData = [{ id: '1', flag: 'test', enabled: true, rollout_percentage: 100, environment: 'development' }];
     render(<FeatureFlagAdmin />);
     fireEvent.click(await screen.findByText('test'));
     const switchEl = screen.getAllByRole('switch')[0];
@@ -112,7 +112,7 @@ describe('FeatureFlagAdmin', () => {
   });
 
   it('toggles kill switch for a flag', async () => {
-    flagsData = [{ id: '1', flag: 'test', enabled: true, percentage: 100, environment: 'development' }];
+    flagsData = [{ id: '1', flag: 'test', enabled: true, rollout_percentage: 100, environment: 'development' }];
     render(<FeatureFlagAdmin />);
     fireEvent.click(await screen.findByText('test'));
     const killSwitch = screen.getAllByRole('switch')[1];
@@ -125,7 +125,7 @@ describe('FeatureFlagAdmin', () => {
   });
 
   it('loads audit entries when editing', async () => {
-    flagsData = [{ id: '1', flag: 'flag1', enabled: true, percentage: 100, environment: 'development' }];
+    flagsData = [{ id: '1', flag: 'flag1', enabled: true, rollout_percentage: 100, environment: 'development' }];
     auditData = [{ id: 'a1', action: 'created', timestamp: '2020-01-01' }];
     render(<FeatureFlagAdmin />);
     fireEvent.click(await screen.findByText('flag1'));
