@@ -10,17 +10,23 @@ async function loadFlags(userId?: string, plan?: string): Promise<void> {
       return;
     }
 
-    const filters: string[] = [];
-    if (userId) filters.push(`user_id.eq.${userId}`);
-    if (plan) filters.push(`plan.eq.${plan}`);
+    const map: Record<string, boolean> = {};
 
-    const { data } = await supabase
+    const { data: planData } = await supabase
       .from('feature_flags')
       .select('flag, enabled')
-      .or(filters.join(','));
+      .eq('plan', plan);
 
-    const map: Record<string, boolean> = {};
-    data?.forEach((row) => {
+    planData?.forEach((row) => {
+      map[row.flag] = row.enabled;
+    });
+
+    const { data: userData } = await supabase
+      .from('feature_flags')
+      .select('flag, enabled')
+      .eq('user_id', userId);
+
+    userData?.forEach((row) => {
       map[row.flag] = row.enabled;
     });
 

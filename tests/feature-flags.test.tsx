@@ -10,14 +10,13 @@ vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: mockUser, profile: mockProfile })
 }));
 
-const supabaseResponses: Record<string, { flag: string; enabled: boolean }[]> = {
-  'user_id.eq.1,plan.eq.free': [{ flag: 'advanced-report', enabled: false }],
-  'user_id.eq.2,plan.eq.pro': [{ flag: 'advanced-report', enabled: true }]
-};
+let supabaseResponses: Record<string, { flag: string; enabled: boolean }[]> = {};
 
 const from = vi.fn(() => ({
   select: vi.fn(() => ({
-    or: vi.fn((filter: string) => Promise.resolve({ data: supabaseResponses[filter] || [] }))
+    eq: vi.fn((column: string, value: string) =>
+      Promise.resolve({ data: supabaseResponses[`${column}.eq.${value}`] || [] })
+    )
   }))
 }));
 
@@ -31,6 +30,12 @@ describe('feature flags', () => {
     mockUser = { id: '1' };
     mockProfile = { plan: 'free' };
     from.mockClear();
+    supabaseResponses = {
+      'plan.eq.free': [{ flag: 'advanced-report', enabled: false }],
+      'user_id.eq.1': [],
+      'plan.eq.pro': [{ flag: 'advanced-report', enabled: true }],
+      'user_id.eq.2': []
+    };
   });
 
   afterEach(() => {
@@ -53,7 +58,7 @@ describe('feature flags', () => {
 
     from.mockImplementationOnce(() => ({
       select: vi.fn(() => ({
-        or: vi.fn(() => Promise.reject(new Error('fetch failed')))
+        eq: vi.fn(() => Promise.reject(new Error('fetch failed')))
       }))
     }));
 
@@ -81,6 +86,14 @@ describe('feature flags', () => {
       expect(localStorage.getItem('featureFlags')).toBe(JSON.stringify({ 'advanced-report': true }))
     );
     expect(screen.getByText('Secret')).toBeInTheDocument();
+  });
+
+  it('user flags override plan flags', async () => {
+    supabaseResponses['plan.eq.free'] = [{ flag: 'advanced-report', enabled: true }];
+    supabaseResponses['user_id.eq.1'] = [{ flag: 'advanced-report', enabled: false }];
+
+    await refreshFeatureFlags('1', 'free');
+    expect(localStorage.getItem('featureFlags')).toBe(JSON.stringify({ 'advanced-report': false }));
   });
 });
 
