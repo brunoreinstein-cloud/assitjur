@@ -2,8 +2,8 @@ import { expect, afterEach } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import * as matchers from '@testing-library/jest-dom/matchers'
 
-process.env.VITE_SUPABASE_URL ??= 'https://example.supabase.co'
-process.env.VITE_SUPABASE_PUBLISHABLE_KEY ??= 'anon-key'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://example.supabase.co'
+const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'anon-key'
 
 // Extends Vitest's expect method with methods from react-testing-library
 expect.extend(matchers)
