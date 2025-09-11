@@ -13,6 +13,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { BrandHeader } from '@/components/brand/BrandHeader';
 
+const SUBMIT_DELAY_MS = 3000;
+
 const resetSchema = z.object({
   email: z.string().email('E-mail inválido')
 });
@@ -34,7 +36,8 @@ const Reset = () => {
 
   const handleResetPassword = async (data: ResetFormData) => {
     setIsLoading(true);
-    
+    const delay = new Promise((resolve) => setTimeout(resolve, SUBMIT_DELAY_MS));
+
     try {
       if (!supabase) {
         // Mock reset for development
@@ -64,12 +67,19 @@ const Reset = () => {
 
     } catch (error: any) {
       console.error('Password reset error:', error);
-      
-      // Don't reveal if email exists - generic message
-      toast.error("Erro no envio", {
-        description: "Se o e-mail estiver cadastrado, você receberá as instruções."
-      });
+
+      if (error?.status === 429) {
+        toast.error('Muitas tentativas', {
+          description: 'Por favor, aguarde antes de tentar novamente.'
+        });
+      } else {
+        // Don't reveal if email exists - generic message
+        toast.error("Erro no envio", {
+          description: "Se o e-mail estiver cadastrado, você receberá as instruções."
+        });
+      }
     } finally {
+      await delay;
       setIsLoading(false);
     }
   };
