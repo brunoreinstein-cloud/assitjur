@@ -16,6 +16,8 @@ import { ServiceHealthProvider } from "@/hooks/useServiceHealth";
 import { StatusBanner } from "@/components/common/StatusBanner";
 import SessionExpiredModal from "@/components/auth/SessionExpiredModal";
 import FeatureFlagGuard from "@/components/FeatureFlagGuard";
+import { MaintenanceBanner } from "@/components/common/MaintenanceBanner";
+import { useMaintenance } from "@/hooks/useMaintenance";
 
 const MapaPage = lazy(() => import("./pages/MapaPage"));
 const PublicHome = lazy(() => import("./pages/PublicHome"));
@@ -35,6 +37,82 @@ const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
 const LGPD = lazy(() => import("./pages/LGPD"));
 const TwoFactorSetup = lazy(() => import("./pages/TwoFactorSetup"));
 const ServerError = lazy(() => import("./pages/ServerError"));
+const Status = lazy(() => import("./pages/Status"));
+
+function AppRoutes() {
+  const maintenance = useMaintenance();
+
+  if (maintenance) {
+    return (
+      <Routes>
+        <Route path="/" element={<PublicHome />} />
+        <Route path="/status" element={<Status />} />
+        <Route path="*" element={<Navigate to="/status" replace />} />
+      </Routes>
+    );
+  }
+
+  return (
+    <Routes>
+      {/* Public routes */}
+      <Route path="/" element={<PublicHome />} />
+      <Route path="/sobre" element={<About />} />
+      <Route path="/beta" element={<Beta />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/reset" element={<Reset />} />
+      <Route path="/reset/confirm" element={<ResetConfirm />} />
+      <Route path="/verify-otp" element={<VerifyOtp />} />
+      <Route path="/portal-titular" element={<PortalTitular />} />
+      <Route path="/import/template" element={<TemplatePage />} />
+      <Route path="/demo/mapa-testemunhas" element={<DemoMapaTestemunhas />} />
+      <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+      <Route path="/termos-de-uso" element={<TermsOfUse />} />
+      <Route path="/lgpd" element={<LGPD />} />
+      <Route path="/500" element={<ServerError />} />
+      <Route path="/status" element={<Status />} />
+
+      {/* Protected routes with app layout */}
+      <Route
+        path="/*"
+        element={
+          <AuthGuard>
+            <AppLayout>
+              <ErrorBoundary>
+                <Suspense fallback={<div className="p-4">Carregando...</div>}>
+                  <Routes>
+                    <Route path="/dashboard" element={<Navigate to="/mapa" replace />} />
+                    <Route path="/mapa" element={<MapaPage />} />
+                    <Route path="/mapa-testemunhas" element={<MapaPage />} />
+                    <Route path="/dados" element={<Navigate to="/mapa" replace />} />
+                    <Route path="/dados/mapa" element={<Navigate to="/mapa" replace />} />
+                    {/* Redirect deprecated chat route to mapa-testemunhas */}
+                    <Route path="/chat" element={<Navigate to="/mapa-testemunhas?view=chat" replace />} />
+                    <Route path="/app/chat" element={<Navigate to="/mapa-testemunhas?view=chat" replace />} />
+
+                    {/* Admin routes */}
+                    <AdminRoutes />
+                    <Route path="/import" element={<Navigate to="/admin/base-import" replace />} />
+                    <Route
+                      path="/relatorio"
+                      element={
+                        <FeatureFlagGuard flag="advanced-report">
+                          <ReportDemo />
+                        </FeatureFlagGuard>
+                      }
+                    />
+                    <Route path="/account/2fa" element={<TwoFactorSetup />} />
+
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
+            </AppLayout>
+          </AuthGuard>
+        }
+      />
+    </Routes>
+  );
+}
 
 // React Query client configuration
 const queryClient = new QueryClient({
@@ -65,66 +143,11 @@ const App = () => (
               }}
             >
               <div className="min-h-screen flex flex-col">
+                <MaintenanceBanner />
                 <StatusBanner />
                 <div className="flex-1">
                   <Suspense fallback={<div className="p-4">Carregando...</div>}>
-                    <Routes>
-                      {/* Public routes */}
-                      <Route path="/" element={<PublicHome />} />
-                      <Route path="/sobre" element={<About />} />
-                      <Route path="/beta" element={<Beta />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/reset" element={<Reset />} />
-                      <Route path="/reset/confirm" element={<ResetConfirm />} />
-                      <Route path="/verify-otp" element={<VerifyOtp />} />
-                      <Route path="/portal-titular" element={<PortalTitular />} />
-                      <Route path="/import/template" element={<TemplatePage />} />
-                      <Route path="/demo/mapa-testemunhas" element={<DemoMapaTestemunhas />} />
-                      <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
-                      <Route path="/termos-de-uso" element={<TermsOfUse />} />
-                      <Route path="/lgpd" element={<LGPD />} />
-                      <Route path="/500" element={<ServerError />} />
-
-                      {/* Protected routes with app layout */}
-                      <Route
-                        path="/*"
-                        element={
-                          <AuthGuard>
-                            <AppLayout>
-                              <ErrorBoundary>
-                                <Suspense fallback={<div className="p-4">Carregando...</div>}>
-                                  <Routes>
-                                    <Route path="/dashboard" element={<Navigate to="/mapa" replace />} />
-                                    <Route path="/mapa" element={<MapaPage />} />
-                                    <Route path="/mapa-testemunhas" element={<MapaPage />} />
-                                    <Route path="/dados" element={<Navigate to="/mapa" replace />} />
-                                    <Route path="/dados/mapa" element={<Navigate to="/mapa" replace />} />
-                                    {/* Redirect deprecated chat route to mapa-testemunhas */}
-                                    <Route path="/chat" element={<Navigate to="/mapa-testemunhas?view=chat" replace />} />
-                                    <Route path="/app/chat" element={<Navigate to="/mapa-testemunhas?view=chat" replace />} />
-
-                                    {/* Admin routes */}
-                                    <AdminRoutes />
-                                    <Route path="/import" element={<Navigate to="/admin/base-import" replace />} />
-                                    <Route
-                                      path="/relatorio"
-                                      element={
-                                        <FeatureFlagGuard flag="advanced-report">
-                                          <ReportDemo />
-                                        </FeatureFlagGuard>
-                                      }
-                                    />
-                                    <Route path="/account/2fa" element={<TwoFactorSetup />} />
-
-                                    <Route path="*" element={<NotFound />} />
-                                  </Routes>
-                                </Suspense>
-                              </ErrorBoundary>
-                            </AppLayout>
-                          </AuthGuard>
-                        }
-                      />
-                    </Routes>
+                    <AppRoutes />
                   </Suspense>
                 </div>
                 <FooterLegal />
