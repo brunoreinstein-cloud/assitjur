@@ -60,6 +60,15 @@ export async function handler(req: Request): Promise<Response> {
 
   const supa = adminClient();
   const now = new Date().toISOString();
+  const { data: killData } = await supa
+    .from("platform_settings")
+    .select("value_jsonb")
+    .eq("tenant_id", tenant_id)
+    .eq("key", "emergency_kill")
+    .maybeSingle();
+  const killed: string[] = Array.isArray(killData?.value_jsonb)
+    ? (killData.value_jsonb as string[])
+    : [];
   const { data, error } = await supa
     .from("feature_flags_view")
     .select("flag_id,key,rollout_percentage,user_segments")
@@ -77,7 +86,10 @@ export async function handler(req: Request): Promise<Response> {
   const flags: Record<string, boolean> = {};
   for (const flag of data ?? []) {
     let enabled = true;
-    if (typeof flag.rollout_percentage === "number" && flag.rollout_percentage < 100) {
+    if (killed.includes(flag.flag_id)) {
+      enabled = false;
+    }
+    if (enabled && typeof flag.rollout_percentage === "number" && flag.rollout_percentage < 100) {
       enabled = inRollout(flag.flag_id, user_id, flag.rollout_percentage);
     }
     if (enabled && Array.isArray(flag.user_segments) && flag.user_segments.length > 0) {
