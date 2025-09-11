@@ -4,11 +4,10 @@ export const ALL_PUBLIC_ORIGINS = [
   `https://${PRIMARY_DOMAIN}`,
   ...SECONDARY_DOMAINS.map(d => `https://${d}`)
 ];
-// Fallback para pré-visualizações (Lovable, preview, sandbox etc.) via ENV:
-export const EXTRA_ORIGINS = (process.env.NEXT_PUBLIC_EXTRA_ORIGINS ?? '')
-  .split(',').map(s => s.trim()).filter(Boolean);
-export const ALLOWED_ORIGINS = [...ALL_PUBLIC_ORIGINS, ...EXTRA_ORIGINS];
+  // Fallback para pré-visualizações (Lovable, preview, sandbox etc.) via ENV:
+  export const EXTRA_ORIGINS = (import.meta.env.VITE_EXTRA_ORIGINS || '')
+    .split(',').map(s => s.trim()).filter(Boolean);
+  export const ALLOWED_ORIGINS = [...ALL_PUBLIC_ORIGINS, ...EXTRA_ORIGINS];
 
-export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL
-  ?? `https://${PRIMARY_DOMAIN}`;
+  export const SITE_URL =
+    import.meta.env.VITE_SITE_URL || `https://${PRIMARY_DOMAIN}`;

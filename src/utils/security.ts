@@ -134,8 +134,8 @@ export const validateURL = (url: string): { valid: boolean; error?: string } => 
   try {
     const urlObj = new URL(url);
     
-    // Only allow HTTPS in production
-    if (process.env.NODE_ENV === 'production' && urlObj.protocol !== 'https:') {
+      // Only allow HTTPS in production
+      if (import.meta.env.PROD && urlObj.protocol !== 'https:') {
       return { valid: false, error: 'Apenas URLs HTTPS são permitidas.' };
     }
     

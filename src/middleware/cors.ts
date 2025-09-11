@@ -20,8 +20,8 @@ export function parseAllowedOrigins(env: string | undefined): AllowedOrigins {
 }
 
 export const ALLOWED_ORIGINS = parseAllowedOrigins(
-  process.env.ALLOWED_ORIGINS,
-);
+    import.meta.env.VITE_ALLOWED_ORIGINS || "",
+  );
 
 function isAllowed(origin: string | null, origins: AllowedOrigins): boolean {
   if (!origin) return false;

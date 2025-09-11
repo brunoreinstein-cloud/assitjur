@@ -36,8 +36,8 @@ export class ErrorBoundary extends Component<Props, State> {
       this.props.onError(error, errorInfo);
     }
 
-    // Log to external service in production
-    if (process.env.NODE_ENV === 'production') {
+      // Log to external service in production
+      if (import.meta.env.PROD) {
       // Example: Sentry, LogRocket, etc.
       console.error('Production error:', {
         error: error.message,
@@ -70,8 +70,8 @@ export function useErrorHandler() {
   return (error: Error, errorInfo?: ErrorInfo) => {
     console.error('Component error:', error, errorInfo);
     
-    // Log to external service
-    if (process.env.NODE_ENV === 'production') {
+      // Log to external service
+      if (import.meta.env.PROD) {
       console.error('Production component error:', {
         error: error.message,
         stack: error.stack,
