@@ -61,19 +61,10 @@ describe('feature flags', () => {
     expect(localStorage.getItem('featureFlags')).toBe(JSON.stringify({ 'advanced-report': false }));
   });
 
-  it('FeatureFlagGuard reacts to user/plan changes', async () => {
-    const { rerender } = render(
-      <FeatureFlagGuard flag="advanced-report"><div>Secret</div></FeatureFlagGuard>
-    );
-
-    await waitFor(() =>
-      expect(localStorage.getItem('featureFlags')).toBe(JSON.stringify({ 'advanced-report': false }))
-    );
-    expect(screen.queryByText('Secret')).toBeNull();
-
+  it('clears cache when switching users', async () => {
     mockUser = { id: '2' };
     mockProfile = { plan: 'pro' };
-    rerender(
+    const { rerender } = render(
       <FeatureFlagGuard flag="advanced-report"><div>Secret</div></FeatureFlagGuard>
     );
 
@@ -81,6 +72,19 @@ describe('feature flags', () => {
       expect(localStorage.getItem('featureFlags')).toBe(JSON.stringify({ 'advanced-report': true }))
     );
     expect(screen.getByText('Secret')).toBeInTheDocument();
+
+    mockUser = { id: '1' };
+    mockProfile = { plan: 'free' };
+    rerender(
+      <FeatureFlagGuard flag="advanced-report"><div>Secret</div></FeatureFlagGuard>
+    );
+
+    expect(localStorage.getItem('featureFlags')).toBeNull();
+
+    await waitFor(() =>
+      expect(localStorage.getItem('featureFlags')).toBe(JSON.stringify({ 'advanced-report': false }))
+    );
+    expect(screen.queryByText('Secret')).toBeNull();
   });
 });
 
