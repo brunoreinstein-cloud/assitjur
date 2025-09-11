@@ -55,6 +55,21 @@ RATE_LIMIT_WINDOW_MS="60000"
 
 👉 Nunca exponha chaves privadas no repositório. Use `.env.example` para documentação.
 
+#### Variáveis no CI
+
+As mesmas variáveis `VITE_*` precisam estar definidas no ambiente de CI.
+No GitHub Actions, adicione-as como **Secrets** do repositório para
+evitar falhas silenciosas durante o `npm run build`:
+
+```
+VITE_SUPABASE_URL
+VITE_SUPABASE_PUBLISHABLE_KEY
+VITE_DEFAULT_ORG
+VITE_INACTIVITY_TIMEOUT_MINUTES
+```
+
+Outras variáveis `VITE_*` usadas pelo projeto podem ser adicionadas conforme necessário.
+
 ### CORS nas Edge Functions
 
 Defina o segredo `ALLOWED_ORIGINS` no projeto Supabase para controlar quais origens podem chamar as Edge Functions:

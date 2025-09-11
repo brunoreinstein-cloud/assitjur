@@ -31,6 +31,17 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_DEFAULT_ORG: ${{ secrets.VITE_DEFAULT_ORG }}
+      VITE_INACTIVITY_TIMEOUT_MINUTES: ${{ secrets.VITE_INACTIVITY_TIMEOUT_MINUTES }}
+      VITE_ALLOWED_ORIGINS: ${{ secrets.VITE_ALLOWED_ORIGINS }}
+      VITE_EXTRA_ORIGINS: ${{ secrets.VITE_EXTRA_ORIGINS }}
+      VITE_SITE_URL: ${{ secrets.VITE_SITE_URL }}
+      VITE_FEATURE_FLAGS_REFRESH_INTERVAL: ${{ secrets.VITE_FEATURE_FLAGS_REFRESH_INTERVAL }}
+      VITE_FEATURE_FLAGS_CACHE_TTL: ${{ secrets.VITE_FEATURE_FLAGS_CACHE_TTL }}
+      VITE_MAINTENANCE: ${{ secrets.VITE_MAINTENANCE }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
