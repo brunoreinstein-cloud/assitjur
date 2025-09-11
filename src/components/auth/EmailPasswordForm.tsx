@@ -84,6 +84,12 @@ export const EmailPasswordForm = ({
       const { error } = await signIn(data.email, data.password, 'OFFICE', data.rememberMe);
 
       if (error) {
+        if (error?.status === 429) {
+          const msg = ERROR_MESSAGES.RATE_LIMIT;
+          setFormError(msg);
+          toast.error('Muitas tentativas', { description: msg });
+          return;
+        }
         if (error.message?.toLowerCase().includes('invalid login credentials')) {
           const msg = ERROR_MESSAGES.INCORRECT_PASSWORD;
           loginForm.setError('password', { type: 'manual', message: msg });
@@ -126,6 +132,12 @@ export const EmailPasswordForm = ({
       const { error } = await signUp(data.email, data.password, data.name);
 
       if (error) {
+        if (error?.status === 429) {
+          const msg = ERROR_MESSAGES.RATE_LIMIT;
+          setFormError(msg);
+          toast.error('Muitas tentativas', { description: msg });
+          return;
+        }
         const msg = error.message || ERROR_MESSAGES.NOT_FOUND;
         setFormError(msg);
         toast.error("Erro no cadastro", { description: msg });
@@ -166,7 +178,7 @@ export const EmailPasswordForm = ({
             className={signupForm.formState.errors.name ? 'border-destructive' : ''}
           />
           {signupForm.formState.errors.name && (
-            <p className="text-sm text-destructive" aria-live="polite">{signupForm.formState.errors.name.message}</p>
+            <p className="text-sm text-destructive" role="alert" aria-live="polite">{signupForm.formState.errors.name.message}</p>
           )}
         </div>
 
@@ -181,7 +193,7 @@ export const EmailPasswordForm = ({
             className={signupForm.formState.errors.email ? 'border-destructive' : ''}
           />
           {signupForm.formState.errors.email && (
-            <p className="text-sm text-destructive" aria-live="polite">{signupForm.formState.errors.email.message}</p>
+            <p className="text-sm text-destructive" role="alert" aria-live="polite">{signupForm.formState.errors.email.message}</p>
           )}
         </div>
 
@@ -211,7 +223,7 @@ export const EmailPasswordForm = ({
             </Button>
           </div>
           {signupForm.formState.errors.password && (
-            <p className="text-sm text-destructive" aria-live="polite">{signupForm.formState.errors.password.message}</p>
+            <p className="text-sm text-destructive" role="alert" aria-live="polite">{signupForm.formState.errors.password.message}</p>
           )}
         </div>
 
@@ -241,7 +253,7 @@ export const EmailPasswordForm = ({
             </Button>
           </div>
           {signupForm.formState.errors.confirmPassword && (
-            <p className="text-sm text-destructive" aria-live="polite">{signupForm.formState.errors.confirmPassword.message}</p>
+            <p className="text-sm text-destructive" role="alert" aria-live="polite">{signupForm.formState.errors.confirmPassword.message}</p>
           )}
         </div>
 
@@ -265,7 +277,7 @@ export const EmailPasswordForm = ({
           </Label>
         </div>
         {signupForm.formState.errors.acceptTerms && (
-            <p className="text-sm text-destructive" aria-live="polite">{signupForm.formState.errors.acceptTerms.message}</p>
+            <p className="text-sm text-destructive" role="alert" aria-live="polite">{signupForm.formState.errors.acceptTerms.message}</p>
         )}
 
         {/* Submit Button */}
@@ -318,7 +330,7 @@ export const EmailPasswordForm = ({
           className={loginForm.formState.errors.email ? 'border-destructive' : ''}
         />
         {loginForm.formState.errors.email && (
-          <p className="text-sm text-destructive" aria-live="polite">{loginForm.formState.errors.email.message}</p>
+          <p className="text-sm text-destructive" role="alert" aria-live="polite">{loginForm.formState.errors.email.message}</p>
         )}
       </div>
 
@@ -348,7 +360,7 @@ export const EmailPasswordForm = ({
           </Button>
         </div>
         {loginForm.formState.errors.password && (
-          <p className="text-sm text-destructive" aria-live="polite">{loginForm.formState.errors.password.message}</p>
+          <p className="text-sm text-destructive" role="alert" aria-live="polite">{loginForm.formState.errors.password.message}</p>
         )}
       </div>
 

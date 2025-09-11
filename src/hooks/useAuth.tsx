@@ -5,6 +5,7 @@ import { ensureProfile } from '@/utils/ensureProfile';
 import { AuthErrorHandler } from '@/utils/authErrorHandler';
 import { useSessionMonitor } from '@/hooks/useSessionMonitor';
 import { getSessionContext, calculateRisk } from '@/security/sessionContext';
+import { getSiteUrl } from '@/utils/env';
 
 export type UserRole = 'ADMIN' | 'ANALYST' | 'VIEWER';
 
@@ -409,7 +410,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resetPassword = async (email: string) => {
     try {
-      const siteUrl = import.meta.env.VITE_PUBLIC_SITE_URL;
+      const siteUrl = getSiteUrl();
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${siteUrl}/reset-password`
       });

@@ -12,6 +12,8 @@ import { AlertBox } from '@/components/auth/AlertBox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { BrandHeader } from '@/components/brand/BrandHeader';
+import { ERROR_MESSAGES } from '@/utils/errorMessages';
+import { getSiteUrl } from '@/utils/env';
 
 const resetSchema = z.object({
   email: z.string().email('E-mail inválido')
@@ -46,12 +48,26 @@ const Reset = () => {
         return;
       }
 
-      const siteUrl = import.meta.env.VITE_PUBLIC_SITE_URL;
+      let siteUrl: string;
+      try {
+        siteUrl = getSiteUrl();
+      } catch {
+        toast.error('Configuração inválida', {
+          description: 'URL do site não configurada.'
+        });
+        return;
+      }
       const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
         redirectTo: `${siteUrl}/reset-password`
       });
 
       if (error) {
+        if (error?.status === 429) {
+          toast.error('Muitas tentativas', {
+            description: ERROR_MESSAGES.RATE_LIMIT
+          });
+          return;
+        }
         throw error;
       }
 
@@ -64,7 +80,7 @@ const Reset = () => {
 
     } catch (error: any) {
       console.error('Password reset error:', error);
-      
+
       // Don't reveal if email exists - generic message
       toast.error("Erro no envio", {
         description: "Se o e-mail estiver cadastrado, você receberá as instruções."
@@ -92,7 +108,7 @@ const Reset = () => {
             title="E-mail enviado"
             description="Verifique sua caixa de entrada"
           >
-            <div className="text-center space-y-6">
+            <div className="text-center space-y-6" role="alert" aria-live="polite">
               <div className="mx-auto p-3 bg-success/10 rounded-full w-fit">
                 <CheckCircle className="h-8 w-8 text-success" />
               </div>
@@ -182,7 +198,7 @@ const Reset = () => {
                   autoFocus
                 />
                 {form.formState.errors.email && (
-                  <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
+                  <p className="text-sm text-destructive" role="alert" aria-live="polite">{form.formState.errors.email.message}</p>
                 )}
               </div>
 
