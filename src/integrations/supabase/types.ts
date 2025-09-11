@@ -385,6 +385,33 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_flags: {
+        Row: {
+          enabled: boolean
+          flag: string
+          id: string
+          plan: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          flag: string
+          id?: string
+          plan?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          flag?: string
+          id?: string
+          plan?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       import_errors: {
         Row: {
           column_name: string | null
@@ -1055,6 +1082,7 @@ export type Database = {
           is_active: boolean
           last_login_at: string | null
           organization_id: string | null
+          plan: string | null
           role: Database["public"]["Enums"]["user_role"]
           terms_accepted_at: string | null
           updated_at: string
@@ -1070,6 +1098,7 @@ export type Database = {
           is_active?: boolean
           last_login_at?: string | null
           organization_id?: string | null
+          plan?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           terms_accepted_at?: string | null
           updated_at?: string
@@ -1085,6 +1114,7 @@ export type Database = {
           is_active?: boolean
           last_login_at?: string | null
           organization_id?: string | null
+          plan?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           terms_accepted_at?: string | null
           updated_at?: string
