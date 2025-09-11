@@ -67,6 +67,7 @@ jobs:
           ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           echo "timestamp: $ts" > build.log
           echo "commit: $GITHUB_SHA" >> build.log
+          echo "ref: $GITHUB_REF_NAME" >> build.log
           export VITE_PREVIEW_TIMESTAMP=$ts
           npm run build |& tee -a build.log
       - name: Upload build log
