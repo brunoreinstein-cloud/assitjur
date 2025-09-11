@@ -6,7 +6,8 @@ import { ConsentProvider } from "@/hooks/useConsent";
 import ConsentDialog from "@/components/privacy/ConsentDialog";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider as AuthContextProvider } from "@/hooks/useAuth";
+import { AuthProvider as SupabaseAuthProvider } from "@/providers/AuthProvider";
 import AuthGuard from "@/components/AuthGuard";
 import { AppLayout } from "@/components/navigation/AppLayout";
 import { ErrorBoundary } from "@/components/core/ErrorBoundary";
@@ -27,6 +28,7 @@ const Beta = lazy(() => import("./pages/Beta"));
 const Login = lazy(() => import("./pages/Login"));
 const Reset = lazy(() => import("./pages/Reset"));
 const ResetConfirm = lazy(() => import("./pages/ResetConfirm"));
+const ResetPasswordPage = lazy(() => import("./routes/reset-password"));
 const VerifyOtp = lazy(() => import("./pages/VerifyOtp"));
 const PortalTitular = lazy(() => import("./pages/PortalTitular"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -62,6 +64,7 @@ function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/reset" element={<Reset />} />
       <Route path="/reset/confirm" element={<ResetConfirm />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-otp" element={<VerifyOtp />} />
       <Route path="/portal-titular" element={<PortalTitular />} />
       <Route path="/import/template" element={<TemplatePage />} />
@@ -130,7 +133,7 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <ServiceHealthProvider>
-        <AuthProvider>
+        <AuthContextProvider>
           <FeatureFlagProvider>
             <TooltipProvider>
               <Toaster />
@@ -144,21 +147,23 @@ const App = () => (
                   v7_relativeSplatPath: true,
                 }}
               >
-                <div className="min-h-screen flex flex-col">
-                  <MaintenanceBanner />
-                  <StatusBanner />
-                  <div className="flex-1">
-                    <Suspense fallback={<div className="p-4">Carregando...</div>}>
-                      <AppRoutes />
-                    </Suspense>
+                <SupabaseAuthProvider>
+                  <div className="min-h-screen flex flex-col">
+                    <MaintenanceBanner />
+                    <StatusBanner />
+                    <div className="flex-1">
+                      <Suspense fallback={<div className="p-4">Carregando...</div>}>
+                        <AppRoutes />
+                      </Suspense>
+                    </div>
+                    <FooterLegal />
                   </div>
-                  <FooterLegal />
-                </div>
+                </SupabaseAuthProvider>
               </BrowserRouter>
             </ConsentProvider>
             </TooltipProvider>
           </FeatureFlagProvider>
-        </AuthProvider>
+        </AuthContextProvider>
       </ServiceHealthProvider>
     </QueryClientProvider>
   </ErrorBoundary>
