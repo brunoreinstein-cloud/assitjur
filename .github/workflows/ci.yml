@@ -49,6 +49,18 @@ jobs:
           node-version: 20
           cache: 'npm'
       - run: npm ci
+      - name: Check required Vite env vars
+        run: |
+          test -n "$VITE_SUPABASE_URL"
+          test -n "$VITE_SUPABASE_PUBLISHABLE_KEY"
+          test -n "$VITE_DEFAULT_ORG"
+          test -n "$VITE_INACTIVITY_TIMEOUT_MINUTES"
+          test -n "$VITE_ALLOWED_ORIGINS"
+          test -n "$VITE_EXTRA_ORIGINS"
+          test -n "$VITE_SITE_URL"
+          test -n "$VITE_FEATURE_FLAGS_REFRESH_INTERVAL"
+          test -n "$VITE_FEATURE_FLAGS_CACHE_TTL"
+          test -n "$VITE_MAINTENANCE"
       - name: Build
         run: |
           set -o pipefail
