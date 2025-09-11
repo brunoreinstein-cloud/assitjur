@@ -6,6 +6,7 @@ export function FooterLegal() {
   const { setOpen } = useConsent();
   const linkClasses =
     'text-sm text-foreground hover:text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+  const previewTimestamp = import.meta.env.VITE_PREVIEW_TIMESTAMP as string | undefined;
 
   return (
     <footer className="bg-muted text-foreground py-4 border-t border-muted-foreground/20">
@@ -24,6 +25,11 @@ export function FooterLegal() {
             LGPD
           </Link>
         </nav>
+        {previewTimestamp && (
+          <p className="mt-4 text-center text-xs text-foreground/70">
+            Preview built at {previewTimestamp}
+          </p>
+        )}
       </div>
     </footer>
   );
