@@ -40,9 +40,9 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
           {/* Left Column - Content */}
           <div className="space-y-8 animate-fade-in">
             {/* Brand Badge */}
-            <div className="inline-flex items-center space-x-3 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">
+            <div className="inline-flex items-center space-x-4 px-6 py-3 bg-accent/20 border-2 border-accent rounded-full shadow-md">
+              <Sparkles className="h-5 w-5 text-accent-foreground" />
+              <span className="text-base font-semibold text-accent-foreground">
                 O Hub de IA Estratégica para Contencioso
               </span>
             </div>
