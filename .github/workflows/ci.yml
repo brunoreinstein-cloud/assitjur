@@ -70,6 +70,11 @@ jobs:
           echo "ref: $GITHUB_REF_NAME" >> build.log
           export VITE_PREVIEW_TIMESTAMP=$ts
           npm run build |& tee -a build.log
+      - name: Upload dist
+        uses: actions/upload-artifact@v3
+        with:
+          name: preview-dist
+          path: dist
       - name: Smoke preview
         run: npm run preview -- --port=5000 &
       - name: Wait for preview
