@@ -303,7 +303,11 @@ function detectTriangulacao(processos: any[], testemunhaIndex: Map<string, any>)
   return triangulacoes.sort((a, b) => b.confianca - a.confianca)
 }
 
-function detectTriangulationCycle(nomes: string[], processos: any[], testemunhaIndex: Map<string, any>): TriangulacaoResult | null {
+function detectTriangulationCycle(
+  nomes: string[],
+  processos: any[],
+  testemunhaIndex: Map<string, any>
+): TriangulacaoResult | null {
   const [nomeA, nomeB, nomeC] = nomes
   const dadosA = testemunhaIndex.get(nomeA)!
   const dadosB = testemunhaIndex.get(nomeB)!
