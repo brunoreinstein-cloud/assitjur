@@ -26,7 +26,6 @@ async function loadFlags(userId?: string, plan?: string): Promise<void> {
     window.dispatchEvent(new StorageEvent('storage', { key: CACHE_KEY }));
   } catch (err) {
     console.error('Failed to load feature flags', err);
-    window.dispatchEvent(new StorageEvent('storage', { key: CACHE_KEY }));
   }
 }
 
@@ -38,7 +37,6 @@ export const useFeatureFlag = (flag: string) => {
   });
 
   useEffect(() => {
-    localStorage.removeItem(CACHE_KEY);
     loadFlags(user?.id, profile?.plan || undefined);
   }, [user?.id, profile?.plan]);
 

@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi, act } from 'vitest';
+import { describe, it, expect, vi, act, beforeEach, afterEach } from 'vitest';
 import FeatureFlagGuard from '@/components/FeatureFlagGuard';
 import { refreshFeatureFlags } from '@/hooks/useFeatureFlag';
 
@@ -10,15 +10,7 @@ vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user, profile })
 }));
 
-const mockOr = vi.fn((query: string) => {
-  if (query === 'user_id.eq.1') {
-    return Promise.resolve({ data: [{ flag: 'advanced-report', enabled: true }] });
-  }
-  if (query.includes('plan.eq.pro')) {
-    return Promise.resolve({ data: [{ flag: 'advanced-report', enabled: true }] });
-  }
-  return Promise.resolve({ data: [] });
-});
+const mockOr = vi.fn();
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
@@ -27,6 +19,25 @@ vi.mock('@/integrations/supabase/client', () => ({
     })
   }
 }));
+
+beforeEach(() => {
+  user = { id: '1' };
+  profile = { plan: 'free' };
+  localStorage.clear();
+  mockOr.mockImplementation((query: string) => {
+    if (query === 'user_id.eq.1') {
+      return Promise.resolve({ data: [{ flag: 'advanced-report', enabled: true }] });
+    }
+    if (query.includes('plan.eq.pro')) {
+      return Promise.resolve({ data: [{ flag: 'advanced-report', enabled: true }] });
+    }
+    return Promise.resolve({ data: [] });
+  });
+});
+
+afterEach(() => {
+  vi.clearAllMocks();
+});
 
 describe('feature flags', () => {
   it('loads and caches flags from supabase', async () => {
@@ -37,8 +48,6 @@ describe('feature flags', () => {
   });
 
   it('updates component when plan changes', async () => {
-    profile = { plan: 'free' };
-    user = { id: '1' };
     await refreshFeatureFlags('1', 'free');
     const { rerender } = render(
       <FeatureFlagGuard flag="advanced-report"><div>Secret</div></FeatureFlagGuard>
@@ -52,5 +61,14 @@ describe('feature flags', () => {
       );
     });
     expect(screen.getByText('Secret')).toBeInTheDocument();
+  });
+
+  it('keeps previous flags when fetch fails', async () => {
+    localStorage.setItem('featureFlags', JSON.stringify({ 'advanced-report': true }));
+    mockOr.mockRejectedValueOnce(new Error('network'));
+    await refreshFeatureFlags('1', 'free');
+    expect(JSON.parse(localStorage.getItem('featureFlags') || '{}')).toEqual({
+      'advanced-report': true
+    });
   });
 });
