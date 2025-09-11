@@ -944,7 +944,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
+      },
+      feature_flags: {
+        Row: {
+          id: string
+          flag: string
+          user_id: string | null
+          plan: string | null
+          enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          flag: string
+          user_id?: string | null
+          plan?: string | null
+          enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          flag?: string
+          user_id?: string | null
+          plan?: string | null
+          enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_flags_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      },
       profiles: {
         Row: {
           created_at: string
@@ -957,6 +992,7 @@ export type Database = {
           last_login_at: string | null
           organization_id: string | null
           role: Database["public"]["Enums"]["user_role"]
+          plan: string | null
           terms_accepted_at: string | null
           two_factor_enabled: boolean | null
           two_factor_secret: string | null
@@ -975,6 +1011,7 @@ export type Database = {
           last_login_at?: string | null
           organization_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          plan?: string | null
           terms_accepted_at?: string | null
           two_factor_enabled?: boolean | null
           two_factor_secret?: string | null
@@ -993,6 +1030,7 @@ export type Database = {
           last_login_at?: string | null
           organization_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          plan?: string | null
           terms_accepted_at?: string | null
           two_factor_enabled?: boolean | null
           two_factor_secret?: string | null
