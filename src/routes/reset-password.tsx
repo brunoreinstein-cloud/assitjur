@@ -14,7 +14,22 @@ export default function ResetPasswordPage() {
     if (window.location.hash) {
       history.replaceState(null, '', window.location.pathname)
     }
-    setReady(true)
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setReady(true)
+      }
+    })
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        setErrorMsg('Link inválido ou expirado. Solicite novamente.')
+      }
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -34,11 +49,15 @@ export default function ResetPasswordPage() {
       setErrorMsg('Não foi possível redefinir a senha.')
       return
     }
+    await supabase.auth.signOut()
     setOkMsg('Senha atualizada com sucesso. Redirecionando para login...')
     setTimeout(() => navigate('/login'), 1500)
   }
 
-  if (!ready) return null
+  if (!ready)
+    return errorMsg ? (
+      <p className="text-destructive text-sm text-center">{errorMsg}</p>
+    ) : null
 
   return (
     <form onSubmit={onSubmit} className="space-y-4 max-w-md mx-auto p-4">
