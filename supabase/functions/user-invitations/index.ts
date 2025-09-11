@@ -139,13 +139,12 @@ const handler = async (req: Request): Promise<Response> => {
       metadata: { email, role, data_access_level, org_id }
     });
 
-    const siteUrl =
-      Deno.env.get('VITE_PUBLIC_SITE_URL') ??
-      (Deno.env.get('PRIMARY_DOMAIN')
-        ? `https://${Deno.env.get('PRIMARY_DOMAIN')}`
-        : undefined);
+    const siteUrl = Deno.env.get('VITE_PUBLIC_SITE_URL');
 
     if (!siteUrl) {
+      console.warn(
+        JSON.stringify({ cid, warn: 'VITE_PUBLIC_SITE_URL is not defined' })
+      );
       return jsonError(
         500,
         'VITE_PUBLIC_SITE_URL is not defined',
