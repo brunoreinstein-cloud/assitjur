@@ -33,7 +33,7 @@ const TwoFactorSetup = () => {
     if (!profile) return;
     setIsLoading(true);
     try {
-      const valid = verifyTOTP(code, secret);
+      const valid = await verifyTOTP(code, secret);
       if (!valid) {
         toast.error('Código inválido');
         setIsLoading(false);

@@ -40,7 +40,7 @@ export const TwoFactorForm = ({ onBack, onSuccess, userEmail, secret, backupCode
     setIsLoading(true);
     
     try {
-      const isValid = verifyTOTP(data.code, secret) || (backupCode && data.code === backupCode);
+      const isValid = (await verifyTOTP(data.code, secret)) || (backupCode && data.code === backupCode);
       if (isValid) {
         toast.success("Verificação concluída!", {
           description: "Acesso autorizado com sucesso."
