@@ -52,10 +52,13 @@ jobs:
       - name: Build
         run: |
           set -o pipefail
-          export VITE_PREVIEW_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          npm run build |& tee build.log
+          ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "timestamp: $ts" > build.log
+          echo "commit: $GITHUB_SHA" >> build.log
+          export VITE_PREVIEW_TIMESTAMP=$ts
+          npm run build |& tee -a build.log
       - name: Upload build log
-        if: failure()
+        if: ${{ always() }}
         uses: actions/upload-artifact@v3
         with:
           name: build-log
