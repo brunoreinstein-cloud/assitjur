@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:integration": "vitest run tests/integration.supabase.test.ts",
     "generate:types": "node scripts/generate-api-types.js",
-    "seed:flags": "node scripts/seed-flags.js"
+    "seed:flags": "node scripts/seed-flags.js",
+    "sanitize:emojis": "ts-node --transpile-only tools/remove-pointing-emojis.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
