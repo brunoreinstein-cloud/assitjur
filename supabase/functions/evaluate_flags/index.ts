@@ -4,6 +4,13 @@ import { audit } from "../_shared/audit.ts";
 import { adminClient } from "../_shared/auth.ts";
 import { jwtVerify } from "npm:jose@5.10.0";
 import { createHash } from "https://deno.land/std@0.224.0/hash/mod.ts";
+import { EvaluateFlagsRequestSchema, EvaluateFlagsResponseSchema } from "./schemas.ts";
+import { RateLimiter } from "./rateLimiter.ts";
+
+const rateLimiter = new RateLimiter(
+  parseInt(Deno.env.get("FLAG_RATE_LIMIT") ?? "60"),
+  60_000,
+);
 
 export function hashPercentage(flagId: string, userId: string): number {
   const hash = createHash("sha256").update(flagId + userId).toString();
@@ -45,17 +52,19 @@ export async function handler(req: Request): Promise<Response> {
     return jsonError(400, "invalid_json", { cid }, { ...ch, "x-correlation-id": cid });
   }
 
-  const tenant_id: string | undefined = body.tenant_id;
-  const user_id: string | undefined = body.user_id;
-  const segments: string[] = Array.isArray(body.segments) ? body.segments : [];
-  const environment: string = body.environment ?? "production";
-
-  if (!tenant_id || !user_id || !Array.isArray(body.segments)) {
+  const parsed = EvaluateFlagsRequestSchema.safeParse(body);
+  if (!parsed.success) {
     return jsonError(400, "invalid_body", { cid }, { ...ch, "x-correlation-id": cid });
   }
 
+  const { tenant_id, user_id, segments, environment } = parsed.data;
+
   if (payload.tenant_id !== tenant_id || (payload.environment ?? "production") !== environment) {
     return jsonError(403, "tenant_env_mismatch", { cid }, { ...ch, "x-correlation-id": cid });
+  }
+
+  if (!rateLimiter.check(user_id)) {
+    return jsonError(429, "rate_limited", { cid }, { ...ch, "x-correlation-id": cid });
   }
 
   const supa = adminClient();
@@ -105,7 +114,8 @@ export async function handler(req: Request): Promise<Response> {
     });
   }
 
-  return json(200, { flags }, { ...ch, "x-correlation-id": cid });
+  const resp = EvaluateFlagsResponseSchema.parse({ flags });
+  return json(200, resp, { ...ch, "x-correlation-id": cid });
 }
 
 Deno.serve(handler);
