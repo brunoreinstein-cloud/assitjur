@@ -1,31 +1,15 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
-import type { Database } from '@/integrations/supabase/types'
+import { createClient } from '@supabase/supabase-js'
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || ''
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || ''
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
 
-let client: SupabaseClient<Database>
-
-export function getSupabaseClient() {
-  if (!client) {
-    client = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-      },
-      // Reduce "Max reconnect attempts" noise in development by disabling retries
-      realtime: import.meta.env.DEV
-        ? ({
-            retryStrategy: () => 0,
-            maxReconnectAttempts: 1,
-          } as any)
-        : undefined,
-    })
-  }
-  return client
-}
-
-export const supabase = getSupabaseClient()
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
+})
 
 export async function getAccessToken(): Promise<string | null> {
   const { data: { session } } = await supabase.auth.getSession()
@@ -41,6 +25,6 @@ export async function ensureSessionOrThrow() {
 }
 
 export function getProjectRef(): string {
-  const match = /https:\/\/([^.]+)\.supabase\.co/.exec(SUPABASE_URL)
+  const match = /https:\/\/([^.]+)\.supabase\.co/.exec(supabaseUrl)
   return match ? match[1] : ''
 }

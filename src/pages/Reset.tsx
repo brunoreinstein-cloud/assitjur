@@ -46,8 +46,9 @@ const Reset = () => {
         return;
       }
 
+      const siteUrl = import.meta.env.VITE_PUBLIC_SITE_URL;
       const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: `${window.location.origin}/reset/confirm`
+        redirectTo: `${siteUrl}/reset-password`
       });
 
       if (error) {

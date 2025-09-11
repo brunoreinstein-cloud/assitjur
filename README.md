@@ -43,7 +43,7 @@ Crie um arquivo `.env` (não commitado). Use o modelo abaixo:
 
 ```bash
 VITE_SUPABASE_URL="https://xxxx.supabase.co"
-VITE_SUPABASE_PUBLISHABLE_KEY="chave-publica"
+VITE_SUPABASE_ANON_KEY="chave-publica"
 VITE_DEFAULT_ORG="assistjur"
 VITE_INACTIVITY_TIMEOUT_MINUTES="30"
 VITE_ALLOWED_ORIGINS="http://localhost:5173"
@@ -74,7 +74,7 @@ evitar falhas silenciosas durante o `npm run build`:
 
 ```
 VITE_SUPABASE_URL
-VITE_SUPABASE_PUBLISHABLE_KEY
+VITE_SUPABASE_ANON_KEY
 VITE_DEFAULT_ORG
 VITE_INACTIVITY_TIMEOUT_MINUTES
 VITE_ALLOWED_ORIGINS
@@ -85,7 +85,7 @@ VITE_FEATURE_FLAGS_CACHE_TTL
 VITE_MAINTENANCE
 ```
 
-Se os secrets `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` não forem definidos,
+Se os secrets `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` não forem definidos,
 o workflow de CI usará os placeholders `https://placeholder.supabase.co` e `placeholder-key`.
 Use esses valores apenas para builds de exemplo; configure os secrets com os valores reais
 do seu projeto Supabase para builds que acessam um backend de verdade.
