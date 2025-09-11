@@ -61,6 +61,9 @@ RATE_LIMIT_MAX="20"
 RATE_LIMIT_WINDOW_MS="60000"
 ```
 
+Os valores `https://xxxx.supabase.co`, `chave-publica` e demais exemplos acima são placeholders.
+Substitua-os pelos dados reais do seu projeto Supabase ao rodar o app localmente ou em produção.
+
 👉 Nunca exponha chaves privadas no repositório. Use `.env.example` para documentação.
 
 #### Variáveis no CI
@@ -81,6 +84,11 @@ VITE_FEATURE_FLAGS_REFRESH_INTERVAL
 VITE_FEATURE_FLAGS_CACHE_TTL
 VITE_MAINTENANCE
 ```
+
+Se os secrets `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` não forem definidos,
+o workflow de CI usará os placeholders `https://placeholder.supabase.co` e `placeholder-key`.
+Use esses valores apenas para builds de exemplo; configure os secrets com os valores reais
+do seu projeto Supabase para builds que acessam um backend de verdade.
 
 Outras variáveis `VITE_*` usadas pelo projeto podem ser adicionadas conforme necessário.
 
