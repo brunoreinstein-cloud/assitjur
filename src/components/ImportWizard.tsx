@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { validateCNJ } from '@/lib/validation/unified-cnj';
 
 // Schema for each CSV row
 const rowSchema = z.object({
@@ -29,11 +30,43 @@ export function ImportWizard() {
   const [errors, setErrors] = useState<ErrorLog[]>([]);
   const [summary, setSummary] = useState<{ included: number; ignored: number } | null>(null);
 
+  const maskCNJ = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 20);
+    const parts = [
+      digits.slice(0, 7),
+      digits.slice(7, 9),
+      digits.slice(9, 13),
+      digits.slice(13, 14),
+      digits.slice(14, 16),
+      digits.slice(16, 20),
+    ];
+    let result = parts[0] || '';
+    if (digits.length > 7) result += `-${parts[1]}`;
+    if (digits.length > 9) result += `.${parts[2]}`;
+    if (digits.length > 13) result += `.${parts[3]}`;
+    if (digits.length > 14) result += `.${parts[4]}`;
+    if (digits.length > 16) result += `.${parts[5]}`;
+    return result;
+    };
+
+  const handleCnjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCnj(maskCNJ(e.target.value));
+    setCnjStatus('idle');
+    setCnjMessage('');
+  };
+
   const handleCnjImport = async () => {
+    const validation = validateCNJ(cnj, 'final');
+    if (!validation.isValid) {
+      setCnjStatus('error');
+      setCnjMessage(validation.errors[0] || 'CNJ inválido');
+      return;
+    }
+    setCnj(validation.formatted);
     setCnjStatus('loading');
     setCnjMessage('');
     await new Promise(resolve => setTimeout(resolve, 300));
-    if (cnj === '00000000000000000000') {
+    if (validation.cleaned === '00000000000000000000') {
       setCnjStatus('success');
       setCnjMessage('Processo importado com sucesso');
     } else {
@@ -100,7 +133,7 @@ export function ImportWizard() {
               id="cnj"
               placeholder="0000000-00.0000.0.00.0000"
               value={cnj}
-              onChange={e => setCnj(e.target.value)}
+              onChange={handleCnjChange}
             />
             <Button onClick={handleCnjImport} disabled={cnjStatus === 'loading'}>
               Importar
