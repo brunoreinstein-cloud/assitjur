@@ -58,10 +58,27 @@ interface MapaTestemunhasStore {
   hasError: boolean;
   errorMessage: string;
   lastUpdate: Date | null;
-  
+
   // Filters
   processoFilters: FilterProcesso;
   testemunhaFilters: FilterTestemunha;
+
+  // Column visibility
+  columnVisibility: {
+    processos: Record<string, boolean>;
+    testemunhas: Record<string, boolean>;
+  };
+
+  // Saved views
+  savedViews: Record<string, {
+    processoFilters: FilterProcesso;
+    testemunhaFilters: FilterTestemunha;
+    columnVisibility: {
+      processos: Record<string, boolean>;
+      testemunhas: Record<string, boolean>;
+    };
+  }>;
+  activeView: string | null;
   
   // Pagination
   processosPage: number;
@@ -96,6 +113,10 @@ interface MapaTestemunhasStore {
   setLastUpdate: (date: Date | null) => void;
   setProcessoFilters: (filters: Partial<FilterProcesso>) => void;
   setTestemunhaFilters: (filters: Partial<FilterTestemunha>) => void;
+  setColumnVisibility: (table: 'processos' | 'testemunhas', column: string, visible: boolean) => void;
+  saveView: (name: string, userId: string) => void;
+  loadViews: (userId: string) => void;
+  setActiveViewName: (name: string, userId: string) => void;
   setProcessosPage: (page: number) => void;
   setTestemunhasPage: (page: number) => void;
   setTotalProcessos: (total: number) => void;
@@ -144,6 +165,31 @@ export const useMapaTestemunhasStore = create<MapaTestemunhasStore>((set, get) =
   lastUpdate: null,
   processoFilters: {},
   testemunhaFilters: {},
+  columnVisibility: {
+    processos: {
+      cnj: true,
+      uf: true,
+      comarca: true,
+      fase: true,
+      status: true,
+      reclamante: true,
+      qtdDepos: true,
+      testemunhas: true,
+      classificacao: true,
+      acoes: true,
+    },
+    testemunhas: {
+      nome: true,
+      qtdDepo: true,
+      ambosPolos: true,
+      jaReclamante: true,
+      cnjs: true,
+      classificacao: true,
+      acoes: true,
+    },
+  },
+  savedViews: {},
+  activeView: null,
   processosPage: 1,
   testemunhasPage: 1,
   pageSize: 10,
@@ -196,6 +242,57 @@ export const useMapaTestemunhasStore = create<MapaTestemunhasStore>((set, get) =
       return {
         testemunhaFilters: merged,
         testemunhasPage: 1,
+      };
+    }),
+  setColumnVisibility: (table, column, visible) =>
+    set((state) => ({
+      columnVisibility: {
+        ...state.columnVisibility,
+        [table]: { ...state.columnVisibility[table], [column]: visible },
+      },
+    })),
+  saveView: (name, userId) =>
+    set((state) => {
+      const views = {
+        ...state.savedViews,
+        [name]: {
+          processoFilters: state.processoFilters,
+          testemunhaFilters: state.testemunhaFilters,
+          columnVisibility: state.columnVisibility,
+        },
+      };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`mapaViews_${userId}`, JSON.stringify(views));
+        localStorage.setItem(`mapaActiveView_${userId}`, name);
+      }
+      return { savedViews: views, activeView: name };
+    }),
+  loadViews: (userId) => {
+    if (typeof window === 'undefined') return;
+    const raw = localStorage.getItem(`mapaViews_${userId}`);
+    const views = raw ? JSON.parse(raw) : {};
+    const active = localStorage.getItem(`mapaActiveView_${userId}`);
+    set({ savedViews: views, activeView: active });
+    if (active && views[active]) {
+      set({
+        processoFilters: views[active].processoFilters,
+        testemunhaFilters: views[active].testemunhaFilters,
+        columnVisibility: views[active].columnVisibility,
+      });
+    }
+  },
+  setActiveViewName: (name, userId) =>
+    set((state) => {
+      const view = state.savedViews[name];
+      if (!view) return {} as any;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`mapaActiveView_${userId}`, name);
+      }
+      return {
+        activeView: name,
+        processoFilters: view.processoFilters,
+        testemunhaFilters: view.testemunhaFilters,
+        columnVisibility: view.columnVisibility,
       };
     }),
   setProcessosPage: (page) => set({ processosPage: page }),
@@ -291,3 +388,6 @@ export const selectIsImportModalOpen = (state: MapaTestemunhasStore) => state.is
 export const selectSelectedProcesso = (state: MapaTestemunhasStore) => state.selectedProcesso;
 export const selectSelectedTestemunha = (state: MapaTestemunhasStore) => state.selectedTestemunha;
 export const selectIsDetailDrawerOpen = (state: MapaTestemunhasStore) => state.isDetailDrawerOpen;
+export const selectColumnVisibility = (state: MapaTestemunhasStore) => state.columnVisibility;
+export const selectSavedViews = (state: MapaTestemunhasStore) => state.savedViews;
+export const selectActiveViewName = (state: MapaTestemunhasStore) => state.activeView;
