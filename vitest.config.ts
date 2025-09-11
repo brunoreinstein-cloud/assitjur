@@ -10,6 +10,10 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/tests/setup.ts'],
+    coverage: {
+      reporter: ['text', 'json'],
+      include: ['supabase/functions/evaluate_flags/evaluator.ts']
+    }
   },
   resolve: {
     alias: {
@@ -17,3 +21,4 @@ export default defineConfig({
     },
   },
 });
+
