@@ -42,14 +42,14 @@ const FLAGS = [
     id: '1c0a7b45-0fdc-4e9e-9d6e-8f41185b7a2d',
     flag: 'advanced-report',
     enabled: true,
-    percentage: 100,
+    rollout_percentage: 100,
     environments: ['development', 'staging', 'production'],
   },
   {
     id: '8e7b21bf-5024-4a0f-80bd-0cb2d040b59e',
     flag: 'beta-dashboard',
     enabled: false,
-    percentage: 0,
+    rollout_percentage: 0,
     environments: ['development', 'staging'],
   },
 ];
@@ -59,7 +59,7 @@ const rows = FLAGS.filter((f) => f.environments.includes(environment)).map((f) =
   tenant_id: tenantId,
   flag: f.flag,
   enabled: f.enabled,
-  percentage: f.percentage,
+  rollout_percentage: f.rollout_percentage,
   environment,
 }));
 

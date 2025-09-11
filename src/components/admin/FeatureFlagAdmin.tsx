@@ -12,7 +12,7 @@ interface FeatureFlag {
   id?: string;
   flag: string;
   enabled: boolean;
-  percentage: number;
+  rollout_percentage: number;
   environment: string;
 }
 
@@ -28,7 +28,7 @@ const envs = ['development', 'staging', 'production'];
 
 export const FeatureFlagAdmin: React.FC = () => {
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
-  const [current, setCurrent] = useState<FeatureFlag>({ flag: '', enabled: true, percentage: 100, environment: 'development' });
+  const [current, setCurrent] = useState<FeatureFlag>({ flag: '', enabled: true, rollout_percentage: 100, environment: 'development' });
   const [editing, setEditing] = useState<FeatureFlag | null>(null);
   const [audits, setAudits] = useState<AuditEntry[]>([]);
   const [killed, setKilled] = useState<string[]>([]);
@@ -81,7 +81,7 @@ export const FeatureFlagAdmin: React.FC = () => {
     setCurrent((c) => ({ ...c, [field]: value }));
   };
 
-  const quickSet = (value: number) => handleField('percentage', value);
+  const quickSet = (value: number) => handleField('rollout_percentage', value);
 
   const diff = (oldFlag: FeatureFlag | null, newFlag: FeatureFlag) => {
     return JSON.stringify({ old: oldFlag, new: newFlag }, null, 2);
@@ -99,7 +99,7 @@ export const FeatureFlagAdmin: React.FC = () => {
       toast.success('Flag salva');
       await fetchFlags();
       setEditing(null);
-      setCurrent({ flag: '', enabled: true, percentage: 100, environment: 'development' });
+      setCurrent({ flag: '', enabled: true, rollout_percentage: 100, environment: 'development' });
     } catch (e: any) {
       if (e?.status === 401 || e?.status === 403) {
         toast.error('Acesso negado');
@@ -176,8 +176,8 @@ export const FeatureFlagAdmin: React.FC = () => {
           <div className="flex items-center gap-2">
             <Input
               type="number"
-              value={current.percentage}
-              onChange={(e) => handleField('percentage', Number(e.target.value))}
+              value={current.rollout_percentage}
+              onChange={(e) => handleField('rollout_percentage', Number(e.target.value))}
             />
             <div className="flex gap-1">
               {[10,25,50,100].map(p => (
