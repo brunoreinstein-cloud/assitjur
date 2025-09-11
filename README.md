@@ -1,19 +1,21 @@
 ````markdown
 # ⚖️ Assistjur.IA
 
-**Assistjur.IA** é uma plataforma SaaS voltada para escritórios e departamentos jurídicos, especializada em:  
-- **Inteligência de Testemunhas** (mapa de triangulação, prova emprestada, risco de contradita).  
-- **Análise de Processos CNJ** com Supabase e Edge Functions.  
-- **Compliance e Governança de IA** alinhados à LGPD e ISO/IEC 42001.  
+**Assistjur.IA** é uma plataforma SaaS voltada para escritórios e departamentos jurídicos, especializada em:
+
+- **Inteligência de Testemunhas** (mapa de triangulação, prova emprestada, risco de contradita).
+- **Análise de Processos CNJ** com Supabase e Edge Functions.
+- **Compliance e Governança de IA** alinhados à LGPD e ISO/IEC 42001.
 
 ---
 
 ## 🚀 Tecnologias Principais
-- **Frontend:** Vite + React + TypeScript + Tailwind + shadcn/ui  
-- **Backend:** Supabase (Postgres + RLS + Functions em Deno)  
-- **Automação:** n8n, Edge Functions e integrações externas  
-- **Testes:** Vitest + Testing Library  
-- **Segurança:** RLS, sanitização de entrada, rate limiting  
+
+- **Frontend:** Vite + React + TypeScript + Tailwind + shadcn/ui
+- **Backend:** Supabase (Postgres + RLS + Functions em Deno)
+- **Automação:** n8n, Edge Functions e integrações externas
+- **Testes:** Vitest + Testing Library
+- **Segurança:** RLS, sanitização de entrada, rate limiting
 
 ---
 
@@ -26,9 +28,11 @@
 ## 📦 Como Rodar o Projeto
 
 ### 1. Clonar o repositório
+
 ```bash
 git clone https://github.com/seu-org/assistjur.git
 cd assistjur
+```
 ````
 
 ### 2. Instalar dependências
@@ -64,7 +68,7 @@ RATE_LIMIT_WINDOW_MS="60000"
 Os valores `https://xxxx.supabase.co`, `chave-publica` e demais exemplos acima são placeholders.
 Substitua-os pelos dados reais do seu projeto Supabase ao rodar o app localmente ou em produção.
 
-👉 Nunca exponha chaves privadas no repositório. Use `.env.example` para documentação.
+Nunca exponha chaves privadas no repositório. Use `.env.example` para documentação.
 
 #### Variáveis no CI
 
@@ -103,7 +107,11 @@ ALLOWED_ORIGINS="https://assistjur.com.br,https://*.lovable.dev"
 Uso no handler:
 
 ```ts
-import { parseAllowedOrigins, corsHeaders, handlePreflight } from "../_shared/cors.ts";
+import {
+  parseAllowedOrigins,
+  corsHeaders,
+  handlePreflight,
+} from "../_shared/cors.ts";
 
 const origins = parseAllowedOrigins(Deno.env.get("ALLOWED_ORIGINS"));
 
@@ -112,7 +120,7 @@ Deno.serve(async (req) => {
   const ch = corsHeaders(req, origins);
   const pf = handlePreflight(req, origins, { "x-correlation-id": cid });
   if (pf) return pf;
-  // ...
+  //...
 });
 ```
 
@@ -153,18 +161,18 @@ O script envia `{"page":1,"limit":1}` e falha se a resposta não for **200**.
 
 ```bash
 curl -X POST "$SUPABASE_URL/functions/v1/mapa-testemunhas-processos" \
-  -H "Authorization: Bearer $JWT" \
-  -H "Content-Type: application/json" \
-  -d '{"paginacao":{"page":1,"limit":10},"filtros":{"search":"joao"}}'
+ -H "Authorization: Bearer $JWT" \
+ -H "Content-Type: application/json" \
+ -d '{"paginacao":{"page":1,"limit":10},"filtros":{"search":"joao"}}'
 ```
 
 #### mapa-testemunhas-testemunhas
 
 ```bash
 curl -X POST "$SUPABASE_URL/functions/v1/mapa-testemunhas-testemunhas" \
-  -H "Authorization: Bearer $JWT" \
-  -H "Content-Type: application/json" \
-  -d '{"paginacao":{"page":1,"limit":10},"filtros":{"nome":"Maria"}}'
+ -H "Authorization: Bearer $JWT" \
+ -H "Content-Type: application/json" \
+ -d '{"paginacao":{"page":1,"limit":10},"filtros":{"nome":"Maria"}}'
 ```
 
 ---
@@ -172,16 +180,16 @@ curl -X POST "$SUPABASE_URL/functions/v1/mapa-testemunhas-testemunhas" \
 ## 📂 Estrutura de Pastas
 
 ```
-├── app/api/           # Rotas de API
-├── src/               # Código principal
-│   ├── components/    # Componentes React
-│   ├── hooks/         # Hooks customizados
-│   ├── lib/           # Segurança, utils, supabase
-│   ├── pages/         # Páginas do app
-│   ├── tests/         # Testes automatizados
-├── supabase/          # Migrações e functions
-├── public/            # Assets e CSVs de exemplo
-└── docs/              # Guias e documentação
+├── app/api/ # Rotas de API
+├── src/ # Código principal
+│ ├── components/ # Componentes React
+│ ├── hooks/ # Hooks customizados
+│ ├── lib/ # Segurança, utils, supabase
+│ ├── pages/ # Páginas do app
+│ ├── tests/ # Testes automatizados
+├── supabase/ # Migrações e functions
+├── public/ # Assets e CSVs de exemplo
+└── docs/ # Guias e documentação
 ```
 
 ---
@@ -196,13 +204,13 @@ npm run test
 
 ## 🔒 Segurança
 
-* Uso de **RLS (Row Level Security)** em todas as tabelas sensíveis.
-* Sanitização de entradas no frontend.
-* Logs de auditoria nas exports e Edge Functions.
-* **Nunca** subir `.env` ou chaves privadas no repositório.
-* Funções Supabase seguem dois padrões:
-  * **client-RLS** – usam o JWT do usuário final e respeitam as políticas de RLS.
-  * **admin-no-RLS** – executadas com `SERVICE_ROLE_KEY`, exigem autorização administrativa e ignoram RLS.
+- Uso de **RLS (Row Level Security)** em todas as tabelas sensíveis.
+- Sanitização de entradas no frontend.
+- Logs de auditoria nas exports e Edge Functions.
+- **Nunca** subir `.env` ou chaves privadas no repositório.
+- Funções Supabase seguem dois padrões:
+- **client-RLS** – usam o JWT do usuário final e respeitam as políticas de RLS.
+- **admin-no-RLS** – executadas com `SERVICE_ROLE_KEY`, exigem autorização administrativa e ignoram RLS.
 
 ---
 
@@ -218,5 +226,7 @@ npm run test
 
 Propriedade intelectual de **Assistjur.IA**.
 Uso restrito a colaboradores autorizados.
+
+```
 
 ```

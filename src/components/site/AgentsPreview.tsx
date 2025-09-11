@@ -1,55 +1,55 @@
-import React from 'react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Sparkles, Database, Search, BarChart3, Brain } from 'lucide-react';
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles, Database, Search, BarChart3, Brain } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselApi
-} from '@/components/ui/carousel';
+  CarouselApi,
+} from "@/components/ui/carousel";
 
 export function AgentsPreview() {
   const agents = [
     {
       icon: Sparkles,
-      title: 'Assistente de Prompts Jurídicos',
-      description: 'Otimização inteligente de instruções para IA, guiando o advogado com insights estratégicos para construir a melhor estrutura de prompt. Explora todo o potencial da inteligência artificial, incorporando contexto, jurisdição e formato jurídico adequado, reduzindo retrabalho e riscos de "alucinação".',
-      status: 'Disponível (Beta)',
-      statusColor: 'bg-success/20 text-success border-success/30',
+      title: "Assistente de Prompts Jurídicos",
+      description:
+        'Otimização inteligente de instruções para IA, guiando o advogado com insights estratégicos para construir a melhor estrutura de prompt. Explora todo o potencial da inteligência artificial, incorporando contexto, jurisdição e formato jurídico adequado, reduzindo retrabalho e riscos de "alucinação".',
+      status: "Disponível (Beta)",
+      statusColor: "bg-success/20 text-success border-success/30",
     },
     {
       icon: Database,
-      title: 'Coleta e Análise de Dados Judiciais',
-      description: 'Camada de inteligência estratégica sobre dados de contencioso. Extração inteligente de informações judiciais e processamento avançado para insights estratégicos.',
-      status: 'Em Breve',
-      statusColor: 'bg-primary/20 text-primary border-primary/30',
+      title: "Coleta e Análise de Dados Judiciais",
+      description:
+        "Camada de inteligência estratégica sobre dados de contencioso. Extração inteligente de informações judiciais e processamento avançado para insights estratégicos.",
+      status: "Em Breve",
+      statusColor: "bg-primary/20 text-primary border-primary/30",
     },
     {
       icon: Search,
-      title: 'Mapeamento de Testemunhas',
-      description: 'Mapeamento e análise estratégica da prova testemunhal, identificando vícios e padrões.',
-      status: 'Em Breve',
-      statusColor: 'bg-primary/20 text-primary border-primary/30',
+      title: "Mapeamento de Testemunhas",
+      description:
+        "Mapeamento e análise estratégica da prova testemunhal, identificando vícios e padrões.",
+      status: "Em Breve",
+      statusColor: "bg-primary/20 text-primary border-primary/30",
     },
     {
       icon: BarChart3,
-      title: 'Relatórios Especializados',
-      description: 'Geração automática de relatórios executivos e análises detalhadas.',
-      status: 'Em Breve',
-      statusColor: 'bg-primary/20 text-primary border-primary/30',
+      title: "Relatórios Especializados",
+      description:
+        "Geração automática de relatórios executivos e análises detalhadas.",
+      status: "Em Breve",
+      statusColor: "bg-primary/20 text-primary border-primary/30",
     },
     {
       icon: Brain,
-      title: 'Estratégia Jurídica',
-      description: 'Suporte inteligente para tomada de decisões estratégicas em contencioso.',
-      status: 'Em Breve',
-      statusColor: 'bg-primary/20 text-primary border-primary/30',
+      title: "Estratégia Jurídica",
+      description:
+        "Suporte inteligente para tomada de decisões estratégicas em contencioso.",
+      status: "Em Breve",
+      statusColor: "bg-primary/20 text-primary border-primary/30",
     },
   ];
 
@@ -60,9 +60,9 @@ export function AgentsPreview() {
     if (!api) return;
     const onSelect = () => setCurrent(api.selectedScrollSnap());
     onSelect();
-    api.on('select', onSelect);
+    api.on("select", onSelect);
     return () => {
-      api.off('select', onSelect);
+      api.off("select", onSelect);
     };
   }, [api]);
 
@@ -72,17 +72,22 @@ export function AgentsPreview() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              👉 Catálogo de Assistentes
+              Catálogo de Assistentes
             </h2>
             <p className="text-xl text-muted-foreground max-w-4xl mx-auto">
-              A plataforma está em fase beta, com lançamento inicial e uso para clientes exclusivos da Bianca Reinstein Consultoria. 
-              Conheça os primeiros agentes especializados que estarão disponíveis:
+              A plataforma está em fase beta, com lançamento inicial e uso para
+              clientes exclusivos da Bianca Reinstein Consultoria. Conheça os
+              primeiros agentes especializados que estarão disponíveis:
             </p>
           </div>
 
           {/* Mobile Carousel */}
           <div className="md:hidden mb-12">
-            <Carousel setApi={setApi} opts={{ align: 'start' }} className="-mx-6">
+            <Carousel
+              setApi={setApi}
+              opts={{ align: "start" }}
+              className="-mx-6"
+            >
               <CarouselContent>
                 {agents.map((agent, index) => (
                   <CarouselItem key={index} className="pl-6">
@@ -127,8 +132,8 @@ export function AgentsPreview() {
                   <span
                     className={`block w-3 h-3 rounded-full ${
                       current === index
-                        ? 'bg-primary'
-                        : 'bg-muted-foreground/20'
+                        ? "bg-primary"
+                        : "bg-muted-foreground/20"
                     }`}
                   />
                 </button>

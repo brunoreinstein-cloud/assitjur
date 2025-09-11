@@ -1,17 +1,20 @@
-import React from 'react';
-import { Separator } from '@/components/ui/separator';
-import { useConsent } from '@/hooks/useConsent';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { Separator } from "@/components/ui/separator";
+import { useConsent } from "@/hooks/useConsent";
+import { useNavigate } from "react-router-dom";
 
 export function Footer() {
   const navigate = useNavigate();
   const { setOpen } = useConsent();
-  
+
   const footerLinks = [
-    { label: 'Privacidade / Gerenciar cookies', action: () => setOpen(true) },
-    { label: 'Sobre o AssistJur.IA', action: () => navigate('/sobre') },
-    { label: 'Sobre Bianca', action: () => navigate('/sobre') },
-    { label: 'Segurança & Conformidade', action: () => navigate('/sobre#seguranca') },
+    { label: "Privacidade / Gerenciar cookies", action: () => setOpen(true) },
+    { label: "Sobre o AssistJur.IA", action: () => navigate("/sobre") },
+    { label: "Sobre Bianca", action: () => navigate("/sobre") },
+    {
+      label: "Segurança & Conformidade",
+      action: () => navigate("/sobre#seguranca"),
+    },
   ];
 
   return (
@@ -21,7 +24,8 @@ export function Footer() {
           {/* Texto de rodapé */}
           <div className="text-center mb-8">
             <p className="text-background/90 font-medium text-lg mb-2">
-              AssistJur.IA — Gestão do contencioso com inovação e olhar estratégico, desenvolvido por Bianca Reinstein Consultoria.
+              AssistJur.IA — Gestão do contencioso com inovação e olhar
+              estratégico, desenvolvido por Bianca Reinstein Consultoria.
             </p>
           </div>
 
@@ -43,8 +47,8 @@ export function Footer() {
           {/* Contato */}
           <div className="text-center mb-8">
             <h3 className="text-background font-semibold mb-2">Contato:</h3>
-            <a 
-              href="mailto:bianca@brconsultoriaadv.com" 
+            <a
+              href="mailto:bianca@brconsultoriaadv.com"
               className="text-background/80 hover:text-background transition-colors"
             >
               📩 bianca@brconsultoriaadv.com
@@ -59,15 +63,17 @@ export function Footer() {
               ⚠️ Aviso legal:
             </p>
             <p className="text-background/80 text-sm">
-              O AssistJur.IA oferece suporte em inteligência artificial, mas exige sempre a supervisão de um advogado. 
-              Não substitui a análise humana, nem dispensa a validação nos autos.
+              O AssistJur.IA oferece suporte em inteligência artificial, mas
+              exige sempre a supervisão de um advogado. Não substitui a análise
+              humana, nem dispensa a validação nos autos.
             </p>
           </div>
 
           {/* Copyright */}
           <div className="text-center">
             <p className="text-background/70 text-sm">
-              👉 © 2025 AssistJur.IA. Desenvolvido por Bianca Reinstein Consultoria. Todos os direitos reservados.
+              © 2025 AssistJur.IA. Desenvolvido por Bianca Reinstein
+              Consultoria. Todos os direitos reservados.
             </p>
           </div>
         </div>
