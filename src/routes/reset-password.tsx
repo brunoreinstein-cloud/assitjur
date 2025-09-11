@@ -8,6 +8,7 @@ export default function ResetPasswordPage() {
   const [confirm, setConfirm] = useState('')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [okMsg, setOkMsg] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -20,6 +21,8 @@ export default function ResetPasswordPage() {
     } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setReady(true)
+      } else {
+        setErrorMsg('Link inválido ou expirado. Solicite novamente.')
       }
     })
 
@@ -35,22 +38,27 @@ export default function ResetPasswordPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrorMsg(null)
+    setLoading(true)
     if (!password || password !== confirm) {
       setErrorMsg('As senhas não conferem.')
+      setLoading(false)
       return
     }
     const { data: userRes, error: userErr } = await supabase.auth.getUser()
     if (userErr || !userRes?.user) {
       setErrorMsg('Link inválido ou expirado. Solicite novamente.')
+      setLoading(false)
       return
     }
     const { error } = await supabase.auth.updateUser({ password })
     if (error) {
       setErrorMsg('Não foi possível redefinir a senha.')
+      setLoading(false)
       return
     }
     await supabase.auth.signOut()
     setOkMsg('Senha atualizada com sucesso. Redirecionando para login...')
+    setLoading(false)
     setTimeout(() => navigate('/login'), 1500)
   }
 
@@ -85,7 +93,8 @@ export default function ResetPasswordPage() {
       </label>
       <button
         type="submit"
-        className="bg-primary text-white px-4 py-2 rounded"
+        disabled={loading}
+        className={`bg-primary text-white px-4 py-2 rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         Atualizar senha
       </button>
