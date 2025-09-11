@@ -41,6 +41,20 @@ describe('feature flags', () => {
     expect(localStorage.getItem('featureFlags')).toBe(JSON.stringify({ 'advanced-report': true }));
   });
 
+  it('keeps cache on fetch failure', async () => {
+    await refreshFeatureFlags('1', 'free');
+    expect(localStorage.getItem('featureFlags')).toBe(JSON.stringify({ 'advanced-report': false }));
+
+    from.mockImplementationOnce(() => ({
+      select: vi.fn(() => ({
+        or: vi.fn(() => Promise.reject(new Error('fetch failed')))
+      }))
+    }));
+
+    await refreshFeatureFlags('1', 'free');
+    expect(localStorage.getItem('featureFlags')).toBe(JSON.stringify({ 'advanced-report': false }));
+  });
+
   it('FeatureFlagGuard reacts to user/plan changes', async () => {
     const { rerender } = render(
       <FeatureFlagGuard flag="advanced-report"><div>Secret</div></FeatureFlagGuard>
