@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import FeatureFlagGuard from '@/components/FeatureFlagGuard';
 import { refreshFeatureFlags } from '@/hooks/useFeatureFlag';
 
@@ -31,6 +31,12 @@ describe('feature flags', () => {
     mockUser = { id: '1' };
     mockProfile = { plan: 'free' };
     from.mockClear();
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+    mockUser = { id: '1' };
+    mockProfile = { plan: 'free' };
   });
 
   it('loadFlags updates cache', async () => {
