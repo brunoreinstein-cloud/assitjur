@@ -1,67 +1,113 @@
-import { useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { z } from 'zod';
 
-const CACHE_KEY = 'featureFlags';
+const FlagsSchema = z.record(z.boolean());
+const ResponseSchema = z.object({ flags: FlagsSchema });
 
-async function loadFlags(userId?: string, plan?: string): Promise<void> {
-  try {
-    if (userId === undefined || plan === undefined) {
-      return;
-    }
+type Flags = z.infer<typeof FlagsSchema>;
 
-    const map: Record<string, boolean> = {};
+const FeatureFlagContext = createContext<Flags>({});
 
-    const { data: planData } = await supabase
-      .from('feature_flags')
-      .select('flag, enabled')
-      .eq('plan', plan);
+let globalRefresh: (() => Promise<void>) | null = null;
 
-    planData?.forEach((row) => {
-      map[row.flag] = row.enabled;
-    });
-
-    const { data: userData } = await supabase
-      .from('feature_flags')
-      .select('flag, enabled')
-      .eq('user_id', userId);
-
-    userData?.forEach((row) => {
-      map[row.flag] = row.enabled;
-    });
-
-    localStorage.setItem(CACHE_KEY, JSON.stringify(map));
-    window.dispatchEvent(new StorageEvent('storage', { key: CACHE_KEY }));
-    return;
-  } catch (error) {
-    console.error('Failed to load feature flags', error);
-    window.dispatchEvent(new StorageEvent('storage', { key: CACHE_KEY }));
-    return;
-  }
-}
-
-export const useFeatureFlag = (flag: string) => {
+export const FeatureFlagProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, profile } = useAuth();
-  const [enabled, setEnabled] = useState<boolean>(() => {
-    const flags = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
-    return !!flags[flag];
-  });
+  const tenantId = profile?.organization_id;
+  const userId = user?.id;
+  const environment = import.meta.env.MODE || 'production';
+
+  const refreshInterval = Number(import.meta.env.VITE_FEATURE_FLAGS_REFRESH_INTERVAL || 60000);
+  const cacheTtl = Number(import.meta.env.VITE_FEATURE_FLAGS_CACHE_TTL || 300000);
+
+  const cacheKey = tenantId && userId ? `ff:${tenantId}:${userId}:${environment}` : null;
+  const prevCacheKey = useRef<string | null>(null);
+
+  const readCache = (): { ts: number; flags: Flags } | null => {
+    if (!cacheKey) return null;
+    try {
+      const raw = localStorage.getItem(cacheKey);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  };
+
+  const cacheValid = (c: { ts: number }): boolean => Date.now() - c.ts <= cacheTtl;
+
+  const [flags, setFlags] = useState<Flags>(() => readCache()?.flags ?? {});
+
+  const saveCache = (next: Flags) => {
+    if (!cacheKey) return;
+    localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), flags: next }));
+  };
+
+  const fetchFlags = async () => {
+    if (!tenantId || !userId) return;
+    try {
+      const { data, error } = await supabase.functions.invoke('evaluate_flags', {
+        body: {
+          tenant_id: tenantId,
+          user_id: userId,
+          segments: profile?.plan ? [profile.plan] : [],
+          environment,
+        },
+      });
+      if (error) throw error;
+      const parsed = ResponseSchema.parse(data);
+      saveCache(parsed.flags);
+      setFlags(parsed.flags);
+    } catch {
+      const cached = readCache();
+      if (cached && cacheValid(cached)) {
+        setFlags(cached.flags);
+      }
+    }
+  };
 
   useEffect(() => {
-    localStorage.removeItem(CACHE_KEY);
-    loadFlags(user?.id, profile?.plan || undefined);
-  }, [user?.id, profile?.plan]);
-
-  useEffect(() => {
-    const handler = () => {
-      const flags = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
-      setEnabled(!!flags[flag]);
+    globalRefresh = fetchFlags;
+    return () => {
+      globalRefresh = null;
     };
-    window.addEventListener('storage', handler);
-    return () => window.removeEventListener('storage', handler);
-  }, [flag]);
+  }, [tenantId, userId, environment, profile?.plan, cacheKey]);
 
-  return enabled;
+  useEffect(() => {
+    if (prevCacheKey.current && prevCacheKey.current !== cacheKey) {
+      localStorage.removeItem(prevCacheKey.current);
+    }
+    prevCacheKey.current = cacheKey;
+    const cached = readCache();
+    if (cached) {
+      setFlags(cached.flags);
+    } else {
+      setFlags({});
+    }
+    fetchFlags();
+    const id = setInterval(fetchFlags, refreshInterval);
+    return () => clearInterval(id);
+  }, [cacheKey, refreshInterval, tenantId, userId, environment]);
+
+  return <FeatureFlagContext.Provider value={flags}>{children}</FeatureFlagContext.Provider>;
 };
 
-export { loadFlags as refreshFeatureFlags };
+export const useFeatureFlag = (flag: string, debug = false) => {
+  const flags = useContext(FeatureFlagContext);
+  const value = !!flags[flag];
+  const prev = useRef(value);
+
+  useEffect(() => {
+    if (import.meta.env.DEV && debug && prev.current !== value) {
+      console.debug(`[feature-flag] ${flag} ${value ? 'ON' : 'OFF'}`);
+    }
+    prev.current = value;
+  }, [value, debug, flag]);
+
+  return value;
+};
+
+export const refreshFeatureFlags = () => (globalRefresh ? globalRefresh() : Promise.resolve());
+
+export type { Flags };

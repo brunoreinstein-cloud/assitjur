@@ -18,6 +18,7 @@ import SessionExpiredModal from "@/components/auth/SessionExpiredModal";
 import FeatureFlagGuard from "@/components/FeatureFlagGuard";
 import { MaintenanceBanner } from "@/components/common/MaintenanceBanner";
 import { useMaintenance } from "@/hooks/useMaintenance";
+import { FeatureFlagProvider } from "@/hooks/useFeatureFlag";
 
 const MapaPage = lazy(() => import("./pages/MapaPage"));
 const PublicHome = lazy(() => import("./pages/PublicHome"));
@@ -130,31 +131,33 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <ServiceHealthProvider>
         <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <SessionExpiredModal />
-            <ConsentProvider>
-              <ConsentDialog />
-              <BrowserRouter
-              future={{
-                v7_startTransition: true,
-                v7_relativeSplatPath: true,
-              }}
-            >
-              <div className="min-h-screen flex flex-col">
-                <MaintenanceBanner />
-                <StatusBanner />
-                <div className="flex-1">
-                  <Suspense fallback={<div className="p-4">Carregando...</div>}>
-                    <AppRoutes />
-                  </Suspense>
+          <FeatureFlagProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <SessionExpiredModal />
+              <ConsentProvider>
+                <ConsentDialog />
+                <BrowserRouter
+                future={{
+                  v7_startTransition: true,
+                  v7_relativeSplatPath: true,
+                }}
+              >
+                <div className="min-h-screen flex flex-col">
+                  <MaintenanceBanner />
+                  <StatusBanner />
+                  <div className="flex-1">
+                    <Suspense fallback={<div className="p-4">Carregando...</div>}>
+                      <AppRoutes />
+                    </Suspense>
+                  </div>
+                  <FooterLegal />
                 </div>
-                <FooterLegal />
-              </div>
-            </BrowserRouter>
-          </ConsentProvider>
-          </TooltipProvider>
+              </BrowserRouter>
+            </ConsentProvider>
+            </TooltipProvider>
+          </FeatureFlagProvider>
         </AuthProvider>
       </ServiceHealthProvider>
     </QueryClientProvider>
