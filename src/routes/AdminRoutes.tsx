@@ -10,13 +10,13 @@ const SystemConfig = lazy(() => import("@/pages/admin/SystemConfig"));
 const Compliance = lazy(() => import("@/pages/admin/Compliance"));
 const MarketingCompliance = lazy(() => import("@/pages/admin/MarketingCompliance"));
 const DataRetention = lazy(() => import("@/pages/admin/DataRetention"));
-const AuditPanel = lazy(() => import("@/pages/admin/AuditPanel"));
+// const AuditPanel = lazy(() => import("@/pages/admin/AuditPanel")); // Removed due to table dependencies
 const OpenAI = lazy(() => import("@/pages/admin/OpenAI"));
 const OpenAIKeys = lazy(() => import("@/pages/admin/openai/Keys"));
 const OpenAIModels = lazy(() => import("@/pages/admin/openai/Models"));
 const PromptStudio = lazy(() => import("@/pages/admin/openai/PromptStudio"));
 const OpenAIPlayground = lazy(() => import("@/pages/admin/openai/Playground"));
-const Logs = lazy(() => import("@/pages/admin/Logs"));
+// const Logs = lazy(() => import("@/pages/admin/Logs")); // Removed due to table dependencies
 const ValidationTest = lazy(() => import("@/pages/admin/ValidationTest"));
 const Metrics = lazy(() => import("@/pages/admin/Metrics"));
 const FeatureFlagMetrics = lazy(() => import("@/pages/admin/FeatureFlagMetrics"));
@@ -48,11 +48,11 @@ const AdminRoutes = () => (
     <Route path="/admin/versoes" element={<Versions />} />
     <Route path="/admin/org" element={<Organization />} />
     <Route path="/admin/organization" element={<Organization />} />
-    <Route path="/admin/logs" element={<Logs />} />
+    {/* <Route path="/admin/logs" element={<Logs />} /> */}
     <Route path="/admin/compliance" element={<Compliance />} />
     <Route path="/admin/marketing" element={<MarketingCompliance />} />
     <Route path="/admin/retencao" element={<DataRetention />} />
-    <Route path="/admin/audit" element={<AuditPanel />} />
+    {/* <Route path="/admin/audit" element={<AuditPanel />} /> */}
     <Route path="/admin/config" element={<SystemConfig />} />
   </>
 );

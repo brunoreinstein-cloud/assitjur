@@ -10,11 +10,11 @@ export async function logAudit(
   const masked = applyPIIMask(metadata, true);
   const { data } = await supabase.auth.getUser();
   const actor = data?.user?.id ?? 'anonymous';
-  const { error } = await supabase.from('audit_log').insert({
-    actor,
+  const { error } = await supabase.from('audit_logs').insert({
+    user_id: actor,
     action,
-    resource,
-    metadata: { ...masked, resourceId }
+    result: 'SUCCESS',
+    metadata: { ...masked, resourceId, resource }
   });
   if (error) {
     console.error('logAudit error', error);

@@ -19,7 +19,9 @@ export function ValueProps() {
     onSelect();
     diffApi.on('select', onSelect);
     
-    return () => diffApi.off('select', onSelect);
+    return () => {
+      diffApi.off('select', onSelect);
+    };
   }, [diffApi]);
 
   const diferentials = [

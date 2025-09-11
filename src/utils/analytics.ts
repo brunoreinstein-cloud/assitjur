@@ -19,9 +19,6 @@ export const track = async (
   const sanitized = Object.fromEntries(
     Object.entries(metadata).filter(([key]) => !['email', 'name'].includes(key))
   );
-  await supabase.from('analytics_events').insert({
-    user_id: userId,
-    event,
-    metadata: sanitized,
-  });
+  // Mock analytics since analytics_events table doesn't exist yet
+  console.log('Analytics event:', event, sanitized);
 };
