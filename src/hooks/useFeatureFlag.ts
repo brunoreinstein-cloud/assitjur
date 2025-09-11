@@ -5,20 +5,28 @@ import { useAuth } from '@/hooks/useAuth';
 const CACHE_KEY = 'featureFlags';
 
 async function loadFlags(userId?: string, plan?: string) {
-  if (!userId && !plan) return;
-  const filters: string[] = [];
-  if (userId) filters.push(`user_id.eq.${userId}`);
-  if (plan) filters.push(`plan.eq.${plan}`);
-  const { data } = await supabase
-    .from('feature_flags')
-    .select('flag, enabled')
-    .or(filters.join(','));
-  const map: Record<string, boolean> = {};
-  data?.forEach((row) => {
-    map[row.flag] = row.enabled;
-  });
-  localStorage.setItem(CACHE_KEY, JSON.stringify(map));
-  window.dispatchEvent(new StorageEvent('storage', { key: CACHE_KEY }));
+  try {
+    if (userId === undefined || plan === undefined) {
+      localStorage.removeItem(CACHE_KEY);
+      window.dispatchEvent(new StorageEvent('storage', { key: CACHE_KEY }));
+    }
+    if (!userId && !plan) return;
+    const filters: string[] = [];
+    if (userId) filters.push(`user_id.eq.${userId}`);
+    if (plan) filters.push(`plan.eq.${plan}`);
+    const { data } = await supabase
+      .from('feature_flags')
+      .select('flag, enabled')
+      .or(filters.join(','));
+    const map: Record<string, boolean> = {};
+    data?.forEach((row) => {
+      map[row.flag] = row.enabled;
+    });
+    localStorage.setItem(CACHE_KEY, JSON.stringify(map));
+    window.dispatchEvent(new StorageEvent('storage', { key: CACHE_KEY }));
+  } catch (error) {
+    console.error('Failed to load feature flags', error);
+  }
 }
 
 export const useFeatureFlag = (flag: string) => {
@@ -29,6 +37,8 @@ export const useFeatureFlag = (flag: string) => {
   });
 
   useEffect(() => {
+    localStorage.removeItem(CACHE_KEY);
+    window.dispatchEvent(new StorageEvent('storage', { key: CACHE_KEY }));
     loadFlags(user?.id, profile?.plan || undefined);
   }, [user?.id, profile?.plan]);
 
