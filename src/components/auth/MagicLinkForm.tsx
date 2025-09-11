@@ -53,6 +53,12 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
       });
 
       if (error) {
+        if (error?.status === 429) {
+          toast.error('Muitas tentativas', {
+            description: 'Tente novamente mais tarde.'
+          });
+          return;
+        }
         throw error;
       }
 
@@ -64,9 +70,15 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
 
     } catch (error: any) {
       console.error('Magic link error:', error);
-      toast.error("Erro ao enviar link", {
-        description: "Não foi possível enviar o link de acesso. Tente novamente."
-      });
+      if (error?.status === 429) {
+        toast.error('Muitas tentativas', {
+          description: 'Tente novamente mais tarde.'
+        });
+      } else {
+        toast.error("Erro ao enviar link", {
+          description: "Não foi possível enviar o link de acesso. Tente novamente."
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +91,7 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
 
   if (emailSent) {
     return (
-      <div className="text-center space-y-6">
+      <div className="text-center space-y-6" role="alert" aria-live="polite">
         <div className="mx-auto p-3 bg-success/10 rounded-full w-fit">
           <CheckCircle className="h-8 w-8 text-success" />
         </div>
@@ -148,7 +160,7 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
             autoFocus
           />
           {form.formState.errors.email && (
-            <p className="text-sm text-destructive" aria-live="polite">{form.formState.errors.email.message}</p>
+            <p className="text-sm text-destructive" role="alert" aria-live="polite">{form.formState.errors.email.message}</p>
           )}
         </div>
 

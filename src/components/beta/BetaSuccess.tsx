@@ -9,7 +9,7 @@ interface BetaSuccessProps {
 
 export function BetaSuccess({ onReset, className = '' }: BetaSuccessProps) {
   return (
-    <div className={`text-center space-y-6 py-8 ${className}`} aria-live="polite">
+    <div className={`text-center space-y-6 py-8 ${className}`} role="alert" aria-live="polite">
       {/* Success Icon */}
       <div className="flex justify-center">
         <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">

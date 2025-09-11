@@ -152,7 +152,7 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
             </div>
             
             {errors.needs && (
-              <p className="text-sm text-destructive" role="alert">
+              <p className="text-sm text-destructive" role="alert" aria-live="polite">
                 {errors.needs}
               </p>
             )}
@@ -172,7 +172,7 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
               className={errors.email ? "border-destructive" : ""}
             />
             {errors.email && (
-              <p id="email-error" className="text-sm text-destructive" role="alert">
+              <p id="email-error" className="text-sm text-destructive" role="alert" aria-live="polite">
                 {errors.email}
               </p>
             )}

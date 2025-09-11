@@ -3,7 +3,8 @@ export const ERROR_MESSAGES = {
   INCORRECT_PASSWORD: 'Senha incorreta.',
   CNJ_FAILURE: 'Falha ao buscar dados do CNJ.',
   NOT_FOUND: 'Item não encontrado.',
-  NETWORK: 'Falha de conexão. Verifique sua internet.'
+  NETWORK: 'Falha de conexão. Verifique sua internet.',
+  RATE_LIMIT: 'Muitas tentativas. Tente novamente mais tarde.'
 } as const;
 
 export type ErrorMessageKey = keyof typeof ERROR_MESSAGES;
