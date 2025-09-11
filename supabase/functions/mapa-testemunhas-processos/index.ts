@@ -55,8 +55,7 @@ Deno.serve(async (req) => {
   const from = (page - 1) * limit;
   const to = from + limit - 1;
   let query = supabase
-    .from("assistjur_processos_view")
-    .select("*", { count: "exact" })
+    .rpc("assistjur.listar_processos", {}, { count: "exact" })
     .range(from, to);
 
   query = applyProcessosFilters(query, filtros);
