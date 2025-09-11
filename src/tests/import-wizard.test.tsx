@@ -13,12 +13,23 @@ describe('ImportWizard', () => {
     );
   });
 
-  test('nonexistent CNJ shows feedback', async () => {
+  test('invalid CNJ blocks submission with hint', async () => {
     render(<ImportWizard />);
     fireEvent.change(screen.getByLabelText(/Número CNJ/i), { target: { value: '123' } });
     fireEvent.click(screen.getByRole('button', { name: /Importar/i }));
     await waitFor(() =>
-      expect(screen.getByText(/Processo não encontrado/i)).toBeInTheDocument()
+      expect(screen.getByText(/CNJ deve ter exatamente 20 dígitos/i)).toBeInTheDocument()
+    );
+  });
+
+  test('valid CNJ imports successfully', async () => {
+    render(<ImportWizard />);
+    fireEvent.change(screen.getByLabelText(/Número CNJ/i), {
+      target: { value: '0000000-00.0000.0.00.0000' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Importar/i }));
+    await waitFor(() =>
+      expect(screen.getByText(/Processo importado com sucesso/i)).toBeInTheDocument()
     );
   });
 });
