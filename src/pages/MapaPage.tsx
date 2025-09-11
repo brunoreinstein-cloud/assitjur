@@ -31,6 +31,8 @@ import { ProcessoTable } from "@/components/mapa-testemunhas/ProcessoTable";
 import { TestemunhaTable } from "@/components/mapa-testemunhas/TestemunhaTable";
 import { ProcessoFilters } from "@/components/mapa-testemunhas/ProcessoFilters";
 import { TestemunhaFilters } from "@/components/mapa-testemunhas/TestemunhaFilters";
+import { ColumnVisibilityMenu } from "@/components/mapa-testemunhas/ColumnVisibilityMenu";
+import { VisualizationSelector } from "@/components/mapa-testemunhas/VisualizationSelector";
 import { DetailDrawer } from "@/components/mapa-testemunhas/DetailDrawer";
 import { ImportModal } from "@/components/mapa-testemunhas/ImportModal";
 import { MaskPIISwitch } from "@/components/mapa/MaskPIISwitch";
@@ -97,6 +99,7 @@ const MapaPage = () => {
   const setLastUpdate = useMapaTestemunhasStore(s => s.setLastUpdate);
   const setError = useMapaTestemunhasStore(s => s.setError);
   const setIsImportModalOpen = useMapaTestemunhasStore(s => s.setIsImportModalOpen);
+  const loadViews = useMapaTestemunhasStore(s => s.loadViews);
 
   // Stable lastUpdate state
   const [isFirstLoad, setIsFirstLoad] = useState(true);
@@ -146,6 +149,12 @@ const MapaPage = () => {
       return;
     }
   }, [user, loading, navigate]);
+
+  useEffect(() => {
+    if (user) {
+      loadViews(user.id);
+    }
+  }, [user, loadViews]);
 
   // URL synchronization with tabs and view mode
   useEffect(() => {
@@ -450,6 +459,10 @@ const MapaPage = () => {
                   Por Testemunha
                 </TabsTrigger>
               </TabsList>
+              <div className="flex gap-2">
+                {user && <VisualizationSelector userId={user.id} />}
+                <ColumnVisibilityMenu />
+              </div>
             </div>
 
             <TabsContent value="processos" className="space-y-6">
