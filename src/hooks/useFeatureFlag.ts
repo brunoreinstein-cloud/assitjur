@@ -7,8 +7,6 @@ const CACHE_KEY = 'featureFlags';
 async function loadFlags(userId?: string, plan?: string): Promise<void> {
   try {
     if (userId === undefined || plan === undefined) {
-      localStorage.removeItem(CACHE_KEY);
-      window.dispatchEvent(new StorageEvent('storage', { key: CACHE_KEY }));
       return;
     }
 
@@ -26,6 +24,7 @@ async function loadFlags(userId?: string, plan?: string): Promise<void> {
       map[row.flag] = row.enabled;
     });
 
+    localStorage.removeItem(CACHE_KEY);
     localStorage.setItem(CACHE_KEY, JSON.stringify(map));
     window.dispatchEvent(new StorageEvent('storage', { key: CACHE_KEY }));
     return;
