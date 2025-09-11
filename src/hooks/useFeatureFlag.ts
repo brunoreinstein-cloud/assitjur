@@ -1,9 +1,9 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { z } from 'zod';
 
-const FlagsSchema = z.record(z.boolean());
+const FlagsSchema = z.record(z.string(), z.boolean());
 const ResponseSchema = z.object({ flags: FlagsSchema });
 
 type Flags = z.infer<typeof FlagsSchema>;
@@ -12,7 +12,11 @@ const FeatureFlagContext = createContext<Flags>({});
 
 let globalRefresh: (() => Promise<void>) | null = null;
 
-export const FeatureFlagProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface FeatureFlagProviderProps {
+  children: React.ReactNode;
+}
+
+export const FeatureFlagProvider: React.FC<FeatureFlagProviderProps> = ({ children }) => {
   const { user, profile } = useAuth();
   const tenantId = profile?.organization_id;
   const userId = user?.id;
@@ -90,7 +94,7 @@ export const FeatureFlagProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return () => clearInterval(id);
   }, [cacheKey, refreshInterval, tenantId, userId, environment]);
 
-  return <FeatureFlagContext.Provider value={flags}>{children}</FeatureFlagContext.Provider>;
+  return React.createElement(FeatureFlagContext.Provider, { value: flags }, children);
 };
 
 export const useFeatureFlag = (flag: string, debug = false) => {
