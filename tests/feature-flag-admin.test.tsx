@@ -10,7 +10,9 @@ vi.mock('@/hooks/use-toast', () => ({ toast: { success, error } }));
 // Supabase mocks
 let flagsData: any[] = [];
 let auditData: any[] = [];
+let killData: string[] = [];
 const invoke = vi.fn().mockResolvedValue({});
+const upsert = vi.fn().mockResolvedValue({});
 
 const from = vi.fn((table: string) => {
   if (table === 'feature_flags') {
@@ -29,11 +31,27 @@ const from = vi.fn((table: string) => {
       }))
     } as any;
   }
+  if (table === 'platform_settings') {
+    return {
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            maybeSingle: vi.fn(() => Promise.resolve({ data: { value_jsonb: killData } }))
+          }))
+        }))
+      })),
+      upsert
+    } as any;
+  }
   return { select: vi.fn() } as any;
 });
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: { from, functions: { invoke } }
+}));
+
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ profile: { organization_id: 'org1' } })
 }));
 
 const mockConfirm = vi.spyOn(window, 'confirm');
@@ -42,8 +60,10 @@ describe('FeatureFlagAdmin', () => {
   beforeEach(() => {
     flagsData = [];
     auditData = [];
+    killData = [];
     invoke.mockClear();
     from.mockClear();
+    upsert.mockClear();
     success.mockClear();
     error.mockClear();
     mockConfirm.mockReturnValue(true);
@@ -79,7 +99,7 @@ describe('FeatureFlagAdmin', () => {
     flagsData = [{ id: '1', flag: 'test', enabled: true, percentage: 100, environment: 'development' }];
     render(<FeatureFlagAdmin />);
     fireEvent.click(await screen.findByText('test'));
-    const switchEl = screen.getByRole('switch');
+    const switchEl = screen.getAllByRole('switch')[0];
     fireEvent.click(switchEl);
     fireEvent.click(screen.getByText('Save'));
     await waitFor(() => expect(invoke).toHaveBeenCalled());
@@ -88,6 +108,19 @@ describe('FeatureFlagAdmin', () => {
         action: 'save',
         flag: { id: '1', flag: 'test', enabled: false }
       }
+    });
+  });
+
+  it('toggles kill switch for a flag', async () => {
+    flagsData = [{ id: '1', flag: 'test', enabled: true, percentage: 100, environment: 'development' }];
+    render(<FeatureFlagAdmin />);
+    fireEvent.click(await screen.findByText('test'));
+    const killSwitch = screen.getAllByRole('switch')[1];
+    fireEvent.click(killSwitch);
+    await waitFor(() => expect(upsert).toHaveBeenCalled());
+    expect(upsert.mock.calls[0][0]).toMatchObject({
+      key: 'emergency_kill',
+      value_jsonb: ['1']
     });
   });
 

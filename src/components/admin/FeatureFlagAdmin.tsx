@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface FeatureFlag {
   id?: string;
@@ -30,10 +31,17 @@ export const FeatureFlagAdmin: React.FC = () => {
   const [current, setCurrent] = useState<FeatureFlag>({ flag: '', enabled: true, percentage: 100, environment: 'development' });
   const [editing, setEditing] = useState<FeatureFlag | null>(null);
   const [audits, setAudits] = useState<AuditEntry[]>([]);
+  const [killed, setKilled] = useState<string[]>([]);
+  const { profile } = useAuth();
+  const tenantId = profile?.organization_id;
 
   useEffect(() => {
     fetchFlags();
   }, []);
+
+  useEffect(() => {
+    fetchKilled();
+  }, [tenantId]);
 
   const fetchFlags = async () => {
     const { data } = await supabase
@@ -41,6 +49,17 @@ export const FeatureFlagAdmin: React.FC = () => {
       .select('*')
       .order('flag');
     setFlags(data as FeatureFlag[] || []);
+  };
+
+  const fetchKilled = async () => {
+    if (!tenantId) return;
+    const { data } = await supabase
+      .from('platform_settings')
+      .select('value_jsonb')
+      .eq('tenant_id', tenantId)
+      .eq('key', 'emergency_kill')
+      .maybeSingle();
+    setKilled(Array.isArray(data?.value_jsonb) ? data.value_jsonb : []);
   };
 
   const fetchAudit = async (flagId: string) => {
@@ -108,6 +127,22 @@ export const FeatureFlagAdmin: React.FC = () => {
     }
   };
 
+  const toggleKill = async (flagId: string) => {
+    if (!tenantId) return;
+    const next = killed.includes(flagId)
+      ? killed.filter((id) => id !== flagId)
+      : [...killed, flagId];
+    try {
+      await supabase
+        .from('platform_settings')
+        .upsert({ tenant_id: tenantId, key: 'emergency_kill', value_jsonb: next });
+      setKilled(next);
+      toast.success('Kill switch atualizado');
+    } catch {
+      toast.error('Erro ao atualizar kill switch');
+    }
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -154,6 +189,15 @@ export const FeatureFlagAdmin: React.FC = () => {
             <Switch checked={current.enabled} onCheckedChange={(v) => handleField('enabled', v)} />
             <span>Enabled</span>
           </div>
+          {editing?.id && (
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={killed.includes(editing.id)}
+                onCheckedChange={() => toggleKill(editing.id!)}
+              />
+              <span>Kill switch</span>
+            </div>
+          )}
           <Button onClick={save}>Save</Button>
         </div>
 

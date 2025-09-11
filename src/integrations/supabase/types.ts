@@ -1578,6 +1578,35 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_settings: {
+        Row: {
+          tenant_id: string
+          key: string
+          value_jsonb: Json
+          updated_at: string
+        }
+        Insert: {
+          tenant_id: string
+          key: string
+          value_jsonb?: Json
+          updated_at?: string
+        }
+        Update: {
+          tenant_id?: string
+          key?: string
+          value_jsonb?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_settings_tenant_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       versions: {
         Row: {
           created_at: string | null
