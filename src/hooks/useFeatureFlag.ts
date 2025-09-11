@@ -24,7 +24,6 @@ async function loadFlags(userId?: string, plan?: string): Promise<void> {
       map[row.flag] = row.enabled;
     });
 
-    localStorage.removeItem(CACHE_KEY);
     localStorage.setItem(CACHE_KEY, JSON.stringify(map));
     window.dispatchEvent(new StorageEvent('storage', { key: CACHE_KEY }));
     return;
@@ -43,6 +42,7 @@ export const useFeatureFlag = (flag: string) => {
   });
 
   useEffect(() => {
+    localStorage.removeItem(CACHE_KEY);
     loadFlags(user?.id, profile?.plan || undefined);
   }, [user?.id, profile?.plan]);
 
