@@ -1,4 +1,12 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  ReactNode,
+  FC,
+} from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { z } from 'zod';
@@ -13,10 +21,10 @@ const FeatureFlagContext = createContext<Flags>({});
 let globalRefresh: (() => Promise<void>) | null = null;
 
 interface FeatureFlagProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-export const FeatureFlagProvider: React.FC<FeatureFlagProviderProps> = ({ children }) => {
+export const FeatureFlagProvider: FC<FeatureFlagProviderProps> = ({ children }) => {
   const { user, profile } = useAuth();
   const tenantId = profile?.organization_id;
   const userId = user?.id;
@@ -94,7 +102,11 @@ export const FeatureFlagProvider: React.FC<FeatureFlagProviderProps> = ({ childr
     return () => clearInterval(id);
   }, [cacheKey, refreshInterval, tenantId, userId, environment]);
 
-  return React.createElement(FeatureFlagContext.Provider, { value: flags }, children);
+  return (
+    <FeatureFlagContext.Provider value={flags}>
+      {children}
+    </FeatureFlagContext.Provider>
+  );
 };
 
 export const useFeatureFlag = (flag: string, debug = false) => {
