@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/integrations/supabase/client';
 import { logAudit } from '@/lib/audit';
 import { SITE_URL } from '@/config/site';
-import { corsHeaders, handleOptions } from '@/middleware/cors';
+import { corsHeaders } from '../_shared/cors';
 
 const maintenance =
   process.env.MAINTENANCE === 'true' || process.env.NEXT_PUBLIC_MAINTENANCE === 'true';
 const retryAfter = process.env.RETRY_AFTER || '3600';
 
 export async function POST(request: NextRequest) {
-  const headers = corsHeaders(request);
+  const headers = { ...corsHeaders };
   if (maintenance) {
     return NextResponse.json(
       { error: 'Service under maintenance' },
@@ -119,9 +119,8 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function OPTIONS(request: NextRequest) {
-  const res = handleOptions(request);
-  return res ?? new NextResponse(null, { status: 200, headers: corsHeaders(request) });
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders });
 }
 
 async function generatePDF(blocks: any[], messageId: string): Promise<string> {
