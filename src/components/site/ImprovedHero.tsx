@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowDown, Sparkles, Users, Shield, TrendingUp } from 'lucide-react';
+import { ArrowDown, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NeedsForm } from './NeedsForm';
 
@@ -8,11 +8,7 @@ interface ImprovedHeroProps {
   onSignup?: (data: { email: string; needs: string[]; otherNeed?: string }) => void;
 }
 
-const trustIndicators = [
-  { icon: Users, label: '1000+ Empresas', desc: 'Confiaram em nossa expertise' },
-  { icon: Shield, label: 'LGPD Compliant', desc: 'Máxima segurança de dados' },
-  { icon: TrendingUp, label: '80% Redução', desc: 'Em tarefas operacionais' }
-];
+// Trust indicators removed
 
 export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
   const [formVisible, setFormVisible] = useState(false);
@@ -97,33 +93,7 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
               </Button>
             </div>
 
-            {/* Trust Indicators */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 border-t border-accent/20">
-              {trustIndicators.map((item, index) => {
-                return (
-                  <div 
-                    key={index} 
-                    className="flex items-center space-x-3 p-4 rounded-lg bg-muted/30 border border-border/50 animate-slide-up"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-                      {/* Geometric minimalist icons */}
-                      {index === 0 && <div className="w-4 h-4 border-2 border-primary-foreground rounded-sm" />}
-                      {index === 1 && <div className="w-3 h-3 bg-primary-foreground rounded-full" />}
-                      {index === 2 && <div className="w-4 h-4 bg-primary-foreground transform rotate-45" />}
-                    </div>
-                    <div>
-                      <div className="font-semibold text-foreground text-sm">
-                        {item.label}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {item.desc}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            {/* Trust Indicators section removed */}
           </div>
 
           {/* Right Column - Dashboard Jurídico */}
