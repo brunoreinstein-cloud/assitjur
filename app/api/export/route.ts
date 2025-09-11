@@ -4,8 +4,18 @@ import { logAudit } from '@/lib/audit';
 import { SITE_URL } from '@/config/site';
 import { corsHeaders, handleOptions } from '@/middleware/cors';
 
+const maintenance =
+  process.env.MAINTENANCE === 'true' || process.env.NEXT_PUBLIC_MAINTENANCE === 'true';
+const retryAfter = process.env.RETRY_AFTER || '3600';
+
 export async function POST(request: NextRequest) {
   const headers = corsHeaders(request);
+  if (maintenance) {
+    return NextResponse.json(
+      { error: 'Service under maintenance' },
+      { status: 503, headers: { ...headers, 'Retry-After': retryAfter } }
+    );
+  }
   try {
     const { messageId, type, blocks } = await request.json();
     
