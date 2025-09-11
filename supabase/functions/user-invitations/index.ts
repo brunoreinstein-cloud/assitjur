@@ -139,6 +139,21 @@ const handler = async (req: Request): Promise<Response> => {
       metadata: { email, role, data_access_level, org_id }
     });
 
+    const siteUrl =
+      Deno.env.get('VITE_PUBLIC_SITE_URL') ??
+      (Deno.env.get('PRIMARY_DOMAIN')
+        ? `https://${Deno.env.get('PRIMARY_DOMAIN')}`
+        : undefined);
+
+    if (!siteUrl) {
+      return jsonError(
+        500,
+        'VITE_PUBLIC_SITE_URL is not defined',
+        { cid },
+        { ...ch, 'x-correlation-id': cid }
+      );
+    }
+
     return json(200, {
       success: true,
       message: 'Invitation created successfully',
@@ -148,7 +163,7 @@ const handler = async (req: Request): Promise<Response> => {
         role: invitation.role,
         data_access_level: invitation.data_access_level,
         expires_at: invitation.expires_at,
-        invitation_url: `${Deno.env.get('VITE_PUBLIC_SITE_URL') || 'http://localhost:5173'}/invite/${tokenData}`
+        invitation_url: `${siteUrl}/invite/${tokenData}`
       },
       cid
     }, { ...ch, 'x-correlation-id': cid });
