@@ -54,7 +54,7 @@ const REQUIRED_TESTEMUNHA = ["Nome_Testemunha", "CNJs_Como_Testemunha"];
 const REQUIRED_PROCESSO   = ["CNJ", "Reclamante_Limpo", "Reu_Nome"];
 
 const getHeaderRow = (sheet: WorkSheet, xlsx: any): string[] => {
-  const rows = xlsx.utils.sheet_to_json<string[]>(sheet, { header: 1, blankrows: false }) as any[];
+  const rows = xlsx.utils.sheet_to_json(sheet, { header: 1, blankrows: false }) as any[];
   return (rows[0] || []).map((h: any) => String(h || "").trim());
 };
 

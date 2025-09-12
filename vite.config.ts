@@ -11,7 +11,7 @@ const brotliAsync = promisify(brotliCompress);
 function compressPlugin() {
   return {
     name: "compress-plugin",
-    async generateBundle(_options, bundle) {
+    async generateBundle(_options: any, bundle: any) {
       for (const fileName of Object.keys(bundle)) {
         if (!/\.(js|css|html|svg|json)$/i.test(fileName)) continue;
         const asset = bundle[fileName];
@@ -22,13 +22,13 @@ function compressPlugin() {
               : asset.source
             : Buffer.from(asset.code);
         const gz = await gzipAsync(source);
-        this.emitFile({
+        (this as any).emitFile({
           type: "asset",
           fileName: `${fileName}.gz`,
           source: gz,
         });
         const br = await brotliAsync(source);
-        this.emitFile({
+        (this as any).emitFile({
           type: "asset",
           fileName: `${fileName}.br`,
           source: br,
