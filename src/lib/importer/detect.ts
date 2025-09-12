@@ -1,4 +1,3 @@
-import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { DetectedSheet, SheetModel } from './types';
 import { toSlugCase, detectCsvSeparator, onlyDigits } from './utils';
@@ -41,7 +40,8 @@ function detectSheetModel(headers: string[]): SheetModel {
 /**
  * Processa arquivo XLSX
  */
-function processXlsxFile(file: File): Promise<DetectedSheet[]> {
+async function processXlsxFile(file: File): Promise<DetectedSheet[]> {
+  const XLSX = await import('xlsx');
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     

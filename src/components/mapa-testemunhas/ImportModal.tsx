@@ -31,7 +31,7 @@ import {
 } from "@/lib/store/mapa-testemunhas";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import * as XLSX from 'xlsx';
+import type { WorkSheet } from 'xlsx';
 import { DataState, DataStatus } from "@/components/ui/data-state";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { useBeforeUnload } from "@/hooks/useBeforeUnload";
@@ -53,8 +53,8 @@ const parseList = (v: any): string[] => {
 const REQUIRED_TESTEMUNHA = ["Nome_Testemunha", "CNJs_Como_Testemunha"];
 const REQUIRED_PROCESSO   = ["CNJ", "Reclamante_Limpo", "Reu_Nome"];
 
-const getHeaderRow = (sheet: XLSX.WorkSheet): string[] => {
-  const rows = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1, blankrows: false }) as any[];
+const getHeaderRow = (sheet: WorkSheet, xlsx: any): string[] => {
+  const rows = xlsx.utils.sheet_to_json<string[]>(sheet, { header: 1, blankrows: false }) as any[];
   return (rows[0] || []).map((h: any) => String(h || "").trim());
 };
 
@@ -492,6 +492,7 @@ export function ImportModal() {
   const processExcelFile = async (
     file: File
   ): Promise<{ porProcesso: any[]; porTestemunha: any[]; errors: RowError[]; warnings?: RowError[] }> => {
+    const XLSX = await import('xlsx');
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -512,7 +513,7 @@ export function ImportModal() {
 
           // ----- Por Processo -----
           if (sheetProc) {
-            const headers = getHeaderRow(sheetProc);
+            const headers = getHeaderRow(sheetProc, XLSX);
             const { ok, missing } = hasHeaders(headers, REQUIRED_PROCESSO);
             if (!ok) throw new Error(`Modo Processo: faltam colunas: ${missing.join(", ")}`);
 
@@ -536,7 +537,7 @@ export function ImportModal() {
 
           // ----- Por Testemunha -----
           if (sheetTest) {
-            const headers = getHeaderRow(sheetTest);
+            const headers = getHeaderRow(sheetTest, XLSX);
             const { ok, missing } = hasHeaders(headers, REQUIRED_TESTEMUNHA);
             if (!ok) throw new Error(`Modo Testemunha: faltam colunas: ${missing.join(", ")}`);
 

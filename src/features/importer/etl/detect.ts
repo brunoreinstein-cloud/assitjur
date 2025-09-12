@@ -1,4 +1,3 @@
-import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import type { DetectedSheet, SheetModel } from '@/lib/importer/types';
 
@@ -100,6 +99,7 @@ function shouldIgnoreSheet(sheetName: string, headers: string[], dataRows: any[]
  * Detecta estrutura de arquivo Excel
  */
 async function detectExcelStructure(file: File): Promise<DetectedSheet[]> {
+  const XLSX = await import('xlsx');
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     
