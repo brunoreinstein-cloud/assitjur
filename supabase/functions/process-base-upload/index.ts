@@ -448,11 +448,12 @@ async function processFileInChunks(
       .eq('org_id', orgId)
       .neq('id', version.id);
 
-    await audit({
-      actor: userId,
+    await audit(req, {
+      user_id: userId,
+      org_id: orgId,
       action: 'base_published',
       resource: 'dataset_versions',
-      metadata: {
+      after: {
         organization_id: orgId,
         email: userEmail,
         version_id: version.id,

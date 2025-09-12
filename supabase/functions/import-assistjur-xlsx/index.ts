@@ -703,11 +703,12 @@ Deno.serve(async (req) => {
       })
       .eq('upload_id', uploadId);
 
-    await audit({
-      actor: user.id,
+    await audit(req, {
+      user_id: user.id,
+      org_id: profile.organization_id,
       action: 'IMPORT',
       resource: 'assistjur_xlsx',
-      metadata: {
+      after: {
         upload_id: uploadId,
         processos: processosEnhanced.length,
         testemunhas: testemunhasEnhanced.length

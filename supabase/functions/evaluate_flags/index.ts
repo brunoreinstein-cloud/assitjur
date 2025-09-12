@@ -106,11 +106,11 @@ export async function handler(req: Request): Promise<Response> {
       enabled = inter.length > 0;
     }
     flags[flag.key] = enabled;
-    await audit({
-      actor: user_id,
+    await audit(req, {
+      user_id,
+      org_id: tenant_id,
       action: "evaluated",
       resource: flag.flag_id,
-      metadata: { tenant_id },
     });
   }
 
