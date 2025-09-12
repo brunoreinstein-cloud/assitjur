@@ -1,7 +1,5 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Upload, CheckCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/lib/store/home";
