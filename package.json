@@ -20,7 +20,11 @@
     "check:seo": "bash scripts/check-seo.sh",
     "postbuild": "npm run sitemap:build",
     "audit": "tsx audit/index.ts",
-    "lh": "tsx audit/lighthouse.ts"
+    "lh": "tsx audit/lighthouse.ts",
+    "release": "standard-version",
+    "release:major": "standard-version --release-as major",
+    "release:minor": "standard-version --release-as minor",
+    "release:patch": "standard-version --release-as patch"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -122,6 +126,7 @@
     "yargs": "^17.7.2",
     "prettier": "^3.3.3",
     "tsx": "^4.7.0",
-    "chrome-launcher": "^1.0.0"
+    "chrome-launcher": "^1.0.0",
+    "standard-version": "^9.5.0"
   }
 }
