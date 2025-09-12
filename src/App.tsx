@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,7 +11,6 @@ import { AuthProvider as SupabaseAuthProvider } from "@/providers/AuthProvider";
 import AuthGuard from "@/components/AuthGuard";
 import { AppLayout } from "@/components/navigation/AppLayout";
 import { ErrorBoundary } from "@/components/core/ErrorBoundary";
-import AdminRoutes from "./routes/AdminRoutes";
 import { FooterLegal } from "@/components/common/FooterLegal";
 import { ServiceHealthProvider } from "@/hooks/useServiceHealth";
 import { StatusBanner } from "@/components/common/StatusBanner";
@@ -41,6 +40,7 @@ const LGPD = lazy(() => import("./pages/LGPD"));
 const TwoFactorSetup = lazy(() => import("./pages/TwoFactorSetup"));
 const ServerError = lazy(() => import("./pages/ServerError"));
 const Status = lazy(() => import("./pages/Status"));
+const AdminRoutes = lazy(() => import("./routes/AdminRoutes"));
 
 function AppRoutes() {
   const maintenance = useMaintenance();
@@ -129,44 +129,55 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <ServiceHealthProvider>
-        <AuthContextProvider>
-          <FeatureFlagProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <SessionExpiredModal />
-              <ConsentProvider>
-                <ConsentDialog />
-                <BrowserRouter
-                future={{
-                  v7_startTransition: true,
-                  v7_relativeSplatPath: true,
-                }}
-              >
-                <SupabaseAuthProvider>
-                  <div className="min-h-screen flex flex-col">
-                    <MaintenanceBanner />
-                    <StatusBanner />
-                    <div className="flex-1">
-                      <Suspense fallback={<div className="p-4">Carregando...</div>}>
-                        <AppRoutes />
-                      </Suspense>
+const App = () => {
+  useEffect(() => {
+    const prefetch = () => import("@/components/analytics/AnalyticsCharts");
+    if ("requestIdleCallback" in window) {
+      ;(window as any).requestIdleCallback(prefetch);
+    } else {
+      setTimeout(prefetch, 2000);
+    }
+  }, []);
+
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ServiceHealthProvider>
+          <AuthContextProvider>
+            <FeatureFlagProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <SessionExpiredModal />
+                <ConsentProvider>
+                  <ConsentDialog />
+                  <BrowserRouter
+                  future={{
+                    v7_startTransition: true,
+                    v7_relativeSplatPath: true,
+                  }}
+                >
+                  <SupabaseAuthProvider>
+                    <div className="min-h-screen flex flex-col">
+                      <MaintenanceBanner />
+                      <StatusBanner />
+                      <div className="flex-1">
+                        <Suspense fallback={<div className="p-4">Carregando...</div>}>
+                          <AppRoutes />
+                        </Suspense>
+                      </div>
+                      <FooterLegal />
                     </div>
-                    <FooterLegal />
-                  </div>
-                </SupabaseAuthProvider>
-              </BrowserRouter>
-            </ConsentProvider>
-            </TooltipProvider>
-          </FeatureFlagProvider>
-        </AuthContextProvider>
-      </ServiceHealthProvider>
-    </QueryClientProvider>
-  </ErrorBoundary>
-);
+                  </SupabaseAuthProvider>
+                </BrowserRouter>
+              </ConsentProvider>
+              </TooltipProvider>
+            </FeatureFlagProvider>
+          </AuthContextProvider>
+        </ServiceHealthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+};
 
 export default App;

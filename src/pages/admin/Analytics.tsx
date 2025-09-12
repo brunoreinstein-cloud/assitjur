@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,12 +21,10 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { analyticsAllowed } from '@/middleware/consent';
 import { toast } from 'sonner';
-import { 
-  UsageChart, 
-  RiskDistributionChart, 
-  ComarcaRiskChart,
-  TokensChart 
-} from '@/components/analytics/AnalyticsCharts';
+const UsageChart = lazy(() => import('@/components/analytics/AnalyticsCharts').then(m => ({ default: m.UsageChart })));
+const RiskDistributionChart = lazy(() => import('@/components/analytics/AnalyticsCharts').then(m => ({ default: m.RiskDistributionChart })));
+const ComarcaRiskChart = lazy(() => import('@/components/analytics/AnalyticsCharts').then(m => ({ default: m.ComarcaRiskChart })));
+const TokensChart = lazy(() => import('@/components/analytics/AnalyticsCharts').then(m => ({ default: m.TokensChart })));
 
 interface ReportData {
   period: string;
@@ -362,10 +360,18 @@ const Analytics = () => {
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2">
-              <UsageChart data={usageData?.dailyUsage || []} />
-              <TokensChart data={usageData?.dailyUsage || []} />
-              <RiskDistributionChart data={reportData?.riskPatterns?.riskDistribution || { low: 0, medium: 0, high: 0 }} />
-              <ComarcaRiskChart data={reportData?.riskPatterns?.comarcaStats || []} />
+              <Suspense fallback={<Skeleton className="h-[300px]" />}>
+                <UsageChart data={usageData?.dailyUsage || []} />
+              </Suspense>
+              <Suspense fallback={<Skeleton className="h-[300px]" />}>
+                <TokensChart data={usageData?.dailyUsage || []} />
+              </Suspense>
+              <Suspense fallback={<Skeleton className="h-[300px]" />}>
+                <RiskDistributionChart data={reportData?.riskPatterns?.riskDistribution || { low: 0, medium: 0, high: 0 }} />
+              </Suspense>
+              <Suspense fallback={<Skeleton className="h-[300px]" />}>
+                <ComarcaRiskChart data={reportData?.riskPatterns?.comarcaStats || []} />
+              </Suspense>
             </div>
           )}
 

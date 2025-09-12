@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Upload, CheckCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/lib/store/home";
-import heroImage from "@/assets/hero-legal-tech.jpg";
+import { heroImageJpg, heroImageWebp, heroImageAvif } from "@/assets/heroImages";
 
 export const HeroDropzone = () => {
   const navigate = useNavigate();
@@ -32,7 +32,7 @@ export const HeroDropzone = () => {
       <div 
         className="relative bg-cover bg-center rounded-3xl shadow-premium overflow-hidden"
         style={{
-          backgroundImage: `linear-gradient(135deg, hsl(var(--primary) / 0.95), hsl(var(--primary-light) / 0.85)), url(${heroImage})`,
+          backgroundImage: `linear-gradient(135deg, hsl(var(--primary) / 0.95), hsl(var(--primary-light) / 0.85)), image-set(url(${heroImageAvif}) type('image/avif'), url(${heroImageWebp}) type('image/webp'), url(${heroImageJpg}) type('image/jpeg'))`,
           minHeight: '600px'
         }}
       >

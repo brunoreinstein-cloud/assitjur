@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
+import { Skeleton } from '@/components/ui/skeleton';
+import {
   Database, 
   CheckCircle2, 
   Upload, 
@@ -18,12 +19,10 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { 
-  UsageChart, 
-  RiskDistributionChart, 
-  ComarcaRiskChart,
-  TokensChart 
-} from '@/components/analytics/AnalyticsCharts';
+const UsageChart = lazy(() => import('@/components/analytics/AnalyticsCharts').then(m => ({ default: m.UsageChart })));
+const RiskDistributionChart = lazy(() => import('@/components/analytics/AnalyticsCharts').then(m => ({ default: m.RiskDistributionChart })));
+const ComarcaRiskChart = lazy(() => import('@/components/analytics/AnalyticsCharts').then(m => ({ default: m.ComarcaRiskChart })));
+const TokensChart = lazy(() => import('@/components/analytics/AnalyticsCharts').then(m => ({ default: m.TokensChart })));
 import { ReviewUpdateButton } from '@/components/admin/ReviewUpdateButton';
 import { DatabaseCleanupButton } from '@/components/admin/DatabaseCleanupButton';
 import { WitnessDataProcessor } from '@/components/admin/WitnessDataProcessor';
@@ -228,7 +227,9 @@ const Dashboard = () => {
 
           {/* Charts */}
           <div className="grid gap-6 md:grid-cols-2">
-            <RiskDistributionChart data={overviewData?.riskDistribution || { low: 0, medium: 0, high: 0 }} />
+            <Suspense fallback={<Skeleton className="h-[300px]" />}>
+              <RiskDistributionChart data={overviewData?.riskDistribution || { low: 0, medium: 0, high: 0 }} />
+            </Suspense>
             
             <Card>
               <CardHeader>
@@ -320,8 +321,12 @@ const Dashboard = () => {
 
               {/* Usage Charts */}
               <div className="grid gap-6">
-                <UsageChart data={usageData.dailyUsage} />
-                <TokensChart data={usageData.dailyUsage} />
+                <Suspense fallback={<Skeleton className="h-[300px]" />}>
+                  <UsageChart data={usageData.dailyUsage} />
+                </Suspense>
+                <Suspense fallback={<Skeleton className="h-[300px]" />}>
+                  <TokensChart data={usageData.dailyUsage} />
+                </Suspense>
               </div>
             </>
           ) : (
@@ -380,7 +385,9 @@ const Dashboard = () => {
               </div>
 
               {/* Risk Charts */}
-              <ComarcaRiskChart data={riskPatternData.comarcaStats} />
+              <Suspense fallback={<Skeleton className="h-[300px]" />}>
+                <ComarcaRiskChart data={riskPatternData.comarcaStats} />
+              </Suspense>
             </>
           ) : (
             <div className="flex items-center justify-center min-h-[300px]">

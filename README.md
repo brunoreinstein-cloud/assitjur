@@ -17,6 +17,12 @@
 - **Testes:** Vitest + Testing Library
 - **Segurança:** RLS, sanitização de entrada, rate limiting
 
+## ⚡️ Otimizações de Performance
+
+- Preload de fontes Inter e carregamento dinâmico de rotas
+- Imagens estáticas em AVIF/WebP com `image-set`
+- Compressão gzip/brotli e remoção de `console`/`debugger` em produção
+
 ---
 
 ## 📚 Documentação
