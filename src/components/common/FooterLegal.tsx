@@ -26,10 +26,10 @@ export function FooterLegal() {
           <button onClick={() => setOpen(true)} className={linkClasses}>
             Privacidade / Gerenciar cookies
           </button>
-          <Link to="/politica-de-privacidade" className={linkClasses}>
+          <Link to="/privacidade" className={linkClasses}>
             Política de Privacidade
           </Link>
-          <Link to="/termos-de-uso" className={linkClasses}>
+          <Link to="/termos" className={linkClasses}>
             Termos de Uso
           </Link>
           <Link to="/lgpd" className={linkClasses}>
