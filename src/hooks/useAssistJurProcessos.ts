@@ -131,7 +131,8 @@ export function useAssistJurProcessos(filters: ProcessosFilters = {}, limit = 50
         return false;
       }
       return failureCount < 2;
-    }
+    },
+    staleTime: 5 * 60 * 1000,
   });
 
   return {
@@ -181,6 +182,7 @@ export function useAssistJurStats() {
       }
     },
     enabled: !!profile?.organization_id,
+    staleTime: 5 * 60 * 1000,
   });
 
   return {
