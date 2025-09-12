@@ -1,11 +1,12 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Upload, CheckCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/lib/store/home";
-import heroImage from "@/assets/hero-legal-tech.jpg";
+const heroImageAvif =
+  "https://placehold.co/1600x900/000000/FFFFFF.avif?text=AssistJur";
+const heroImageWebp =
+  "https://placehold.co/1600x900/000000/FFFFFF.webp?text=AssistJur";
 
 export const HeroDropzone = () => {
   const navigate = useNavigate();
@@ -29,10 +30,10 @@ export const HeroDropzone = () => {
   return (
     <section className="relative mb-20">
       {/* Hero Background */}
-      <div 
+      <div
         className="relative bg-cover bg-center rounded-3xl shadow-premium overflow-hidden"
         style={{
-          backgroundImage: `linear-gradient(135deg, hsl(var(--primary) / 0.95), hsl(var(--primary-light) / 0.85)), url(${heroImage})`,
+          backgroundImage: `linear-gradient(135deg, hsl(var(--primary) / 0.95), hsl(var(--primary-light) / 0.85)), image-set(url(${heroImageAvif}) type("image/avif"), url(${heroImageWebp}) type("image/webp"))`,
           minHeight: '600px'
         }}
       >
