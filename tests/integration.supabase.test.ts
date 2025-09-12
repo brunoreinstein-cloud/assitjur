@@ -5,32 +5,28 @@ import { describe, it, expect } from 'vitest'
 import { createClient, Session } from '@supabase/supabase-js'
 import { config as loadEnv } from 'dotenv'
 
-loadEnv()
+loadEnv({ path: '.env.local' })
 
-const SUPABASE_URL = process.env.SUPABASE_URL as string
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY as string
+const SUPABASE_URL = process.env.SUPABASE_TEST_URL as string | undefined
+const SUPABASE_KEY = process.env.SUPABASE_TEST_KEY as string | undefined
 const TEST_EMAIL = process.env.SUPABASE_TEST_EMAIL
 const TEST_PASSWORD = process.env.SUPABASE_TEST_PASSWORD
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  throw new Error('Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables')
-}
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+const hasEnv = SUPABASE_URL && SUPABASE_KEY && TEST_EMAIL && TEST_PASSWORD
+const supabase = hasEnv ? createClient(SUPABASE_URL, SUPABASE_KEY) : null as any
 
 async function getSession(): Promise<Session> {
-  if (!TEST_EMAIL || !TEST_PASSWORD) {
-    throw new Error('Missing SUPABASE_TEST_EMAIL or SUPABASE_TEST_PASSWORD')
-  }
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: TEST_EMAIL,
-    password: TEST_PASSWORD,
-  })
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: TEST_EMAIL!,
+      password: TEST_PASSWORD!,
+    })
   if (error || !data.session) throw error ?? new Error('No session')
   return data.session
 }
 
-describe('Supabase integration', () => {
+const suite = hasEnv ? describe : describe.skip
+
+suite('Supabase integration', () => {
   it('queries tables and invokes edge function', async () => {
     const session = await getSession()
     console.log('session acquired')

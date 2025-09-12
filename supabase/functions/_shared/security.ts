@@ -3,7 +3,7 @@ import type { ZodSchema } from "npm:zod@4.1.3";
 import { validateJWT } from "./jwt.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+const PUBLISHABLE_KEY = Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
 const RATE_LIMIT_MAX = Number(Deno.env.get("RATE_LIMIT_MAX") ?? "20");
 const RATE_LIMIT_WINDOW_MS = Number(Deno.env.get("RATE_LIMIT_WINDOW_MS") ?? "60000");
 
@@ -23,7 +23,7 @@ export function createSecureErrorResponse(message: string, status = 400): Respon
 }
 
 export function createAuthenticatedClient(jwt: string): SupabaseClient {
-  return createClient(SUPABASE_URL, ANON_KEY, {
+  return createClient(SUPABASE_URL, PUBLISHABLE_KEY, {
     global: { headers: { Authorization: `Bearer ${jwt}` } },
     auth: { autoRefreshToken: false, persistSession: false }
   });

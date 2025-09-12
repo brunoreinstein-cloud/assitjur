@@ -5,10 +5,10 @@ import { describe, it, expect } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
 import { config as loadEnv } from 'dotenv';
 
-loadEnv();
+loadEnv({ path: '.env.local' });
 
-const url = process.env.SUPABASE_URL as string | undefined;
-const key = process.env.SUPABASE_ANON_KEY as string | undefined;
+const url = process.env.SUPABASE_TEST_URL as string | undefined;
+const key = process.env.SUPABASE_TEST_KEY as string | undefined;
 
 const supabase = url && key ? createClient(url, key) : null;
 

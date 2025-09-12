@@ -10,7 +10,7 @@ serve('rollback-version', async (req) => {
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
+      Deno.env.get('SUPABASE_PUBLISHABLE_KEY')!,
       {
         auth: {
           autoRefreshToken: false,

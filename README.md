@@ -43,11 +43,17 @@ npm install
 
 ### 3. Configurar variáveis de ambiente
 
-Crie um arquivo `.env` (não commitado). Use o modelo abaixo:
+Copie o arquivo de exemplo e preencha com seus valores locais:
+
+```bash
+cp .env.example .env.local
+```
+
+Edite o arquivo `.env.local` gerado. Exemplo de conteúdo:
 
 ```bash
 VITE_SUPABASE_URL="https://xxxx.supabase.co"
-VITE_SUPABASE_ANON_KEY="chave-publica"
+VITE_SUPABASE_PUBLISHABLE_KEY="chave-publica"
 VITE_DEFAULT_ORG="assistjur"
 VITE_INACTIVITY_TIMEOUT_MINUTES="30"
 VITE_ALLOWED_ORIGINS="http://localhost:5173"
@@ -58,8 +64,11 @@ VITE_FEATURE_FLAGS_CACHE_TTL="300000"
 VITE_MAINTENANCE="false"
 
 SUPABASE_URL="https://xxxx.supabase.co"
-SUPABASE_ANON_KEY="public-anon-key"
+SUPABASE_PUBLISHABLE_KEY="public-publishable-key"
 SUPABASE_SERVICE_ROLE_KEY="service-role-key"
+SUPABASE_TEST_URL="https://xxxx.supabase.co"
+SUPABASE_TEST_KEY="chave-publica"
+PLAYWRIGHT_BASE_URL="http://localhost:5173"
 JWT_SECRET="sup3r-s3cret"
 RATE_LIMIT_MAX="20"
 RATE_LIMIT_WINDOW_MS="60000"
@@ -68,7 +77,7 @@ RATE_LIMIT_WINDOW_MS="60000"
 Os valores `https://xxxx.supabase.co`, `chave-publica` e demais exemplos acima são placeholders.
 Substitua-os pelos dados reais do seu projeto Supabase ao rodar o app localmente ou em produção.
 
-Nunca exponha chaves privadas no repositório. Use `.env.example` para documentação.
+Nunca exponha chaves privadas no repositório. Use `.env.example` apenas como referência.
 
 #### Variáveis no CI
 
@@ -78,7 +87,7 @@ evitar falhas silenciosas durante o `npm run build`:
 
 ```
 VITE_SUPABASE_URL
-VITE_SUPABASE_ANON_KEY
+VITE_SUPABASE_PUBLISHABLE_KEY
 VITE_DEFAULT_ORG
 VITE_INACTIVITY_TIMEOUT_MINUTES
 VITE_ALLOWED_ORIGINS
@@ -89,7 +98,7 @@ VITE_FEATURE_FLAGS_CACHE_TTL
 VITE_MAINTENANCE
 ```
 
-Se os secrets `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` não forem definidos,
+Se os secrets `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` não forem definidos,
 o workflow de CI usará os placeholders `https://placeholder.supabase.co` e `placeholder-key`.
 Use esses valores apenas para builds de exemplo; configure os secrets com os valores reais
 do seu projeto Supabase para builds que acessam um backend de verdade.
@@ -148,7 +157,7 @@ Use o script `scripts/smoke-edge.sh` para fazer um teste rápido da Edge Functio
 
 ```bash
 FUNCTION_URL="https://example.supabase.co/functions/v1/chat-legal" \
-ANON_KEY="chave-publica" \
+SUPABASE_PUBLISHABLE_KEY="chave-publica" \
 JWT="token-jwt" \
 scripts/smoke-edge.sh
 ```
