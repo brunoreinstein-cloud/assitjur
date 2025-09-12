@@ -2,7 +2,7 @@ import React from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { AppHeader } from './AppHeader';
-import { NotificationCenter } from '@/components/core/NotificationCenter';
+import { PageFade } from '@/components/core/PageFade';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -18,7 +18,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <AppHeader />
           
           <main className="flex-1 overflow-hidden">
-            {children}
+            <PageFade>{children}</PageFade>
           </main>
         </div>
       </div>
