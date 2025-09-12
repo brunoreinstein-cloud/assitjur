@@ -7,6 +7,8 @@ const heroImageAvif =
   "https://placehold.co/1600x900/000000/FFFFFF.avif?text=AssistJur";
 const heroImageWebp =
   "https://placehold.co/1600x900/000000/FFFFFF.webp?text=AssistJur";
+const heroImageJpg =
+  "https://placehold.co/1600x900/000000/FFFFFF.jpg?text=AssistJur";
 
 export const HeroDropzone = () => {
   const navigate = useNavigate();
@@ -33,7 +35,7 @@ export const HeroDropzone = () => {
       <div
         className="relative bg-cover bg-center rounded-3xl shadow-premium overflow-hidden"
         style={{
-          backgroundImage: `linear-gradient(135deg, hsl(var(--primary) / 0.95), hsl(var(--primary-light) / 0.85)), image-set(url(${heroImageAvif}) type("image/avif"), url(${heroImageWebp}) type("image/webp"))`,
+          backgroundImage: `linear-gradient(135deg, hsl(var(--primary) / 0.95), hsl(var(--primary-light) / 0.85)), image-set(url(${heroImageAvif}) type('image/avif'), url(${heroImageWebp}) type('image/webp'), url(${heroImageJpg}) type('image/jpeg'))`,
           minHeight: '600px'
         }}
       >
