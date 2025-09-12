@@ -267,7 +267,3 @@ Tipos comuns: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `secu
 
 Propriedade intelectual de **Assistjur.IA**.
 Uso restrito a colaboradores autorizados.
-
-```
-
-```
