@@ -16,56 +16,45 @@ export type Database = {
     Tables: {
       audit_logs: {
         Row: {
-          action: string
-          created_at: string
-          email: string | null
+          action: string | null
+          created_at: string | null
           id: string
-          ip_address: unknown | null
-          metadata: Json | null
-          organization_id: string | null
-          resource: string | null
-          result: string
-          role: Database["public"]["Enums"]["user_role"] | null
+          ip_address: string | null
+          legal_basis: string | null
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string | null
+          table_name: string
           user_agent: string | null
           user_id: string | null
         }
         Insert: {
-          action: string
-          created_at?: string
-          email?: string | null
+          action?: string | null
+          created_at?: string | null
           id?: string
-          ip_address?: unknown | null
-          metadata?: Json | null
-          organization_id?: string | null
-          resource?: string | null
-          result: string
-          role?: Database["public"]["Enums"]["user_role"] | null
+          ip_address?: string | null
+          legal_basis?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name: string
           user_agent?: string | null
           user_id?: string | null
         }
         Update: {
-          action?: string
-          created_at?: string
-          email?: string | null
+          action?: string | null
+          created_at?: string | null
           id?: string
-          ip_address?: unknown | null
-          metadata?: Json | null
-          organization_id?: string | null
-          resource?: string | null
-          result?: string
-          role?: Database["public"]["Enums"]["user_role"] | null
+          ip_address?: string | null
+          legal_basis?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name?: string
           user_agent?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "audit_logs_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       beta_signups: {
         Row: {
@@ -385,33 +374,6 @@ export type Database = {
         }
         Relationships: []
       }
-      feature_flags: {
-        Row: {
-          enabled: boolean
-          flag: string
-          id: string
-          plan: string | null
-          updated_at: string
-          user_id: string | null
-        }
-        Insert: {
-          enabled?: boolean
-          flag: string
-          id?: string
-          plan?: string | null
-          updated_at?: string
-          user_id?: string | null
-        }
-        Update: {
-          enabled?: boolean
-          flag?: string
-          id?: string
-          plan?: string | null
-          updated_at?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       import_errors: {
         Row: {
           column_name: string | null
@@ -540,6 +502,27 @@ export type Database = {
           metadata?: Json | null
           status?: string
           tax_amount?: number
+        }
+        Relationships: []
+      }
+      legal_cases: {
+        Row: {
+          case_number: string | null
+          created_at: string | null
+          id: string
+          org_id: string | null
+        }
+        Insert: {
+          case_number?: string | null
+          created_at?: string | null
+          id?: string
+          org_id?: string | null
+        }
+        Update: {
+          case_number?: string | null
+          created_at?: string | null
+          id?: string
+          org_id?: string | null
         }
         Relationships: []
       }
@@ -1082,7 +1065,6 @@ export type Database = {
           is_active: boolean
           last_login_at: string | null
           organization_id: string | null
-          plan: string | null
           role: Database["public"]["Enums"]["user_role"]
           terms_accepted_at: string | null
           updated_at: string
@@ -1098,7 +1080,6 @@ export type Database = {
           is_active?: boolean
           last_login_at?: string | null
           organization_id?: string | null
-          plan?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           terms_accepted_at?: string | null
           updated_at?: string
@@ -1114,7 +1095,6 @@ export type Database = {
           is_active?: boolean
           last_login_at?: string | null
           organization_id?: string | null
-          plan?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           terms_accepted_at?: string | null
           updated_at?: string
@@ -1578,35 +1558,6 @@ export type Database = {
         }
         Relationships: []
       }
-      platform_settings: {
-        Row: {
-          tenant_id: string
-          key: string
-          value_jsonb: Json
-          updated_at: string
-        }
-        Insert: {
-          tenant_id: string
-          key: string
-          value_jsonb?: Json
-          updated_at?: string
-        }
-        Update: {
-          tenant_id?: string
-          key?: string
-          value_jsonb?: Json
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "platform_settings_tenant_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       versions: {
         Row: {
           created_at: string | null
@@ -1643,8 +1594,33 @@ export type Database = {
         }
         Relationships: []
       }
+      witness_data: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string | null
+          org_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name?: string | null
+          org_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string | null
+          org_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
+      minha_view: {
+        Row: {}
+        Relationships: []
+      }
       v_arpa_by_month: {
         Row: {
           arpa: number | null
@@ -1881,6 +1857,16 @@ export type Database = {
       gtrgm_out: {
         Args: { "": unknown }
         Returns: unknown
+      }
+      log_audit: {
+        Args: {
+          p_action: string
+          p_new: Json
+          p_old: Json
+          p_record: string
+          p_table: string
+        }
+        Returns: undefined
       }
       log_data_access: {
         Args: {
