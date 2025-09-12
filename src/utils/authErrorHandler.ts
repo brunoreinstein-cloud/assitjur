@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useSessionStore } from '@/stores/useSessionStore';
 import { toast } from '@/hooks/use-toast';
+import { logError, logWarn } from '@/lib/logger';
 
 export interface AuthErrorHandlerOptions {
   redirectToLogin?: boolean;
@@ -41,7 +42,7 @@ export class AuthErrorHandler {
       preserveCurrentUrl = true
     } = options;
 
-    console.warn('Auth error detected:', error);
+    logWarn('Auth error detected', { error: error.message || error }, 'AuthErrorHandler');
 
     // Clear all auth-related storage
     await this.clearAuthData();
@@ -88,7 +89,7 @@ export class AuthErrorHandler {
       }
       sessionKeys.forEach(key => sessionStorage.removeItem(key));
     } catch (error) {
-      console.error('Error clearing auth data:', error);
+      logError('Error clearing auth data', { error }, 'AuthErrorHandler');
     }
   }
 
@@ -121,7 +122,7 @@ export class AuthErrorHandler {
 
       return true;
     } catch (error) {
-      console.error('Session recovery failed:', error);
+      logError('Session recovery failed', { error }, 'AuthErrorHandler');
       if (this.isAuthError(error)) {
         await this.clearAuthData();
       }

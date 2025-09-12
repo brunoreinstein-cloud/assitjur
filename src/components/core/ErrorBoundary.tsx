@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { logError } from '@/lib/logger';
 import ServerError from '@/pages/ServerError';
 
 interface Props {
@@ -24,7 +25,11 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    logError('ErrorBoundary caught an error', { 
+      error: error.message || error,
+      stack: error.stack,
+      errorInfo: errorInfo.componentStack 
+    }, 'ErrorBoundary');
     
     this.setState({
       error,
@@ -39,11 +44,11 @@ export class ErrorBoundary extends Component<Props, State> {
       // Log to external service in production
       if (import.meta.env.PROD) {
       // Example: Sentry, LogRocket, etc.
-      console.error('Production error:', {
+      logError('Production error', {
         error: error.message,
         stack: error.stack,
         componentStack: errorInfo.componentStack
-      });
+      }, 'ErrorBoundary-Production');
     }
   }
 
@@ -68,15 +73,19 @@ export class ErrorBoundary extends Component<Props, State> {
 // Hook version for functional components
 export function useErrorHandler() {
   return (error: Error, errorInfo?: ErrorInfo) => {
-    console.error('Component error:', error, errorInfo);
+    logError('Component error', { 
+      error: error.message || error,
+      stack: error.stack,
+      ...errorInfo 
+    }, 'useErrorHandler');
     
       // Log to external service
       if (import.meta.env.PROD) {
-      console.error('Production component error:', {
+      logError('Production component error', {
         error: error.message,
         stack: error.stack,
         ...errorInfo
-      });
+      }, 'useErrorHandler-Production');
     }
   };
 }

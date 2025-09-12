@@ -1,6 +1,7 @@
 // Secure data access functions using the new RPC endpoints
 
 import { supabase } from "@/integrations/supabase/client";
+import { logError } from "@/lib/logger";
 
 /**
  * Get masked pessoas data with proper access control
@@ -12,7 +13,7 @@ export async function getMaskedPessoas(orgId?: string) {
   });
   
   if (error) {
-    console.error('Error fetching masked pessoas:', error);
+    logError('Error fetching masked pessoas', { error: error.message || error, orgId }, 'supabase-security');
     throw error;
   }
   
@@ -29,7 +30,7 @@ export async function getMaskedProcessos(orgId?: string) {
   });
   
   if (error) {
-    console.error('Error fetching masked processos:', error);
+    logError('Error fetching masked processos', { error: error.message || error, orgId }, 'supabase-security');
     throw error;
   }
   
@@ -46,7 +47,7 @@ export async function canAccessSensitiveData() {
   });
   
   if (error) {
-    console.error('Error checking data access:', error);
+    logError('Error checking data access', { error: error.message || error }, 'supabase-security');
     return false;
   }
   
@@ -60,7 +61,7 @@ export async function getCurrentUserRole() {
   const { data, error } = await supabase.rpc('get_current_user_role');
   
   if (error) {
-    console.error('Error getting user role:', error);
+    logError('Error getting user role', { error: error.message || error }, 'supabase-security');
     return null;
   }
   
@@ -74,7 +75,7 @@ export async function getCurrentUserOrg() {
   const { data, error } = await supabase.rpc('get_current_user_org');
   
   if (error) {
-    console.error('Error getting user org:', error);
+    logError('Error getting user org', { error: error.message || error }, 'supabase-security');
     return null;
   }
   
