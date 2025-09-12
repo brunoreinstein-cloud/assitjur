@@ -3,9 +3,9 @@ import { z } from 'zod';
 // Schemas de validação alinhados com a tabela processos do Supabase
 export const ProcessoRowSchema = z.object({
   cnj: z.string().min(1, 'CNJ é obrigatório'),
-  cnj_digits: z.string().length(20).refine(v => /^\d{20}$/.test(v), 'CNJ deve ter 20 dígitos'),
+  cnj_digits: z.string().optional().nullable(),
   reclamante_nome: z.string().min(1, 'Nome do reclamante é obrigatório'),
-  reu_nome: z.string().min(1, 'Nome do réu é obrigatório'),
+  reu_nome: z.string().optional().nullable(),
   comarca: z.string().optional().nullable(),
   tribunal: z.string().optional().nullable(),
   vara: z.string().optional().nullable(),
@@ -23,7 +23,7 @@ export const ProcessoRowSchema = z.object({
 // Para compatibilidade com sistema antigo
 export const TestemunhaRowSchema = z.object({
   cnj: z.string().min(1),
-  cnj_digits: z.string().length(20).refine(v => /^\d{20}$/.test(v), 'CNJ deve ter 20 dígitos'),
+  cnj_digits: z.string().optional().nullable(),
   nome_testemunha: z.string().min(1, 'Nome da testemunha é obrigatório'),
   reclamante_nome: z.string().optional().nullable(),
   reu_nome: z.string().optional().nullable(),
