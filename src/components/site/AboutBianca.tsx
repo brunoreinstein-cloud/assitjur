@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Building2, Award, Briefcase, Users } from "lucide-react";
+import { Building2, Building, Award, Briefcase, Users } from "lucide-react";
 
 export function AboutBianca() {
   const experiences = [
@@ -24,6 +24,14 @@ export function AboutBianca() {
       role: "Estruturou área dedicada à gestão de passivos trabalhistas com foco em tecnologia e inovação.",
       color: "text-success",
       bgColor: "bg-success/10",
+    },
+    {
+      icon: Building,
+      company: "BR Consultoria",
+      role:
+        "A BR Consultoria, fundada por Bianca Reinstein, é uma boutique especializada em gestão estratégica de passivos judiciais.",
+      color: "text-blue-500",
+      bgColor: "bg-blue-500/10",
     },
   ];
 
@@ -83,7 +91,7 @@ export function AboutBianca() {
                 Experiências marcantes:
               </h3>
 
-              <div className="grid md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {experiences.map((exp, index) => (
                   <Card
                     key={index}
