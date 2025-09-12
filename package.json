@@ -5,9 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/build.js",
-    "build:vite": "vite build",
-    "build:dev": "vite build --mode development",
+    "build": "tsc -b && vite build",
     "lint": "eslint .",
     "lint:views": "scripts/audit-security-invoker.sh",
     "preview": "vite preview",
@@ -29,7 +27,7 @@
     "release:major": "standard-version --release-as major",
     "release:minor": "standard-version --release-as minor",
     "release:patch": "standard-version --release-as patch",
-    "type-check": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "prepare": "husky install",
     "protect:branches": "ts-node tools/protect-branches.ts",
     "branch:feature": "node tools/branch.js feature",
@@ -144,5 +142,8 @@
     "lint-staged": "^15.2.7",
     "@octokit/rest": "^20.0.0",
     "rollup-plugin-visualizer": "^5.11.0"
+  },
+  "engines": {
+    "node": ">=18 <20"
   }
 }
