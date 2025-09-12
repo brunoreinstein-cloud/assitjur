@@ -1,18 +1,34 @@
 #!/usr/bin/env bash
 # Usage: DOMAIN=https://assistjur.com.br scripts/check-seo.sh
 
-set -e
-DOMAIN=${DOMAIN:-https://assistjur.com.br}
+set -euo pipefail
+DOMAIN="${DOMAIN:-https://assistjur.com.br}"
 
 echo "Robots.txt"
-curl -s -o /tmp/robots.txt -w "%{http_code}\n" "$DOMAIN/robots.txt" | grep 200 >/dev/null && echo "  OK" || echo "  missing"
-grep -i "sitemap" /tmp/robots.txt || echo "  Sitemap not declared"
+if curl -fsSL "$DOMAIN/robots.txt" -o /tmp/robots.txt; then
+  echo "  OK"
+  grep -i "sitemap" /tmp/robots.txt || echo "  Sitemap not declared"
+else
+  echo "  missing"
+fi
 
 echo "sitemap.xml"
-curl -s -o /tmp/sitemap.xml -w "%{http_code}\n" "$DOMAIN/sitemap.xml" | grep 200 >/dev/null && echo "  OK" || echo "  missing"
+if curl -fsSL "$DOMAIN/sitemap.xml" -o /tmp/sitemap.xml; then
+  echo "  OK"
+else
+  echo "  missing"
+fi
 
 for path in "/" "/mapa"; do
   echo "Checking canonical on $path"
-  curl -s "$DOMAIN$path" | grep -i 'rel="canonical"' >/dev/null && echo "  canonical OK" || echo "  canonical missing"
-  curl -s "$DOMAIN$path" | egrep -i 'og:title|og:image|twitter:card|twitter:image' >/dev/null && echo "  OG/Twitter OK" || echo "  OG/Twitter missing"
+  if curl -fsSL "$DOMAIN$path" | grep -iq 'rel="canonical"'; then
+    echo "  canonical OK"
+  else
+    echo "  canonical missing"
+  fi
+  if curl -fsSL "$DOMAIN$path" | egrep -iq 'og:title|og:image|twitter:card|twitter:image'; then
+    echo "  OG/Twitter OK"
+  else
+    echo "  OG/Twitter missing"
+  fi
 done

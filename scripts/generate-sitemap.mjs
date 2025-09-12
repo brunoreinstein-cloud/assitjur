@@ -14,7 +14,7 @@ const stripTracking = (url) =>
 
 async function generate() {
   const raw = await readFile(routesPath, 'utf8');
-  const routes = [...new Set(JSON.parse(raw))];
+  const routes = [...new Set(JSON.parse(raw))].sort();
   const lastmod = new Date().toISOString();
 
   const urls = routes

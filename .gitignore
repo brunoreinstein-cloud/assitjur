@@ -3,3 +3,7 @@
 .env.*
 !.env.example
 !.env.production
+
+# generated
+public/sitemap.xml
+public/sitemap.xml.gz
