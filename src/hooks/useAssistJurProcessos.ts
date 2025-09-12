@@ -25,9 +25,13 @@ export interface ProcessosFilters {
   qtdMax?: number;
 }
 
-export function useAssistJurProcessos(filters: ProcessosFilters = {}, limit = 50) {
+export function useAssistJurProcessos(
+  filters: ProcessosFilters = {},
+  limit = 50,
+  initialPage = 1
+) {
   const { profile } = useAuth();
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(initialPage);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['assistjur-processos', profile?.organization_id, filters, page, limit],
