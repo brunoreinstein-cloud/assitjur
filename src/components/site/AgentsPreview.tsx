@@ -74,11 +74,42 @@ export function AgentsPreview() {
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Catálogo de Assistentes
             </h2>
-            <p className="text-xl text-muted-foreground max-w-4xl mx-auto">
-              A plataforma está em fase beta, com lançamento inicial e uso para
-              clientes exclusivos da Bianca Reinstein Consultoria. Conheça os
-              primeiros agentes especializados que estarão disponíveis:
-            </p>
+            <div className="text-xl text-muted-foreground max-w-4xl mx-auto text-left space-y-8">
+              <div>
+                <h3 className="text-2xl font-semibold mb-2 flex items-center gap-2">
+                  <span role="img" aria-label="diamante">🔹</span>
+                  Assistentes Personalizados
+                </h3>
+                <p>
+                  Encomende um assistente desenvolvido sob medida para a sua maior dor.
+                </p>
+                <p>
+                  Customizamos de acordo com a necessidade do seu time ou escritório.
+                </p>
+                <h4 className="text-xl font-semibold mt-4">Exemplos já criados:</h4>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li>Relatórios de processos trabalhistas e cíveis</li>
+                  <li>
+                    Relatórios para escritórios no formato exigido por clientes externos
+                  </li>
+                  <li>
+                    Preenchimento automatizado de formulários (ex.: solicitação de seguro garantia)
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="text-2xl font-semibold mb-2 flex items-center gap-2">
+                  <span role="img" aria-label="diamante">🔹</span>
+                  Assistentes Plug &amp; Play
+                </h3>
+                <p>
+                  Assistentes já prontos para facilitar etapas estratégicas do trabalho jurídico.
+                </p>
+                <p>
+                  A plataforma está em fase beta, com lançamento inicial e uso para clientes exclusivos da Bianca Reinstein Consultoria.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Mobile Carousel */}
