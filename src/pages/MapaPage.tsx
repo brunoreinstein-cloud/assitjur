@@ -494,3 +494,6 @@ const MapaPage = () => {
 };
 
 export default MapaPage;
+export async function loader() {
+  return null;
+}
