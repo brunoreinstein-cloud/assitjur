@@ -1,5 +1,6 @@
-````markdown
 # ⚖️ Assistjur.IA
+
+[![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen.svg?logo=renovatebot)](https://renovatebot.com/)
 
 **Assistjur.IA** é uma plataforma SaaS voltada para escritórios e departamentos jurídicos, especializada em:
 
@@ -33,7 +34,6 @@
 git clone https://github.com/seu-org/assistjur.git
 cd assistjur
 ```
-````
 
 ### 2. Instalar dependências
 
@@ -262,6 +262,3 @@ npm run lh -- --url=https://assistjur.com.br/
 Propriedade intelectual de **Assistjur.IA**.
 Uso restrito a colaboradores autorizados.
 
-```
-
-```
