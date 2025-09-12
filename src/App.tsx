@@ -71,6 +71,8 @@ function AppRoutes() {
       <Route path="/portal-titular" element={<PortalTitular />} />
       <Route path="/import/template" element={<TemplatePage />} />
       <Route path="/demo/mapa-testemunhas" element={<DemoMapaTestemunhas />} />
+      <Route path="/privacidade" element={<PrivacyPolicy />} />
+      <Route path="/termos" element={<TermsOfUse />} />
       <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
       <Route path="/termos-de-uso" element={<TermsOfUse />} />
       <Route path="/lgpd" element={<LGPD />} />
