@@ -246,6 +246,21 @@ npm run lh -- --url=https://assistjur.com.br/
 2. Abra PR para `main`.
 3. Siga o guia em `CONTRIBUTING.md` (em construção).
 
+### Mensagens de Commit
+
+Este projeto segue o padrão [Conventional Commits](https://www.conventionalcommits.org/).
+Use o formato `tipo(escopo): descrição`.
+
+Exemplos:
+
+```
+feat(cnj): adiciona consulta por CPF
+fix(auth): corrige verificação de token
+docs: atualiza README com padrão de commit
+```
+
+Tipos comuns: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `security` e `perf`.
+
 ---
 
 ## 📜 Licença
