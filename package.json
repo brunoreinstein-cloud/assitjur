@@ -21,6 +21,8 @@
     "postbuild": "npm run sitemap:build",
     "audit": "tsx audit/index.ts",
     "lh": "tsx audit/lighthouse.ts",
+    "lhci": "lhci autorun",
+    "analyze:bundle": "ANALYZE=true vite build",
     "release": "standard-version",
     "release:major": "standard-version --release-as major",
     "release:minor": "standard-version --release-as minor",
@@ -135,6 +137,7 @@
     "standard-version": "^9.5.0",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.7",
-    "@octokit/rest": "^20.0.0"
+    "@octokit/rest": "^20.0.0",
+    "rollup-plugin-visualizer": "^5.11.0"
   }
 }

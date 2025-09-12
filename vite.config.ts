@@ -39,15 +39,24 @@ function compressPlugin() {
 }
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-  },
-  plugins: [
+export default defineConfig(async ({ mode }) => {
+  const plugins = [
     react(),
     tsconfigPaths(),
     mode === 'development' && componentTagger(),
     mode !== 'development' && compressPlugin(),
-  ].filter(Boolean),
-}));
+  ];
+
+  if (process.env.ANALYZE) {
+    const { visualizer } = await import('rollup-plugin-visualizer');
+    plugins.push(visualizer({ open: true }) as any);
+  }
+
+  return {
+    server: {
+      host: "::",
+      port: 8080,
+    },
+    plugins: plugins.filter(Boolean),
+  };
+});
