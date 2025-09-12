@@ -58,7 +58,7 @@ describe('Supabase integration', () => {
       headers: {
         Authorization: `Bearer ${session.access_token}`,
         'Content-Type': 'application/json',
-        'x-correlation-id': crypto.randomUUID(),
+        'x-request-id': crypto.randomUUID(),
       },
       body: JSON.stringify({ page: 1, limit: 1 }),
     })

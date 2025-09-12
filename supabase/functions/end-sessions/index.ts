@@ -1,4 +1,4 @@
-import { corsHeaders, validateJWT, createSecureErrorResponse } from "../_shared/security.ts";
+import { serve } from '../_shared/observability.ts';
 
 export async function handler(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") {
@@ -17,4 +17,4 @@ export async function handler(req: Request): Promise<Response> {
   });
 }
 
-Deno.serve(handler);
+serve('end-sessions', handler);

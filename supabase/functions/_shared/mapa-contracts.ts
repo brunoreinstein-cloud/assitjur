@@ -145,7 +145,7 @@ export const ListaResponseSchema = z.object({
   limit: z.number().int().min(1).max(100),
   total: z.number().int().nonnegative(),
   next_cursor: z.null().default(null),
-  cid: z.string(),
+  requestId: z.string(),
 });
 
 export type ListaResponse = z.infer<typeof ListaResponseSchema>;

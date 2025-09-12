@@ -1,4 +1,4 @@
-import { corsHeaders, validateJWT, createSecureErrorResponse, checkRateLimit, sanitizeAndValidate, secureLog, withTimeout, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS } from "../_shared/security.ts";
+import { serve } from '../_shared/observability.ts';
 import { z } from "npm:zod@4.1.3";
 
 export async function handler(req: Request): Promise<Response> {
@@ -43,4 +43,4 @@ export async function handler(req: Request): Promise<Response> {
   }
 }
 
-Deno.serve(handler);
+serve('security-demo', handler);

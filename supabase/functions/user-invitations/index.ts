@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2.56.0";
+import { serve } from '../_shared/observability.ts';
 import { corsHeaders, handlePreflight, parseAllowedOrigins } from "../_shared/cors.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { z } from "npm:zod@3.23.8";
@@ -11,19 +11,19 @@ const supabase = createClient(
 const origins = parseAllowedOrigins(Deno.env.get('ALLOWED_ORIGINS'));
 
 const handler = async (req: Request): Promise<Response> => {
-  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  const requestId = req.headers.get('x-request-id') ?? crypto.randomUUID();
   const ch = corsHeaders(req, origins);
-  const pf = handlePreflight(req, origins, { 'x-correlation-id': cid });
+  const pf = handlePreflight(req, origins, { 'x-request-id': requestId });
   if (pf) return pf;
 
   try {
     if (req.method !== 'POST') {
-      return jsonError(405, 'Method not allowed', { cid }, { ...ch, 'x-correlation-id': cid });
+      return jsonError(405, 'Method not allowed', { requestId }, { ...ch, 'x-request-id': requestId });
     }
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return jsonError(401, 'Missing authorization header', { cid }, { ...ch, 'x-correlation-id': cid });
+      return jsonError(401, 'Missing authorization header', { requestId }, { ...ch, 'x-request-id': requestId });
     }
 
     // Verify user authentication
@@ -31,7 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
-      return jsonError(401, 'Invalid token', { cid }, { ...ch, 'x-correlation-id': cid });
+      return jsonError(401, 'Invalid token', { requestId }, { ...ch, 'x-request-id': requestId });
     }
 
     // Get user profile to check permissions
@@ -42,7 +42,7 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     if (profileError || !profile || profile.role !== 'ADMIN') {
-      return jsonError(403, 'Insufficient permissions', { cid }, { ...ch, 'x-correlation-id': cid });
+      return jsonError(403, 'Insufficient permissions', { requestId }, { ...ch, 'x-request-id': requestId });
     }
 
     const payload = await req.json().catch(() => ({}));
@@ -60,13 +60,13 @@ const handler = async (req: Request): Promise<Response> => {
     });
     const result = ReqSchema.safeParse(payload);
     if (!result.success) {
-      return jsonError(400, 'Payload inválido', { issues: result.error.issues, expected: EXPECTED, cid }, { ...ch, 'x-correlation-id': cid });
+      return jsonError(400, 'Payload inválido', { issues: result.error.issues, expected: EXPECTED, requestId }, { ...ch, 'x-request-id': requestId });
     }
     const { email, role, data_access_level, org_id } = result.data;
 
     // Check if user belongs to the organization
     if (profile.organization_id !== org_id) {
-      return jsonError(403, 'Organization mismatch', { cid }, { ...ch, 'x-correlation-id': cid });
+      return jsonError(403, 'Organization mismatch', { requestId }, { ...ch, 'x-request-id': requestId });
     }
 
     // Check if user already exists in the organization
@@ -78,7 +78,7 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     if (existingProfile) {
-      return jsonError(400, 'User already exists in this organization', { cid }, { ...ch, 'x-correlation-id': cid });
+      return jsonError(400, 'User already exists in this organization', { requestId }, { ...ch, 'x-request-id': requestId });
     }
 
     // Check for existing pending invitation
@@ -91,7 +91,7 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     if (existingInvitation) {
-      return jsonError(400, 'Invitation already pending for this email', { cid }, { ...ch, 'x-correlation-id': cid });
+      return jsonError(400, 'Invitation already pending for this email', { requestId }, { ...ch, 'x-request-id': requestId });
     }
 
     // Generate invitation token
@@ -143,13 +143,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!siteUrl) {
       console.warn(
-        JSON.stringify({ cid, warn: 'VITE_PUBLIC_SITE_URL is not defined' })
+        JSON.stringify({ requestId, warn: 'VITE_PUBLIC_SITE_URL is not defined' })
       );
       return jsonError(
         500,
         'VITE_PUBLIC_SITE_URL is not defined',
-        { cid },
-        { ...ch, 'x-correlation-id': cid }
+        { requestId },
+        { ...ch, 'x-request-id': requestId }
       );
     }
 
@@ -164,13 +164,13 @@ const handler = async (req: Request): Promise<Response> => {
         expires_at: invitation.expires_at,
         invitation_url: `${siteUrl}/invite/${tokenData}`
       },
-      cid
-    }, { ...ch, 'x-correlation-id': cid });
+      requestId
+    }, { ...ch, 'x-request-id': requestId });
 
   } catch (error: any) {
-    console.error(JSON.stringify({ cid, err: String(error) }));
-    return jsonError(500, error.message || 'Internal server error', { cid }, { ...ch, 'x-correlation-id': cid });
+    console.error(JSON.stringify({ requestId, err: String(error) }));
+    return jsonError(500, error.message || 'Internal server error', { requestId }, { ...ch, 'x-request-id': requestId });
   }
 };
 
-Deno.serve(handler);
+serve('user-invitations', handler);

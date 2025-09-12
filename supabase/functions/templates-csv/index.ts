@@ -1,4 +1,4 @@
-import { corsHeaders, handlePreflight } from '../_shared/cors.ts'
+import { serve } from '../_shared/observability.ts';
 
 // Generate valid CNJ with correct check digits
 function generateValidCNJ(sequential?: number): string {
@@ -511,10 +511,10 @@ function buildCsv(sheetName: string): string {
   return lines.join('\n');
 }
 
-Deno.serve(async (req) => {
-  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+serve('templates-csv', async (req) => {
+  const requestId = req.headers.get('x-request-id') ?? crypto.randomUUID();
   const ch = corsHeaders(req);
-  const pre = handlePreflight(req, cid);
+  const pre = handlePreflight(req, requestId);
   if (pre) return pre;
 
   try {
@@ -526,7 +526,7 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: 'Parâmetro "sheet" é obrigatório' }),
         {
           status: 400,
-          headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid }
+          headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId }
         }
       )
     }
@@ -537,7 +537,7 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: `Aba "${sheet}" inválida. Use: ${validSheets.join(', ')}` }),
         {
           status: 400,
-          headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid }
+          headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId }
         }
       )
     }
@@ -551,7 +551,7 @@ Deno.serve(async (req) => {
       status: 200,
       headers: {
         ...ch,
-        'x-correlation-id': cid,
+        'x-request-id': requestId,
         'Content-Type': 'text/csv; charset=utf-8',
         'Content-Disposition': `attachment; filename="${filename}"`,
         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -565,7 +565,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ error: error instanceof Error ? error.message : 'Erro interno do servidor' }),
       { 
         status: 500, 
-        headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid }
+        headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId }
       }
     )
   }

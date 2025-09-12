@@ -1,12 +1,12 @@
-import { createClient } from "npm:@supabase/supabase-js@2.56.0";
+import { serve } from '../_shared/observability.ts';
 import { corsHeaders, handlePreflight, parseAllowedOrigins } from "../_shared/cors.ts";
 
 const origins = parseAllowedOrigins(Deno.env.get('ALLOWED_ORIGINS'));
 
-Deno.serve(async (req) => {
-  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+serve('import-mapa-testemunhas', async (req) => {
+  const requestId = req.headers.get('x-request-id') ?? crypto.randomUUID();
   const ch = corsHeaders(req, origins);
-  const pre = handlePreflight(req, origins, { 'x-correlation-id': cid });
+  const pre = handlePreflight(req, origins, { 'x-request-id': requestId });
   if (pre) return pre;
 
   try {

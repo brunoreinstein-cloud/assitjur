@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.56.0'
+import { serve } from '../_shared/observability.ts';
 import { corsHeaders, handlePreflight, parseAllowedOrigins } from '../_shared/cors.ts'
 
 // Types for analysis results
@@ -71,10 +71,10 @@ interface PadroesAgregados {
 
 const origins = parseAllowedOrigins(Deno.env.get('ALLOWED_ORIGINS'));
 
-Deno.serve(async (req) => {
-  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+serve('mapa-testemunhas-analysis', async (req) => {
+  const requestId = req.headers.get('x-request-id') ?? crypto.randomUUID();
   const ch = corsHeaders(req, origins);
-  const pre = handlePreflight(req, origins, { 'x-correlation-id': cid });
+  const pre = handlePreflight(req, origins, { 'x-request-id': requestId });
   if (pre) return pre;
 
   try {
@@ -128,7 +128,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify(analysisResult),
       {
-        headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' },
+        headers: { ...ch, 'x-request-id': requestId, 'Content-Type': 'application/json' },
         status: 200,
       },
     )
@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ error: error.message }),
       {
-        headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' },
+        headers: { ...ch, 'x-request-id': requestId, 'Content-Type': 'application/json' },
         status: 500,
       },
     )

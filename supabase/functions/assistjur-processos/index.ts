@@ -1,26 +1,26 @@
-import { createClient } from "npm:@supabase/supabase-js@2.56.0";
+import { serve } from '../_shared/observability.ts';
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { z } from "npm:zod@3.23.8";
 
-Deno.serve(async (req) => {
-  const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
+serve('assistjur-processos', async (req) => {
+  const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();
   const ch = corsHeaders(req);
-  const pf = handlePreflight(req, cid);
+  const pf = handlePreflight(req, requestId);
   if (pf) return pf;
 
   try {
     if (req.method === "GET") {
-      return json(200, { ok: true, service: "assistjur-processos", cid }, { ...ch, "x-correlation-id": cid });
+      return json(200, { ok: true, service: "assistjur-processos", requestId }, { ...ch, "x-request-id": requestId });
     }
     if (req.method !== "POST") {
-      return jsonError(405, "method_not_allowed", { cid }, { ...ch, "x-correlation-id": cid });
+      return jsonError(405, "method_not_allowed", { requestId }, { ...ch, "x-request-id": requestId });
     }
 
     const auth = req.headers.get("authorization") ?? "";
     if (!auth.startsWith("Bearer ")) {
-      console.error(JSON.stringify({ cid, err: "missing bearer token" }));
-      return jsonError(401, "unauthorized", { detail: "missing bearer token", cid }, { ...ch, "x-correlation-id": cid });
+      console.error(JSON.stringify({ requestId, err: "missing bearer token" }));
+      return jsonError(401, "unauthorized", { detail: "missing bearer token", requestId }, { ...ch, "x-request-id": requestId });
     }
 
     const payload = await req.json().catch(() => ({}));
@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
     });
     const result = ReqSchema.safeParse(payload);
     if (!result.success) {
-      return jsonError(400, "Payload inválido", { issues: result.error.issues, expected: EXPECTED, cid }, { ...ch, "x-correlation-id": cid });
+      return jsonError(400, "Payload inválido", { issues: result.error.issues, expected: EXPECTED, requestId }, { ...ch, "x-request-id": requestId });
     }
     const { filters = {}, page, limit } = result.data;
     for (const [key, value] of Object.entries(filters)) {
@@ -50,8 +50,8 @@ Deno.serve(async (req) => {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) {
-        console.error(JSON.stringify({ cid, err: userError?.message ?? "invalid user token" }));
-        return jsonError(401, "unauthorized", { detail: "invalid user token", cid }, { ...ch, "x-correlation-id": cid });
+        console.error(JSON.stringify({ requestId, err: userError?.message ?? "invalid user token" }));
+        return jsonError(401, "unauthorized", { detail: "invalid user token", requestId }, { ...ch, "x-request-id": requestId });
       }
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
@@ -59,13 +59,13 @@ Deno.serve(async (req) => {
         .eq("user_id", user.id)
         .single();
       if (profileError || !profile?.organization_id) {
-        console.error(JSON.stringify({ cid, err: profileError?.message ?? "profile_not_found" }));
-        return jsonError(401, "unauthorized", { detail: "user profile or organization not found", cid }, { ...ch, "x-correlation-id": cid });
+        console.error(JSON.stringify({ requestId, err: profileError?.message ?? "profile_not_found" }));
+        return jsonError(401, "unauthorized", { detail: "user profile or organization not found", requestId }, { ...ch, "x-request-id": requestId });
       }
       org_id = profile.organization_id;
     } catch (e) {
-      console.error(JSON.stringify({ cid, err: String(e) }));
-      return jsonError(401, "unauthorized", { detail: "authentication failed", cid }, { ...ch, "x-correlation-id": cid });
+      console.error(JSON.stringify({ requestId, err: String(e) }));
+      return jsonError(401, "unauthorized", { detail: "authentication failed", requestId }, { ...ch, "x-request-id": requestId });
     }
 
     try {
@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       });
 
       if (error) {
-        console.error(JSON.stringify({ cid, err: error.message }));
+        console.error(JSON.stringify({ requestId, err: error.message }));
         const code = (error as any).code ?? "rpc_error";
         let status = 500;
         let detail = error.message;
@@ -96,20 +96,20 @@ Deno.serve(async (req) => {
           detail = "Schema assistjur não encontrado. Verifique se os dados foram importados.";
         }
 
-        return jsonError(status, "rpc_error", { cid, code, detail }, { ...ch, "x-correlation-id": cid });
+        return jsonError(status, "rpc_error", { requestId, code, detail }, { ...ch, "x-request-id": requestId });
       }
 
       const processosData = resultRpc?.[0]?.data || [];
       const totalCount = resultRpc?.[0]?.total_count || 0;
       const totalPages = Math.ceil(totalCount / limit);
 
-      return json(200, { data: processosData, count: totalCount, totalPages, page, cid }, { ...ch, "x-correlation-id": cid });
+      return json(200, { data: processosData, count: totalCount, totalPages, page, requestId }, { ...ch, "x-request-id": requestId });
     } catch (e) {
-      console.error(JSON.stringify({ cid, err: String(e) }));
-      return jsonError(500, "internal_error", { cid }, { ...ch, "x-correlation-id": cid });
+      console.error(JSON.stringify({ requestId, err: String(e) }));
+      return jsonError(500, "internal_error", { requestId }, { ...ch, "x-request-id": requestId });
     }
   } catch (e) {
-    console.error(JSON.stringify({ cid, err: String(e) }));
-    return jsonError(500, "Erro interno", { cid }, { ...ch, "x-correlation-id": cid });
+    console.error(JSON.stringify({ requestId, err: String(e) }));
+    return jsonError(500, "Erro interno", { requestId }, { ...ch, "x-request-id": requestId });
   }
 });

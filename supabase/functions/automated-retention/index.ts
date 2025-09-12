@@ -1,10 +1,10 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.56.0';
+import { serve } from '../_shared/observability.ts';
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
 
-Deno.serve(async (req) => {
-  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+serve('automated-retention', async (req) => {
+  const requestId = req.headers.get('x-request-id') ?? crypto.randomUUID();
   const ch = corsHeaders(req);
-  const pre = handlePreflight(req, cid);
+  const pre = handlePreflight(req, requestId);
   if (pre) return pre;
 
   try {

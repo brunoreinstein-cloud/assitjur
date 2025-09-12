@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2.56.0";
+import { serve } from '../_shared/observability.ts';
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { z } from "npm:zod@3.23.8";
@@ -37,14 +37,14 @@ const ReqSchema = z.object({
 });
 
 const handler = async (req: Request): Promise<Response> => {
-  const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
+  const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();
   const ch = corsHeaders(req);
-  const pf = handlePreflight(req, cid);
+  const pf = handlePreflight(req, requestId);
   if (pf) return pf;
 
   try {
     if (req.method !== "POST") {
-      return jsonError(405, "Method not allowed", { cid }, { ...ch, "x-correlation-id": cid });
+      return jsonError(405, "Method not allowed", { requestId }, { ...ch, "x-request-id": requestId });
     }
 
     const payload = await req.json().catch(() => ({}));
@@ -53,14 +53,14 @@ const handler = async (req: Request): Promise<Response> => {
       return jsonError(
         400,
         "Payload inválido",
-        { issues: result.error.issues, expected: EXPECTED, cid },
-        { ...ch, "x-correlation-id": cid },
+        { issues: result.error.issues, expected: EXPECTED, requestId },
+        { ...ch, "x-request-id": requestId },
       );
     }
     const body = result.data;
 
     if (body.honeypot) {
-      return jsonError(400, "Bot detectado", { cid }, { ...ch, "x-correlation-id": cid });
+      return jsonError(400, "Bot detectado", { requestId }, { ...ch, "x-request-id": requestId });
     }
 
     const domain = body.email.split("@")[1]?.toLowerCase();
@@ -68,19 +68,19 @@ const handler = async (req: Request): Promise<Response> => {
       return jsonError(
         400,
         "Domínio de e-mail descartável não permitido",
-        { cid },
-        { ...ch, "x-correlation-id": cid },
+        { requestId },
+        { ...ch, "x-request-id": requestId },
       );
     }
 
     const ip = req.headers.get("x-forwarded-for") ?? "unknown";
-    const allowed = await checkRateLimit(supabase, `beta-signup:${ip}`, 5, 60_000, cid);
+    const allowed = await checkRateLimit(supabase, `beta-signup:${ip}`, 5, 60_000, requestId);
     if (!allowed) {
       return jsonError(
         429,
         "Muitas tentativas. Tente novamente mais tarde.",
-        { cid },
-        { ...ch, "x-correlation-id": cid },
+        { requestId },
+        { ...ch, "x-request-id": requestId },
       );
     }
 
@@ -88,7 +88,7 @@ const handler = async (req: Request): Promise<Response> => {
       email: body.email,
       organizacao: body.organizacao,
       necessidades: body.necessidades,
-      cid,
+      requestId,
     });
 
     const { data, error } = await supabase.rpc("secure_insert_beta_signup", {
@@ -102,41 +102,41 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     if (error) {
-      console.error(JSON.stringify({ cid, error: String(error) }));
-      return jsonError(500, "Erro ao salvar dados", { cid }, { ...ch, "x-correlation-id": cid });
+      console.error(JSON.stringify({ requestId, error: String(error) }));
+      return jsonError(500, "Erro ao salvar dados", { requestId }, { ...ch, "x-request-id": requestId });
     }
 
     if (!data.success) {
       if (data.already_exists) {
         return json(
           200,
-          { message: data.message, already_exists: true, cid },
-          { ...ch, "x-correlation-id": cid },
+          { message: data.message, already_exists: true, requestId },
+          { ...ch, "x-request-id": requestId },
         );
       }
       return jsonError(
         400,
         data.error || "Erro ao salvar dados",
-        { cid },
-        { ...ch, "x-correlation-id": cid },
+        { requestId },
+        { ...ch, "x-request-id": requestId },
       );
     }
 
-    console.log("Beta signup successful via secure function", { cid });
+    console.log("Beta signup successful via secure function", { requestId });
 
     // TODO: Send welcome email
     // await sendWelcomeEmail(data.email, data.nome);
 
-    return json(201, { message: data.message, success: true, cid }, { ...ch, "x-correlation-id": cid });
+    return json(201, { message: data.message, success: true, requestId }, { ...ch, "x-request-id": requestId });
   } catch (error: any) {
-    console.error(JSON.stringify({ cid, err: String(error) }));
+    console.error(JSON.stringify({ requestId, err: String(error) }));
     return jsonError(
       500,
       "Erro interno do servidor",
-      { details: error.message, cid },
-      { ...ch, "x-correlation-id": cid },
+      { details: error.message, requestId },
+      { ...ch, "x-request-id": requestId },
     );
   }
 };
 
-Deno.serve(handler);
+serve('beta-signup', handler);

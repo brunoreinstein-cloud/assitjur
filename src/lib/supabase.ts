@@ -235,7 +235,7 @@ export const fetchPorProcesso = async (
       : undefined
   });
   console.debug('mapa-testemunhas-processos payload', sanitized);
-  let cid = uuidv4();
+  let requestId = uuidv4();
   try {
     if (!isSupabaseConfigured()) {
       console.log('⚠️ Supabase not configured, using mock data');
@@ -253,13 +253,13 @@ export const fetchPorProcesso = async (
       body: JSON.stringify(toMapaEdgeRequest(parsed)),
       headers: {
         'Content-Type': 'application/json',
-        'x-correlation-id': cid,
+        'x-request-id': requestId,
         Authorization: `Bearer ${access_token}`
       },
       signal
     });
 
-    cid = response.headers.get('x-correlation-id') ?? cid;
+    requestId = response.headers.get('x-request-id') ?? requestId;
 
     let payload: any;
     try {
@@ -269,7 +269,7 @@ export const fetchPorProcesso = async (
     if (!response.ok) {
       const { error: err, detail, hint, example } = payload || {};
       const message = detail || hint || 'Verifique filtros e tente novamente.';
-      console.error(`[cid=${cid}] fetchPorProcesso HTTP error`, {
+      console.error(`[requestId=${requestId}] fetchPorProcesso HTTP error`, {
         status: response.status,
         url: response.url,
         payload: sanitized,
@@ -280,9 +280,9 @@ export const fetchPorProcesso = async (
 
     const payloadTyped = payload as { data?: PorProcesso[]; count?: number; total?: number };
     if (!payloadTyped?.data || payloadTyped.data.length === 0) {
-      console.log(`[cid=${cid}] 📊 Supabase returned empty processos dataset`);
+      console.log(`[requestId=${requestId}] 📊 Supabase returned empty processos dataset`);
     } else {
-      console.log(`[cid=${cid}] 📊 Fetched processos from API:`, {
+      console.log(`[requestId=${requestId}] 📊 Fetched processos from API:`, {
         count: payloadTyped.data.length,
         total: payloadTyped.count || payloadTyped.total || 0
       });
@@ -296,7 +296,7 @@ export const fetchPorProcesso = async (
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw error;
     }
-    console.warn(`[cid=${cid}] 📊 Request failed, using mock processos data:`, error);
+    console.warn(`[requestId=${requestId}] 📊 Request failed, using mock processos data:`, error);
 
     // Mock filtering logic
     let filteredData = [...mockProcessos];
@@ -376,7 +376,7 @@ export const fetchPorTestemunha = async (
       : undefined
   });
   console.debug('mapa-testemunhas-testemunhas payload', sanitized);
-  let cid = uuidv4();
+  let requestId = uuidv4();
   try {
     if (!isSupabaseConfigured()) {
       console.log('⚠️ Supabase not configured, using mock data');
@@ -394,13 +394,13 @@ export const fetchPorTestemunha = async (
       body: JSON.stringify(toMapaEdgeRequest(parsed)),
       headers: {
         'Content-Type': 'application/json',
-        'x-correlation-id': cid,
+        'x-request-id': requestId,
         Authorization: `Bearer ${access_token}`
       },
       signal
     });
 
-    cid = response.headers.get('x-correlation-id') ?? cid;
+    requestId = response.headers.get('x-request-id') ?? requestId;
 
     let payload: any;
     try {
@@ -410,7 +410,7 @@ export const fetchPorTestemunha = async (
     if (!response.ok) {
       const { error: err, detail, hint, example } = payload || {};
       const message = detail || hint || 'Verifique filtros e tente novamente.';
-      console.error(`[cid=${cid}] fetchPorTestemunha HTTP error`, {
+      console.error(`[requestId=${requestId}] fetchPorTestemunha HTTP error`, {
         status: response.status,
         url: response.url,
         payload: sanitized,
@@ -421,9 +421,9 @@ export const fetchPorTestemunha = async (
 
     const payloadTyped = payload as { data?: PorTestemunha[]; count?: number; total?: number };
     if (!payloadTyped?.data || payloadTyped.data.length === 0) {
-      console.log(`[cid=${cid}] 📊 Supabase returned empty testemunhas dataset`);
+      console.log(`[requestId=${requestId}] 📊 Supabase returned empty testemunhas dataset`);
     } else {
-      console.log(`[cid=${cid}] 📊 Fetched testemunhas from API:`, {
+      console.log(`[requestId=${requestId}] 📊 Fetched testemunhas from API:`, {
         count: payloadTyped.data.length,
         total: payloadTyped.count || payloadTyped.total || 0
       });
@@ -437,7 +437,7 @@ export const fetchPorTestemunha = async (
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw error;
     }
-    console.warn(`[cid=${cid}] 📊 Request failed, using mock testemunhas data:`, error);
+    console.warn(`[requestId=${requestId}] 📊 Request failed, using mock testemunhas data:`, error);
 
     // Mock filtering logic
     let filteredData = [...mockTestemunhas];
