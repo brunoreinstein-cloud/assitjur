@@ -1,4 +1,6 @@
 import React, { Suspense, lazy } from "react";
+import { MotionConfig } from "framer-motion";
+import { DEFAULT_TRANSITION } from "@/config/motion";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -131,41 +133,43 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <ServiceHealthProvider>
-        <AuthContextProvider>
-          <FeatureFlagProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <SessionExpiredModal />
-              <ConsentProvider>
-                <ConsentDialog />
-                <BrowserRouter
-                future={{
-                  v7_startTransition: true,
-                  v7_relativeSplatPath: true,
-                }}
-              >
-                <SupabaseAuthProvider>
-                  <div className="min-h-screen flex flex-col">
-                    <MaintenanceBanner />
-                    <StatusBanner />
-                    <div className="flex-1">
-                      <Suspense fallback={<div className="p-4">Carregando...</div>}>
-                        <AppRoutes />
-                      </Suspense>
+    <MotionConfig reducedMotion="user" transition={DEFAULT_TRANSITION}>
+      <QueryClientProvider client={queryClient}>
+        <ServiceHealthProvider>
+          <AuthContextProvider>
+            <FeatureFlagProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <SessionExpiredModal />
+                <ConsentProvider>
+                  <ConsentDialog />
+                  <BrowserRouter
+                  future={{
+                    v7_startTransition: true,
+                    v7_relativeSplatPath: true,
+                  }}
+                >
+                  <SupabaseAuthProvider>
+                    <div className="min-h-screen flex flex-col">
+                      <MaintenanceBanner />
+                      <StatusBanner />
+                      <div className="flex-1">
+                        <Suspense fallback={<div className="p-4">Carregando...</div>}>
+                          <AppRoutes />
+                        </Suspense>
+                      </div>
+                      <FooterLegal />
                     </div>
-                    <FooterLegal />
-                  </div>
-                </SupabaseAuthProvider>
-              </BrowserRouter>
-            </ConsentProvider>
-            </TooltipProvider>
-          </FeatureFlagProvider>
-        </AuthContextProvider>
-      </ServiceHealthProvider>
-    </QueryClientProvider>
+                  </SupabaseAuthProvider>
+                </BrowserRouter>
+              </ConsentProvider>
+              </TooltipProvider>
+            </FeatureFlagProvider>
+          </AuthContextProvider>
+        </ServiceHealthProvider>
+      </QueryClientProvider>
+    </MotionConfig>
   </ErrorBoundary>
 );
 
