@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import './styles/assistjur-brand.css'
 import { MaintenanceProvider } from '@/hooks/useMaintenance'
 
 // Optional Sentry initialization

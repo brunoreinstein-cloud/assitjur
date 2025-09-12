@@ -24,11 +24,13 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
     }, 100);
   };
 
-  return (
-    <section id="hero" className="relative min-h-screen flex flex-col justify-center overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/30" />
-      <div className="absolute inset-0 bg-gradient-glow" />
+    return (
+      <section
+        id="hero"
+        className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-hero-gradient text-aj-text-high"
+      >
+        {/* Background Effects */}
+        <div className="absolute inset-0 bg-gradient-glow" />
       
       {/* Content */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-20">
@@ -36,62 +38,62 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
           {/* Left Column - Content */}
           <div className="space-y-8 animate-fade-in">
             {/* Brand Badge */}
-            <div className="inline-flex items-center space-x-4 px-6 py-3 bg-accent/20 border-2 border-accent rounded-full shadow-md">
-              <Sparkles className="h-5 w-5 text-accent-foreground" />
-              <span className="text-base font-semibold text-accent-foreground">
-                O Hub de IA Estratégica para Contencioso
-              </span>
-            </div>
+              <div className="badge-gold inline-flex items-center space-x-4 shadow-md">
+                <Sparkles className="h-5 w-5 text-aj-bg-deep" />
+                <span className="text-base font-semibold">
+                  O Hub de IA Estratégica para Contencioso
+                </span>
+              </div>
 
             {/* Main Headline */}
             <div className="space-y-4">
-              <h1
-                id="main-heading"
-                tabIndex={-1}
-                className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight"
-              >
+                <h1
+                  id="main-heading"
+                  tabIndex={-1}
+                  className="text-4xl md:text-5xl lg:text-6xl font-bold text-aj-text-high leading-tight"
+                >
                 AssistJur.IA —{' '}
                 <span className="relative">
-                  <span className="text-primary">
+                    <span className="text-aj-gold">
                     Inteligência Artificial Estratégica
                   </span>
                 </span>
                 {' '}para Gestão do{' '}
-                <span className="text-accent font-black">Contencioso</span>
+                  <span className="text-aj-gold font-black">Contencioso</span>
               </h1>
               
               <div className="space-y-4">
-                <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl">
-                  Transforme sua carteira judicial com inteligência artificial especializada. 
-                  Governança, eficiência e estratégia em uma única plataforma. Criado por Bianca Reinstein, 
-                  especialista com mais de 20 anos em gestão de passivos judiciais complexos.
-                </p>
-                <p className="text-lg text-primary font-medium">
+                  <p className="text-xl text-aj-text-high/80 leading-relaxed max-w-2xl">
+                    Transforme sua carteira judicial com inteligência artificial especializada.
+                    Governança, eficiência e estratégia em uma única plataforma. Criado por Bianca Reinstein,
+                    especialista com mais de 20 anos em gestão de passivos judiciais complexos.
+                  </p>
+                  <p className="text-lg text-aj-gold font-medium">
                   ✨ Acessível para advogados autônomos, pequenas, médias e grandes empresas e escritórios de advocacia — de fácil e rápida implantação.
                 </p>
               </div>
             </div>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                size="lg" 
-                onClick={scrollToForm}
-                className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300 group"
-              >
-                🚀 Testar o Hub
-                <ArrowDown className="ml-2 h-5 w-5 group-hover:translate-y-1 transition-transform" />
-              </Button>
-              
-              <Button 
-                size="lg" 
-                variant="outline"
-                onClick={() => document.getElementById('diferenciais')?.scrollIntoView({ behavior: 'smooth' })}
-                className="text-lg px-8 py-6 transition-all duration-300"
-              >
-                🔎 Conhecer Diferenciais
-              </Button>
-            </div>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  size="lg"
+                  onClick={scrollToForm}
+                  className="btn-primary text-lg px-8 py-6 group"
+                >
+                  🚀 Testar o Hub
+                  <ArrowDown className="ml-2 h-5 w-5 group-hover:translate-y-1 transition-transform" />
+                </Button>
+
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => document.getElementById('diferenciais')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="text-lg px-8 py-6 transition-all duration-300 border-aj-gold text-aj-gold"
+                >
+                  🔎 Conhecer Diferenciais
+                </Button>
+              </div>
 
             {/* Trust Indicators section removed */}
           </div>
