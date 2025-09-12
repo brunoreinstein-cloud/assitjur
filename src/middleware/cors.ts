@@ -1,3 +1,5 @@
+import { getEnv } from '@/lib/getEnv';
+
 export const METHODS = ["GET", "POST", "OPTIONS"] as const;
 
 const DEFAULT_ALLOWED_HEADERS =
@@ -19,9 +21,8 @@ export function parseAllowedOrigins(env: string | undefined): AllowedOrigins {
   return { raw, patterns };
 }
 
-export const ALLOWED_ORIGINS = parseAllowedOrigins(
-    import.meta.env.VITE_ALLOWED_ORIGINS || "",
-  );
+const { allowedOrigins } = getEnv();
+export const ALLOWED_ORIGINS = parseAllowedOrigins(allowedOrigins || "");
 
 function isAllowed(origin: string | null, origins: AllowedOrigins): boolean {
   if (!origin) return false;

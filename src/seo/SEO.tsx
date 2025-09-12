@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { getEnv } from '@/lib/getEnv';
 
 type SEOProps = {
   title?: string;
@@ -8,7 +9,7 @@ type SEOProps = {
   noindex?: boolean;
 };
 
-const BASE_URL = import.meta.env.VITE_PUBLIC_SITE_URL ?? 'https://assistjur.com.br';
+const { siteUrl: BASE_URL } = getEnv();
 
 const stripTracking = (url: string) =>
   url

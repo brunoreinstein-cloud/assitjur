@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useConsent } from '@/hooks/useConsent';
+import { getEnv } from '@/lib/getEnv';
 
 export function FooterLegal() {
   const { setOpen } = useConsent();
   const [buildError, setBuildError] = useState(false);
   const linkClasses =
     'text-sm text-foreground hover:text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
-  const previewTimestamp = import.meta.env.VITE_PREVIEW_TIMESTAMP as string | undefined;
+  const { previewTimestamp } = getEnv();
 
   useEffect(() => {
     fetch('/build-status.json')

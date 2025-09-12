@@ -6,11 +6,14 @@ export const ALL_PUBLIC_ORIGINS = [
 ];
 
 // Fallback para pré-visualizações (Lovable, preview, sandbox etc.) via ENV:
-export const EXTRA_ORIGINS = (import.meta.env.VITE_EXTRA_ORIGINS || '')
+import { getEnv } from '@/lib/getEnv';
+
+const { extraOrigins, siteUrl } = getEnv();
+
+export const EXTRA_ORIGINS = (extraOrigins || '')
   .split(',')
   .map(s => s.trim())
   .filter(Boolean);
 export const ALLOWED_ORIGINS = [...ALL_PUBLIC_ORIGINS, ...EXTRA_ORIGINS];
 
-export const SITE_URL =
-  import.meta.env.VITE_PUBLIC_SITE_URL || `https://${PRIMARY_DOMAIN}`;
+export const SITE_URL = siteUrl || `https://${PRIMARY_DOMAIN}`;
