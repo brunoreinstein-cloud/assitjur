@@ -1,4 +1,4 @@
-import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
+import { serve } from '../_shared/observability.ts';
 import { json, jsonError } from "../_shared/http.ts";
 import { audit } from "../_shared/audit.ts";
 import { adminClient } from "../_shared/auth.ts";
@@ -23,18 +23,18 @@ export function inRollout(flagId: string, userId: string, rollout: number): bool
 }
 
 export async function handler(req: Request): Promise<Response> {
-  const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
+  const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();
   const ch = corsHeaders(req);
-  const pre = handlePreflight(req, cid);
+  const pre = handlePreflight(req, requestId);
   if (pre) return pre;
 
   if (req.method !== "POST") {
-    return jsonError(405, "method_not_allowed", { cid }, { ...ch, "x-correlation-id": cid });
+    return jsonError(405, "method_not_allowed", { requestId }, { ...ch, "x-request-id": requestId });
   }
 
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
-    return jsonError(403, "missing_authorization", { cid }, { ...ch, "x-correlation-id": cid });
+    return jsonError(403, "missing_authorization", { requestId }, { ...ch, "x-request-id": requestId });
   }
 
   const token = authHeader.replace(/^Bearer\s+/i, "");
@@ -44,27 +44,27 @@ export async function handler(req: Request): Promise<Response> {
     const decoded = await jwtVerify(token, new TextEncoder().encode(secret));
     payload = decoded.payload as Record<string, any>;
   } catch {
-    return jsonError(403, "invalid_token", { cid }, { ...ch, "x-correlation-id": cid });
+    return jsonError(403, "invalid_token", { requestId }, { ...ch, "x-request-id": requestId });
   }
 
   const body = await req.json().catch(() => null);
   if (!body) {
-    return jsonError(400, "invalid_json", { cid }, { ...ch, "x-correlation-id": cid });
+    return jsonError(400, "invalid_json", { requestId }, { ...ch, "x-request-id": requestId });
   }
 
   const parsed = EvaluateFlagsRequestSchema.safeParse(body);
   if (!parsed.success) {
-    return jsonError(400, "invalid_body", { cid }, { ...ch, "x-correlation-id": cid });
+    return jsonError(400, "invalid_body", { requestId }, { ...ch, "x-request-id": requestId });
   }
 
   const { tenant_id, user_id, segments, environment } = parsed.data;
 
   if (payload.tenant_id !== tenant_id || (payload.environment ?? "production") !== environment) {
-    return jsonError(403, "tenant_env_mismatch", { cid }, { ...ch, "x-correlation-id": cid });
+    return jsonError(403, "tenant_env_mismatch", { requestId }, { ...ch, "x-request-id": requestId });
   }
 
   if (!rateLimiter.check(user_id)) {
-    return jsonError(429, "rate_limited", { cid }, { ...ch, "x-correlation-id": cid });
+    return jsonError(429, "rate_limited", { requestId }, { ...ch, "x-request-id": requestId });
   }
 
   const supa = adminClient();
@@ -89,7 +89,7 @@ export async function handler(req: Request): Promise<Response> {
 
   if (error) {
     console.error("fetch_flags_error", error);
-    return jsonError(500, "fetch_failed", { cid }, { ...ch, "x-correlation-id": cid });
+    return jsonError(500, "fetch_failed", { requestId }, { ...ch, "x-request-id": requestId });
   }
 
   const flags: Record<string, boolean> = {};
@@ -115,9 +115,9 @@ export async function handler(req: Request): Promise<Response> {
   }
 
   const resp = EvaluateFlagsResponseSchema.parse({ flags });
-  return json(200, resp, { ...ch, "x-correlation-id": cid });
+  return json(200, resp, { ...ch, "x-request-id": requestId });
 }
 
-Deno.serve(handler);
+serve('evaluate_flags', handler);
 
 export { handler };

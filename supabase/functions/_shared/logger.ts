@@ -3,15 +3,15 @@ export type LogLevel = 'info' | 'warn' | 'error';
 interface LogEntry {
   level: LogLevel;
   msg: string;
-  correlation_id?: string;
+  request_id?: string;
   timestamp: string;
 }
 
-function emit(level: LogLevel, msg: string, correlationId?: string) {
+function emit(level: LogLevel, msg: string, requestId?: string) {
   const entry: LogEntry = {
     level,
     msg,
-    correlation_id: correlationId,
+    request_id: requestId,
     timestamp: new Date().toISOString(),
   };
   const json = JSON.stringify(entry);
@@ -28,15 +28,15 @@ function emit(level: LogLevel, msg: string, correlationId?: string) {
 }
 
 export const logger = {
-  info: (msg: string, correlationId?: string) => emit('info', msg, correlationId),
-  warn: (msg: string, correlationId?: string) => emit('warn', msg, correlationId),
-  error: (msg: string, correlationId?: string) => emit('error', msg, correlationId),
+  info: (msg: string, requestId?: string) => emit('info', msg, requestId),
+  warn: (msg: string, requestId?: string) => emit('warn', msg, requestId),
+  error: (msg: string, requestId?: string) => emit('error', msg, requestId),
 };
 
-export function createLogger(correlationId?: string) {
+export function createLogger(requestId?: string) {
   return {
-    info: (msg: string) => logger.info(msg, correlationId),
-    warn: (msg: string) => logger.warn(msg, correlationId),
-    error: (msg: string) => logger.error(msg, correlationId),
+    info: (msg: string) => logger.info(msg, requestId),
+    warn: (msg: string) => logger.warn(msg, requestId),
+    error: (msg: string) => logger.error(msg, requestId),
   };
 }

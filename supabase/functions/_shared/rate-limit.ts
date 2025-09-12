@@ -6,7 +6,7 @@ export async function checkRateLimit(
   key: string,
   limit = Number(Deno.env.get("RATE_LIMIT_MAX") ?? 20),
   windowMs = Number(Deno.env.get("RATE_LIMIT_WINDOW_MS") ?? 60_000),
-  cid?: string,
+  requestId?: string,
 ): Promise<boolean> {
   const { data, error } = await supabase.rpc("check_rate_limit", {
     p_key: key,
@@ -14,7 +14,7 @@ export async function checkRateLimit(
     p_window_ms: windowMs,
   });
   if (error) {
-    logger.warn(`rate limit fail-open: ${error.message}`, cid);
+    logger.warn(`rate limit fail-open: ${error.message}`, requestId);
     return true;
   }
   return Boolean(data);

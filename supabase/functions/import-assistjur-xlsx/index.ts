@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.56.0';
+import { serve } from '../_shared/observability.ts';
 import * as XLSX from 'https://deno.land/x/sheetjs@v0.18.3/xlsx.mjs';
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
 import { audit } from '../_shared/audit.ts';
@@ -491,10 +491,10 @@ function calculateAnalyticFlags(processos: ProcessoRow[], testemunhas: Testemunh
   return { processosEnhanced, testemunhasEnhanced, issues };
 }
 
-Deno.serve(async (req) => {
-  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+serve('import-assistjur-xlsx', async (req) => {
+  const requestId = req.headers.get('x-request-id') ?? crypto.randomUUID();
   const ch = corsHeaders(req);
-  const pre = handlePreflight(req, cid);
+  const pre = handlePreflight(req, requestId);
   if (pre) return pre;
 
   try {
@@ -719,7 +719,7 @@ Deno.serve(async (req) => {
       upload_id: uploadId,
       report
     }), {
-      headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' }
+      headers: { ...ch, 'x-request-id': requestId, 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
@@ -730,7 +730,7 @@ Deno.serve(async (req) => {
       error: error.message
     }), {
       status: 400,
-      headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' }
+      headers: { ...ch, 'x-request-id': requestId, 'Content-Type': 'application/json' }
     });
   }
 });

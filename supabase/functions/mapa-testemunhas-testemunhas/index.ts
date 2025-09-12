@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2.56.0";
+import { serve } from '../_shared/observability.ts';
 import { corsHeaders, handlePreflight, parseAllowedOrigins } from "../_shared/cors.ts";
 import { createLogger } from "../_shared/logger.ts";
 import { ListaResponseSchema, TestemunhasRequestSchema } from "../_shared/mapa-contracts.ts";
@@ -8,11 +8,11 @@ import { toFieldErrors } from "../_shared/validation.ts";
 
 const origins = parseAllowedOrigins(Deno.env.get("ALLOWED_ORIGINS"));
 
-Deno.serve(async (req) => {
-  const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
-  const logger = createLogger(cid);
+serve('mapa-testemunhas-testemunhas', async (req) => {
+  const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();
+  const logger = createLogger(requestId);
   const ch = corsHeaders(req, origins);
-  const pf = handlePreflight(req, origins, { "x-correlation-id": cid });
+  const pf = handlePreflight(req, origins, { "x-request-id": requestId });
   if (pf) return pf;
 
   let payload: unknown = {};
@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
       payload = await req.json();
     } catch (e) {
       logger.error(`invalid json: ${e.message}`);
-      return jsonError(400, "INVALID_JSON", { fieldErrors: {}, cid }, { ...ch, "x-correlation-id": cid });
+      return jsonError(400, "INVALID_JSON", { fieldErrors: {}, requestId }, { ...ch, "x-request-id": requestId });
     }
   }
 
@@ -31,8 +31,8 @@ Deno.serve(async (req) => {
     return jsonError(
       400,
       "INVALID_PAYLOAD",
-      { fieldErrors: toFieldErrors(validation.error), cid },
-      { ...ch, "x-correlation-id": cid },
+      { fieldErrors: toFieldErrors(validation.error), requestId },
+      { ...ch, "x-request-id": requestId },
     );
   }
 
@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
 
   const authHeader = req.headers.get("authorization") ?? "";
   if (!authHeader.startsWith("Bearer ")) {
-    return jsonError(401, "UNAUTHORIZED", { cid }, { ...ch, "x-correlation-id": cid });
+    return jsonError(401, "UNAUTHORIZED", { requestId }, { ...ch, "x-request-id": requestId });
   }
 
   const supabase = createClient(
@@ -64,17 +64,17 @@ Deno.serve(async (req) => {
   const { data, count, error } = await query;
   if (error) {
     logger.error(`database: ${error.message}`);
-    return jsonError(500, "DB_ERROR", { message: error.message, cid }, { ...ch, "x-correlation-id": cid });
+    return jsonError(500, "DB_ERROR", { message: error.message, requestId }, { ...ch, "x-request-id": requestId });
   }
 
-  const result = { items: data ?? [], page, limit, total: count ?? 0, next_cursor: null, cid };
+  const result = { items: data ?? [], page, limit, total: count ?? 0, next_cursor: null, requestId };
   const resultValidation = ListaResponseSchema.safeParse(result);
   if (!resultValidation.success) {
     logger.error(`response validation: ${resultValidation.error.message}`);
-    return jsonError(500, "INCONSISTENT_RESPONSE", { issues: resultValidation.error.issues, expected: { items: [], page: 1, limit: 20, next_cursor: null, cid }, cid }, { ...ch, "x-correlation-id": cid });
+    return jsonError(500, "INCONSISTENT_RESPONSE", { issues: resultValidation.error.issues, expected: { items: [], page: 1, limit: 20, next_cursor: null, requestId }, requestId }, { ...ch, "x-request-id": requestId });
   }
 
   logger.info(`success: ${result.items.length} items returned`);
-  return json(200, result, { ...ch, "x-correlation-id": cid });
+  return json(200, result, { ...ch, "x-request-id": requestId });
 });
 

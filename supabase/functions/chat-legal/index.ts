@@ -1,5 +1,6 @@
 // supabase/functions/chat-legal/index.ts
 
+import { serve } from "../_shared/observability.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { z } from "npm:zod@3.23.8";
 import { getSystemPrompt } from "../_shared/prompt-registry.ts";
@@ -89,16 +90,16 @@ async function openAIChat({
  * =========================
  */
 export async function handler(request: Request) {
-  const cid = request.headers.get("x-correlation-id") ?? crypto.randomUUID();
-  const pre = handlePreflight(request, cid);
+  const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();
+  const pre = handlePreflight(request, requestId);
   if (pre) return pre;
 
-  const log = createLogger(cid);
+  const log = createLogger(requestId);
 
   try {
     const { user, organization_id, supa, error } = await getAuth(request);
     if (error || !user || !organization_id) {
-      return jsonError(401, "UNAUTHORIZED", { cid }, { ...corsHeaders(request), "x-correlation-id": cid });
+      return jsonError(401, "UNAUTHORIZED", { requestId }, { ...corsHeaders(request), "x-request-id": requestId });
     }
 
     const admin = adminClient();
@@ -108,7 +109,7 @@ export async function handler(request: Request) {
       payload = await request.json();
     } catch (e) {
       log.error(`invalid json: ${e.message}`);
-      return jsonError(400, "INVALID_JSON", { fieldErrors: {}, cid }, { ...corsHeaders(request), "x-correlation-id": cid });
+      return jsonError(400, "INVALID_JSON", { fieldErrors: {}, requestId }, { ...corsHeaders(request), "x-request-id": requestId });
     }
 
     const ChatLegalRequestSchema = z.object({
@@ -121,17 +122,17 @@ export async function handler(request: Request) {
       return jsonError(
         400,
         "INVALID_PAYLOAD",
-        { fieldErrors: toFieldErrors(validation.error), cid },
-        { ...corsHeaders(request), "x-correlation-id": cid },
+        { fieldErrors: toFieldErrors(validation.error), requestId },
+        { ...corsHeaders(request), "x-request-id": requestId },
       );
     }
     const { message, promptName } = validation.data;
 
     const ip = request.headers.get("x-forwarded-for") || "unknown";
     const rlKey = `${ip}:${organization_id}:${user.id}:chat-legal`;
-    const allowed = await checkRateLimit(admin, rlKey, undefined, undefined, cid);
+    const allowed = await checkRateLimit(admin, rlKey, undefined, undefined, requestId);
     if (!allowed) {
-      return jsonError(429, "RATE_LIMIT", { cid }, { ...corsHeaders(request), "x-correlation-id": cid });
+      return jsonError(429, "RATE_LIMIT", { requestId }, { ...corsHeaders(request), "x-request-id": requestId });
     }
 
     const wantedName = promptName ?? "System: Mapa de Testemunhas - v1";
@@ -153,11 +154,11 @@ export async function handler(request: Request) {
       OPENAI_TIMEOUT_MS,
     );
 
-    return json(200, { ok: true, data: completion, cid }, { ...corsHeaders(request), "x-correlation-id": cid });
+    return json(200, { ok: true, data: completion, requestId }, { ...corsHeaders(request), "x-request-id": requestId });
   } catch (err) {
     log.error(`erro no chat-legal: ${err?.message ?? err}`);
-    return jsonError(500, "INTERNAL_ERROR", { cid }, { ...corsHeaders(request), "x-correlation-id": cid });
+    return jsonError(500, "INTERNAL_ERROR", { requestId }, { ...corsHeaders(request), "x-request-id": requestId });
   }
 }
 
-Deno.serve(handler);
+serve('chat-legal', handler);

@@ -3,6 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { logAudit } from '@/lib/audit';
 import { SITE_URL } from '@/config/site';
 import { corsHeaders } from '../_shared/cors';
+import { initSentry } from '../_shared/sentry';
+
+const sentry = initSentry();
 
 const maintenance =
   process.env.MAINTENANCE === 'true' || process.env.NEXT_PUBLIC_MAINTENANCE === 'true';
@@ -112,6 +115,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Export API Error:', error);
+    (await sentry)?.captureException?.(error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Export failed' },
       { status: 500, headers }

@@ -1,13 +1,13 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.56.0'
+import { serve } from '../_shared/observability.ts';
 
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
 
-Deno.serve(async (req) => {
+serve('create-version', async (req) => {
   console.log(`create-version called: ${req.method} from ${req.headers.get("Origin")}`);
 
-  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  const requestId = req.headers.get('x-request-id') ?? crypto.randomUUID();
   const ch = corsHeaders(req);
-  const pre = handlePreflight(req, cid);
+  const pre = handlePreflight(req, requestId);
   if (pre) return pre;
 
   try {
@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
       console.error('Auth error:', authError);
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+        { status: 401, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
       );
     }
 
@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
     if (!profile) {
       return new Response(
         JSON.stringify({ error: 'Profile not found' }),
-        { status: 404, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+        { status: 404, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
       );
     }
 
@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
     if (profile.role !== 'ADMIN' || profile.organization_id !== targetOrgId) {
       return new Response(
         JSON.stringify({ error: 'Insufficient permissions' }),
-        { status: 403, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+        { status: 403, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
       );
     }
 
@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
       console.error('Error creating version:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to create version' }),
-        { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+        { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
       );
     }
 
@@ -103,14 +103,14 @@ Deno.serve(async (req) => {
         versionId: version.id,
         number: version.number
       }),
-      { headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+      { headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
     );
 
   } catch (error) {
     console.error('Error in create-version:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+      { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
     );
   }
 });

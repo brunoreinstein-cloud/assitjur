@@ -1,7 +1,7 @@
 export const METHODS = ["GET", "POST", "OPTIONS"] as const;
 
 const DEFAULT_ALLOWED_HEADERS =
-  "authorization,apikey,content-type,x-correlation-id,x-client-info";
+  "authorization,apikey,content-type,x-request-id,x-client-info";
 
 export interface AllowedOrigins {
   raw: string[];

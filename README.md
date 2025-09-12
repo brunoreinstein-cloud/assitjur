@@ -116,9 +116,9 @@ import {
 const origins = parseAllowedOrigins(Deno.env.get("ALLOWED_ORIGINS"));
 
 Deno.serve(async (req) => {
-  const cid = req.headers.get("x-correlation-id") ?? crypto.randomUUID();
+  const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();
   const ch = corsHeaders(req, origins);
-  const pf = handlePreflight(req, origins, { "x-correlation-id": cid });
+  const pf = handlePreflight(req, origins, { "x-request-id": requestId });
   if (pf) return pf;
   //...
 });

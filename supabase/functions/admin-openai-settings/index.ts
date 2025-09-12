@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.56.0';
+import { serve } from '../_shared/observability.ts';
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
 
@@ -15,7 +15,7 @@ function decodeJWT(token: string) {
   }
 }
 
-Deno.serve(async (req) => {
+serve('admin-openai-settings', async (req) => {
   console.log('⚙️ OpenAI Settings Function Started');
   console.log('Method:', req.method, 'URL:', req.url);
 

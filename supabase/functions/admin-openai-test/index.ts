@@ -1,14 +1,14 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.56.0';
+import { serve } from '../_shared/observability.ts';
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
 
-Deno.serve(async (req) => {
+serve('admin-openai-test', async (req) => {
   console.log('🧪 OpenAI Test Function Started');
   console.log('Method:', req.method);
   
-  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  const requestId = req.headers.get('x-request-id') ?? crypto.randomUUID();
   const ch = corsHeaders(req);
-  const pre = handlePreflight(req, cid);
+  const pre = handlePreflight(req, requestId);
   if (pre) return pre;
 
   try {

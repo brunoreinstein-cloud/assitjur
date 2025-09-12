@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.56.0';
+import { serve } from '../_shared/observability.ts';
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
 
@@ -51,7 +51,7 @@ async function testOpenAIKey(key: string): Promise<{ valid: boolean; model?: str
   }
 }
 
-Deno.serve(async (req) => {
+serve('admin-openai-keys', async (req) => {
   console.log('🔑 OpenAI Keys Management Function');
   console.log('Method:', req.method, 'URL:', req.url);
 

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { corsHeaders } from '../_shared/cors';
+import { initSentry } from '../_shared/sentry';
+
+const sentry = initSentry();
 
 const maintenance =
   process.env.MAINTENANCE === 'true' || process.env.NEXT_PUBLIC_MAINTENANCE === 'true';
@@ -34,6 +37,7 @@ export async function GET(_request: NextRequest) {
       { headers: corsHeaders }
     );
   } catch (error) {
+    (await sentry)?.captureException?.(error);
     return NextResponse.json(
       {
         status: 'unhealthy',

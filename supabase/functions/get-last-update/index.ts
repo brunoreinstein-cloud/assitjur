@@ -1,10 +1,10 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.56.0'
+import { serve } from '../_shared/observability.ts';
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts'
 
-Deno.serve(async (req) => {
-  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+serve('get-last-update', async (req) => {
+  const requestId = req.headers.get('x-request-id') ?? crypto.randomUUID();
   const ch = corsHeaders(req);
-  const pre = handlePreflight(req, cid);
+  const pre = handlePreflight(req, requestId);
   if (pre) return pre;
 
   try {
@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...ch, 'x-request-id': requestId, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
     if (!profile) {
       return new Response(
         JSON.stringify({ error: 'Profile not found' }),
-        { status: 404, headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' } }
+        { status: 404, headers: { ...ch, 'x-request-id': requestId, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -62,14 +62,14 @@ Deno.serve(async (req) => {
         publishedAtUTC: version?.published_at || null,
         summary: version?.summary || {}
       }),
-      { headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' } }
+      { headers: { ...ch, 'x-request-id': requestId, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error in get-last-update:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...ch, 'x-correlation-id': cid, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...ch, 'x-request-id': requestId, 'Content-Type': 'application/json' } }
     );
   }
 });

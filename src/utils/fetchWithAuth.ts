@@ -3,9 +3,9 @@ import { v4 as uuid } from 'uuid';
 import { AuthErrorHandler } from '@/utils/authErrorHandler';
 
 export async function fetchWithAuth(url: string, init?: RequestInit) {
-  const cid = uuid();
+  const requestId = uuid();
   const headers = new Headers(init?.headers || {});
-  headers.set('x-correlation-id', cid);
+  headers.set('x-request-id', requestId);
 
   let token: string | undefined;
   try {
@@ -50,7 +50,7 @@ export async function fetchWithAuth(url: string, init?: RequestInit) {
     return {
       ok: false,
       status: 0,
-      cid,
+      requestId,
       error: 'network_error',
       details: err instanceof Error ? err.message : String(err)
     };
@@ -72,14 +72,14 @@ export async function fetchWithAuth(url: string, init?: RequestInit) {
     }
   }
 
-  const responseCid =
-    body?.cid || response.headers.get('x-correlation-id') || cid;
+  const responseRequestId =
+    body?.requestId || response.headers.get('x-request-id') || requestId;
 
   if (!response.ok) {
     const errorResponse = {
       ok: false,
       status: response.status,
-      cid: responseCid,
+      requestId: responseRequestId,
       error: body?.error || response.statusText,
       details: body?.details
     };
@@ -100,7 +100,7 @@ export async function fetchWithAuth(url: string, init?: RequestInit) {
   return {
     ok: true,
     status: response.status,
-    cid: responseCid,
+    requestId: responseRequestId,
     data: body
   };
 }

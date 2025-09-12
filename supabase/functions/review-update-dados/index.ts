@@ -1,4 +1,4 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from '../_shared/observability.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.56.0';
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
 
@@ -35,7 +35,7 @@ interface ReviewResponse {
   duration_ms: number;
 }
 
-Deno.serve(async (req) => {
+serve('review-update-dados', async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });

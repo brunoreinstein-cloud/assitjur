@@ -1,10 +1,10 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from '../_shared/observability.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.56.0';
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
 
-Deno.serve(async (req) => {
-  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
-  const pre = handlePreflight(req, cid);
+serve('admin-analytics', async (req) => {
+  const requestId = req.headers.get('x-request-id') ?? crypto.randomUUID();
+  const pre = handlePreflight(req, requestId);
   if (pre) return pre;
 
   try {
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(JSON.stringify(analyticsData), {
-      headers: { ...corsHeaders(req), 'x-correlation-id': cid,  'content-type': 'application/json; charset=utf-8' },
+      headers: { ...corsHeaders(req), 'x-request-id': requestId,  'content-type': 'application/json; charset=utf-8' },
     });
   } catch (error) {
     console.error('Error in admin-analytics function:', error);
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ error: error.message }), 
       {
         status: 500,
-        headers: { ...corsHeaders(req), 'x-correlation-id': cid,  'content-type': 'application/json; charset=utf-8' },
+        headers: { ...corsHeaders(req), 'x-request-id': requestId,  'content-type': 'application/json; charset=utf-8' },
       }
     );
   }

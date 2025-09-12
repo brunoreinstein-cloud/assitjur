@@ -1,14 +1,14 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.56.0'
+import { serve } from '../_shared/observability.ts';
 import { corsHeaders, handlePreflight } from '../_shared/cors.ts'
 
 console.log('🚀 import-into-version function starting - CORS fix applied...');
 
-Deno.serve(async (req) => {
+serve('import-into-version', async (req) => {
   console.log(`📞 import-into-version called with method: ${req.method}, origin: ${req.headers.get('origin')}`);
 
-  const cid = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
+  const requestId = req.headers.get('x-request-id') ?? crypto.randomUUID();
   const ch = corsHeaders(req);
-  const pre = handlePreflight(req, cid);
+  const pre = handlePreflight(req, requestId);
   if (pre) return pre;
 
   console.log(`📞 Processing ${req.method} request...`);
@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
       console.error('❌ Invalid method:', req.method);
       return new Response(
         JSON.stringify({ error: 'Method not allowed' }),
-        { status: 405, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+        { status: 405, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
       );
     }
 
@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
       console.error('❌ Missing Authorization header');
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+        { status: 401, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
       );
     }
 
@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+        { status: 401, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
       );
     }
 
@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
     if (!profile || profile.role !== 'ADMIN') {
       return new Response(
         JSON.stringify({ error: 'Insufficient permissions' }),
-        { status: 403, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+        { status: 403, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
       );
     }
 
@@ -120,14 +120,14 @@ Deno.serve(async (req) => {
     if (!version) {
       return new Response(
         JSON.stringify({ error: 'Version not found' }),
-        { status: 404, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+        { status: 404, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
       );
     }
 
     if (version.status !== 'draft') {
       return new Response(
         JSON.stringify({ error: 'Can only import into draft versions' }),
-        { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+        { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
       );
     }
 
@@ -144,7 +144,7 @@ Deno.serve(async (req) => {
       console.error('❌ Error clearing version data:', deleteError);
       return new Response(
         JSON.stringify({ error: 'Failed to clear existing data' }),
-        { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+        { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
       );
     }
 
@@ -445,7 +445,7 @@ Deno.serve(async (req) => {
             errors: errors,
             retries_attempted: totalRetried
           }),
-          { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+          { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
         );
       }
       
@@ -461,7 +461,7 @@ Deno.serve(async (req) => {
             errors: errors,
             retries_attempted: totalRetried
           }),
-          { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+          { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
         );
       }
     } else {
@@ -512,7 +512,7 @@ Deno.serve(async (req) => {
           analyzed: (requestBody.processos || []).length
         }
       }),
-      { headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+      { headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
     );
 
   } catch (error) {
@@ -526,7 +526,7 @@ Deno.serve(async (req) => {
         message: error.message,
         timestamp: new Date().toISOString()
       }),
-      { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-correlation-id': cid } }
+      { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
     );
   }
 });
