@@ -13,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { BrandHeader } from '@/components/brand/BrandHeader';
 import { ERROR_MESSAGES } from '@/utils/errorMessages';
-import { getSiteUrl } from '@/utils/env';
+import { getEnv } from '@/lib/getEnv';
 
 const resetSchema = z.object({
   email: z.string().email('E-mail inválido')
@@ -50,7 +50,7 @@ const Reset = () => {
 
       let siteUrl: string;
       try {
-        siteUrl = getSiteUrl();
+        siteUrl = getEnv().siteUrl;
       } catch {
         toast.error('Configuração inválida', {
           description: 'URL do site não configurada.'

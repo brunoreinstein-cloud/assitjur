@@ -5,7 +5,7 @@ import { ensureProfile } from '@/utils/ensureProfile';
 import { AuthErrorHandler } from '@/utils/authErrorHandler';
 import { useSessionMonitor } from '@/hooks/useSessionMonitor';
 import { getSessionContext, calculateRisk } from '@/security/sessionContext';
-import { getSiteUrl } from '@/utils/env';
+import { getEnv } from '@/lib/getEnv';
 
 export type UserRole = 'ADMIN' | 'ANALYST' | 'VIEWER';
 
@@ -71,7 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   // Enable session monitoring for authenticated users
-  const inactivity = Number(import.meta.env.VITE_INACTIVITY_TIMEOUT_MINUTES || 30);
+  const { inactivityTimeoutMinutes: inactivity } = getEnv();
   useSessionMonitor({
     enabled: !!session,
     checkInterval: 5, // Check every 5 minutes
@@ -410,7 +410,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resetPassword = async (email: string) => {
     try {
-      const siteUrl = getSiteUrl();
+      const { siteUrl } = getEnv();
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${siteUrl}/reset-password`
       });
