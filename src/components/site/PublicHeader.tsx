@@ -58,21 +58,23 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
 
   const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
 
-  return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled 
-        ? 'bg-background/95 backdrop-blur-md border-b shadow-sm' 
-        : 'bg-transparent'
-    }`}>
+    return (
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 text-aj-text-high ${
+          isScrolled
+            ? 'bg-aj-bg-deep/95 backdrop-blur-md border-b shadow-sm'
+            : 'bg-hero-gradient'
+        }`}
+      >
       <div className="container mx-auto px-6 sm:px-8 lg:px-12">
         <div className="flex items-center justify-between h-18">
           {/* Logo */}
-          <div className="flex items-center cursor-pointer transition-transform duration-200 hover:scale-105 mr-8" onClick={() => scrollToSection('hero')}>
-            <BrandLogo
-              size="lg"
-              className="h-14 md:h-16 filter brightness-0 saturate-100 hue-rotate-258 contrast-125"
-            />
-          </div>
+            <div
+              className="flex items-center cursor-pointer transition-transform duration-200 hover:scale-105 mr-8"
+              onClick={() => scrollToSection('hero')}
+            >
+              <BrandLogo size="lg" className="h-14 md:h-16" />
+            </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-10">
@@ -100,12 +102,12 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
             </Button>
             
             {/* Beta Button */}
-            <Button 
-              onClick={() => navigate('/beta')}
-              className="hidden sm:flex bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-200"
-            >
-              Entrar na Lista Beta
-            </Button>
+              <Button
+                onClick={() => navigate('/beta')}
+                className="hidden sm:flex btn-primary"
+              >
+                Entrar na Lista Beta
+              </Button>
 
             {/* Mobile Menu Toggle */}
             <button
@@ -177,15 +179,15 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
                 >
                   Login
                 </Button>
-                <Button
-                  onClick={() => {
-                    navigate('/beta');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full bg-primary hover:bg-primary/90"
-                >
-                  Entrar na Lista Beta
-                </Button>
+                  <Button
+                    onClick={() => {
+                      navigate('/beta');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full btn-primary"
+                  >
+                    Entrar na Lista Beta
+                  </Button>
               </div>
             </div>
           </div>

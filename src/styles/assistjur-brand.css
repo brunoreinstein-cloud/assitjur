@@ -1,0 +1,28 @@
+:root {
+  --aj-color-bg-deep: #14022A;
+  --aj-color-bg-plum: #270238;
+  --aj-color-gold: #E3B15A;
+  --aj-text-high: #FFFEFF;
+
+  --aj-shadow-soft: 0 8px 24px rgba(20, 2, 42, 0.35);
+  --aj-radius-xl: 1.5rem;
+}
+
+.bg-hero-gradient {
+  background: linear-gradient(135deg, var(--aj-color-bg-deep), var(--aj-color-bg-plum));
+}
+
+.btn-primary {
+  background: #6D2BEF;
+  color: var(--aj-text-high);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  box-shadow: var(--aj-shadow-soft);
+}
+
+.badge-gold {
+  background: var(--aj-color-gold);
+  color: #1a1125;
+  border-radius: 999px;
+  padding: 0.25rem 0.5rem;
+}
