@@ -57,6 +57,7 @@ export default function TestemunhasTable() {
       return data;
     },
     enabled: !!profile?.organization_id,
+    staleTime: 5 * 60 * 1000,
   });
 
   const testemunhasData: PorTestemunha[] = testemunhasResponse?.data || [];

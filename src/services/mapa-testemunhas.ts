@@ -44,8 +44,7 @@ export async function fetchTestemunhas(params: {
   filters?: TestemunhaFilters;
 }): Promise<{ data: PorTestemunha[]; total: number }> {
   const { data: sessionData } = await supabase.auth.getSession();
-  const accessToken = sessionData?.session?.access_token;
-  if (!accessToken) throw new Error('Usuário não autenticado');
+  if (!sessionData?.session?.access_token) throw new Error('Usuário não autenticado');
 
   const filtros = toSnakeCaseFilters({
     ...(params.filters ?? {}),
@@ -61,15 +60,10 @@ export async function fetchTestemunhas(params: {
   } satisfies TestemunhasRequest;
   TestemunhasRequestSchema.parse(body);
 
-  const { data, error } = await supabase.functions.invoke(
+  // Use RPC to leverage view with pre-joined data and avoid N+1 queries
+  const { data, error } = await supabase.rpc(
     MAPA_TESTEMUNHAS_TESTEMUNHAS_FN,
-    {
-      body,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    }
+    body
   );
 
   if (error) {
@@ -86,8 +80,7 @@ export async function fetchProcessos(params: {
   filters?: ProcessoFilters;
 }): Promise<{ data: any[]; total: number }> {
   const { data: sessionData } = await supabase.auth.getSession();
-  const accessToken = sessionData?.session?.access_token;
-  if (!accessToken) throw new Error('Usuário não autenticado');
+  if (!sessionData?.session?.access_token) throw new Error('Usuário não autenticado');
 
   const filtros = toSnakeCaseFilters(params.filters);
 
@@ -100,15 +93,10 @@ export async function fetchProcessos(params: {
   } satisfies ProcessosRequest;
   ProcessosRequestSchema.parse(body);
 
-  const { data, error } = await supabase.functions.invoke(
+  // Use RPC to fetch from a safe view with necessary joins
+  const { data, error } = await supabase.rpc(
     MAPA_TESTEMUNHAS_PROCESSOS_FN,
-    {
-      body,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    }
+    body
   );
 
   if (error) {
