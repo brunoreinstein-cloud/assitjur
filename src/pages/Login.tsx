@@ -12,11 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { getDefaultRedirect, AUTH_CONFIG } from '@/config/auth';
 import { BrandHeader } from '@/components/brand/BrandHeader';
 import { BackToTopFAB } from '@/components/site/BackToTopFAB';
-
-const heroImageAvif =
-  "https://placehold.co/1600x900/000000/FFFFFF.avif?text=AssistJur";
-const heroImageWebp =
-  "https://placehold.co/1600x900/000000/FFFFFF.webp?text=AssistJur";
+import { heroImageJpg, heroImageWebp, heroImageAvif } from '@/assets/heroImages';
 
 const Login = () => {
   const navigate = useNavigate();

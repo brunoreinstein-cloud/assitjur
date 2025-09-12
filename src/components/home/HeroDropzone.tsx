@@ -3,10 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Upload, CheckCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useHomeStore } from "@/lib/store/home";
-const heroImageAvif =
-  "https://placehold.co/1600x900/000000/FFFFFF.avif?text=AssistJur";
-const heroImageWebp =
-  "https://placehold.co/1600x900/000000/FFFFFF.webp?text=AssistJur";
+import { heroImageJpg, heroImageWebp, heroImageAvif } from "@/assets/heroImages";
 
 export const HeroDropzone = () => {
   const navigate = useNavigate();
