@@ -21,11 +21,13 @@
     "postbuild": "npm run sitemap:build",
     "audit": "tsx audit/index.ts",
     "lh": "tsx audit/lighthouse.ts",
+    "type-check": "tsc --noEmit",
+    "test:unit": "vitest run --coverage",
     "release": "standard-version",
     "release:major": "standard-version --release-as major",
     "release:minor": "standard-version --release-as minor",
     "release:patch": "standard-version --release-as patch",
-    "prepare": "husky"
+    "prepare": "husky install"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
