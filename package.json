@@ -24,7 +24,10 @@
     "release": "standard-version",
     "release:major": "standard-version --release-as major",
     "release:minor": "standard-version --release-as minor",
-    "release:patch": "standard-version --release-as patch"
+    "release:patch": "standard-version --release-as patch",
+    "type-check": "tsc --noEmit",
+    "test:unit": "vitest run --coverage",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -128,6 +131,8 @@
     "prettier": "^3.3.3",
     "tsx": "^4.7.0",
     "chrome-launcher": "^1.0.0",
-    "standard-version": "^9.5.0"
+    "standard-version": "^9.5.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.7"
   }
 }
