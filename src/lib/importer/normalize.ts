@@ -1,6 +1,5 @@
 import { ProcessoRow, TestemunhaRow, DetectedSheet, OrgSettings } from './types';
 import Papa from 'papaparse';
-import * as XLSX from 'xlsx';
 import { validateCNJ, cleanCNJ } from '@/lib/validation/unified-cnj';
 import { resolveFieldName } from '@/etl/synonyms';
 
@@ -130,8 +129,8 @@ function normalizeTestemunhaData(
  * Loads raw data from file for a specific sheet
  */
 async function loadRawData(file: File, sheet: DetectedSheet): Promise<any[]> {
-  return new Promise((resolve, reject) => {
-    if (file.name.endsWith('.csv')) {
+  if (file.name.endsWith('.csv')) {
+    return new Promise((resolve, reject) => {
       Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
@@ -140,40 +139,43 @@ async function loadRawData(file: File, sheet: DetectedSheet): Promise<any[]> {
         },
         error: reject
       });
-    } else {
-      // Excel file
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = new Uint8Array(e.target?.result as ArrayBuffer);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const worksheet = workbook.Sheets[sheet.name];
-          
-          if (!worksheet) {
-            reject(new Error(`Sheet "${sheet.name}" not found`));
-            return;
-          }
-          
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-          const headers = jsonData[0] as string[];
-          const rows = jsonData.slice(1);
-          
-          const objectData = rows.map(row => {
-            const obj: any = {};
-            headers.forEach((header, index) => {
-              obj[header] = row[index];
-            });
-            return obj;
-          });
-          
-          resolve(objectData);
-        } catch (error) {
-          reject(error);
+    });
+  }
+
+  const XLSX = await import('xlsx');
+  return new Promise((resolve, reject) => {
+    // Excel file
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const worksheet = workbook.Sheets[sheet.name];
+
+        if (!worksheet) {
+          reject(new Error(`Sheet "${sheet.name}" not found`));
+          return;
         }
-      };
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(file);
-    }
+
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        const headers = jsonData[0] as string[];
+        const rows = jsonData.slice(1);
+
+        const objectData = rows.map(row => {
+          const obj: any = {};
+          headers.forEach((header, index) => {
+            obj[header] = row[index];
+          });
+          return obj;
+        });
+
+        resolve(objectData);
+      } catch (error) {
+        reject(error);
+      }
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
   });
 }
 

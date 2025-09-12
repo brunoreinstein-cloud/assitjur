@@ -1,5 +1,5 @@
-import * as XLSX from 'xlsx';
 import type { ValidationResult } from './types';
+import type { WorkSheet } from 'xlsx';
 import { getExcelAddress, isValidExcelAddress } from '@/lib/excel/cell-addressing';
 
 export interface CorrectedCell {
@@ -62,6 +62,7 @@ async function generateCorrectedXlsx(
   corrections?: Map<string, CorrectedCell>,
   fileName?: string
 ): Promise<string> {
+  const XLSX = await import('xlsx');
   const wb = XLSX.utils.book_new();
   
   console.log('📊 Generating corrected XLSX with data:', {
@@ -149,7 +150,7 @@ async function generateCorrectedXlsx(
  * Aplica formatação visual para células corrigidas
  */
 function applyCorrectionFormatting(
-  ws: XLSX.WorkSheet, 
+  ws: WorkSheet,
   corrections: Map<string, CorrectedCell>,
   sheetName: string
 ) {

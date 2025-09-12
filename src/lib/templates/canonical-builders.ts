@@ -3,10 +3,9 @@
  * Generates XLSX and CSV files with canonical headers and sample data
  */
 
-import * as XLSX from 'xlsx';
-import { 
-  canonicalProcessoSamples, 
-  canonicalTestemunhaSamples, 
+import {
+  canonicalProcessoSamples,
+  canonicalTestemunhaSamples,
   canonicalDicionarioFields,
   CANONICAL_HEADERS_PROCESSO,
   CANONICAL_HEADERS_TESTEMUNHA,
@@ -18,7 +17,9 @@ import {
 /**
  * Build canonical XLSX template with 3 sheets
  */
-export function buildCanonicalXlsx(): Buffer {
+export async function buildCanonicalXlsx(): Promise<Buffer> {
+  // Import XLSX only when generating templates
+  const XLSX = await import('xlsx');
   const wb = XLSX.utils.book_new();
 
   // Sheet 1: Por Processo

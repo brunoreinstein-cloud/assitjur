@@ -1,7 +1,8 @@
-import * as XLSX from 'xlsx';
 import { processoSamples, testemunhaSamples, dicionarioFields } from './samples';
 
-export function buildTemplateXlsx(): Buffer {
+export async function buildTemplateXlsx(): Promise<Buffer> {
+  // Import XLSX only when generating the template
+  const XLSX = await import('xlsx');
   // Criar workbook
   const wb = XLSX.utils.book_new();
 
