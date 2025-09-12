@@ -1,41 +1,36 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import {
-  applyConsentToGtag,
-  applyDefaultConsent,
-  getStoredConsent,
-  storeConsent,
-  type ConsentFlags,
-  type ConsentPreferences,
-} from '@/lib/privacy/consent'
+import { getConsent, setConsent } from '@/lib/consent'
+
+type ConsentPrefs = { analytics: boolean; ads: boolean }
 
 interface ConsentContextValue {
-  preferences: ConsentPreferences | null
+  preferences: ConsentPrefs | null
   open: boolean
   setOpen: (open: boolean) => void
-  save: (prefs: ConsentFlags) => void
+  save: (prefs: ConsentPrefs) => void
 }
 
 const ConsentContext = createContext<ConsentContextValue | undefined>(undefined)
 
 export function ConsentProvider({ children }: { children: React.ReactNode }) {
-  const [preferences, setPreferences] = useState<ConsentPreferences | null>(null)
+  const [preferences, setPreferences] = useState<ConsentPrefs | null>(null)
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    applyDefaultConsent()
-    const stored = getStoredConsent()
-    if (stored) {
-      setPreferences(stored)
-      applyConsentToGtag(stored)
+    const stored = getConsent()
+    if (stored.measure !== undefined || stored.marketing !== undefined) {
+      setPreferences({
+        analytics: stored.measure ?? false,
+        ads: stored.marketing ?? false,
+      })
     } else {
       setOpen(true)
     }
   }, [])
 
-  const save = (prefs: ConsentFlags) => {
-    const stored = storeConsent(prefs)
-    setPreferences(stored)
-    applyConsentToGtag(prefs)
+  const save = (prefs: ConsentPrefs) => {
+    setConsent({ measure: prefs.analytics, marketing: prefs.ads })
+    setPreferences(prefs)
   }
 
   return React.createElement(
