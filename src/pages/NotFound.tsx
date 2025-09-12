@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Activity, Home, LifeBuoy, Search } from "lucide-react";
+import { SEO } from "@/seo/SEO";
 
 const NotFound = () => {
   const location = useLocation();
@@ -24,12 +25,14 @@ const NotFound = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-subtle">
-      <Card className="w-full max-w-lg">
-        <CardHeader className="text-center">
-          <CardTitle>Página não encontrada</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <>
+      <SEO title="Página não encontrada" path={location.pathname} noindex />
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-subtle">
+        <Card className="w-full max-w-lg">
+          <CardHeader className="text-center">
+            <CardTitle>Página não encontrada</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
           <p className="text-center text-muted-foreground">
             A página que você procura não existe. Tente buscar novamente ou acessar uma das opções abaixo.
           </p>
@@ -87,6 +90,7 @@ const NotFound = () => {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 };
 

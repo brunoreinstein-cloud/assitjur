@@ -15,7 +15,10 @@
     "test:integration": "vitest run tests/integration.supabase.test.ts",
     "generate:types": "node scripts/generate-api-types.js",
     "seed:flags": "node scripts/seed-flags.js",
-    "sanitize:emojis": "ts-node --transpile-only tools/remove-pointing-emojis.ts"
+    "sanitize:emojis": "ts-node --transpile-only tools/remove-pointing-emojis.ts",
+    "sitemap:build": "node scripts/generate-sitemap.mjs",
+    "check:seo": "bash scripts/check-seo.sh",
+    "postbuild": "npm run sitemap:build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
