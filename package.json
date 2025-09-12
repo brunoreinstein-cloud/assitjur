@@ -31,7 +31,10 @@
     "release:patch": "standard-version --release-as patch",
     "type-check": "tsc --noEmit",
     "prepare": "husky install",
-    "protect:branches": "ts-node tools/protect-branches.ts"
+    "protect:branches": "ts-node tools/protect-branches.ts",
+    "branch:feature": "node tools/branch.js feature",
+    "branch:release": "node tools/branch.js release",
+    "branch:hotfix": "node tools/branch.js hotfix"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
