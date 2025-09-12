@@ -10,9 +10,13 @@ import { ErrorBanner } from '@/components/common/ErrorBanner';
 import { ERROR_MESSAGES } from '@/utils/errorMessages';
 import { useAuth } from '@/hooks/useAuth';
 import { getDefaultRedirect, AUTH_CONFIG } from '@/config/auth';
-import heroImage from "@/assets/hero-legal-tech.jpg";
 import { BrandHeader } from '@/components/brand/BrandHeader';
 import { BackToTopFAB } from '@/components/site/BackToTopFAB';
+
+const heroImageAvif =
+  "https://placehold.co/1600x900/000000/FFFFFF.avif?text=AssistJur";
+const heroImageWebp =
+  "https://placehold.co/1600x900/000000/FFFFFF.webp?text=AssistJur";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -235,10 +239,10 @@ const Login = () => {
 
       {/* Right side - Hero (hidden on mobile) */}
       <aside className="hidden lg:block relative" role="complementary">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary-light) / 0.8)), url(${heroImage})`
+            backgroundImage: `linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary-light) / 0.8)), image-set(url(${heroImageAvif}) type("image/avif"), url(${heroImageWebp}) type("image/webp"))`
           }}
           role="img"
           aria-label="Imagem de fundo mostrando tecnologia jurídica"
