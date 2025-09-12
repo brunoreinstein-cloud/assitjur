@@ -34,7 +34,8 @@
     "protect:branches": "ts-node tools/protect-branches.ts",
     "branch:feature": "node tools/branch.js feature",
     "branch:release": "node tools/branch.js release",
-    "branch:hotfix": "node tools/branch.js hotfix"
+    "branch:hotfix": "node tools/branch.js hotfix",
+    "project:check": "ts-node tools/project-check.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
