@@ -202,6 +202,32 @@ npm run test
 
 ---
 
+## 🌐 Auditoria de Site
+
+O repositório inclui um **Auditor Web** para inspecionar páginas externas com Playwright, axe-core e Lighthouse.
+
+### Instalação das dependências do navegador
+
+```bash
+npx playwright install
+```
+
+### Executar auditoria completa
+
+```bash
+npm run audit -- --url=https://assistjur.com.br/
+```
+
+Os artefatos serão gerados em `out/` (`audit.json`, `audit.md`, `snapshot.html` e `fixes/`).
+
+### Executar apenas Lighthouse
+
+```bash
+npm run lh -- --url=https://assistjur.com.br/
+```
+
+---
+
 ## 🔒 Segurança
 
 - Uso de **RLS (Row Level Security)** em todas as tabelas sensíveis.
