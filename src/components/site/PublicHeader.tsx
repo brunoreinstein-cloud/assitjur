@@ -1,198 +1,146 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Menu, X, ChevronDown } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { BrandLogo } from '@/components/brand/BrandLogo';
+import React, { useState } from 'react';
 
 interface PublicHeaderProps {
   onBetaClick?: () => void;
 }
 
 export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-      });
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     setIsMobileMenuOpen(false);
   };
 
-  type NavItem = {
-    label: string;
-    action?: () => void;
-    children?: { label: string; action: () => void }[];
-  };
-
-  const navItems: NavItem[] = [
-    { label: 'Início', action: () => scrollToSection('hero') },
-    { label: 'Para Quem', action: () => scrollToSection('publico') },
-    { label: 'Diferenciais', action: () => scrollToSection('diferenciais') },
-    { label: 'ROI', action: () => scrollToSection('roi') },
-    { label: 'Agentes', action: () => scrollToSection('agentes') },
-    { label: 'Segurança', action: () => scrollToSection('seguranca') },
-    {
-      label: 'Sobre',
-      action: () => scrollToSection('sobre'),
-      children: [
-        { label: 'O AssistJur.IA', action: () => scrollToSection('sobre') },
-        { label: 'Bianca Reinstein', action: () => scrollToSection('bianca') }
-      ]
-    }
+  const navItems = [
+    { label: 'Início', id: 'inicio' },
+    { label: 'Para Quem', id: 'para-quem' },
+    { label: 'Diferenciais', id: 'diferenciais' },
+    { label: 'ROI', id: 'roi' },
+    { label: 'Agentes', id: 'agentes' },
+    { label: 'Segurança', id: 'seguranca' },
+    { label: 'Sobre', id: 'sobre' }
   ];
 
-  const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
-
-    return (
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 text-aj-text-high ${
-          isScrolled
-            ? 'bg-aj-bg-deep/95 backdrop-blur-md border-b shadow-sm'
-            : 'bg-hero-gradient'
-        }`}
-      >
-      <div className="container mx-auto px-6 sm:px-8 lg:px-12">
-        <div className="flex items-center justify-between h-18">
+  return (
+    <nav className="sticky top-0 z-50 bg-[#1e0033]/95 backdrop-blur supports-[backdrop-filter]:bg-[#1e0033]/80">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-            <div
-              className="flex items-center cursor-pointer transition-transform duration-200 hover:scale-105 mr-8"
-              onClick={() => scrollToSection('hero')}
-            >
-              <BrandLogo size="lg" className="h-14 md:h-16" />
-            </div>
+          <a href="/" className="flex items-center gap-3">
+            <img src="/logos/assistjur-logo.svg" alt="AssistJur.IA" className="h-8 w-auto" />
+            <span className="sr-only">AssistJur.IA</span>
+          </a>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-10">
-            {navItems.map((item, index) => (
-              <button
-                key={index}
-                onClick={item.action}
-                className="text-foreground/80 hover:text-primary font-medium text-sm transition-all duration-200 relative group"
-              >
-                {item.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-200 group-hover:w-full"></span>
-              </button>
+          {/* Desktop Links */}
+          <ul className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-200">
+            {navItems.map((item) => (
+              <li key={item.id}>
+                <a
+                  href={`#${item.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToSection(item.id);
+                  }}
+                  className="hover:text-white hover:underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-[#1e0033]"
+                >
+                  {item.label}
+                </a>
+              </li>
             ))}
-          </nav>
+          </ul>
 
-          {/* Actions + Mobile Menu */}
-          <div className="flex items-center space-x-4">
-            {/* Login Button - Hidden on mobile */}
-            <Button 
-              onClick={() => navigate('/login')}
-              variant="outline"
-              className="hidden sm:flex border-primary/30 text-primary hover:bg-primary/5 hover:border-primary transition-all duration-200"
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center gap-3">
+            <a
+              href="/login"
+              className="px-4 py-2 rounded-md border border-purple-500 text-purple-300 hover:bg-purple-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-[#1e0033]"
             >
               Login
-            </Button>
-            
-            {/* Beta Button */}
-              <Button
-                onClick={() => navigate('/beta')}
-                className="hidden sm:flex btn-primary"
-              >
-                Entrar na Lista Beta
-              </Button>
-
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors"
-              aria-label="Toggle menu"
+            </a>
+            <a
+              href="#lista-beta"
+              onClick={(e) => {
+                if (onBetaClick) {
+                  e.preventDefault();
+                  onBetaClick();
+                }
+              }}
+              className="px-4 py-2 rounded-md bg-gradient-to-r from-purple-500 to-violet-600 text-white font-semibold shadow-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:ring-offset-2 focus:ring-offset-[#1e0033]"
             >
-              {isMobileMenuOpen ? (
-                <X className="h-5 w-5 text-foreground" />
-              ) : (
-                <Menu className="h-5 w-5 text-foreground" />
-              )}
-            </button>
+              Entrar na Lista Beta
+            </a>
           </div>
+
+          {/* Mobile menu button */}
+          <button
+            aria-label="Abrir menu"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden inline-flex items-center justify-center rounded-md p-2 text-gray-200 hover:text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-[#1e0033]"
+          >
+            {isMobileMenuOpen ? (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
+                <path
+                  fillRule="evenodd"
+                  d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+              </svg>
+            )}
+          </button>
         </div>
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t bg-background/95 backdrop-blur-md shadow-lg">
-            <div className="px-6 py-6 space-y-4">
-              {/* Mobile Navigation Items */}
-              {navItems.map((item, index) => (
-                <div key={index}>
-                  <button
-                    onClick={() => {
-                      if (item.children) {
-                        setOpenSubmenu(openSubmenu === index ? null : index);
-                      } else {
-                        item.action?.();
-                      }
+          <div className="md:hidden border-t border-white/10">
+            <ul className="flex flex-col gap-4 px-4 py-6 text-gray-200">
+              {navItems.map((item) => (
+                <li key={item.id}>
+                  <a
+                    href={`#${item.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      scrollToSection(item.id);
                     }}
-                    className="flex w-full items-center justify-between text-left px-4 py-4 text-foreground/80 hover:text-primary hover:bg-muted/50 rounded-lg transition-all duration-200 font-medium"
+                    className="block py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-[#1e0033] hover:text-white hover:underline underline-offset-4"
                   >
                     {item.label}
-                    {item.children && (
-                      <ChevronDown
-                        className={`h-4 w-4 transition-transform ${openSubmenu === index ? 'rotate-180' : ''}`}
-                      />
-                    )}
-                  </button>
-                  {item.children && openSubmenu === index && (
-                    <div className="pl-4">
-                      {item.children.map((child, cIndex) => (
-                        <button
-                          key={cIndex}
-                          onClick={() => {
-                            child.action();
-                            setIsMobileMenuOpen(false);
-                          }}
-                          className="block w-full text-left px-4 py-4 text-foreground/70 hover:text-primary hover:bg-muted/50 rounded-lg transition-all duration-200"
-                        >
-                          {child.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                  </a>
+                </li>
               ))}
-
-              {/* Mobile Action Buttons */}
-              <div className="pt-4 space-y-3 border-t border-border/20">
-                <Button
-                  onClick={() => {
-                    navigate('/login');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  variant="outline"
-                  className="w-full border-primary/30 text-primary hover:bg-primary/5"
+              <li className="pt-2 flex flex-col gap-3">
+                <a
+                  href="/login"
+                  className="px-4 py-2 rounded-md border border-purple-500 text-purple-300 hover:bg-purple-500 hover:text-white text-center focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-[#1e0033]"
                 >
                   Login
-                </Button>
-                  <Button
-                    onClick={() => {
-                      navigate('/beta');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full btn-primary"
-                  >
-                    Entrar na Lista Beta
-                  </Button>
-              </div>
-            </div>
+                </a>
+                <a
+                  href="#lista-beta"
+                  onClick={(e) => {
+                    if (onBetaClick) {
+                      e.preventDefault();
+                      onBetaClick();
+                    }
+                  }}
+                  className="px-4 py-2 rounded-md bg-gradient-to-r from-purple-500 to-violet-600 text-white font-semibold shadow-md hover:opacity-90 text-center focus:outline-none focus:ring-2 focus:ring-purple-300 focus:ring-offset-2 focus:ring-offset-[#1e0033]"
+                >
+                  Entrar na Lista Beta
+                </a>
+              </li>
+            </ul>
           </div>
         )}
       </div>
-    </header>
+    </nav>
   );
 }
+
+export default PublicHeader;

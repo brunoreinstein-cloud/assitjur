@@ -3,17 +3,15 @@
  * Centralized brand identity tokens and assets
  */
 
-import Logo from '@/assets/logo/assistjur-logo.svg';
-
 export const BRAND = {
   name: "AssistJur.IA",
   shortName: "AssistJur",
   fullName: "AssistJur.IA - Assistente de Testemunhas",
-  
+
   logo: {
-    light: Logo,
-    dark: Logo, // Same logo for both themes
-    mark: Logo, // Placeholder mark
+    light: "/logos/assistjur-logo.svg",
+    dark: "/logos/assistjur-logo.svg", // Same logo for both themes
+    mark: "/logos/assistjur-icon.svg", // Square icon version
   },
 
   favicon: '/favicon.svg',
