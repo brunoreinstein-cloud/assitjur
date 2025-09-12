@@ -27,7 +27,8 @@
     "release:patch": "standard-version --release-as patch",
     "type-check": "tsc --noEmit",
     "test:unit": "vitest run --coverage",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "protect:branches": "ts-node tools/protect-branches.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -133,6 +134,7 @@
     "chrome-launcher": "^1.0.0",
     "standard-version": "^9.5.0",
     "husky": "^9.0.11",
-    "lint-staged": "^15.2.7"
+    "lint-staged": "^15.2.7",
+    "@octokit/rest": "^20.0.0"
   }
 }
