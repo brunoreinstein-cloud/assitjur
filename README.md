@@ -24,6 +24,12 @@
 
 - [Configuração de CORS](docs/cors-setup.md)
 
+### Branding
+
+Logos disponíveis em `/public/logos/assistjur-logo.svg`.
+
+Cores base do site: fundo `#1e0033` e gradiente primário de `#7C3AED` a `#8B5CF6`.
+
 ---
 
 ## 📦 Como Rodar o Projeto
