@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAssistJurProcessos, ProcessosFilters } from '@/hooks/useAssistJurProcessos';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
@@ -12,21 +12,50 @@ import { Eye, Download, Filter, X, ExternalLink, Bug } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { useSearchParams } from 'react-router-dom';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 export function ProcessosDataTable() {
-  const [filters, setFilters] = useState<ProcessosFilters>({});
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const initialFilters: ProcessosFilters = {
+    search: searchParams.get('search') || undefined,
+    classificacao: searchParams.get('classificacao')
+      ? searchParams.get('classificacao')!.split(',')
+      : undefined,
+  };
+
+  const initialPage = Number(searchParams.get('page') || '1');
+
+  const [filters, setFilters] = useState<ProcessosFilters>(initialFilters);
   const [isPiiMasked, setIsPiiMasked] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
-  const { 
-    data: processos, 
-    totalCount, 
-    currentPage, 
-    totalPages, 
-    isLoading, 
-    error, 
-    setPage 
-  } = useAssistJurProcessos(filters);
+  const {
+    data: processos,
+    totalCount,
+    currentPage,
+    totalPages,
+    isLoading,
+    error,
+    setPage,
+  } = useAssistJurProcessos(filters, 50, initialPage);
+
+  useEffect(() => {
+    const params: Record<string, string> = {};
+    if (filters.search) params.search = filters.search;
+    if (filters.classificacao?.length)
+      params.classificacao = filters.classificacao.join(',');
+    if (currentPage > 1) params.page = String(currentPage);
+    setSearchParams(params, { replace: true });
+  }, [filters, currentPage, setSearchParams]);
 
   const handleSearchChange = (search: string) => {
     setFilters(prev => ({ ...prev, search: search.trim() || undefined }));
@@ -316,24 +345,46 @@ export function ProcessosDataTable() {
             <p className="text-sm text-muted-foreground">
               Página {currentPage} de {totalPages} • {totalCount} registros
             </p>
-            <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage <= 1}
-              >
-                Anterior
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setPage(currentPage + 1)}
-                disabled={currentPage >= totalPages}
-              >
-                Próxima
-              </Button>
-            </div>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    aria-disabled={currentPage <= 1}
+                    className={currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage > 1) setPage(currentPage - 1);
+                    }}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <PaginationItem key={i}>
+                    <PaginationLink
+                      href="#"
+                      isActive={currentPage === i + 1}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPage(i + 1);
+                      }}
+                    >
+                      {i + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    aria-disabled={currentPage >= totalPages}
+                    className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage < totalPages) setPage(currentPage + 1);
+                    }}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
         )}
       </Card>

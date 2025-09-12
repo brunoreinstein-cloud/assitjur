@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { 
   Table, 
   TableBody, 
@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, AlertTriangle, XCircle, Download, Filter } from 'lucide-react';
 import { ValidationIssue } from '@/types/assistjur';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 interface IssuesDataTableProps {
   issues: ValidationIssue[];
@@ -23,10 +24,11 @@ interface IssuesDataTableProps {
 export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps) {
   const [filters, setFilters] = useState({
     severity: 'all',
-    sheet: 'all', 
+    sheet: 'all',
     rule: 'all',
     search: ''
   });
+  const parentRef = useRef<HTMLDivElement>(null);
 
   // Extrair valores únicos para filtros
   const uniqueSheets = useMemo(() => 
@@ -72,6 +74,13 @@ export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps
       return true;
     });
   }, [issues, filters]);
+
+  const rowVirtualizer = useVirtualizer({
+    count: filteredIssues.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 56,
+    overscan: 5,
+  });
 
   const getSeverityIcon = (severity: ValidationIssue['severity']) => {
     switch (severity) {
@@ -223,7 +232,7 @@ export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps
       </CardHeader>
       
       <CardContent>
-        <div className="rounded-md border max-h-96 overflow-y-auto">
+        <div ref={parentRef} className="rounded-md border max-h-96 overflow-y-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -237,60 +246,72 @@ export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps
                 <TableHead className="w-32">Valor Corrigido</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {filteredIssues.length === 0 ? (
+            {filteredIssues.length === 0 ? (
+              <TableBody>
                 <TableRow>
                   <TableCell colSpan={8} className="text-center text-muted-foreground py-6">
                     {issues.length === 0 ? 'Nenhuma issue detectada' : 'Nenhuma issue corresponde aos filtros'}
                   </TableCell>
                 </TableRow>
-              ) : (
-                filteredIssues.map((issue, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {getSeverityIcon(issue.severity)}
-                        <Badge variant={getSeverityColor(issue.severity)} className="text-xs">
-                          {issue.severity.toUpperCase()}
-                        </Badge>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">{issue.sheet}</TableCell>
-                    <TableCell>{issue.row || '-'}</TableCell>
-                    <TableCell>{issue.column || '-'}</TableCell>
-                    <TableCell>
-                      {issue.rule && (
-                        <Badge variant="outline" className="text-xs">
-                          {issue.rule}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="max-w-xs">
-                      <div className="truncate" title={issue.message}>
-                        {issue.message}
-                      </div>
-                    </TableCell>
-                    <TableCell className="max-w-xs">
-                      {issue.original && (
-                        <div className="truncate bg-muted px-2 py-1 rounded text-xs" title={issue.original?.toString()}>
-                          {issue.original?.toString()}
+              </TableBody>
+            ) : (
+              <TableBody
+                style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}
+              >
+                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                  const issue = filteredIssues[virtualRow.index];
+                  return (
+                    <TableRow
+                      key={virtualRow.key}
+                      className="absolute top-0 left-0 w-full"
+                      style={{ transform: `translateY(${virtualRow.start}px)` }}
+                      ref={virtualRow.measureElement}
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {getSeverityIcon(issue.severity)}
+                          <Badge variant={getSeverityColor(issue.severity)} className="text-xs">
+                            {issue.severity.toUpperCase()}
+                          </Badge>
                         </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="max-w-xs">
-                      {issue.fixed && (
-                        <div className="truncate bg-success/10 px-2 py-1 rounded text-xs" title={issue.fixed?.toString()}>
-                          {issue.fixed?.toString()}
+                      </TableCell>
+                      <TableCell className="font-medium">{issue.sheet}</TableCell>
+                      <TableCell>{issue.row || '-'}</TableCell>
+                      <TableCell>{issue.column || '-'}</TableCell>
+                      <TableCell>
+                        {issue.rule && (
+                          <Badge variant="outline" className="text-xs">
+                            {issue.rule}
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="max-w-xs">
+                        <div className="truncate" title={issue.message}>
+                          {issue.message}
                         </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
+                      </TableCell>
+                      <TableCell className="max-w-xs">
+                        {issue.original && (
+                          <div className="truncate bg-muted px-2 py-1 rounded text-xs" title={issue.original?.toString()}>
+                            {issue.original?.toString()}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="max-w-xs">
+                        {issue.fixed && (
+                          <div className="truncate bg-success/10 px-2 py-1 rounded text-xs" title={issue.fixed?.toString()}>
+                            {issue.fixed?.toString()}
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            )}
           </Table>
         </div>
-        
+
         {filteredIssues.length > 0 && (
           <div className="mt-4 text-sm text-muted-foreground">
             Mostrando {filteredIssues.length} de {issues.length} issues
