@@ -1715,6 +1715,24 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_current_user_profile: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          data_access_level:
+            | Database["public"]["Enums"]["data_access_level"]
+            | null
+          email: string
+          id: string
+          is_active: boolean
+          last_login_at: string | null
+          organization_id: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          terms_accepted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1857,6 +1875,10 @@ export type Database = {
       gtrgm_out: {
         Args: { "": unknown }
         Returns: unknown
+      }
+      is_org_admin_simple: {
+        Args: { check_org_id: string }
+        Returns: boolean
       }
       log_audit: {
         Args: {

@@ -6,6 +6,7 @@ import { AuthErrorHandler } from '@/utils/authErrorHandler';
 import { useSessionMonitor } from '@/hooks/useSessionMonitor';
 import { getSessionContext, calculateRisk } from '@/security/sessionContext';
 import { getEnv } from '@/lib/getEnv';
+import { logError, logWarn } from '@/lib/logger';
 
 export type UserRole = 'ADMIN' | 'ANALYST' | 'VIEWER';
 
@@ -88,13 +89,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        logError('Error fetching profile', { error: error.message || error }, 'useAuth');
         return null;
       }
       
       return data;
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      logError('Error fetching profile in catch', { error }, 'useAuth');
       return null;
     }
   };
@@ -113,10 +114,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
       if (error) {
-        console.error('Error logging auth attempt:', error);
+        logError('Error logging auth attempt', { error: error.message || error }, 'useAuth');
       }
     } catch (error) {
-      console.error('Error logging auth attempt:', error);
+      logError('Error logging auth attempt in catch', { error }, 'useAuth');
     }
   };
 
@@ -143,7 +144,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   showNotification: false // Avoid notification spam on initial load
                 });
               } else {
-                console.error('Profile fetch error:', error);
+                logError('Profile fetch error', { error }, 'useAuth');
               }
               setLoading(false);
             }
@@ -188,7 +189,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   showNotification: false
                 });
               } else {
-                console.error('Profile fetch error:', error);
+                logError('Profile fetch error in session init', { error }, 'useAuth');
               }
               setLoading(false);
             }
@@ -197,7 +198,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setLoading(false);
         }
       } catch (error) {
-        console.error('Session initialization error:', error);
+        logError('Session initialization error', { error }, 'useAuth');
         setLoading(false);
       }
     };
@@ -291,7 +292,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             user_agent: ctx.userAgent,
             metadata: { context: ctx, risk },
           } as any);
-          console.warn('High risk session detected; step-up authentication required');
+          logWarn('High risk session detected; step-up authentication required', { risk, user_id: data.user.id }, 'useAuth');
         }
 
         let orgId: string | undefined;
@@ -404,7 +405,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(null);
       sessionStorage.removeItem('mfa_verified');
     } catch (error) {
-      console.error('Error signing out:', error);
+      logError('Error signing out', { error }, 'useAuth');
     }
   };
 
