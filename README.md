@@ -41,7 +41,7 @@ cd assistjur
 npm install
 ```
 
-### 3. Configurar variáveis de ambiente
+### 3. Como configurar ENV local
 
 Copie o arquivo de exemplo e preencha com seus valores locais:
 
@@ -54,14 +54,15 @@ Edite o arquivo `.env.local` gerado. Exemplo de conteúdo:
 ```bash
 VITE_SUPABASE_URL="https://xxxx.supabase.co"
 VITE_SUPABASE_PUBLISHABLE_KEY="chave-publica"
-VITE_DEFAULT_ORG="assistjur"
-VITE_INACTIVITY_TIMEOUT_MINUTES="30"
-VITE_ALLOWED_ORIGINS="http://localhost:5173"
-VITE_EXTRA_ORIGINS=""
 VITE_PUBLIC_SITE_URL="http://localhost:5173"
+VITE_SENTRY_DSN=""
+VITE_INACTIVITY_TIMEOUT_MINUTES="30"
 VITE_FEATURE_FLAGS_REFRESH_INTERVAL="60000"
 VITE_FEATURE_FLAGS_CACHE_TTL="300000"
 VITE_MAINTENANCE="false"
+VITE_ALLOWED_ORIGINS="http://localhost:5173"
+VITE_EXTRA_ORIGINS=""
+VITE_PREVIEW_TIMESTAMP=""
 
 SUPABASE_URL="https://xxxx.supabase.co"
 SUPABASE_PUBLISHABLE_KEY="public-publishable-key"
@@ -88,14 +89,15 @@ evitar falhas silenciosas durante o `npm run build`:
 ```
 VITE_SUPABASE_URL
 VITE_SUPABASE_PUBLISHABLE_KEY
-VITE_DEFAULT_ORG
-VITE_INACTIVITY_TIMEOUT_MINUTES
-VITE_ALLOWED_ORIGINS
-VITE_EXTRA_ORIGINS
 VITE_PUBLIC_SITE_URL
+VITE_SENTRY_DSN
+VITE_INACTIVITY_TIMEOUT_MINUTES
 VITE_FEATURE_FLAGS_REFRESH_INTERVAL
 VITE_FEATURE_FLAGS_CACHE_TTL
 VITE_MAINTENANCE
+VITE_ALLOWED_ORIGINS
+VITE_EXTRA_ORIGINS
+VITE_PREVIEW_TIMESTAMP
 ```
 
 Se os secrets `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` não forem definidos,
@@ -104,6 +106,14 @@ Use esses valores apenas para builds de exemplo; configure os secrets com os val
 do seu projeto Supabase para builds que acessam um backend de verdade.
 
 Outras variáveis `VITE_*` usadas pelo projeto podem ser adicionadas conforme necessário.
+
+### Como configurar ENV no Lovable
+
+No [Lovable](https://lovable.so), acesse **Settings → Environment Variables** e
+defina as mesmas variáveis `VITE_*` usadas localmente (por exemplo,
+`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_PUBLIC_SITE_URL`).
+Use exatamente os mesmos nomes com o prefixo `VITE_` para que o build funcione
+corretamente.
 
 ### CORS nas Edge Functions
 

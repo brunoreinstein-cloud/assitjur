@@ -10,6 +10,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { z } from 'zod';
+import { getEnv } from '@/lib/getEnv';
 
 const FlagsSchema = z.record(z.string(), z.boolean());
 const ResponseSchema = z.object({ flags: FlagsSchema });
@@ -30,8 +31,10 @@ export const FeatureFlagProvider: FC<FeatureFlagProviderProps> = ({ children }) 
   const userId = user?.id;
   const environment = import.meta.env.MODE || 'production';
 
-  const refreshInterval = Number(import.meta.env.VITE_FEATURE_FLAGS_REFRESH_INTERVAL || 60000);
-  const cacheTtl = Number(import.meta.env.VITE_FEATURE_FLAGS_CACHE_TTL || 300000);
+  const {
+    featureFlagsRefreshInterval: refreshInterval,
+    featureFlagsCacheTtl: cacheTtl,
+  } = getEnv();
 
   const cacheKey = tenantId && userId ? `ff:${tenantId}:${userId}:${environment}` : null;
   const prevCacheKey = useRef<string | null>(null);

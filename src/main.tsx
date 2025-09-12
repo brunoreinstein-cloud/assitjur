@@ -4,12 +4,15 @@ import App from './App.tsx'
 import './index.css'
 import './styles/assistjur-brand.css'
 import { MaintenanceProvider } from '@/hooks/useMaintenance'
+import { getEnv } from '@/lib/getEnv'
+
+const { sentryDsn } = getEnv()
 
 // Optional Sentry initialization
-if (import.meta.env.VITE_SENTRY_DSN) {
+if (sentryDsn) {
   // @ts-ignore optional dependency
   import('@sentry/react').then((Sentry) => {
-    Sentry.init({ dsn: import.meta.env.VITE_SENTRY_DSN, tracesSampleRate: 1.0 })
+    Sentry.init({ dsn: sentryDsn, tracesSampleRate: 1.0 })
   }).catch(() => {
     console.warn('Sentry not available')
   })
