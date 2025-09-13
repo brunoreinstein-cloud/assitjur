@@ -7,7 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ConsentProvider } from "@/hooks/useConsent";
 import ConsentDialog from "@/components/privacy/ConsentDialog";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { AuthProvider as AuthContextProvider } from "@/hooks/useAuth";
 import { AuthProvider as SupabaseAuthProvider } from "@/providers/AuthProvider";
 import AuthGuard from "@/components/AuthGuard";
@@ -58,69 +58,68 @@ function AppRoutes() {
   }
 
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/" element={<PublicHome />} />
-      <Route path="/sobre" element={<About />} />
-      <Route path="/beta" element={<Beta />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/reset" element={<Reset />} />
-      <Route path="/reset/confirm" element={<ResetConfirm />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
-      <Route path="/verify-otp" element={<VerifyOtp />} />
-      <Route path="/portal-titular" element={<PortalTitular />} />
-      <Route path="/import/template" element={<TemplatePage />} />
-      <Route path="/demo/mapa-testemunhas" element={<DemoMapaTestemunhas />} />
-      <Route path="/privacidade" element={<PrivacyPolicy />} />
-      <Route path="/termos" element={<TermsOfUse />} />
-      <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
-      <Route path="/termos-de-uso" element={<TermsOfUse />} />
-      <Route path="/lgpd" element={<LGPD />} />
-      <Route path="/500" element={<ServerError />} />
-      <Route path="/status" element={<Status />} />
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<PublicHome />} />
+        <Route path="/sobre" element={<About />} />
+        <Route path="/beta" element={<Beta />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/reset" element={<Reset />} />
+        <Route path="/reset/confirm" element={<ResetConfirm />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-otp" element={<VerifyOtp />} />
+        <Route path="/portal-titular" element={<PortalTitular />} />
+        <Route path="/import/template" element={<TemplatePage />} />
+        <Route path="/demo/mapa-testemunhas" element={<DemoMapaTestemunhas />} />
+        <Route path="/privacidade" element={<PrivacyPolicy />} />
+        <Route path="/termos" element={<TermsOfUse />} />
+        <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+        <Route path="/termos-de-uso" element={<TermsOfUse />} />
+        <Route path="/lgpd" element={<LGPD />} />
+        <Route path="/500" element={<ServerError />} />
+        <Route path="/status" element={<Status />} />
 
-      {/* Protected routes with app layout */}
-      <Route
-        path="/*"
-        element={
-          <AuthGuard>
-            <AppLayout>
-              <ErrorBoundary>
-                <Suspense fallback={<div className="p-4">Carregando...</div>}>
-                  <Routes>
-                    <Route path="/dashboard" element={<Navigate to="/mapa" replace />} />
-                    <Route path="/mapa" element={<MapaPage />} />
-                    <Route path="/mapa-testemunhas" element={<MapaPage />} />
-                    <Route path="/dados" element={<Navigate to="/mapa" replace />} />
-                    <Route path="/dados/mapa" element={<Navigate to="/mapa" replace />} />
-                    {/* Redirect deprecated chat route to mapa-testemunhas */}
-                    <Route path="/chat" element={<Navigate to="/mapa-testemunhas?view=chat" replace />} />
-                    <Route path="/app/chat" element={<Navigate to="/mapa-testemunhas?view=chat" replace />} />
+        {/* Protected routes with app layout */}
+        <Route
+          element={
+            <AuthGuard>
+              <AppLayout>
+                <ErrorBoundary>
+                  <Suspense fallback={<div className="p-4">Carregando...</div>}>
+                    <Outlet />
+                  </Suspense>
+                </ErrorBoundary>
+              </AppLayout>
+            </AuthGuard>
+          }
+        >
+          <Route path="/dashboard" element={<Navigate to="/mapa" replace />} />
+          <Route path="/mapa" element={<MapaPage />} />
+          <Route path="/mapa-testemunhas" element={<MapaPage />} />
+          <Route path="/dados" element={<Navigate to="/mapa" replace />} />
+          <Route path="/dados/mapa" element={<Navigate to="/mapa" replace />} />
+          {/* Redirect deprecated chat route to mapa-testemunhas */}
+          <Route path="/chat" element={<Navigate to="/mapa-testemunhas?view=chat" replace />} />
+          <Route path="/app/chat" element={<Navigate to="/mapa-testemunhas?view=chat" replace />} />
 
-                    {/* Admin routes */}
-                    <AdminRoutes />
-                    <Route path="/import" element={<Navigate to="/admin/base-import" replace />} />
-                    <Route
-                      path="/relatorio"
-                      element={
-                        <FeatureFlagGuard flag="advanced-report">
-                          <ReportDemo />
-                        </FeatureFlagGuard>
-                      }
-                    />
-                    <Route path="/account/2fa" element={<TwoFactorSetup />} />
+          {/* Admin routes */}
+          <AdminRoutes />
+          <Route path="/import" element={<Navigate to="/admin/base-import" replace />} />
+          <Route
+            path="/relatorio"
+            element={
+              <FeatureFlagGuard flag="advanced-report">
+                <ReportDemo />
+              </FeatureFlagGuard>
+            }
+          />
+          <Route path="/account/2fa" element={<TwoFactorSetup />} />
+        </Route>
 
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-              </ErrorBoundary>
-            </AppLayout>
-          </AuthGuard>
-        }
-      />
-    </Routes>
-  );
-}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    );
+  }
 
 // React Query client configuration
 const queryClient = new QueryClient({
