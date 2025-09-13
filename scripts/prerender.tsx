@@ -4,14 +4,19 @@ import React from 'react';
 import { renderToString, renderToStaticMarkup } from 'react-dom/server';
 import { StaticRouter } from 'react-router-dom/server';
 import PublicHome from '../src/pages/PublicHome';
-import TermsOfUse from '../src/pages/TermsOfUse';
-import PrivacyPolicy from '../src/pages/PrivacyPolicy';
 import { Head } from '../src/lib/head';
+
+const staticPagesDir = path.resolve(__dirname, '..', 'src', 'pages-static');
 
 const routes = [
   {
     path: '/',
-    component: PublicHome,
+    render: () =>
+      renderToString(
+        <StaticRouter location="/">
+          <PublicHome />
+        </StaticRouter>
+      ),
     head: {
       title: 'AssistJur.IA - Assistente de Testemunhas',
       description:
@@ -21,7 +26,7 @@ const routes = [
   },
   {
     path: '/termos',
-    component: TermsOfUse,
+    render: () => fs.readFileSync(path.join(staticPagesDir, 'termos.html'), 'utf-8'),
     head: {
       title: 'Termos de Uso - AssistJur.IA',
       description:
@@ -31,7 +36,7 @@ const routes = [
   },
   {
     path: '/privacidade',
-    component: PrivacyPolicy,
+    render: () => fs.readFileSync(path.join(staticPagesDir, 'privacidade.html'), 'utf-8'),
     head: {
       title: 'Política de Privacidade - AssistJur.IA',
       description:
@@ -45,12 +50,7 @@ const distDir = path.resolve(__dirname, '..', 'dist');
 const template = fs.readFileSync(path.join(distDir, 'index.html'), 'utf-8');
 
 for (const route of routes) {
-  const appHtml = renderToString(
-    <StaticRouter location={route.path}>
-      <route.component />
-    </StaticRouter>
-  );
-
+  const appHtml = route.render();
   const headHtml = renderToStaticMarkup(<Head {...route.head} path={route.path} />);
 
   let html = template.replace('<div id="root"></div>', `<div id="root">${appHtml}</div>`);
