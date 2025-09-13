@@ -86,13 +86,22 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-14 items-center gap-4 px-4">
-        <SidebarTrigger className="-ml-1" />
+        <SidebarTrigger
+          className="-ml-1"
+          aria-label="Menu"
+          aria-controls="menu"
+          aria-expanded={sidebarOpen}
+        />
         
         <div className="flex items-center gap-2 flex-1">
           {/* Current page title for mobile */}
           <div className="flex items-center gap-2 md:hidden">
             {currentRoute?.icon && (
-              <currentRoute.icon className="h-4 w-4" />
+              <currentRoute.icon
+                className="h-4 w-4"
+                aria-hidden="true"
+                focusable="false"
+              />
             )}
             <h1 className="font-semibold text-sm">
               {currentRoute?.label || 'AssistJur.IA'}
@@ -108,7 +117,11 @@ export function AppHeader() {
                     <BreadcrumbItem>
                       {breadcrumb.isLast ? (
                         <BreadcrumbPage className="flex items-center gap-2">
-                          <breadcrumb.icon className="h-4 w-4" />
+                          <breadcrumb.icon
+                            className="h-4 w-4"
+                            aria-hidden="true"
+                            focusable="false"
+                          />
                           {breadcrumb.label}
                         </BreadcrumbPage>
                       ) : (
@@ -116,14 +129,22 @@ export function AppHeader() {
                           href={breadcrumb.path}
                           className="flex items-center gap-2 hover:text-foreground"
                         >
-                          <breadcrumb.icon className="h-4 w-4" />
+                          <breadcrumb.icon
+                            className="h-4 w-4"
+                            aria-hidden="true"
+                            focusable="false"
+                          />
                           {breadcrumb.label}
                         </BreadcrumbLink>
                       )}
                     </BreadcrumbItem>
                     {index < breadcrumbs.length - 1 && (
                       <BreadcrumbSeparator>
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight
+                          className="h-4 w-4"
+                          aria-hidden="true"
+                          focusable="false"
+                        />
                       </BreadcrumbSeparator>
                     )}
                   </React.Fragment>

@@ -23,7 +23,7 @@ export function BetaHeader() {
               onClick={() => navigate('/')}
               className="flex items-center space-x-2"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4" aria-hidden="true" focusable="false" />
               <span>Voltar</span>
             </Button>
           </div>

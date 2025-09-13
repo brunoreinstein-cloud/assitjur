@@ -49,7 +49,7 @@ export function BetaFAQ() {
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-flex items-center space-x-2 px-4 py-2 bg-muted/50 border rounded-full mb-6">
-              <HelpCircle className="w-4 h-4 text-primary" />
+              <HelpCircle className="w-4 h-4 text-primary" aria-hidden="true" focusable="false" />
               <span className="text-sm font-medium text-primary">Perguntas frequentes</span>
             </div>
             

@@ -46,7 +46,7 @@ export function BetaBenefits() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <div className="inline-flex items-center space-x-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full mb-6">
-            <Sparkles className="w-4 h-4 text-primary" />
+            <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" focusable="false" />
             <span className="text-sm font-medium text-primary">Vantagens exclusivas</span>
           </div>
           
@@ -70,7 +70,7 @@ export function BetaBenefits() {
               >
                 <div className="flex items-start space-x-4">
                   <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <Icon className="w-6 h-6 text-primary-foreground" />
+                    <Icon className="w-6 h-6 text-primary-foreground" aria-hidden="true" focusable="false" />
                   </div>
                   
                   <div className="flex-1">
@@ -97,7 +97,7 @@ export function BetaBenefits() {
         <div className="mt-16 p-8 bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20 rounded-2xl">
           <div className="text-center">
             <div className="flex justify-center items-center space-x-2 mb-4">
-              <CheckCircle className="w-5 h-5 text-green-500" />
+              <CheckCircle className="w-5 h-5 text-green-500" aria-hidden="true" focusable="false" />
               <span className="font-semibold text-foreground">Programa Beta Limitado</span>
             </div>
             
@@ -108,15 +108,15 @@ export function BetaBenefits() {
             
             <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center space-x-2">
-                <Shield className="w-4 h-4 text-green-500" />
+                <Shield className="w-4 h-4 text-green-500" aria-hidden="true" focusable="false" />
                 <span>LGPD Compliant</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Users className="w-4 h-4 text-blue-500" />
+                <Users className="w-4 h-4 text-blue-500" aria-hidden="true" focusable="false" />
                 <span>Comunidade Exclusiva</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Clock className="w-4 h-4 text-purple-500" />
+                <Clock className="w-4 h-4 text-purple-500" aria-hidden="true" focusable="false" />
                 <span>Suporte 24/7</span>
               </div>
             </div>
