@@ -29,7 +29,7 @@ const betaSignupSchema = z.object({
   organizacao: z.string().min(2, 'Organização deve ter pelo menos 2 caracteres'),
   necessidades: z.array(z.string()).min(1, 'Selecione pelo menos uma necessidade'),
   outro_texto: z.string().max(120, 'Máximo 120 caracteres').optional(),
-  honeypot: z.string().max(0).optional(),
+  website: z.string().max(0).optional(),
   consentimento: z.boolean().refine(val => val === true, {
     message: 'É necessário seu consentimento',
   }),
@@ -117,7 +117,7 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
     defaultValues: {
       consentimento: false,
       termos: false,
-      honeypot: '',
+      website: '',
     },
   });
 
@@ -187,6 +187,9 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
   };
 
   const onSubmit = async (data: BetaSignupForm) => {
+    if (data.website) {
+      return;
+    }
     const now = Date.now();
     if (now - lastSubmitRef.current < 1000) {
       return;
@@ -282,14 +285,15 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
 
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="hidden" aria-hidden="true">
-          <input
-            type="text"
-            tabIndex={-1}
-            autoComplete="off"
-            {...register('honeypot')}
-          />
-        </div>
+        <input
+          type="text"
+          name="website"
+          className="hidden"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          {...register('website')}
+        />
         {/* Nome */}
         <Fieldset
           label="Nome completo"
