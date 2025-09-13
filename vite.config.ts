@@ -4,6 +4,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { componentTagger } from "lovable-tagger";
 import { brotliCompress, gzip } from "node:zlib";
 import { promisify } from "node:util";
+import { VitePWA } from 'vite-plugin-pwa'
 
 const gzipAsync = promisify(gzip);
 const brotliAsync = promisify(brotliCompress);
@@ -45,6 +46,26 @@ export default defineConfig(async ({ mode }) => {
     tsconfigPaths(),
     mode === 'development' && componentTagger(),
     mode !== 'development' && compressPlugin(),
+    VitePWA({
+      srcDir: 'src',
+      filename: 'sw.ts',
+      strategies: 'injectManifest',
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'robots.txt', '404.html'],
+      manifest: {
+        name: 'Assistjur',
+        short_name: 'Assistjur',
+        start_url: '/',
+        display: 'standalone',
+        icons: [
+          {
+            src: '/favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+          },
+        ],
+      },
+    }),
   ];
 
   if (process.env.ANALYZE) {
@@ -61,7 +82,7 @@ export default defineConfig(async ({ mode }) => {
     build: {
       rollupOptions: {
         output: {
-          manualChunks(id) {
+          manualChunks(id: string) {
             if (id.includes('node_modules')) {
               if (id.includes('react') || id.includes('lucide-react')) {
                 return 'vendor';
