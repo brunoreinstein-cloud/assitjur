@@ -44,9 +44,12 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
+    const formData = new FormData(e.currentTarget);
+    if (formData.get('website')) return;
+
     // Validations
     const newErrors: { email?: string; needs?: string } = {};
     
@@ -91,6 +94,14 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          <input
+            type="text"
+            name="website"
+            className="hidden"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+          />
           {/* Necessidades */}
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4">

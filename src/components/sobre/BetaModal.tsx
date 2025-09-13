@@ -20,9 +20,12 @@ export function BetaModal({ isOpen = false, onClose }: BetaModalProps) {
   const [email, setEmail] = useState('');
   const { loading, submitBeta } = useBetaFormStore();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
+    const formData = new FormData(e.currentTarget);
+    if (formData.get('website')) return;
+
     if (!email) return;
 
     // Temporarily set the email in the store for submission
@@ -49,6 +52,14 @@ export function BetaModal({ isOpen = false, onClose }: BetaModalProps) {
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
+          <input
+            type="text"
+            name="website"
+            className="hidden"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+          />
           <div className="space-y-4">
             <div>
               <Label htmlFor="email" className="text-sm font-medium">
