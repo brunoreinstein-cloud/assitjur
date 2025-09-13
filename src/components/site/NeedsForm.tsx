@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { useBetaFormStore } from '@/stores/useBetaFormStore';
 import { Loader2, ArrowRight } from 'lucide-react';
+import { track } from '@/lib/track';
 
 interface NeedsFormProps {
   onSubmit?: (data: { email: string; needs: string[]; otherNeed?: string }) => void;
@@ -186,9 +187,10 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
           </div>
 
           {/* Submit */}
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={loading || !email || (needs.length === 0 && !otherNeed)}
+            onClick={() => track('cta_click', { id: 'mid-entrar-beta' })}
             className="w-full bg-gradient-primary hover:bg-primary/90 hover:shadow-glow text-lg py-6 transition-all duration-300 group"
           >
             {loading ? (

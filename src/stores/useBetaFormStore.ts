@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { toast } from '@/hooks/use-toast';
+import { track } from '@/lib/track';
 
 interface BetaFormState {
   email: string;
@@ -44,8 +45,10 @@ export const useBetaFormStore = create<BetaFormStore>((set, get) => ({
 
   submitBeta: async () => {
     const { email, needs, otherNeed } = get();
-    
+
     set({ loading: true, error: null });
+
+    track('beta_submit', { email_domain: email.split('@')[1] });
 
     try {
       // Preparar payload
