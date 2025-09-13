@@ -58,5 +58,22 @@ export default defineConfig(async ({ mode }) => {
       port: 8080,
     },
     plugins: plugins.filter(Boolean),
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react') || id.includes('lucide-react')) {
+                return 'vendor';
+              }
+            }
+            if (id.includes('/src/pages/')) {
+              const name = id.split('/src/pages/')[1].split('/')[0].split('.')[0];
+              return `page-${name}`;
+            }
+          },
+        },
+      },
+    },
   };
 });

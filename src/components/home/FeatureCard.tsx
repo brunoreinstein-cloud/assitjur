@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LucideIcon, ArrowRight, ExternalLink } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { ArrowRight, ExternalLink } from "lucide-react";
 
 interface FeatureCardProps {
   icon: LucideIcon;

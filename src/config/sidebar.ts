@@ -1,18 +1,18 @@
-import { 
-  Home, 
-  Users, 
-  MessageSquare, 
-  BarChart3, 
-  LineChart, 
-  Database, 
-  Upload, 
-  History, 
-  Briefcase, 
-  ShieldCheck, 
-  ClipboardList, 
-  Settings,
-  LucideIcon
+import {
+  Home,
+  Users,
+  MessageSquare,
+  BarChart3,
+  LineChart,
+  Database,
+  Upload,
+  History,
+  Briefcase,
+  ShieldCheck,
+  ClipboardList,
+  Settings
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 export type NavItem = {
   label: string;
