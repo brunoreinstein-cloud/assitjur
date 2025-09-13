@@ -12,6 +12,7 @@ import { EmailHint } from './EmailHint';
 import { Fieldset } from './Fieldset';
 import { supabase } from '@/integrations/supabase/client';
 import { disposableDomains } from '@/config/disposableDomains';
+import { track } from '@/lib/track';
 
 const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
@@ -195,7 +196,7 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
     
     try {
       // Track form submission
-      console.log('beta_form_submitted', data);
+      track('beta_submit', { email_domain: data.email.split('@')[1] });
       
       // Get UTM parameters
       const urlParams = new URLSearchParams(window.location.search);

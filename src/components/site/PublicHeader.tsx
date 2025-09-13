@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { track } from '@/lib/track';
 
 interface PublicHeaderProps {
   onBetaClick?: () => void;
@@ -66,6 +67,7 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
               onClick={(e) => {
                 if (onBetaClick) {
                   e.preventDefault();
+                  track('cta_click', { id: 'menu-entrar-beta' });
                   onBetaClick();
                 }
               }}
@@ -143,6 +145,7 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
                   onClick={(e) => {
                     if (onBetaClick) {
                       e.preventDefault();
+                      track('cta_click', { id: 'menu-entrar-beta' });
                       onBetaClick();
                     }
                   }}

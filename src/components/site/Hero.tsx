@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowDown } from 'lucide-react';
 import { NeedsForm } from './NeedsForm';
 import { BrandLogo } from '@/components/brand/BrandLogo';
+import { track } from '@/lib/track';
 
 interface HeroProps {
   onSignup?: (data: { email: string; needs: string[]; otherNeed?: string }) => void;
@@ -12,6 +13,7 @@ export function Hero({ onSignup }: HeroProps) {
   const [showForm, setShowForm] = useState(false);
 
   const scrollToForm = () => {
+    track('cta_click', { id: 'hero-testar-hub' });
     setShowForm(true);
     setTimeout(() => {
       const formElement = document.getElementById('needs-form');

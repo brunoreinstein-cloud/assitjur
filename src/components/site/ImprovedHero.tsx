@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowDown, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NeedsForm } from './NeedsForm';
+import { track } from '@/lib/track';
 
 interface ImprovedHeroProps {
   onSignup?: (data: { email: string; needs: string[]; otherNeed?: string }) => void;
@@ -15,6 +16,7 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
   const navigate = useNavigate();
 
   const scrollToForm = () => {
+    track('cta_click', { id: 'hero-testar-hub' });
     setFormVisible(true);
     setTimeout(() => {
       const formElement = document.getElementById('needs-form');
