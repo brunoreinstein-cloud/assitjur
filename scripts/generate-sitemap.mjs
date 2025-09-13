@@ -1,5 +1,6 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
+import { fileURLToPath } from 'url';
 
 const BASE_URL = process.env.VITE_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://assistjur.com.br';
 const routesPath = new URL('./routes.json', import.meta.url);
@@ -12,7 +13,7 @@ const stripTracking = (url) =>
 
 async function generate() {
   const raw = await readFile(routesPath, 'utf8');
-  const routes = [...new Set(JSON.parse(raw))];
+  const routes = [...new Set(JSON.parse(raw))].sort();
   const lastmod = new Date().toISOString();
 
   const urls = routes
@@ -26,7 +27,8 @@ async function generate() {
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
 
-  const outPath = join(new URL('.', import.meta.url).pathname, '../public/sitemap.xml');
+  const outDir = fileURLToPath(new URL('../public', import.meta.url));
+  const outPath = join(outDir, 'sitemap.xml');
   await writeFile(outPath, xml, 'utf8');
   console.log(`sitemap.xml generated with ${routes.length} routes`);
 }
