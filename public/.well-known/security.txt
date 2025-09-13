@@ -1,0 +1,3 @@
+Contact: mailto:security@assistjur.ia
+Policy: https://assistjur.com.br/privacidade
+Preferred-Languages: pt, en
