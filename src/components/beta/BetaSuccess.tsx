@@ -13,15 +13,15 @@ export function BetaSuccess({ onReset, className = '' }: BetaSuccessProps) {
       {/* Success Icon */}
       <div className="flex justify-center">
         <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-          <CheckCircle className="h-8 w-8 text-white" />
+          <CheckCircle className="h-8 w-8 text-white" aria-hidden="true" focusable="false" />
         </div>
       </div>
 
       {/* Success Message */}
       <div className="space-y-3">
-        <h3 className="text-2xl font-bold text-foreground">
+        <h2 className="text-2xl font-bold text-foreground">
           Você está na lista!
-        </h3>
+        </h2>
         <p className="text-muted-foreground leading-relaxed max-w-md mx-auto">
           Parabéns! Você agora tem acesso prioritário ao AssistJur.IA. Em breve entraremos em contato com detalhes exclusivos sobre a plataforma.
         </p>
@@ -29,7 +29,7 @@ export function BetaSuccess({ onReset, className = '' }: BetaSuccessProps) {
 
       {/* Benefit Highlights */}
       <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl p-4 border border-primary/10">
-        <h4 className="font-semibold text-foreground mb-2">O que vem por aí:</h4>
+        <h3 className="font-semibold text-foreground mb-2">O que vem por aí:</h3>
         <ul className="text-sm text-muted-foreground space-y-1 text-left max-w-xs mx-auto">
           <li>• Demonstração personalizada</li>
           <li>• Acesso antecipado à plataforma</li>
@@ -50,7 +50,7 @@ export function BetaSuccess({ onReset, className = '' }: BetaSuccessProps) {
             }
           }}
         >
-          <Linkedin className="w-4 h-4" />
+          <Linkedin className="w-4 h-4" aria-hidden="true" focusable="false" />
           <span>Seguir no LinkedIn</span>
         </Button>
         
@@ -74,7 +74,7 @@ export function BetaSuccess({ onReset, className = '' }: BetaSuccessProps) {
             }
           }}
         >
-          <Download className="h-4 w-4" />
+          <Download className="h-4 w-4" aria-hidden="true" focusable="false" />
           Baixar material
         </Button>
       </div>
@@ -85,7 +85,7 @@ export function BetaSuccess({ onReset, className = '' }: BetaSuccessProps) {
           onClick={onReset}
           className="text-sm text-muted-foreground hover:text-primary transition-colors underline underline-offset-4 flex items-center gap-1 mx-auto"
         >
-          <RotateCcw className="h-3 w-3" />
+          <RotateCcw className="h-3 w-3" aria-hidden="true" focusable="false" />
           Preencher para outra pessoa
         </button>
       </div>

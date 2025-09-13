@@ -156,11 +156,11 @@ const App = () => (
                     <div className="min-h-screen flex flex-col">
                       <MaintenanceBanner />
                       <StatusBanner />
-                      <div className="flex-1">
+                      <main id="conteudo" className="flex-1">
                         <Suspense fallback={<div className="p-4">Carregando...</div>}>
                           <AppRoutes />
                         </Suspense>
-                      </div>
+                      </main>
                       <FooterLegal />
                     </div>
                   </SupabaseAuthProvider>

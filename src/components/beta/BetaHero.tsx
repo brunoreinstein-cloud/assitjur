@@ -25,7 +25,7 @@ export function BetaHero() {
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Limited Spots Badge */}
           <Badge variant="secondary" className="mx-auto px-6 py-2 text-sm font-medium animate-fade-in">
-            <Clock className="w-4 h-4 mr-2" />
+            <Clock className="w-4 h-4 mr-2" aria-hidden="true" focusable="false" />
             Vagas limitadas para o programa Beta
           </Badge>
           
@@ -51,15 +51,15 @@ export function BetaHero() {
           {/* Value Proposition */}
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto animate-fade-in" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-center space-x-3 p-4 rounded-lg bg-primary/5 border border-primary/20">
-              <Award className="w-6 h-6 text-primary flex-shrink-0" />
+              <Award className="w-6 h-6 text-primary flex-shrink-0" aria-hidden="true" focusable="false" />
               <span className="font-medium text-foreground">Acesso prioritário</span>
             </div>
             <div className="flex items-center justify-center space-x-3 p-4 rounded-lg bg-accent/5 border border-accent/20">
-              <Users className="w-6 h-6 text-accent flex-shrink-0" />
+              <Users className="w-6 h-6 text-accent flex-shrink-0" aria-hidden="true" focusable="false" />
               <span className="font-medium text-foreground">Comunidade exclusiva</span>
             </div>
             <div className="flex items-center justify-center space-x-3 p-4 rounded-lg bg-secondary/5 border border-secondary/20">
-              <Sparkles className="w-6 h-6 text-secondary flex-shrink-0" />
+              <Sparkles className="w-6 h-6 text-secondary flex-shrink-0" aria-hidden="true" focusable="false" />
               <span className="font-medium text-foreground">Suporte dedicado</span>
             </div>
           </div>
@@ -72,7 +72,11 @@ export function BetaHero() {
               className="bg-gradient-primary hover:bg-primary/90 text-lg px-12 py-6 shadow-xl hover:shadow-glow transition-all duration-300 group"
             >
               Quero entrar na lista Beta
-              <ArrowDown className="ml-3 w-5 h-5 group-hover:translate-y-1 transition-transform" />
+              <ArrowDown
+                className="ml-3 w-5 h-5 group-hover:translate-y-1 transition-transform"
+                aria-hidden="true"
+                focusable="false"
+              />
             </Button>
             
             <p className="text-sm text-muted-foreground mt-4">

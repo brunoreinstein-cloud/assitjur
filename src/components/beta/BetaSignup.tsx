@@ -317,6 +317,7 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
             placeholder="seuemail@empresa.com"
             className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
             aria-describedby={errors.email ? 'email-error' : 'email-help'}
+            autoComplete="email"
           />
           {showEmailHint && <EmailHint />}
           {emailSuggestion && (
@@ -456,7 +457,11 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
         >
           {isSubmitting ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2
+                className="mr-2 h-4 w-4 animate-spin"
+                aria-hidden="true"
+                focusable="false"
+              />
               Processando...
             </>
           ) : (
