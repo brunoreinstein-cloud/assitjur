@@ -1,5 +1,15 @@
 // Tipos específicos do pipeline AssistJur.IA
 
+export type Mode = "A" | "B" | "C";
+
+export interface Citation {
+  tribunal: string;
+  data: string;
+  numero: string;
+  ementa: string;
+  link: string;
+}
+
 export interface ProcessoRow {
   cnj: string;
   status?: string;
