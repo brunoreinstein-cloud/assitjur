@@ -16,17 +16,22 @@ import { fetchPorProcesso, fetchPorTestemunha } from '../src/lib/supabase'
 describe('fetch functions abort', () => {
   it('aborts fetchPorProcesso when controller aborts', async () => {
     const controller = new AbortController()
-    const fetchMock = vi.fn((url: string, options: any) =>
-      new Promise((resolve, reject) => {
-        options.signal.addEventListener('abort', () =>
-          reject(new DOMException('Aborted', 'AbortError'))
-        )
-        setTimeout(() =>
-          resolve(new Response(JSON.stringify({ data: [], total: 0 }), { status: 200 })),
-        1000)
-      })
+    const fetchMock = vi.fn(
+      (url: string, options: RequestInit & { signal: AbortSignal }) =>
+        new Promise<Response>((resolve, reject) => {
+          options.signal.addEventListener('abort', () =>
+            reject(new DOMException('Aborted', 'AbortError'))
+          )
+          setTimeout(
+            () =>
+              resolve(
+                new Response(JSON.stringify({ data: [], total: 0 }), { status: 200 }),
+              ),
+            1000,
+          )
+        }),
     )
-    ;(global as any).fetch = fetchMock
+    vi.stubGlobal('fetch', fetchMock)
 
     const promise = fetchPorProcesso({ page: 1, limit: 1, filters: {} }, controller.signal)
     controller.abort()
@@ -36,17 +41,22 @@ describe('fetch functions abort', () => {
 
   it('aborts fetchPorTestemunha when controller aborts', async () => {
     const controller = new AbortController()
-    const fetchMock = vi.fn((url: string, options: any) =>
-      new Promise((resolve, reject) => {
-        options.signal.addEventListener('abort', () =>
-          reject(new DOMException('Aborted', 'AbortError'))
-        )
-        setTimeout(() =>
-          resolve(new Response(JSON.stringify({ data: [], total: 0 }), { status: 200 })),
-        1000)
-      })
+    const fetchMock = vi.fn(
+      (url: string, options: RequestInit & { signal: AbortSignal }) =>
+        new Promise<Response>((resolve, reject) => {
+          options.signal.addEventListener('abort', () =>
+            reject(new DOMException('Aborted', 'AbortError'))
+          )
+          setTimeout(
+            () =>
+              resolve(
+                new Response(JSON.stringify({ data: [], total: 0 }), { status: 200 }),
+              ),
+            1000,
+          )
+        }),
     )
-    ;(global as any).fetch = fetchMock
+    vi.stubGlobal('fetch', fetchMock)
 
     const promise = fetchPorTestemunha({ page: 1, limit: 1, filters: {} }, controller.signal)
     controller.abort()
