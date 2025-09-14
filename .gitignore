@@ -6,3 +6,4 @@
 out/
 bun.lockb
 *.tsbuildinfo
+node_modules/

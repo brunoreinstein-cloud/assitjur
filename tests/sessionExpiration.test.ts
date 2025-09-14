@@ -2,36 +2,24 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-vi.mock('@/integrations/supabase/client', () => {
-  return {
-    supabase: {
-      auth: {
-        getSession: vi.fn(),
-        refreshSession: vi.fn(),
-      },
-    },
-  };
-});
-
 import { supabase } from '@/integrations/supabase/client';
+import { supabaseMock } from './mocks/supabase';
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import { AuthErrorHandler } from '@/utils/authErrorHandler';
 import { useSessionStore } from '@/stores/useSessionStore';
 
 describe('session expiration', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
     useSessionStore.setState({ expired: false, redirectUrl: null });
   });
 
   it('refreshes token when session expired', async () => {
     const now = Math.floor(Date.now() / 1000);
-    (supabase.auth.getSession as any).mockResolvedValue({
+    supabaseMock.auth.getSession.mockResolvedValue({
       data: { session: { access_token: 'old', expires_at: now - 10 } },
       error: null,
     });
-    (supabase.auth.refreshSession as any).mockResolvedValue({
+    supabaseMock.auth.refreshSession.mockResolvedValue({
       data: { session: { access_token: 'new', expires_at: now + 3600 } },
       error: null,
     });
