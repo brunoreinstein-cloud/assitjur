@@ -58,7 +58,7 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
           <div className="hidden md:flex items-center gap-3">
             <a
               href="/login"
-              className="px-4 py-2 rounded-md border border-purple-500 text-purple-300 hover:bg-purple-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-[#1e0033]"
+              className="px-4 py-2 rounded-md border border-purple-500 text-purple-300 hover:bg-purple-600 hover:text-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-[#1e0033]"
             >
               Login
             </a>
@@ -136,7 +136,7 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
               <li className="pt-2 flex flex-col gap-3">
                 <a
                   href="/login"
-                  className="px-4 py-2 rounded-md border border-purple-500 text-purple-300 hover:bg-purple-500 hover:text-white text-center focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-[#1e0033]"
+                  className="px-4 py-2 rounded-md border border-purple-500 text-purple-300 hover:bg-purple-600 hover:text-gray-50 text-center focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-[#1e0033]"
                 >
                   Login
                 </a>
