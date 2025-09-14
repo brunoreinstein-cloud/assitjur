@@ -12,9 +12,14 @@ export function BetaHeader() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-3 cursor-pointer transition-transform duration-200 hover:scale-105" onClick={() => navigate('/')}>
+          <button
+            type="button"
+            aria-label="Ir para página inicial"
+            onClick={() => navigate('/')}
+            className="flex items-center space-x-3 transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
+          >
             <BrandLogo size="lg" className="h-10 md:h-12" />
-          </div>
+          </button>
 
           {/* Navigation */}
           <div className="flex items-center space-x-4">

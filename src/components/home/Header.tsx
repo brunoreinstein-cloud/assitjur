@@ -27,9 +27,14 @@ export const Header = () => {
     } border-b border-border`}>
       <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
         {/* Logo */}
-        <div className="flex items-center gap-3 min-w-fit cursor-pointer transition-transform duration-200 hover:scale-105" onClick={() => navigate('/')}>
+        <button
+          type="button"
+          aria-label="Ir para página inicial"
+          onClick={() => navigate('/')}
+          className="flex items-center gap-3 min-w-fit transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
+        >
           <BrandLogo size="lg" className="h-10 md:h-12" />
-        </div>
+        </button>
 
         {/* Search */}
         <div className="flex-1 max-w-2xl">
