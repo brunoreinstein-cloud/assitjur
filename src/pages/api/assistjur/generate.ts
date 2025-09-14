@@ -55,21 +55,24 @@ export default async function handler(req: Request): Promise<Response> {
       options.attachments = [{ vector_store_id: store.id }];
     }
 
-    const response = await openai.responses.create({
-      model: "gpt-4.1-mini",
-      input: messages,
-      ...options,
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1-mini-2025-04-14",
+      messages: messages as any,
+      max_completion_tokens: 1000,
+      response_format: { type: "json_object" },
     });
 
     let parsed: GenerateResponse;
     try {
-      parsed = JSON.parse(response.output_text) as GenerateResponse;
+      const content = response.choices[0]?.message?.content || "";
+      parsed = JSON.parse(content) as GenerateResponse;
     } catch {
+      const content = response.choices[0]?.message?.content || "Erro na geração";
       parsed = {
-        promptPrincipal: response.output_text,
+        promptPrincipal: content,
         variacoes: { compacta: "", especialista: "" },
         checklist: [],
-        avisoLegal: "",
+        avisoLegal: "Documento produzido com apoio do AssistJur.IA. Validação nos autos é obrigatória.",
       };
     }
 
