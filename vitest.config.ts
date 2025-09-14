@@ -12,6 +12,7 @@ export default defineConfig({
     setupFiles: ['src/tests/setup.ts'],
     exclude: ['tests/integration.supabase.test.ts'],
     coverage: {
+      provider: 'v8',
       reporter: ['lcov'],
     },
   },
