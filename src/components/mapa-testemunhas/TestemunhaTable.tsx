@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { Eye, Edit, Trash2 } from "lucide-react";
 import { PorTestemunha } from "@/types/mapa-testemunhas";
 import { ArrayField } from "./ArrayField";
+import { BooleanIcon } from "./BooleanIcon";
 import { useMapaTestemunhasStore, selectColumnVisibility } from "@/lib/store/mapa-testemunhas";
 import { applyPIIMask } from "@/utils/pii-mask";
 import { DataState, DataStatus } from "@/components/ui/data-state";
@@ -24,19 +25,10 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
   const [toDelete, setToDelete] = useState<PorTestemunha | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  const handleViewDetail = (testemunha: PorTestemunha) => {
+  const handleViewDetail = useCallback((testemunha: PorTestemunha) => {
     setSelectedTestemunha(testemunha);
     setIsDetailDrawerOpen(true);
-  };
-
-  const BooleanIcon = ({ value }: { value: boolean | null }) => {
-    if (value === null) return <span className="text-muted-foreground">—</span>;
-    return value ? (
-      <CheckCircle className="h-4 w-4 text-success" />
-    ) : (
-      <XCircle className="h-4 w-4 text-muted-foreground" />
-    );
-  };
+  }, [setSelectedTestemunha, setIsDetailDrawerOpen]);
 
   const getClassificacaoColor = (classificacao: string | null) => {
     switch (classificacao?.toLowerCase()) {
@@ -55,12 +47,12 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
     return <DataState status="empty" onRetry={onRetry} />;
   }
 
-  const requestDelete = (t: PorTestemunha) => {
+  const requestDelete = useCallback((t: PorTestemunha) => {
     setToDelete(t);
     setIsConfirmOpen(true);
-  };
+  }, []);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     if (toDelete) {
       remove({
         key: toDelete.nome_testemunha,
@@ -71,7 +63,7 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
     }
     setIsConfirmOpen(false);
     setToDelete(null);
-  };
+  }, [toDelete, remove, removeTestemunha, restoreTestemunha]);
 
   return (
     <>

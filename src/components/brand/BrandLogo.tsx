@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { BRAND } from '@/branding/brand';
 import { cn } from '@/lib/utils';
 
@@ -14,14 +14,20 @@ const sizeClasses: Record<NonNullable<BrandLogoProps['size']>, string> = {
   lg: 'h-10',
 };
 
-export function BrandLogo({ size = 'md', variation = 'light', className }: BrandLogoProps) {
+export const BrandLogo = memo(function BrandLogo({
+  size = 'md',
+  variation = 'light',
+  className,
+}: BrandLogoProps) {
   return (
     <img
       src={BRAND.logo[variation]}
       alt={BRAND.name}
       className={cn('w-auto object-contain', sizeClasses[size], className)}
+      loading="lazy"
+      decoding="async"
     />
   );
-}
+});
 
 export default BrandLogo;
