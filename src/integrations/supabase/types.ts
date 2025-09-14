@@ -199,6 +199,30 @@ export type Database = {
         }
         Relationships: []
       }
+      csat: {
+        Row: {
+          id: string
+          session_id: string
+          score: number
+          comment: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          score: number
+          comment?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          session_id?: string
+          score?: number
+          comment?: string | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
       data_access_logs: {
         Row: {
           access_type: string
