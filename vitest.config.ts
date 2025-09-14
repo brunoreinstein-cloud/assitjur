@@ -10,7 +10,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
-    exclude: ['tests/integration.supabase.test.ts', 'node_modules/**'],
+    exclude: ['tests/integration.supabase.test.ts'],
     coverage: {
       reporter: ['lcov'],
     },
