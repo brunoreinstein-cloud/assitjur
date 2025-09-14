@@ -2,8 +2,9 @@
  * @vitest-environment jsdom
  */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, beforeEach } from 'vitest';
 import AuditPanel from '@/pages/admin/AuditPanel';
+import { supabaseMock } from './mocks/supabase';
 
 const auditLogs = [
   {
@@ -24,22 +25,20 @@ const auditLogs = [
   }
 ];
 
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    from: (table: string) => ({
-      select: () => ({
-        gte: () => ({
-          order: () => ({
-            limit: async () => {
-              if (table === 'audit_logs') return { data: auditLogs, error: null };
-              return { data: [], error: null };
-            }
-          })
+beforeEach(() => {
+  supabaseMock.from.mockImplementation((table: string) => ({
+    select: () => ({
+      gte: () => ({
+        order: () => ({
+          limit: async () => {
+            if (table === 'audit_logs') return { data: auditLogs, error: null };
+            return { data: [], error: null };
+          }
         })
       })
     })
-  }
-}));
+  }));
+});
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 

@@ -1,15 +1,14 @@
 /**
  * @vitest-environment node
  */
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { supabaseMock } from './mocks/supabase'
 
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    auth: {
-      getSession: vi.fn().mockResolvedValue({ data: { session: { access_token: 'token' } } })
-    }
-  }
-}))
+beforeEach(() => {
+  supabaseMock.auth.getSession.mockResolvedValue({
+    data: { session: { access_token: 'token' } }
+  })
+})
 
 import { fetchPorProcesso, fetchPorTestemunha } from '../src/lib/supabase'
 

@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import FeatureFlagGuard from '@/components/FeatureFlagGuard';
 import { FeatureFlagProvider, refreshFeatureFlags } from '@/hooks/useFeatureFlag';
+import { supabaseMock } from './mocks/supabase';
 
 let mockUser = { id: '1' } as any;
 let mockProfile = { plan: 'free', organization_id: 'org1' } as any;
@@ -10,11 +11,7 @@ vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: mockUser, profile: mockProfile })
 }));
 
-const invoke = vi.fn();
-
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: { functions: { invoke } }
-}));
+const invoke = supabaseMock.functions.invoke;
 
 describe('feature flags', () => {
   beforeEach(() => {

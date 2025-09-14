@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import FeatureFlagAdmin from '@/components/admin/FeatureFlagAdmin';
+import { supabaseMock } from './mocks/supabase';
 
 // Mock toast
 const success = vi.fn();
@@ -11,44 +12,8 @@ vi.mock('@/hooks/use-toast', () => ({ toast: { success, error } }));
 let flagsData: any[] = [];
 let auditData: any[] = [];
 let killData: string[] = [];
-const invoke = vi.fn().mockResolvedValue({});
+const invoke = supabaseMock.functions.invoke;
 const upsert = vi.fn().mockResolvedValue({});
-
-const from = vi.fn((table: string) => {
-  if (table === 'feature_flags') {
-    return {
-      select: vi.fn(() => ({
-        order: vi.fn(() => Promise.resolve({ data: flagsData }))
-      }))
-    } as any;
-  }
-  if (table === 'feature_flag_audit') {
-    return {
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          order: vi.fn(() => Promise.resolve({ data: auditData }))
-        }))
-      }))
-    } as any;
-  }
-  if (table === 'platform_settings') {
-    return {
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            maybeSingle: vi.fn(() => Promise.resolve({ data: { value_jsonb: killData } }))
-          }))
-        }))
-      })),
-      upsert
-    } as any;
-  }
-  return { select: vi.fn() } as any;
-});
-
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: { from, functions: { invoke } }
-}));
 
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ profile: { organization_id: 'org1' } })
@@ -61,9 +26,39 @@ describe('FeatureFlagAdmin', () => {
     flagsData = [];
     auditData = [];
     killData = [];
-    invoke.mockClear();
-    from.mockClear();
-    upsert.mockClear();
+    invoke.mockReset();
+    upsert.mockReset();
+    supabaseMock.from.mockImplementation((table: string) => {
+      if (table === 'feature_flags') {
+        return {
+          select: vi.fn(() => ({
+            order: vi.fn(() => Promise.resolve({ data: flagsData }))
+          }))
+        } as any;
+      }
+      if (table === 'feature_flag_audit') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              order: vi.fn(() => Promise.resolve({ data: auditData }))
+            }))
+          }))
+        } as any;
+      }
+      if (table === 'platform_settings') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                maybeSingle: vi.fn(() => Promise.resolve({ data: { value_jsonb: killData } }))
+              }))
+            }))
+          })),
+          upsert
+        } as any;
+      }
+      return { select: vi.fn() } as any;
+    });
     success.mockClear();
     error.mockClear();
     mockConfirm.mockReturnValue(true);
@@ -130,7 +125,7 @@ describe('FeatureFlagAdmin', () => {
     render(<FeatureFlagAdmin />);
     fireEvent.click(await screen.findByText('flag1'));
     await screen.findByText(/created/);
-    expect(from).toHaveBeenCalledWith('feature_flag_audit');
+    expect(supabaseMock.from).toHaveBeenCalledWith('feature_flag_audit');
   });
 });
 

@@ -9,7 +9,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    setupFiles: ['./src/tests/setup.ts'],
+    setupFiles: ['./tests/setup.ts'],
     include: ['tests/integration.supabase.test.ts'],
     coverage: {
       reporter: ['lcov'],
