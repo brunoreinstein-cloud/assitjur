@@ -31,8 +31,9 @@ export default async function handler(req: Request): Promise<Response> {
 
   try {
     const body = (await req.json()) as GenerateRequest;
-    if (!body.mode) {
-      return new Response("Missing mode", { status: 400 });
+    const { mode, text, temaFase, entrevista, useRag, fileIds } = body;
+    if (!mode || !["A", "B", "C"].includes(mode)) {
+      return new Response("Invalid mode", { status: 400 });
     }
 
     const messages = [
@@ -40,19 +41,22 @@ export default async function handler(req: Request): Promise<Response> {
       {
         role: "user",
         content: JSON.stringify({
-          mode: body.mode,
-          text: body.text,
-          temaFase: body.temaFase,
-          entrevista: body.entrevista,
+          mode,
+          text,
+          temaFase,
+          entrevista,
         }),
       },
     ];
 
-    const options: Record<string, unknown> = {};
-    if (body.useRag) {
+    const options: {
+      tools?: Array<{ type: "file_search" }>;
+      attachments?: Array<{ vector_store_id: string }>;
+    } = {};
+    if (useRag) {
       const store = await getOrCreateVectorStore("assistjur");
-      if (body.fileIds?.length) {
-        await Promise.all(body.fileIds.map(id => attachFile(id, store.id)));
+      if (fileIds?.length) {
+        await Promise.all(fileIds.map(id => attachFile(id, store.id)));
       }
       options.tools = [{ type: "file_search" }];
       options.attachments = [{ vector_store_id: store.id }];
