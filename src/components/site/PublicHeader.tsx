@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { track } from '@/lib/track';
 
 interface PublicHeaderProps {
@@ -8,13 +8,36 @@ interface PublicHeaderProps {
 export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const scrollToSection = (id: string) => {
+  const scrollToSection = useCallback((id: string) => {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     setIsMobileMenuOpen(false);
-  };
+  }, []);
+
+  const handleNavClick = useCallback(
+    (id: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      scrollToSection(id);
+    },
+    [scrollToSection]
+  );
+
+  const handleBetaClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      if (onBetaClick) {
+        e.preventDefault();
+        track('cta_click', { id: 'menu-entrar-beta' });
+        onBetaClick();
+      }
+    },
+    [onBetaClick]
+  );
+
+  const toggleMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen((prev) => !prev);
+  }, []);
 
   const navItems = [
     { label: 'Início', id: 'inicio' },
@@ -32,7 +55,15 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <a href="/" className="flex items-center gap-3">
-            <img src="/logos/assistjur-logo.svg" alt="AssistJur.IA" className="h-8 w-auto" />
+            <img
+              src="/logos/assistjur-logo.svg"
+              alt="AssistJur.IA"
+              className="h-8 w-auto"
+              loading="lazy"
+              decoding="async"
+              width="128"
+              height="32"
+            />
             <span className="sr-only">AssistJur.IA</span>
           </a>
 
@@ -42,10 +73,7 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
               <li key={item.id}>
                 <a
                   href={`#${item.id}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToSection(item.id);
-                  }}
+                  onClick={handleNavClick(item.id)}
                   className="hover:text-white hover:underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-[#1e0033]"
                 >
                   {item.label}
@@ -64,13 +92,7 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
             </a>
             <a
               href="#lista-beta"
-              onClick={(e) => {
-                if (onBetaClick) {
-                  e.preventDefault();
-                  track('cta_click', { id: 'menu-entrar-beta' });
-                  onBetaClick();
-                }
-              }}
+              onClick={handleBetaClick}
               className="px-4 py-2 rounded-md bg-gradient-to-r from-purple-500 to-violet-600 text-white font-semibold shadow-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:ring-offset-2 focus:ring-offset-[#1e0033]"
             >
               Entrar na Lista Beta
@@ -82,7 +104,7 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
             aria-label="Abrir menu"
             aria-controls="menu"
             aria-expanded={isMobileMenuOpen}
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            onClick={toggleMobileMenu}
             className="md:hidden inline-flex items-center justify-center rounded-md p-2 text-gray-200 hover:text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-[#1e0033]"
           >
             {isMobileMenuOpen ? (
@@ -123,10 +145,7 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
                 <li key={item.id}>
                   <a
                     href={`#${item.id}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      scrollToSection(item.id);
-                    }}
+                    onClick={handleNavClick(item.id)}
                     className="block py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-[#1e0033] hover:text-white hover:underline underline-offset-4"
                   >
                     {item.label}
@@ -142,13 +161,7 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
                 </a>
                 <a
                   href="#lista-beta"
-                  onClick={(e) => {
-                    if (onBetaClick) {
-                      e.preventDefault();
-                      track('cta_click', { id: 'menu-entrar-beta' });
-                      onBetaClick();
-                    }
-                  }}
+                  onClick={handleBetaClick}
                   className="px-4 py-2 rounded-md bg-gradient-to-r from-purple-500 to-violet-600 text-white font-semibold shadow-md hover:opacity-90 text-center focus:outline-none focus:ring-2 focus:ring-purple-300 focus:ring-offset-2 focus:ring-offset-[#1e0033]"
                 >
                   Entrar na Lista Beta

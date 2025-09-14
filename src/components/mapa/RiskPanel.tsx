@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, ArrowRightLeft, Users, TrendingUp } from "lucide-react";
 import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
-import { PorProcesso } from "@/types/mapa-testemunhas";
+import { useMemo, useCallback } from "react";
 
 interface RiskStats {
   triangulacoes: number;
@@ -13,74 +13,84 @@ interface RiskStats {
 }
 
 export const RiskPanel = () => {
-  const activeTab = useMapaTestemunhasStore(s => s.activeTab);
-  const processos = useMapaTestemunhasStore(s => s.processos);
-  const setProcessoFilters = useMapaTestemunhasStore(s => s.setProcessoFilters);
+  const activeTab = useMapaTestemunhasStore((s) => s.activeTab);
+  const processos = useMapaTestemunhasStore((s) => s.processos);
+  const setProcessoFilters = useMapaTestemunhasStore((s) => s.setProcessoFilters);
 
-  // Calculate risk statistics from current data
-  const getRiskStats = (): RiskStats => {
+  const stats = useMemo<RiskStats>(() => {
     if (activeTab !== 'processos') {
       return { triangulacoes: 0, trocas: 0, provas: 0, total: 0 };
     }
-    
+
     return {
-      triangulacoes: processos.filter(p => p.triangulacao_confirmada).length,
-      trocas: processos.filter(p => p.troca_direta).length,
-      provas: processos.filter(p => p.contem_prova_emprestada).length,
-      total: processos.length
+      triangulacoes: processos.filter((p) => p.triangulacao_confirmada).length,
+      trocas: processos.filter((p) => p.troca_direta).length,
+      provas: processos.filter((p) => p.contem_prova_emprestada).length,
+      total: processos.length,
     };
-  };
+  }, [activeTab, processos]);
 
-  const stats = getRiskStats();
+  const filterCallbacks = useMemo(
+    () => ({
+      triangulacao: () => setProcessoFilters({ temTriangulacao: true }),
+      troca: () => setProcessoFilters({ temTroca: true }),
+      prova: () => setProcessoFilters({ temProvaEmprestada: true }),
+    }),
+    [setProcessoFilters]
+  );
 
-  const riskItems = [
-    {
-      id: 'triangulacao',
-      title: 'Triangulações',
-      description: 'Processos com triangulação confirmada',
-      count: stats.triangulacoes,
-      total: stats.total,
-      icon: Users,
-      color: 'text-destructive',
-      bgColor: 'bg-destructive/5 hover:bg-destructive/10',
-      borderColor: 'border-destructive/20',
-      onClick: () => setProcessoFilters({ temTriangulacao: true })
-    },
-    {
-      id: 'troca',
-      title: 'Trocas Diretas',
-      description: 'Processos com troca direta identificada',
-      count: stats.trocas,
-      total: stats.total,
-      icon: ArrowRightLeft,
-      color: 'text-warning',
-      bgColor: 'bg-warning/5 hover:bg-warning/10',
-      borderColor: 'border-warning/20',
-      onClick: () => setProcessoFilters({ temTroca: true })
-    },
-    {
-      id: 'prova',
-      title: 'Provas Emprestadas',
-      description: 'Processos com prova emprestada detectada',
-      count: stats.provas,
-      total: stats.total,
-      icon: AlertTriangle,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/10 dark:hover:bg-orange-900/20',
-      borderColor: 'border-orange-200 dark:border-orange-900/30',
-      onClick: () => setProcessoFilters({ temProvaEmprestada: true })
-    }
-  ];
+  const riskItems = useMemo(
+    () => [
+      {
+        id: 'triangulacao',
+        title: 'Triangulações',
+        description: 'Processos com triangulação confirmada',
+        count: stats.triangulacoes,
+        total: stats.total,
+        icon: Users,
+        color: 'text-destructive',
+        bgColor: 'bg-destructive/5 hover:bg-destructive/10',
+        borderColor: 'border-destructive/20',
+        onClick: filterCallbacks.triangulacao,
+      },
+      {
+        id: 'troca',
+        title: 'Trocas Diretas',
+        description: 'Processos com troca direta identificada',
+        count: stats.trocas,
+        total: stats.total,
+        icon: ArrowRightLeft,
+        color: 'text-warning',
+        bgColor: 'bg-warning/5 hover:bg-warning/10',
+        borderColor: 'border-warning/20',
+        onClick: filterCallbacks.troca,
+      },
+      {
+        id: 'prova',
+        title: 'Provas Emprestadas',
+        description: 'Processos com prova emprestada detectada',
+        count: stats.provas,
+        total: stats.total,
+        icon: AlertTriangle,
+        color: 'text-orange-600',
+        bgColor:
+          'bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/10 dark:hover:bg-orange-900/20',
+        borderColor: 'border-orange-200 dark:border-orange-900/30',
+        onClick: filterCallbacks.prova,
+      },
+    ],
+    [stats, filterCallbacks]
+  );
 
-  const getPercentage = (count: number, total: number) => {
+  const getPercentage = useCallback((count: number, total: number) => {
     return total > 0 ? Math.round((count / total) * 100) : 0;
-  };
+  }, []);
 
-  const getVariantByPercentage = (percentage: number) => {
+  const getVariantByPercentage = useCallback((percentage: number) => {
     if (percentage >= 20) return 'destructive';
     if (percentage >= 10) return 'secondary';
     return 'outline';
-  };
+  }, []);
 
   if (activeTab !== 'processos') {
     return null;

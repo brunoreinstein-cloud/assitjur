@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,14 +32,20 @@ export function CorrectionInterface({ corrections, onApplyCorrections, onReject 
   const [showDetails, setShowDetails] = useState(false);
   const [selectedCorrections, setSelectedCorrections] = useState<Set<string>>(new Set());
 
-  const correctionStats = {
-    total: corrections.length,
-    withCorrections: corrections.filter(c => c.corrections.length > 0).length,
-    autoComplete: corrections.filter(c => c.corrections.some(cor => cor.correctionType === 'auto_complete')).length,
-    format: corrections.filter(c => c.corrections.some(cor => cor.correctionType === 'format')).length,
-    inferred: corrections.filter(c => c.corrections.some(cor => cor.correctionType === 'infer')).length,
-    valid: corrections.filter(c => c.isValid).length
-  };
+  const correctionStats = useMemo(() => {
+    return corrections.reduce(
+      (acc, c) => {
+        acc.total += 1;
+        if (c.corrections.length > 0) acc.withCorrections += 1;
+        if (c.isValid) acc.valid += 1;
+        if (c.corrections.some((cor) => cor.correctionType === 'auto_complete')) acc.autoComplete += 1;
+        if (c.corrections.some((cor) => cor.correctionType === 'format')) acc.format += 1;
+        if (c.corrections.some((cor) => cor.correctionType === 'infer')) acc.inferred += 1;
+        return acc;
+      },
+      { total: 0, withCorrections: 0, autoComplete: 0, format: 0, inferred: 0, valid: 0 }
+    );
+  }, [corrections]);
 
   const getCorrectionTypeColor = (type: string) => {
     switch (type) {
