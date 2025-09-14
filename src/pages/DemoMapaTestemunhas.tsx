@@ -31,12 +31,7 @@ export default function DemoMapaTestemunhas() {
   const next = () => setStep((s) => Math.min(s + 1, 4));
 
   const resetTour = () => setStep(0);
-  const handleOpenChange = (currentStep: number) => (open: boolean) => {
-    // Permite fechar popovers, mas só fecha se estiver no passo atual
-    if (!open && step === currentStep) {
-      setStep(-1);
-    }
-  };
+  // Popovers são controlados pelo estado `step`
 
   const riskColor = (risco: Witness['risco']) =>
     risco === 'Alto' ? 'text-red-600' : risco === 'Médio' ? 'text-yellow-600' : 'text-green-600';
@@ -67,11 +62,11 @@ export default function DemoMapaTestemunhas() {
       </div>
 
       <div className="flex gap-4">
-        <Popover open={step === 0} onOpenChange={handleOpenChange(0)}>
+        <Popover open={step === 0}>
           <PopoverTrigger asChild>
             <Button>Novo Mapa</Button>
           </PopoverTrigger>
-          <PopoverContent>
+          <PopoverContent data-testid="tour-step-0">
             <p>Crie um novo mapa de testemunhas.</p>
             <Button size="sm" className="mt-2" onClick={next}>
               Próximo
@@ -79,11 +74,11 @@ export default function DemoMapaTestemunhas() {
           </PopoverContent>
         </Popover>
 
-        <Popover open={step === 1} onOpenChange={handleOpenChange(1)}>
+        <Popover open={step === 1}>
           <PopoverTrigger asChild>
             <Button variant="outline">Importar do CNJ (mock)</Button>
           </PopoverTrigger>
-          <PopoverContent>
+          <PopoverContent data-testid="tour-step-1">
             <p>Simule a importação de dados do CNJ.</p>
             <Button size="sm" className="mt-2" onClick={next}>
               Próximo
@@ -92,7 +87,7 @@ export default function DemoMapaTestemunhas() {
         </Popover>
       </div>
 
-      <Popover open={step === 2} onOpenChange={handleOpenChange(2)}>
+      <Popover open={step === 2}>
         <PopoverTrigger asChild>
           <div>
             <Table>
@@ -125,7 +120,7 @@ export default function DemoMapaTestemunhas() {
             </Table>
           </div>
         </PopoverTrigger>
-        <PopoverContent>
+        <PopoverContent data-testid="tour-step-2">
           <p>Revise as testemunhas e seus vínculos.</p>
           <Button size="sm" className="mt-2" onClick={next}>
             Próximo
@@ -133,13 +128,13 @@ export default function DemoMapaTestemunhas() {
         </PopoverContent>
       </Popover>
 
-      <Popover open={step === 3} onOpenChange={handleOpenChange(3)}>
+      <Popover open={step === 3}>
         <PopoverTrigger asChild>
           <div className="h-40 border rounded flex items-center justify-center text-muted-foreground">
             Mini grafo (placeholder)
           </div>
         </PopoverTrigger>
-        <PopoverContent>
+        <PopoverContent data-testid="tour-step-3">
           <p>Visualize as relações no grafo.</p>
           <Button size="sm" className="mt-2" onClick={next}>
             Próximo
@@ -147,11 +142,11 @@ export default function DemoMapaTestemunhas() {
         </PopoverContent>
       </Popover>
 
-      <Popover open={step === 4} onOpenChange={handleOpenChange(4)}>
+      <Popover open={step === 4}>
         <PopoverTrigger asChild>
           <Button>Gerar PDF (mock)</Button>
         </PopoverTrigger>
-        <PopoverContent>
+        <PopoverContent data-testid="tour-step-4">
           <p>Gere um PDF demonstrativo.</p>
           <Button size="sm" className="mt-2" asChild>
             <a href="/beta">Entrar na Beta</a>
