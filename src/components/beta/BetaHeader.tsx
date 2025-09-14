@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { BrandLogo } from '@/components/brand/BrandLogo';
 
 export function BetaHeader() {
@@ -12,9 +12,13 @@ export function BetaHeader() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-3 cursor-pointer transition-transform duration-200 hover:scale-105" onClick={() => navigate('/')}>
+          <Link
+            to="/"
+            aria-label="Página inicial"
+            className="flex items-center space-x-3 cursor-pointer transition-transform duration-200 hover:scale-105"
+          >
             <BrandLogo size="lg" className="h-10 md:h-12" />
-          </div>
+          </Link>
 
           {/* Navigation */}
           <div className="flex items-center space-x-4">
