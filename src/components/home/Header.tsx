@@ -54,8 +54,9 @@ export const Header = () => {
               size="icon"
               onClick={() => navigate('/app/chat')}
               className="w-10 h-10 rounded-full"
+              aria-label="Abrir área do usuário"
             >
-              <User className="w-5 h-5" />
+              <User className="w-5 h-5" aria-hidden="true" />
             </Button>
           ) : (
             <Button
@@ -70,3 +71,4 @@ export const Header = () => {
     </header>
   );
 };
+
