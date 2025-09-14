@@ -72,7 +72,13 @@ export const CSP_DIRECTIVES = {
   'script-src': ["'self'"],
   'style-src': ["'self'"],
   'img-src': ["'self'", "data:", "https:"],
-  'connect-src': ["'self'", "https://api.supabase.com", "https://api.openai.com", "wss:"],
+  'connect-src': [
+    "'self'",
+    "https://fgjypmlszuzkgvhuszxn.supabase.co",
+    "https://fgjypmlszuzkgvhuszxn.functions.supabase.co",
+    "https://api.openai.com",
+    "wss:"
+  ],
   'font-src': ["'self'", "https:"],
   'object-src': ["'none'"],
   'media-src': ["'self'"],
