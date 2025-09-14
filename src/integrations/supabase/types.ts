@@ -18,12 +18,18 @@ export type Database = {
         Row: {
           action: string | null
           created_at: string | null
+          email: string | null
           id: string
           ip_address: string | null
           legal_basis: string | null
+          metadata: Json | null
           new_values: Json | null
           old_values: Json | null
+          organization_id: string | null
           record_id: string | null
+          resource: string | null
+          result: string | null
+          role: string | null
           table_name: string
           user_agent: string | null
           user_id: string | null
@@ -31,12 +37,18 @@ export type Database = {
         Insert: {
           action?: string | null
           created_at?: string | null
+          email?: string | null
           id?: string
           ip_address?: string | null
           legal_basis?: string | null
+          metadata?: Json | null
           new_values?: Json | null
           old_values?: Json | null
+          organization_id?: string | null
           record_id?: string | null
+          resource?: string | null
+          result?: string | null
+          role?: string | null
           table_name: string
           user_agent?: string | null
           user_id?: string | null
@@ -44,12 +56,18 @@ export type Database = {
         Update: {
           action?: string | null
           created_at?: string | null
+          email?: string | null
           id?: string
           ip_address?: string | null
           legal_basis?: string | null
+          metadata?: Json | null
           new_values?: Json | null
           old_values?: Json | null
+          organization_id?: string | null
           record_id?: string | null
+          resource?: string | null
+          result?: string | null
+          role?: string | null
           table_name?: string
           user_agent?: string | null
           user_id?: string | null
@@ -94,6 +112,44 @@ export type Database = {
           utm?: Json | null
         }
         Relationships: []
+      }
+      citations: {
+        Row: {
+          data: string | null
+          ementa: string | null
+          id: string
+          link: string | null
+          numero: string | null
+          session_id: string | null
+          tribunal: string | null
+        }
+        Insert: {
+          data?: string | null
+          ementa?: string | null
+          id?: string
+          link?: string | null
+          numero?: string | null
+          session_id?: string | null
+          tribunal?: string | null
+        }
+        Update: {
+          data?: string | null
+          ementa?: string | null
+          id?: string
+          link?: string | null
+          numero?: string | null
+          session_id?: string | null
+          tribunal?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "citations_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cleanup_logs: {
         Row: {
@@ -201,27 +257,35 @@ export type Database = {
       }
       csat: {
         Row: {
-          id: string
-          session_id: string
-          score: number
           comment: string | null
           created_at: string | null
+          id: string
+          score: number | null
+          session_id: string | null
         }
         Insert: {
-          id?: string
-          session_id: string
-          score: number
           comment?: string | null
           created_at?: string | null
+          id?: string
+          score?: number | null
+          session_id?: string | null
         }
         Update: {
-          id?: string
-          session_id?: string
-          score?: number
           comment?: string | null
           created_at?: string | null
+          id?: string
+          score?: number | null
+          session_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "csat_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       data_access_logs: {
         Row: {
@@ -917,6 +981,21 @@ export type Database = {
         }
         Relationships: []
       }
+      orgs: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       pessoas: {
         Row: {
           apelidos: string[] | null
@@ -1316,6 +1395,48 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      sessions: {
+        Row: {
+          created_at: string | null
+          id: string
+          mode: string
+          org_id: string | null
+          used_rag: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          mode: string
+          org_id?: string | null
+          used_rag?: boolean | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          mode?: string
+          org_id?: string | null
+          used_rag?: boolean | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stg_processos: {
         Row: {

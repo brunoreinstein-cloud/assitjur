@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Mail, Loader2, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const magicLinkSchema = z.object({
   email: z.string().email('Formato de email inválido')
@@ -22,6 +23,7 @@ interface MagicLinkFormProps {
 export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [lastAttempt, setLastAttempt] = useState<number | null>(null);
 
   const form = useForm<MagicLinkFormData>({
     resolver: zodResolver(magicLinkSchema),
@@ -32,8 +34,21 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
     }
   });
 
-  const handleSendMagicLink = async (data: MagicLinkFormData) => {
+  // Debounce email validation to prevent excessive API calls
+  const debouncedEmail = useDebounce(form.watch('email'), 500);
+
+  const handleSendMagicLink = useCallback(async (data: MagicLinkFormData) => {
+    // Rate limiting check on client side
+    const now = Date.now();
+    if (lastAttempt && now - lastAttempt < 60000) { // 1 minute cooldown
+      toast.error("Aguarde um momento", {
+        description: "Aguarde pelo menos 1 minuto entre tentativas."
+      });
+      return;
+    }
+
     setIsLoading(true);
+    setLastAttempt(now);
     
     try {
       if (!supabase) {
@@ -48,18 +63,27 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
       const { error } = await supabase.auth.signInWithOtp({
         email: data.email,
         options: {
-          emailRedirectTo: `${window.location.origin}/dados/mapa`
+          emailRedirectTo: `${window.location.origin}/`
         }
       });
 
       if (error) {
-        if (error?.status === 429) {
-          toast.error('Muitas tentativas', {
-            description: 'Tente novamente mais tarde.'
+        console.error('Magic link error:', error);
+        
+        if (error.message.includes('rate') || error.message.includes('limit') || error?.status === 429) {
+          toast.error('Limite de tentativas atingido', {
+            description: 'Muitas tentativas de login. Tente novamente em alguns minutos.'
           });
-          return;
+        } else if (error.message.includes('email')) {
+          toast.error('Email inválido', {
+            description: 'Verifique se o email foi digitado corretamente.'
+          });
+        } else {
+          toast.error("Erro ao enviar link", {
+            description: "Não foi possível enviar o link de acesso. Tente novamente."
+          });
         }
-        throw error;
+        return;
       }
 
       toast.success("Link de acesso enviado!", {
@@ -69,20 +93,20 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
       setEmailSent(true);
 
     } catch (error: any) {
-      console.error('Magic link error:', error);
+      console.error('Unexpected magic link error:', error);
       if (error?.status === 429) {
         toast.error('Muitas tentativas', {
           description: 'Tente novamente mais tarde.'
         });
       } else {
-        toast.error("Erro ao enviar link", {
-          description: "Não foi possível enviar o link de acesso. Tente novamente."
+        toast.error("Erro inesperado", {
+          description: "Ocorreu um erro ao enviar o link. Tente novamente em alguns instantes."
         });
       }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [lastAttempt]);
 
   const handleResend = () => {
     setEmailSent(false);

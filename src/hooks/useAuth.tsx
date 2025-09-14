@@ -86,7 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle(); // Use maybeSingle() to avoid coercion errors
 
       if (error) {
         logError('Error fetching profile', { error: error.message || error }, 'useAuth');
@@ -296,12 +296,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         let orgId: string | undefined;
-        if (role === 'ADMIN' && orgCode) {
+        if (orgCode) {
           const { data: orgData, error: orgError } = await supabase
             .from('organizations')
             .select('id')
             .eq('code', orgCode)
-            .single();
+            .maybeSingle(); // Use maybeSingle() to avoid coercion errors
 
           if (orgError || !orgData) {
             await logAuthAttempt(email, 'login', 'failure', { role, orgCode, error: 'Invalid org code' });
@@ -374,7 +374,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .from('organizations')
           .select('id')
           .eq('code', orgCode)
-          .single();
+          .maybeSingle(); // Use maybeSingle() to avoid coercion errors
 
         if (orgError || !orgData) {
           await logAuthAttempt(email, 'signup', 'failure', { orgCode, error: 'Invalid org code' });

@@ -12,29 +12,38 @@ export async function ensureProfile(
   organizationId?: string
 ): Promise<UserProfile | null> {
   try {
+    // First try to get existing profile with better error handling
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle(); // Use maybeSingle() instead of single() to avoid coercion errors
 
-    if (!error && profile) {
+    if (error) {
+      console.error('Error fetching profile:', error);
+      // Continue to create new profile if fetch fails
+    }
+
+    if (profile) {
+      // Update organization if needed and not set
       if (!profile.organization_id && organizationId) {
         const { data: updated, error: updateError } = await supabase
           .from('profiles')
           .update({ organization_id: organizationId })
           .eq('id', profile.id)
           .select()
-          .single();
+          .maybeSingle();
+        
         if (updateError) {
           console.error('Error updating profile:', updateError);
-          return profile;
+          return profile; // Return original profile if update fails
         }
         return updated as UserProfile;
       }
       return profile as UserProfile;
     }
 
+    // Create new profile if none exists
     const { data: newProfile, error: insertError } = await supabase
       .from('profiles')
       .insert({
@@ -46,10 +55,22 @@ export async function ensureProfile(
         data_access_level: 'NONE'
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (insertError) {
       console.error('Error creating profile:', insertError);
+      
+      // If profile already exists (race condition), try to fetch it again
+      if (insertError.code === '23505') { // Unique constraint violation
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        return existingProfile as UserProfile;
+      }
+      
       return null;
     }
 

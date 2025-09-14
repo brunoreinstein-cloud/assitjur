@@ -42,15 +42,27 @@ export class AuthErrorHandler {
       preserveCurrentUrl = true
     } = options;
 
-    logWarn('Auth error detected', { error: error.message || error }, 'AuthErrorHandler');
+    // Enhanced error logging with structured data
+    logWarn('Auth error detected', { 
+      error: error.message || error,
+      errorCode: error.code,
+      errorDescription: error.error_description,
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      url: window.location.href
+    }, 'AuthErrorHandler');
 
     // Clear all auth-related storage
     await this.clearAuthData();
 
     if (showNotification) {
+      // More specific error messages based on error type
+      const title = this.getErrorTitle(error);
+      const description = this.getErrorDescription(error);
+      
       toast({
-        title: "Sessão Expirada",
-        description: "Por favor, faça login novamente para continuar.",
+        title,
+        description,
         variant: "destructive"
       });
     }
@@ -61,7 +73,32 @@ export class AuthErrorHandler {
         ? `?redirect=${encodeURIComponent(currentUrl)}`
         : '';
 
+    // Reset handling flag after a delay to prevent permanent lock
+    setTimeout(() => {
+      this.isHandling = false;
+    }, 2000);
+
     useSessionStore.getState().showExpired(`/login${redirectUrl}`);
+  }
+
+  private static getErrorTitle(error: any): string {
+    if (error.message?.includes('refresh_token')) return 'Sessão Expirada';
+    if (error.message?.includes('invalid_token')) return 'Token Inválido';
+    if (error.message?.includes('network')) return 'Erro de Conexão';
+    return 'Sessão Expirada';
+  }
+
+  private static getErrorDescription(error: any): string {
+    if (error.message?.includes('refresh_token')) {
+      return 'Sua sessão expirou. Faça login novamente para continuar.';
+    }
+    if (error.message?.includes('invalid_token')) {
+      return 'Token de acesso inválido. Redirecionando para login...';
+    }
+    if (error.message?.includes('network')) {
+      return 'Problema de conexão. Verifique sua internet e tente novamente.';
+    }
+    return 'Por favor, faça login novamente para continuar.';
   }
 
   static async clearAuthData(): Promise<void> {
