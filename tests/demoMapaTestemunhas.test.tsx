@@ -6,23 +6,17 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import App from '@/App';
+import { TestAuthProvider } from './utils/testAuthProvider';
 
-vi.mock('@/hooks/useAuth', () => ({
-  AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  useAuth: () => ({
-    user: null,
-    profile: null,
-    session: null,
-    loading: false,
-    // signIn(email, password, role, rememberMe?, orgCode?)
-    signIn: vi.fn(),
-    signUp: vi.fn(),
-    signOut: vi.fn(),
-    resetPassword: vi.fn(),
-    hasRole: vi.fn(),
-    isAdmin: false,
-  }),
-}));
+vi.mock('@/hooks/useAuth', async () => {
+  const actual = await vi.importActual<typeof import('@/hooks/useAuth')>('@/hooks/useAuth');
+  return {
+    ...actual,
+    AuthProvider: ({ children }: { children: React.ReactNode }) => (
+      <TestAuthProvider>{children}</TestAuthProvider>
+    ),
+  };
+});
 
 describe('DemoMapaTestemunhas tour', () => {
   it('shows popovers in sequence and final CTA', async () => {

@@ -2,13 +2,10 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import FeatureFlagGuard from '@/components/FeatureFlagGuard';
 import { FeatureFlagProvider, refreshFeatureFlags } from '@/hooks/useFeatureFlag';
+import { TestAuthProvider } from './utils/testAuthProvider';
 
 let mockUser = { id: '1' } as any;
 let mockProfile = { plan: 'free', organization_id: 'org1' } as any;
-
-vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ user: mockUser, profile: mockProfile })
-}));
 
 const invoke = vi.fn();
 
@@ -27,9 +24,11 @@ describe('feature flags', () => {
   it('caches flag evaluations and switches users', async () => {
     invoke.mockResolvedValueOnce({ data: { flags: { 'advanced-report': false } }, error: null });
     const { rerender } = render(
-      <FeatureFlagProvider>
-        <FeatureFlagGuard flag="advanced-report"><div>Secret</div></FeatureFlagGuard>
-      </FeatureFlagProvider>
+      <TestAuthProvider value={{ user: mockUser, profile: mockProfile }}>
+        <FeatureFlagProvider>
+          <FeatureFlagGuard flag="advanced-report"><div>Secret</div></FeatureFlagGuard>
+        </FeatureFlagProvider>
+      </TestAuthProvider>
     );
     const key1 = `ff:org1:1:test`;
     await waitFor(() => expect(localStorage.getItem(key1)).not.toBeNull());
@@ -39,9 +38,11 @@ describe('feature flags', () => {
     mockProfile = { plan: 'pro', organization_id: 'org2' } as any;
     invoke.mockResolvedValueOnce({ data: { flags: { 'advanced-report': true } }, error: null });
     rerender(
-      <FeatureFlagProvider>
-        <FeatureFlagGuard flag="advanced-report"><div>Secret</div></FeatureFlagGuard>
-      </FeatureFlagProvider>
+      <TestAuthProvider value={{ user: mockUser, profile: mockProfile }}>
+        <FeatureFlagProvider>
+          <FeatureFlagGuard flag="advanced-report"><div>Secret</div></FeatureFlagGuard>
+        </FeatureFlagProvider>
+      </TestAuthProvider>
     );
     const key2 = `ff:org2:2:test`;
     await waitFor(() => expect(localStorage.getItem(key2)).not.toBeNull());
@@ -52,9 +53,11 @@ describe('feature flags', () => {
   it('keeps cache on fetch failure', async () => {
     invoke.mockResolvedValueOnce({ data: { flags: { 'advanced-report': true } }, error: null });
     render(
-      <FeatureFlagProvider>
-        <FeatureFlagGuard flag="advanced-report"><div>Secret</div></FeatureFlagGuard>
-      </FeatureFlagProvider>
+      <TestAuthProvider value={{ user: mockUser, profile: mockProfile }}>
+        <FeatureFlagProvider>
+          <FeatureFlagGuard flag="advanced-report"><div>Secret</div></FeatureFlagGuard>
+        </FeatureFlagProvider>
+      </TestAuthProvider>
     );
     const key = `ff:org1:1:test`;
     await waitFor(() => expect(localStorage.getItem(key)).not.toBeNull());

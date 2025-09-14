@@ -4,6 +4,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import AuditPanel from '@/pages/admin/AuditPanel';
+import { TestAuthProvider } from './utils/testAuthProvider';
 
 const auditLogs = [
   {
@@ -41,13 +42,16 @@ vi.mock('@/integrations/supabase/client', () => ({
   }
 }));
 
-vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
 describe('AuditPanel filters', () => {
   it('filters by user email', async () => {
-    render(<AuditPanel />);
+    render(
+      <TestAuthProvider value={{ user: { id: 'u1' } as any }}>
+        <AuditPanel />
+      </TestAuthProvider>
+    );
     await waitFor(() => screen.getByText('Painel de Auditoria'));
     const input = screen.getByPlaceholderText('Filtrar por usuário');
     fireEvent.change(input, { target: { value: 'user2' } });

@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import FeatureFlagAdmin from '@/components/admin/FeatureFlagAdmin';
+import { TestAuthProvider } from './utils/testAuthProvider';
 
 // Mock toast
 const success = vi.fn();
@@ -50,9 +51,6 @@ vi.mock('@/integrations/supabase/client', () => ({
   supabase: { from, functions: { invoke } }
 }));
 
-vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ profile: { organization_id: 'org1' } })
-}));
 
 const mockConfirm = vi.spyOn(window, 'confirm');
 
@@ -69,8 +67,15 @@ describe('FeatureFlagAdmin', () => {
     mockConfirm.mockReturnValue(true);
   });
 
+  const renderWithAuth = () =>
+    render(
+      <TestAuthProvider value={{ profile: { organization_id: 'org1' } as any }}>
+        <FeatureFlagAdmin />
+      </TestAuthProvider>
+    );
+
   it('creates a flag', async () => {
-    render(<FeatureFlagAdmin />);
+    renderWithAuth();
     const input = screen.getByPlaceholderText('flag name');
     fireEvent.change(input, { target: { value: 'new-flag' } });
     fireEvent.click(screen.getByText('Save'));
@@ -89,7 +94,7 @@ describe('FeatureFlagAdmin', () => {
   });
 
   it('sets rollout percentage via quick button', () => {
-    render(<FeatureFlagAdmin />);
+    renderWithAuth();
     fireEvent.click(screen.getByText('50%'));
     const input = screen.getByDisplayValue('50') as HTMLInputElement;
     expect(input.value).toBe('50');
@@ -97,7 +102,7 @@ describe('FeatureFlagAdmin', () => {
 
   it('disables an existing flag', async () => {
     flagsData = [{ id: '1', flag: 'test', enabled: true, rollout_percentage: 100, environment: 'development' }];
-    render(<FeatureFlagAdmin />);
+    renderWithAuth();
     fireEvent.click(await screen.findByText('test'));
     const switchEl = screen.getAllByRole('switch')[0];
     fireEvent.click(switchEl);
@@ -113,7 +118,7 @@ describe('FeatureFlagAdmin', () => {
 
   it('toggles kill switch for a flag', async () => {
     flagsData = [{ id: '1', flag: 'test', enabled: true, rollout_percentage: 100, environment: 'development' }];
-    render(<FeatureFlagAdmin />);
+    renderWithAuth();
     fireEvent.click(await screen.findByText('test'));
     const killSwitch = screen.getAllByRole('switch')[1];
     fireEvent.click(killSwitch);
@@ -127,7 +132,7 @@ describe('FeatureFlagAdmin', () => {
   it('loads audit entries when editing', async () => {
     flagsData = [{ id: '1', flag: 'flag1', enabled: true, rollout_percentage: 100, environment: 'development' }];
     auditData = [{ id: 'a1', action: 'created', timestamp: '2020-01-01' }];
-    render(<FeatureFlagAdmin />);
+    renderWithAuth();
     fireEvent.click(await screen.findByText('flag1'));
     await screen.findByText(/created/);
     expect(from).toHaveBeenCalledWith('feature_flag_audit');

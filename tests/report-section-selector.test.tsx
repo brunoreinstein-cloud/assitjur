@@ -4,19 +4,22 @@
 
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { ReportGenerator } from '@/components/reports/ReportGenerator';
 import { mockReportData } from '@/lib/mock-data/report-sample';
-
-// Mock useAuth to avoid context requirements if needed
-vi.mock('@/hooks/useAuth', () => ({
-  AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  useAuth: () => ({ user: null, profile: null, session: null, loading: false, signIn: vi.fn(), signUp: vi.fn(), signOut: vi.fn(), resetPassword: vi.fn(), hasRole: vi.fn(), isAdmin: false }),
-}));
+import { TestAuthProvider } from './utils/testAuthProvider';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 describe('Report section selector', () => {
   it('hides ROI section when unchecked', async () => {
-    render(<ReportGenerator mockData={mockReportData} />);
+    const qc = new QueryClient();
+    render(
+      <TestAuthProvider>
+        <QueryClientProvider client={qc}>
+          <ReportGenerator mockData={mockReportData} />
+        </QueryClientProvider>
+      </TestAuthProvider>
+    );
 
     // uncheck ROI
     const roiCheckbox = screen.getByLabelText('ROI');
