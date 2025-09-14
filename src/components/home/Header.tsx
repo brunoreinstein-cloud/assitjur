@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Scale, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,9 +27,12 @@ export const Header = () => {
     } border-b border-border`}>
       <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
         {/* Logo */}
-        <div className="flex items-center gap-3 min-w-fit cursor-pointer transition-transform duration-200 hover:scale-105" onClick={() => navigate('/')}>
+        <Link
+          to="/"
+          className="flex items-center gap-3 min-w-fit cursor-pointer transition-transform duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
           <BrandLogo size="lg" className="h-10 md:h-12" />
-        </div>
+        </Link>
 
         {/* Search */}
         <div className="flex-1 max-w-2xl">
