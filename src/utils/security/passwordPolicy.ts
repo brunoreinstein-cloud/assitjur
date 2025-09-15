@@ -21,3 +21,4 @@ export const validatePassword = async (password: string): Promise<PasswordPolicy
   return { valid: errors.length === 0, errors };
 };
 
+

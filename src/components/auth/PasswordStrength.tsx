@@ -82,3 +82,4 @@ export const PasswordStrength = ({ password }: PasswordStrengthProps) => {
     </div>
   );
 };
+
