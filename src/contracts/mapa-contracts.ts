@@ -1,1 +1,1 @@
-export * from '../../supabase/functions/_shared/mapa-contracts';
+export * from './mapa-contracts-core';
