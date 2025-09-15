@@ -365,9 +365,15 @@ export const EmailPasswordForm = ({
               )}
             </Button>
           </div>
-          <span id="password-help" role="alert" className="text-sm text-destructive whitespace-nowrap">
-            {loginForm.formState.errors.password?.message}
-          </span>
+          {loginForm.formState.errors.password && (
+            <span
+              id="password-help"
+              role="alert"
+              className="text-sm text-destructive whitespace-nowrap"
+            >
+              {loginForm.formState.errors.password.message}
+            </span>
+          )}
         </div>
       </div>
 
