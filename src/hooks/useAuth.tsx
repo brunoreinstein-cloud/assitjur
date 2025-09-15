@@ -351,7 +351,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       // Redirect users back to the login page with a confirmation flag
       // so the UI can display the proper message after e-mail verification.
-      const redirectUrl = `${window.location.origin}/login?confirm=1`;
+      const { siteUrl } = getEnv();
+      const redirectUrl = `${siteUrl}/login?confirm=1`;
 
       const { data, error } = await supabase.auth.signUp({
         email,
