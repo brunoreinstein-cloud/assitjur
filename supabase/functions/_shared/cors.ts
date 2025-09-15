@@ -25,6 +25,13 @@ export const ALLOWED_ORIGINS = parseAllowedOrigins(
 
 function isAllowed(origin: string | null, origins: AllowedOrigins): boolean {
   if (!origin) return false;
+  
+  // Allow Lovable preview URLs
+  if (origin.includes('.lovableproject.com')) return true;
+  
+  // Allow localhost for development
+  if (origin.includes('localhost')) return true;
+  
   return origins.patterns.some((rx) => rx.test(origin));
 }
 
@@ -52,8 +59,15 @@ export function handlePreflight(
 ): Response | null {
   const headers = { ...corsHeaders(req, origins), ...extraHeaders };
   const origin = req.headers.get("origin");
+  
+  // Enhanced origin checking with better error handling
   if (!isAllowed(origin, origins)) {
-    return new Response(JSON.stringify({ error: "origin_not_allowed" }), {
+    console.warn(`CORS: Origin not allowed: ${origin}`);
+    return new Response(JSON.stringify({ 
+      error: "origin_not_allowed", 
+      origin,
+      allowed_patterns: origins.raw
+    }), {
       status: 403,
       headers: { ...headers, "Content-Type": "application/json" },
     });
