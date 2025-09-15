@@ -212,6 +212,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   /**
    * Realiza login e ajusta a persistência da sessão conforme "rememberMe".
+   * Quando `rememberMe` é falso, a sessão é mantida apenas em memória com
+   * `expires_at` ajustado para expirar ao fechar o navegador.
    */
   const signIn = async (
     email: string,
@@ -226,6 +228,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: { shouldCreateUser: false },
       });
 
       if (error) {
@@ -246,12 +249,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Rotate refresh token on login
         const { data: refreshed } = await supabase.auth.refreshSession();
 
-        // Ajusta a persistência da sessão conforme a opção "Lembrar-me"
+        // Ajusta a persistência da sessão conforme a opção "Lembrar-me";
+        // quando não lembrada, a sessão expira ao término da aba.
         const sessionToPersist = refreshed.session ?? data.session;
         if (sessionToPersist) {
           await supabase.auth.setSession({
             access_token: sessionToPersist.access_token,
             refresh_token: sessionToPersist.refresh_token,
+            expires_at: rememberMe
+              ? sessionToPersist.expires_at
+              : Math.floor(Date.now() / 1000),
           });
         }
 
