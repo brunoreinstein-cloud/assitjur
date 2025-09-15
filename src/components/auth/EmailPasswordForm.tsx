@@ -17,7 +17,7 @@ import { ERROR_MESSAGES } from "@/utils/errorMessages";
 
 const loginSchema = z.object({
   email: z.string().email(ERROR_MESSAGES.INVALID_EMAIL),
-  password: z.string().min(6, 'Mínimo de 6 caracteres'),
+  password: z.string().min(MIN_PASSWORD_LENGTH, `Mínimo de ${MIN_PASSWORD_LENGTH} caracteres`),
   rememberMe: z.boolean().optional()
 });
 
