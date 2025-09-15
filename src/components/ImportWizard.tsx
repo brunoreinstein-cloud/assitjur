@@ -97,7 +97,11 @@ export function ImportWizard() {
           }
 
           let included = 0;
-          (results.data as any[]).forEach((row, index) => {
+interface CsvRow {
+  [key: string]: string | number | boolean;
+}
+
+          (results.data as CsvRow[]).forEach((row, index) => {
             const parsed = rowSchema.safeParse(row);
             if (parsed.success) {
               included++;

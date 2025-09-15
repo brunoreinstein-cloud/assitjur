@@ -52,16 +52,10 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
   const [operationType, setOperationType] = useState<'soft' | 'hard'>('soft');
   const [cooldownSeconds, setCooldownSeconds] = useState(10);
 
-  // Only log on mount or permission changes
+  // Permission validation
   useEffect(() => {
-    console.log('🔍 BulkDeleteManager Permission Check:', {
-      user: !!user,
-      profile: !!profile,
-      isAdmin,
-      organization_id: profile?.organization_id,
-      role: profile?.role
-    });
-  }, [isAdmin, profile?.organization_id]); // Only log when permissions change
+    // Log only on critical permission changes
+  }, [isAdmin, profile?.organization_id]);
 
   const requiredConfirmationText = profile?.organization_id || '';
   const isConfirmationValid = confirmationText === requiredConfirmationText;
@@ -82,7 +76,6 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
   // Load deletion impact when opening modal
   useEffect(() => {
     if (isOpen && !impact && hasPermission) {
-      console.log('🔍 Loading deletion impact for modal...');
       loadDeletionImpact();
     }
   }, [isOpen, hasPermission]);
@@ -100,9 +93,6 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
     setIsLoadingImpact(true);
     
     try {
-      console.log('🔍 Loading deletion impact for org:', profile?.organization_id);
-      console.log('🔍 User permissions:', { isAdmin, role: profile?.role });
-      
       const { data, error } = await supabase.rpc('rpc_get_deletion_impact', {
         p_org_id: profile!.organization_id
       });
@@ -118,7 +108,6 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
         throw error;
       }
       
-      console.log('✅ Deletion impact loaded:', data);
       setImpact(data as unknown as DeletionImpact);
     } catch (error) {
       console.error('❌ Error loading deletion impact:', error);
@@ -141,10 +130,6 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
 
     try {
       setProgress(25);
-      console.log('🗑️ Starting processos deletion:', { 
-        organization_id: profile.organization_id, 
-        hard_delete: operationType === 'hard' 
-      });
       
       // Try new edge function first, fallback to RPC
       let result: DeletionResult | null = null;
@@ -166,7 +151,6 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
           operation_type: data.operation_type,
           message: data.message
         };
-        console.log('✅ Edge function deletion successful:', result);
         
       } catch (edgeFunctionError) {
         console.warn('⚠️ Edge function failed, falling back to RPC:', edgeFunctionError);
@@ -179,7 +163,6 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
 
         if (rpcError) throw rpcError;
         result = rpcData as unknown as DeletionResult;
-        console.log('✅ RPC deletion successful:', result);
       }
 
       setProgress(75);

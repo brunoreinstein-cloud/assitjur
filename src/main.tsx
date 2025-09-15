@@ -10,8 +10,7 @@ const { sentryDsn } = getEnv()
 
 // Optional Sentry initialization
 if (sentryDsn) {
-  // @ts-ignore optional dependency
-  import('@sentry/react').then((Sentry) => {
+  import('@sentry/react').then((Sentry: any) => {
     Sentry.init({ dsn: sentryDsn, tracesSampleRate: 1.0 })
   }).catch(() => {
     console.warn('Sentry not available')

@@ -96,9 +96,7 @@ export function ScoreDisplay({ score, showBreakdown = false, compact = false }: 
           </div>
           <Progress 
             value={score.score_final} 
-            className="w-full h-2"
-            // @ts-ignore - Progress component should support color variants
-            variant={scoreRange.color}
+            className={`w-full h-2 ${scoreRange.color === 'destructive' ? '[&>div]:bg-destructive' : scoreRange.color === 'warning' ? '[&>div]:bg-orange-500' : '[&>div]:bg-primary'}`}
           />
         </div>
 

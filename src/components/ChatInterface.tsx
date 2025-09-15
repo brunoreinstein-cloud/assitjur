@@ -173,7 +173,15 @@ export function ChatInterface({ onUploadClick, hasData }: ChatInterfaceProps) {
     setIsLoading(false)
   }
 
-  const handleQueryTypeClick = (queryType: any) => {
+interface QueryType {
+  id: string;
+  label: string;
+  icon: any;
+  description: string;
+  color: string;
+}
+
+  const handleQueryTypeClick = (queryType: QueryType) => {
     let sampleQuery = ""
     switch (queryType.id) {
       case 'process_search':

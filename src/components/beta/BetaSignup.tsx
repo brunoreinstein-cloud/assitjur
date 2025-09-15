@@ -232,7 +232,6 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
           throw error;
         }
 
-        console.log('beta_form_success', result);
         setIsSuccess(true);
         toast({
           title: 'Sucesso!',
@@ -240,10 +239,8 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
         });
       } catch (apiError) {
         // Fallback to mock success
-        console.log('Using mock success - API not available');
         await new Promise(resolve => setTimeout(resolve, 700)); // Simulate API delay
         
-        console.log('beta_form_success (mock)', payload);
         setIsSuccess(true);
         toast({
           title: 'Sucesso!',

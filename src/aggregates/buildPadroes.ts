@@ -58,10 +58,32 @@ export interface PadroesAgregados {
 /**
  * Constrói agregados completos dos padrões detectados
  */
+interface ProcessoData {
+  triangulacao_confirmada?: boolean;
+  troca_direta?: boolean;
+  reclamante_foi_testemunha?: boolean;
+  contem_prova_emprestada?: boolean;
+  cnj?: string;
+  comarca?: string;
+  uf?: string;
+  created_at?: string;
+  testemunhas_ativo?: string[];
+  testemunhas_passivo?: string[];
+  advogados_ativo?: string[];
+  advogados_passivo?: string[];
+  [key: string]: any;
+}
+
+interface TestemunhaData {
+  nome?: string;
+  cnj?: string;
+  [key: string]: any;
+}
+
 export async function buildPadroesAgregados(
   orgId: string,
-  processos: any[],
-  testemunhas: any[]
+  processos: ProcessoData[],
+  testemunhas: TestemunhaData[]
 ): Promise<PadroesAgregados> {
   
   // 1. Contadores básicos
@@ -94,7 +116,7 @@ export async function buildPadroesAgregados(
 /**
  * Calcula contadores básicos de padrões
  */
-function calculateContadores(processos: any[]) {
+function calculateContadores(processos: ProcessoData[]) {
   let triangulacao = 0;
   let trocaDireta = 0;
   let duploPapel = 0;
@@ -119,8 +141,8 @@ function calculateContadores(processos: any[]) {
  * Constrói lista de testemunhas profissionais
  */
 function buildTestemunhasProfissionais(
-  testemunhas: any[],
-  processos: any[]
+  testemunhas: TestemunhaData[],
+  processos: ProcessoData[]
 ): TestemunhaProfissional[] {
   return testemunhas
     .filter(t => (t.qtd_depoimentos || 0) > 10)
@@ -169,8 +191,8 @@ function buildTestemunhasProfissionais(
  * Constrói lista de advogados recorrentes
  */
 function buildAdvogadosRecorrentes(
-  processos: any[],
-  testemunhas: any[]
+  processos: ProcessoData[],
+  testemunhas: TestemunhaData[]
 ): AdvogadoRecorrente[] {
   const advogadoStats = new Map<string, {
     processos: Set<string>;
@@ -243,7 +265,7 @@ function buildAdvogadosRecorrentes(
 /**
  * Constrói concentração geográfica
  */
-function buildConcentracaoGeografica(processos: any[]): {
+function buildConcentracaoGeografica(processos: ProcessoData[]): {
   concentracaoUF: Record<string, ConcentracaoGeografica>;
   concentracaoComarca: Record<string, ConcentracaoGeografica>;
 } {
@@ -354,7 +376,7 @@ function buildConcentracaoGeografica(processos: any[]): {
 /**
  * Constrói tendência temporal
  */
-function buildTendenciaTemporal(processos: any[]): TendenciaTemporal[] {
+function buildTendenciaTemporal(processos: ProcessoData[]): TendenciaTemporal[] {
   const temporalStats = new Map<string, {
     total: number;
     triangulacoes: number;

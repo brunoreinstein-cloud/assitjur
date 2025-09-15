@@ -76,19 +76,16 @@ function shouldIgnoreSheet(sheetName: string, headers: string[], dataRows: any[]
   
   // Ignora abas com nomes conhecidos de documentação
   if (IGNORED_SHEET_NAMES.some(ignored => normalizedName.includes(ignored))) {
-    console.log(`Ignoring sheet '${sheetName}' - matches documentation pattern`);
     return true;
   }
   
   // Ignora abas com muito poucos dados (menos de 2 linhas de dados)
   if (dataRows.length < 2) {
-    console.log(`Ignoring sheet '${sheetName}' - insufficient data (${dataRows.length} rows)`);
     return true;
   }
   
   // Ignora abas com muito poucas colunas (menos de 3 colunas)
   if (headers.length < 3) {
-    console.log(`Ignoring sheet '${sheetName}' - insufficient columns (${headers.length} columns)`);
     return true;
   }
   
@@ -116,7 +113,6 @@ async function detectExcelStructure(file: File): Promise<DetectedSheet[]> {
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
           
           if (jsonData.length === 0) {
-            console.log(`Skipping empty sheet: ${sheetName}`);
             return;
           }
           
@@ -126,7 +122,6 @@ async function detectExcelStructure(file: File): Promise<DetectedSheet[]> {
           );
           
           if (headers.length === 0) {
-            console.log(`Skipping sheet with no headers: ${sheetName}`);
             return;
           }
           
@@ -153,8 +148,6 @@ async function detectExcelStructure(file: File): Promise<DetectedSheet[]> {
           
           sheets.push(sheet);
         });
-        
-        console.log(`Processed ${sheets.length} sheets, ignored ${ignoredSheets.length} sheets:`, ignoredSheets);
         
         if (sheets.length === 0) {
           throw new Error('Nenhuma aba com dados válidos foi encontrada. Todas as abas foram ignoradas ou estão vazias.');
@@ -243,11 +236,8 @@ function detectSheetModel(headers: string[]): SheetModel {
   );
   
   if (!hasCNJ) {
-    console.log('No CNJ column detected, marking as ambiguous');
     return 'ambiguous';
   }
-  
-  console.log(`Detection scores - Testemunha: ${totalTestemunhaScore} (strong: ${strongTestemunhaScore}), Processo: ${totalProcessoScore} (strong: ${strongProcessoScore})`);
   
   // If we have strong indicators, prefer them
   if (strongTestemunhaScore > 0 && strongTestemunhaScore >= strongProcessoScore) {
@@ -264,7 +254,6 @@ function detectSheetModel(headers: string[]): SheetModel {
   } 
   
   // Default fallback - if we have CNJ but can't determine type, assume processo
-  console.log('Could not determine sheet type, defaulting to processo');
   return 'processo';
 }
 
