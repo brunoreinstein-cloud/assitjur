@@ -27,6 +27,13 @@ const Login = () => {
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
   const [showMagicLink, setShowMagicLink] = useState(false);
 
+  useEffect(() => {
+    if (window.location.hash.includes('access_token')) {
+      const cleanUrl = window.location.pathname + window.location.search;
+      window.history.replaceState(null, '', cleanUrl);
+    }
+  }, []);
+
   // Check for URL parameters
   const next = searchParams.get('next');
   const confirm = searchParams.get('confirm');
@@ -46,10 +53,6 @@ const Login = () => {
       }
     }
   }, [user, profile, navigate, next]);
-
-  const handleForgotPassword = () => {
-    navigate('/reset');
-  };
 
   const handleMagicLinkToggle = () => {
     setShowMagicLink(!showMagicLink);
@@ -172,7 +175,6 @@ const Login = () => {
                     <EmailPasswordForm
                       mode="signin"
                       onModeChange={handleModeChange}
-                      onForgotPassword={handleForgotPassword}
                     />
                     
                     {/* Magic Link Toggle */}
@@ -200,7 +202,6 @@ const Login = () => {
                     <EmailPasswordForm
                       mode="signup"
                       onModeChange={handleModeChange}
-                      onForgotPassword={handleForgotPassword}
                     />
                   </TabsContent>
                 </Tabs>
@@ -212,26 +213,26 @@ const Login = () => {
           <footer className="mt-8 text-center">
             <p className="text-xs text-muted-foreground">
               Dados tratados conforme{' '}
-              <button 
+              <Link
+                to="/lgpd"
                 className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm px-1"
-                aria-label="Abrir informações sobre LGPD"
               >
                 LGPD
-              </button>
+              </Link>
               {' • '}
-              <button 
+              <Link
+                to="/privacidade"
                 className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm px-1"
-                aria-label="Abrir política de privacidade"
               >
                 Política de Privacidade
-              </button>
+              </Link>
               {' • '}
-              <button 
+              <Link
+                to="/termos"
                 className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm px-1"
-                aria-label="Abrir termos de uso"
               >
                 Termos
-              </button>
+              </Link>
             </p>
           </footer>
         </div>

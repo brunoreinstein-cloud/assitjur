@@ -13,10 +13,10 @@ import { AlertBox } from '@/components/auth/AlertBox';
 import { PasswordStrength } from '@/components/auth/PasswordStrength';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { validatePassword, MIN_PASSWORD_LENGTH } from '@/utils/security/passwordPolicy';
+import { MIN_PASSWORD_LENGTH } from '@/utils/security/passwordPolicy';
 
 const confirmResetSchema = z.object({
-  password: z.string().min(MIN_PASSWORD_LENGTH, `Senha deve ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres`),
+  password: z.string().min(MIN_PASSWORD_LENGTH, `Mínimo de ${MIN_PASSWORD_LENGTH} caracteres`),
   confirmPassword: z.string(),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Senhas não conferem",
@@ -37,6 +37,12 @@ const ResetConfirm = () => {
   // Get token from URL fragments (Supabase auth uses hash fragments)
   const accessToken = searchParams.get('access_token');
   const refreshToken = searchParams.get('refresh_token');
+
+  useEffect(() => {
+    if (window.location.search.includes('access_token')) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
 
   const form = useForm<ConfirmResetFormData>({
     resolver: zodResolver(confirmResetSchema),
@@ -81,14 +87,7 @@ const ResetConfirm = () => {
   const handleUpdatePassword = async (data: ConfirmResetFormData) => {
     setIsLoading(true);
     
-    try {
-      const policy = await validatePassword(data.password);
-      if (!policy.valid) {
-        toast.error("Senha fraca", { description: policy.errors.join(' ') });
-        return;
-      }
-
-      
+    try {      
       if (!supabase) {
         // Mock password update for development
         toast.success("Senha atualizada!", {
@@ -240,6 +239,8 @@ const ResetConfirm = () => {
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
+                    aria-invalid={!!form.formState.errors.password}
+                    aria-describedby="reset-password-error"
                     {...form.register('password')}
                     className={form.formState.errors.password ? 'border-destructive pr-10' : 'pr-10'}
                   />
@@ -249,16 +250,18 @@ const ResetConfirm = () => {
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                    aria-pressed={showPassword}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      <EyeOff className="h-4 w-4 text-muted-foreground" aria-hidden="true" focusable="false" />
                     ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
+                      <Eye className="h-4 w-4 text-muted-foreground" aria-hidden="true" focusable="false" />
                     )}
                   </Button>
                 </div>
                 {form.formState.errors.password && (
-                  <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
+                  <p id="reset-password-error" className="text-sm text-destructive" role="alert" aria-live="polite">{form.formState.errors.password.message}</p>
                 )}
               </div>
 
@@ -275,6 +278,8 @@ const ResetConfirm = () => {
                     id="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
                     placeholder="••••••••"
+                    aria-invalid={!!form.formState.errors.confirmPassword}
+                    aria-describedby="reset-confirm-password-error"
                     {...form.register('confirmPassword')}
                     className={form.formState.errors.confirmPassword ? 'border-destructive pr-10' : 'pr-10'}
                   />
@@ -284,16 +289,18 @@ const ResetConfirm = () => {
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    aria-label={showConfirmPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                    aria-pressed={showConfirmPassword}
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      <EyeOff className="h-4 w-4 text-muted-foreground" aria-hidden="true" focusable="false" />
                     ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
+                      <Eye className="h-4 w-4 text-muted-foreground" aria-hidden="true" focusable="false" />
                     )}
                   </Button>
                 </div>
                 {form.formState.errors.confirmPassword && (
-                  <p className="text-sm text-destructive">{form.formState.errors.confirmPassword.message}</p>
+                  <p id="reset-confirm-password-error" className="text-sm text-destructive" role="alert" aria-live="polite">{form.formState.errors.confirmPassword.message}</p>
                 )}
               </div>
 

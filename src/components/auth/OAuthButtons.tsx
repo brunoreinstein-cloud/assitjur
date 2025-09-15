@@ -4,6 +4,7 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AUTH_CONFIG } from "@/config/auth";
+import { getEnv } from "@/lib/getEnv";
 
 interface OAuthButtonsProps {
   disabled?: boolean;
@@ -37,9 +38,8 @@ export const OAuthButtons = ({ disabled, next }: OAuthButtonsProps) => {
       }
 
       // Determine redirect URL based on configuration
-      const redirectTo = next 
-        ? `${window.location.origin}${next}`
-        : `${window.location.origin}/dados/mapa`;
+      const { siteUrl } = getEnv();
+      const redirectTo = next ? `${siteUrl}${next}` : `${siteUrl}/dados/mapa`;
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider,

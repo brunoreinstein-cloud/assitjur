@@ -13,24 +13,8 @@ interface PasswordRequirement {
 
 const requirements: PasswordRequirement[] = [
   {
-    label: 'Pelo menos 8 caracteres',
-    test: (password) => password.length >= 8
-  },
-  {
-    label: 'Contém letra maiúscula',
-    test: (password) => /[A-Z]/.test(password)
-  },
-  {
-    label: 'Contém letra minúscula',
-    test: (password) => /[a-z]/.test(password)
-  },
-  {
-    label: 'Contém número',
-    test: (password) => /[0-9]/.test(password)
-  },
-  {
-    label: 'Contém símbolo especial',
-    test: (password) => /[^A-Za-z0-9]/.test(password)
+    label: 'Pelo menos 6 caracteres',
+    test: (password) => password.length >= 6
   }
 ];
 
@@ -54,25 +38,8 @@ export const PasswordStrength = ({ password }: PasswordStrengthProps) => {
     const score = metRequirements.filter(req => req.met).length;
     const percentage = (score / requirements.length) * 100;
 
-    let strength: string;
-    let color: string;
-
-    if (score <= 1) {
-      strength = 'Muito fraca';
-      color = 'bg-red-500';
-    } else if (score <= 2) {
-      strength = 'Fraca';
-      color = 'bg-orange-500';
-    } else if (score <= 3) {
-      strength = 'Regular';
-      color = 'bg-yellow-500';
-    } else if (score <= 4) {
-      strength = 'Forte';
-      color = 'bg-green-500';
-    } else {
-      strength = 'Muito forte';
-      color = 'bg-green-600';
-    }
+    const strength = score >= 1 ? 'Forte' : 'Muito fraca';
+    const color = score >= 1 ? 'bg-green-500' : 'bg-red-500';
 
     return {
       score,
@@ -102,9 +69,9 @@ export const PasswordStrength = ({ password }: PasswordStrengthProps) => {
         {analysis.requirements.map((req, index) => (
           <div key={index} className="flex items-center gap-2 text-xs">
             {req.met ? (
-              <Check className="h-3 w-3 text-green-600" />
+              <Check className="h-3 w-3 text-green-600" aria-hidden="true" focusable="false" />
             ) : (
-              <X className="h-3 w-3 text-muted-foreground" />
+              <X className="h-3 w-3 text-muted-foreground" aria-hidden="true" focusable="false" />
             )}
             <span className={req.met ? 'text-green-600' : 'text-muted-foreground'}>
               {req.label}

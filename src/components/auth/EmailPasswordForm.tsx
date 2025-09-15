@@ -6,17 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Link } from "react-router-dom";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { validatePassword, MIN_PASSWORD_LENGTH } from "@/utils/security/passwordPolicy";
+import { MIN_PASSWORD_LENGTH } from "@/utils/security/passwordPolicy";
 import { ErrorBanner } from "@/components/common/ErrorBanner";
 import { useStatus } from "@/hooks/useStatus";
 import { ERROR_MESSAGES } from "@/utils/errorMessages";
 
 const loginSchema = z.object({
   email: z.string().email(ERROR_MESSAGES.INVALID_EMAIL),
-  password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
+  password: z.string().min(6, 'Mínimo de 6 caracteres'),
   rememberMe: z.boolean().optional()
 });
 
@@ -24,7 +25,7 @@ const signupSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').optional(),
   email: z.string().email(ERROR_MESSAGES.INVALID_EMAIL),
   password: z.string()
-    .min(MIN_PASSWORD_LENGTH, `Senha deve ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres`),
+    .min(MIN_PASSWORD_LENGTH, `Mínimo de ${MIN_PASSWORD_LENGTH} caracteres`),
   confirmPassword: z.string(),
   acceptTerms: z.boolean().refine(val => val, 'Você deve aceitar os termos')
 }).refine(data => data.password === data.confirmPassword, {
@@ -38,13 +39,11 @@ type SignupFormData = z.infer<typeof signupSchema>;
 interface EmailPasswordFormProps {
   mode: 'signin' | 'signup';
   onModeChange: (mode: 'signin' | 'signup') => void;
-  onForgotPassword: () => void;
 }
 
 export const EmailPasswordForm = ({
   mode,
-  onModeChange,
-  onForgotPassword
+  onModeChange
 }: EmailPasswordFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -123,12 +122,6 @@ export const EmailPasswordForm = ({
     setFormError(null);
 
     try {
-      const policy = await validatePassword(data.password);
-      if (!policy.valid) {
-        toast.error("Senha fraca", { description: policy.errors.join(' ') });
-        return;
-      }
-
       const { error } = await signUp(data.email, data.password, data.name);
 
       if (error) {
@@ -205,6 +198,8 @@ export const EmailPasswordForm = ({
               id="password"
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
+              aria-invalid={!!signupForm.formState.errors.password}
+              aria-describedby="signup-password-error"
               {...signupForm.register('password')}
               className={signupForm.formState.errors.password ? 'border-destructive pr-10' : 'pr-10'}
             />
@@ -214,16 +209,18 @@ export const EmailPasswordForm = ({
               size="sm"
               className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+              aria-pressed={showPassword}
             >
               {showPassword ? (
-                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                <EyeOff className="h-4 w-4 text-muted-foreground" aria-hidden="true" focusable="false" />
               ) : (
-                <Eye className="h-4 w-4 text-muted-foreground" />
+                <Eye className="h-4 w-4 text-muted-foreground" aria-hidden="true" focusable="false" />
               )}
             </Button>
           </div>
           {signupForm.formState.errors.password && (
-            <p className="text-sm text-destructive" role="alert" aria-live="polite">{signupForm.formState.errors.password.message}</p>
+            <p id="signup-password-error" className="text-sm text-destructive" role="alert" aria-live="polite">{signupForm.formState.errors.password.message}</p>
           )}
         </div>
 
@@ -235,6 +232,8 @@ export const EmailPasswordForm = ({
               id="confirmPassword"
               type={showConfirmPassword ? 'text' : 'password'}
               placeholder="••••••••"
+              aria-invalid={!!signupForm.formState.errors.confirmPassword}
+              aria-describedby="signup-confirm-password-error"
               {...signupForm.register('confirmPassword')}
               className={signupForm.formState.errors.confirmPassword ? 'border-destructive pr-10' : 'pr-10'}
             />
@@ -244,16 +243,18 @@ export const EmailPasswordForm = ({
               size="sm"
               className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              aria-label={showConfirmPassword ? 'Ocultar senha' : 'Mostrar senha'}
+              aria-pressed={showConfirmPassword}
             >
               {showConfirmPassword ? (
-                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                <EyeOff className="h-4 w-4 text-muted-foreground" aria-hidden="true" focusable="false" />
               ) : (
-                <Eye className="h-4 w-4 text-muted-foreground" />
+                <Eye className="h-4 w-4 text-muted-foreground" aria-hidden="true" focusable="false" />
               )}
             </Button>
           </div>
           {signupForm.formState.errors.confirmPassword && (
-            <p className="text-sm text-destructive" role="alert" aria-live="polite">{signupForm.formState.errors.confirmPassword.message}</p>
+            <p id="signup-confirm-password-error" className="text-sm text-destructive" role="alert" aria-live="polite">{signupForm.formState.errors.confirmPassword.message}</p>
           )}
         </div>
 
@@ -267,13 +268,13 @@ export const EmailPasswordForm = ({
           />
           <Label htmlFor="acceptTerms" className="text-sm leading-relaxed cursor-pointer">
             Li e aceito os{' '}
-            <button type="button" className="text-primary hover:underline">
+            <Link to="/termos" className="text-primary hover:underline">
               Termos de Uso
-            </button>
+            </Link>
             {' '}e a{' '}
-            <button type="button" className="text-primary hover:underline">
+            <Link to="/privacidade" className="text-primary hover:underline">
               Política de Privacidade
-            </button>
+            </Link>
           </Label>
         </div>
         {signupForm.formState.errors.acceptTerms && (
@@ -337,31 +338,37 @@ export const EmailPasswordForm = ({
       {/* Password */}
       <div className="space-y-2">
         <Label htmlFor="password">Senha</Label>
-        <div className="relative">
-          <Input
-            id="password"
-            type={showPassword ? 'text' : 'password'}
-            placeholder="••••••••"
-            {...loginForm.register('password')}
-            className={loginForm.formState.errors.password ? 'border-destructive pr-10' : 'pr-10'}
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? (
-              <EyeOff className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <Eye className="h-4 w-4 text-muted-foreground" />
-            )}
-          </Button>
+        <div className="flex flex-col sm:flex-row items-center gap-2">
+          <div className="relative flex-1">
+            <Input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              aria-invalid={!!loginForm.formState.errors.password}
+              aria-describedby="password-help"
+              {...loginForm.register('password')}
+              className={loginForm.formState.errors.password ? 'border-destructive pr-10' : 'pr-10'}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+              aria-pressed={showPassword}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4 text-muted-foreground" aria-hidden="true" focusable="false" />
+              ) : (
+                <Eye className="h-4 w-4 text-muted-foreground" aria-hidden="true" focusable="false" />
+              )}
+            </Button>
+          </div>
+          <span id="password-help" role="alert" className="text-sm text-destructive whitespace-nowrap">
+            {loginForm.formState.errors.password?.message}
+          </span>
         </div>
-        {loginForm.formState.errors.password && (
-          <p className="text-sm text-destructive" role="alert" aria-live="polite">{loginForm.formState.errors.password.message}</p>
-        )}
       </div>
 
       {/* Remember Me */}
@@ -377,13 +384,12 @@ export const EmailPasswordForm = ({
           </Label>
         </div>
         
-        <button
-          type="button"
-          onClick={onForgotPassword}
+        <Link
+          to="/reset"
           className="text-sm text-primary hover:underline"
         >
           Esqueci minha senha
-        </button>
+        </Link>
       </div>
 
       {/* Submit Button */}

@@ -9,6 +9,7 @@ import { ArrowLeft, Mail, Loader2, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/useDebounce";
+import { getEnv } from "@/lib/getEnv";
 
 const magicLinkSchema = z.object({
   email: z.string().email('Formato de email inválido')
@@ -60,10 +61,11 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
         return;
       }
 
+      const { siteUrl } = getEnv();
       const { error } = await supabase.auth.signInWithOtp({
         email: data.email,
         options: {
-          emailRedirectTo: `${window.location.origin}/`
+          emailRedirectTo: `${siteUrl}/`
         }
       });
 
