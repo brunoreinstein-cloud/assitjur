@@ -1773,7 +1773,24 @@ export type Database = {
         }
         Relationships: []
       }
+      v_arpa_by_month_secure: {
+        Row: {
+          arpa: number | null
+          month: string | null
+        }
+        Relationships: []
+      }
       v_burn_runway: {
+        Row: {
+          cogs: number | null
+          month: string | null
+          net_cash_flow: number | null
+          opex: number | null
+          revenue: number | null
+        }
+        Relationships: []
+      }
+      v_burn_runway_secure: {
         Row: {
           cogs: number | null
           month: string | null
@@ -1792,7 +1809,23 @@ export type Database = {
         }
         Relationships: []
       }
+      v_gross_margin_secure: {
+        Row: {
+          cogs: number | null
+          gm_pct: number | null
+          month: string | null
+          revenue: number | null
+        }
+        Relationships: []
+      }
       v_mrr_by_month: {
+        Row: {
+          month: string | null
+          revenue: number | null
+        }
+        Relationships: []
+      }
+      v_mrr_by_month_secure: {
         Row: {
           month: string | null
           revenue: number | null
@@ -2043,6 +2076,10 @@ export type Database = {
       gtrgm_out: {
         Args: { "": unknown }
         Returns: unknown
+      }
+      has_financial_access: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       is_admin_simple: {
         Args: { check_user_id: string }
