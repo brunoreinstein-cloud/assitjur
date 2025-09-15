@@ -1773,24 +1773,7 @@ export type Database = {
         }
         Relationships: []
       }
-      v_arpa_by_month_secure: {
-        Row: {
-          arpa: number | null
-          month: string | null
-        }
-        Relationships: []
-      }
       v_burn_runway: {
-        Row: {
-          cogs: number | null
-          month: string | null
-          net_cash_flow: number | null
-          opex: number | null
-          revenue: number | null
-        }
-        Relationships: []
-      }
-      v_burn_runway_secure: {
         Row: {
           cogs: number | null
           month: string | null
@@ -1809,23 +1792,7 @@ export type Database = {
         }
         Relationships: []
       }
-      v_gross_margin_secure: {
-        Row: {
-          cogs: number | null
-          gm_pct: number | null
-          month: string | null
-          revenue: number | null
-        }
-        Relationships: []
-      }
       v_mrr_by_month: {
-        Row: {
-          month: string | null
-          revenue: number | null
-        }
-        Relationships: []
-      }
-      v_mrr_by_month_secure: {
         Row: {
           month: string | null
           revenue: number | null
@@ -1897,6 +1864,13 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_arpa_by_month_secure: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          arpa: number
+          month: string
+        }[]
+      }
       get_beta_signups_secure: {
         Args: { p_limit?: number; p_offset?: number }
         Returns: {
@@ -1910,6 +1884,16 @@ export type Database = {
           outro_texto: string
           total_count: number
           utm: Json
+        }[]
+      }
+      get_burn_runway_secure: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          cogs: number
+          month: string
+          net_cash_flow: number
+          opex: number
+          revenue: number
         }[]
       }
       get_current_user_org: {
@@ -1937,6 +1921,22 @@ export type Database = {
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_gross_margin_secure: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          cogs: number
+          gm_pct: number
+          month: string
+          revenue: number
+        }[]
+      }
+      get_mrr_by_month_secure: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          month: string
+          revenue: number
+        }[]
       }
       get_next_version_number: {
         Args: { p_org_id: string }
