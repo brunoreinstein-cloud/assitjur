@@ -4,7 +4,7 @@ import { ArrowDown, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NeedsForm } from './NeedsForm';
 import { track } from '@/lib/track';
-import heroDashboard from '@/assets/hero-dashboard.png';
+import heroAssistJurCustom from '@/assets/hero-assistjur-custom.png';
 
 interface ImprovedHeroProps {
   onSignup?: (data: { email: string; needs: string[]; otherNeed?: string }) => void;
@@ -107,8 +107,8 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
               {/* Main Dashboard Image */}
               <div className="relative overflow-hidden rounded-2xl shadow-2xl">
                 <img 
-                  src={heroDashboard} 
-                  alt="Dashboard AssistJur.IA - Interface de Análise Jurídica com IA"
+                  src={heroAssistJurCustom} 
+                  alt="AssistJur.IA - Inteligência Artificial Estratégica para Gestão do Contencioso"
                   className="w-full h-auto object-cover"
                   loading="lazy"
                 />
