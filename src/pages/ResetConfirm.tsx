@@ -40,11 +40,7 @@ const ResetConfirm = () => {
 
   useEffect(() => {
     if (window.location.hash.includes('access_token')) {
-      window.history.replaceState(
-        null,
-        '',
-        `${window.location.pathname}${window.location.search}`
-      );
+      window.location.hash = '';
     }
   }, []);
 
