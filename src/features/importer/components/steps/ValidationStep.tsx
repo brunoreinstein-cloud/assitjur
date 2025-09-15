@@ -14,6 +14,8 @@ import { validateCNJ } from '@/lib/validation/unified-cnj';
 import { intelligentValidateAndCorrect } from '@/lib/importer/intelligent-corrector';
 import { ReviewUpdateButton } from '@/components/admin/ReviewUpdateButton';
 import { ValidationTestButton } from '@/components/importer/ValidationTestButton';
+import { logger } from '@/lib/logger';
+import { ErrorHandler } from '@/lib/error-handling';
 
 export function ValidationStep() {
   const { 
@@ -48,7 +50,7 @@ export function ValidationStep() {
         errorRows: validationResult.summary.errors,
         warningRows: validationResult.summary.warnings
       };
-      console.log('📊 Detailed Validation Stats:', stats);
+      logger.info('Detailed Validation Stats', stats, 'ValidationStep');
     }
   }, [validationResult, corrections]);
 
@@ -96,7 +98,7 @@ export function ValidationStep() {
         description: `${result.summary.analyzed} registros analisados, ${result.summary.valid} válidos, ${result.intelligentCorrections?.filter(c => c.corrections.length > 0).length || 0} correções sugeridas`,
       });
       
-      console.log('🔍 Final Validation Summary:', {
+      logger.info('Final Validation Summary', {
         originalFile: file.name,
         fileSize: file.size,
         sheetsDetected: session.sheets.length,
@@ -106,15 +108,11 @@ export function ValidationStep() {
         warnings: result.summary.warnings,
         correctionsAvailable: result.intelligentCorrections?.length || 0,
         correctionsWithChanges: result.intelligentCorrections?.filter(c => c.corrections.length > 0).length || 0
-      });
+      }, 'ValidationStep');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro na validação';
-      setError(errorMessage);
-      toast({
-        title: "Erro na validação",
-        description: errorMessage,
-        variant: "destructive"
-      });
+      const handledError = ErrorHandler.handleAndNotify(error, 'ValidationStep.performValidation');
+      setError(handledError.userMessage || errorMessage);
     } finally {
       setIsProcessing(false);
     }
@@ -201,13 +199,11 @@ export function ValidationStep() {
       });
       
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      console.error('Erro ao aplicar correções:', error);
-      toast({
-        title: "Erro ao aplicar correções",
-        description: `Falha no processamento: ${errorMessage}`,
-        variant: "destructive"
-      });
+      const handledError = ErrorHandler.handleAndNotify(error, 'ValidationStep.handleApplyCorrections');
+      logger.error('Erro ao aplicar correções', { 
+        error: handledError.message,
+        correctionsCount: corrections.length
+      }, 'ValidationStep');
     }
   };
 

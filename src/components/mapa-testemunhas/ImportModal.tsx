@@ -35,6 +35,7 @@ import type { WorkSheet } from 'xlsx';
 import { DataState, DataStatus } from "@/components/ui/data-state";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { useBeforeUnload } from "@/hooks/useBeforeUnload";
+import { ErrorHandler, withErrorHandling } from "@/lib/error-handling";
 
 // Utils
 const onlyDigits = (s: any) => String(s ?? "").replace(/\D/g, "");
@@ -222,7 +223,7 @@ const ErrorReportGenerator: React.FC<ErrorReportGeneratorProps> = ({
   const [cnjFailed, setCnjFailed] = useState(false);
 
   const generateCSVReport = () => {
-    try {
+    withErrorHandling(async () => {
       const headers = ['Linha', 'Coluna', 'Tipo', 'Mensagem', 'Valor'];
       const rows = [
         headers.join(','),
@@ -258,14 +259,7 @@ const ErrorReportGenerator: React.FC<ErrorReportGeneratorProps> = ({
         title: "Relatório CSV gerado",
         description: "Download iniciado com sucesso"
       });
-    } catch (error) {
-      console.error('Error generating CSV report:', error);
-      toast({
-        title: "Erro ao gerar relatório",
-        description: "Falha na geração do arquivo CSV",
-        variant: "destructive"
-      });
-    }
+    }, 'ImportModal.generateCSVReport');
   };
 
   return (
@@ -459,7 +453,7 @@ export function ImportModal() {
   };
 
   const processFileValidation = async (file: File) => {
-    try {
+    await withErrorHandling(async () => {
       const { porProcesso, porTestemunha, errors, warnings } = await processExcelFile(file);
 
       const totalRows = porProcesso.length + porTestemunha.length;
@@ -476,17 +470,10 @@ export function ImportModal() {
 
       setValidationResults(validationResults);
       setCurrentStep('validation');
-    } catch (error: any) {
-      console.error('Validation error:', error);
-      toast({
-        title: "Erro na validação",
-        description: error.message || "Falha ao processar arquivo",
-        variant: "destructive"
-      });
-    } finally {
+    }, 'ImportModal.processFileValidation').finally(() => {
       setIsProcessing(false);
       setUploadProgress(100);
-    }
+    });
   };
 
   const processExcelFile = async (

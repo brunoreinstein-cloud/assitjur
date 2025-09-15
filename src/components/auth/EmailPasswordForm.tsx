@@ -14,6 +14,7 @@ import { MIN_PASSWORD_LENGTH } from "@/utils/security/passwordPolicy";
 import { ErrorBanner } from "@/components/common/ErrorBanner";
 import { useStatus } from "@/hooks/useStatus";
 import { ERROR_MESSAGES } from "@/utils/errorMessages";
+import { ErrorHandler } from "@/lib/error-handling";
 
 const loginSchema = z.object({
   email: z.string().email(ERROR_MESSAGES.INVALID_EMAIL),
@@ -106,12 +107,9 @@ export const EmailPasswordForm = ({
       // Redirect will be handled by auth state change
 
     } catch (error: any) {
-      console.error('Login error:', error);
-      const msg = error?.message || ERROR_MESSAGES.NOT_FOUND;
+      const handledError = ErrorHandler.handleAndNotify(error, 'EmailPasswordForm.handleSignIn');
+      const msg = handledError.userMessage || ERROR_MESSAGES.NOT_FOUND;
       setFormError(msg);
-      toast.error("Erro no login", {
-        description: msg
-      });
     } finally {
       setIsLoading(false);
     }

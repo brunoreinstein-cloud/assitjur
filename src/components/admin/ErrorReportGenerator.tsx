@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Download, FileText, Table } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { withErrorHandling } from '@/lib/error-handling';
 
 interface ValidationError {
   row: number;
@@ -41,7 +42,7 @@ const ErrorReportGenerator: React.FC<ErrorReportGeneratorProps> = ({
 }) => {
 
   const generateCSVReport = () => {
-    try {
+    withErrorHandling(async () => {
       const headers = ['Linha', 'Coluna', 'Tipo', 'Mensagem', 'Valor'];
       const rows = [
         headers.join(','),
@@ -111,18 +112,11 @@ const ErrorReportGenerator: React.FC<ErrorReportGeneratorProps> = ({
         title: "Relatório CSV gerado",
         description: "Download iniciado com sucesso"
       });
-    } catch (error) {
-      console.error('Error generating CSV report:', error);
-      toast({
-        title: "Erro ao gerar relatório",
-        description: "Falha na geração do arquivo CSV",
-        variant: "destructive"
-      });
-    }
+    }, 'ErrorReportGenerator.generateCSVReport');
   };
 
   const generateDetailedReport = () => {
-    try {
+    withErrorHandling(async () => {
       const reportContent = `
 RELATÓRIO DE VALIDAÇÃO DE DADOS
 ================================
@@ -203,14 +197,7 @@ Relatório gerado automaticamente pelo sistema AssistJur.IA
         title: "Relatório detalhado gerado",
         description: "Download iniciado com sucesso"
       });
-    } catch (error) {
-      console.error('Error generating detailed report:', error);
-      toast({
-        title: "Erro ao gerar relatório",
-        description: "Falha na geração do relatório detalhado",
-        variant: "destructive"
-      });
-    }
+    }, 'ErrorReportGenerator.generateDetailedReport');
   };
 
   const getErrorTypeCount = (type: 'error' | 'warning') => {
