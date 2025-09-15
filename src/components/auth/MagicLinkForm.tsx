@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getEnv } from "@/lib/getEnv";
+import { ErrorHandler } from "@/lib/error-handling";
 
 const magicLinkSchema = z.object({
   email: z.string().email('Formato de email inválido')
@@ -70,7 +71,7 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
       });
 
       if (error) {
-        console.error('Magic link error:', error);
+        const handledError = ErrorHandler.handle(error, 'MagicLinkForm.signInWithOtp');
         
         if (error.message.includes('rate') || error.message.includes('limit') || error?.status === 429) {
           toast.error('Limite de tentativas atingido', {
@@ -82,7 +83,7 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
           });
         } else {
           toast.error("Erro ao enviar link", {
-            description: "Não foi possível enviar o link de acesso. Tente novamente."
+            description: handledError.userMessage || "Não foi possível enviar o link de acesso. Tente novamente."
           });
         }
         return;
@@ -95,16 +96,14 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
       setEmailSent(true);
 
     } catch (error: any) {
-      console.error('Unexpected magic link error:', error);
+      const handledError = ErrorHandler.handleAndNotify(error, 'MagicLinkForm.handleSendMagicLink');
+      
       if (error?.status === 429) {
         toast.error('Muitas tentativas', {
           description: 'Tente novamente mais tarde.'
         });
-      } else {
-        toast.error("Erro inesperado", {
-          description: "Ocorreu um erro ao enviar o link. Tente novamente em alguns instantes."
-        });
       }
+      // Other error notifications handled by ErrorHandler.handleAndNotify
     } finally {
       setIsLoading(false);
     }

@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import type { ImportSession, ValidationResult } from '@/lib/importer/types';
+import { logger } from '@/lib/logger';
+import { ErrorHandler } from '@/lib/error-handling';
 
 export type ImportStep = 'upload' | 'validation' | 'preview' | 'publish';
 
@@ -106,14 +108,17 @@ export const useImportStore = create<ImportState>((set, get) => ({
         isProcessing: false
       });
       
-      console.log('Created version:', data);
+      logger.info('Version created successfully', {
+        versionId: data.versionId,
+        number: data.number
+      }, 'ImportStore');
     } catch (error) {
-      console.error('Failed to create version:', error);
+      const handledError = ErrorHandler.handle(error, 'ImportStore.createNewVersion');
       set({ 
-        error: 'Falha ao criar nova versão', 
+        error: handledError.userMessage || 'Falha ao criar nova versão', 
         isProcessing: false 
       });
-      throw error;
+      throw handledError;
     }
   },
   
@@ -133,17 +138,22 @@ export const useImportStore = create<ImportState>((set, get) => ({
       
       if (error) throw error;
       
-      console.log('Published version', data.number, 'at', data.publishedAt);
+      logger.info('Version published successfully', {
+        versionId: state.currentVersionId,
+        number: data.number,
+        publishedAt: data.publishedAt
+      }, 'ImportStore');
+      
       set({ isProcessing: false });
       
       return data;
     } catch (error) {
-      console.error('Failed to publish version:', error);
+      const handledError = ErrorHandler.handle(error, 'ImportStore.publishCurrentVersion');
       set({ 
-        error: 'Falha ao publicar versão', 
+        error: handledError.userMessage || 'Falha ao publicar versão', 
         isProcessing: false 
       });
-      throw error;
+      throw handledError;
     }
   },
   

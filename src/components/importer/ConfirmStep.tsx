@@ -15,6 +15,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import type { ImportSession, ValidationResult } from '@/lib/importer/types';
+import { ErrorHandler, withErrorHandling } from '@/lib/error-handling';
 
 interface ConfirmStepProps {
   session: ImportSession;
@@ -71,12 +72,8 @@ export function ConfirmStep({ session, validationResult, onComplete }: ConfirmSt
       }, 2000);
 
     } catch (error: any) {
-      console.error('Import error:', error);
-      toast({
-        title: "Erro na importação",
-        description: error.message || "Falha ao importar dados",
-        variant: "destructive"
-      });
+      const handledError = ErrorHandler.handleAndNotify(error, 'ConfirmStep.handleImport');
+      // Error notification is handled by ErrorHandler.handleAndNotify
     } finally {
       clearInterval(progressInterval);
       setIsImporting(false);
