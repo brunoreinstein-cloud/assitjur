@@ -345,7 +345,7 @@ export const EmailPasswordForm = ({
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
               aria-invalid={!!loginForm.formState.errors.password}
-              aria-describedby="password-help"
+              aria-describedby={loginForm.formState.errors.password ? 'password-help' : undefined}
               {...loginForm.register('password')}
               className={loginForm.formState.errors.password ? 'border-destructive pr-10' : 'pr-10'}
             />
