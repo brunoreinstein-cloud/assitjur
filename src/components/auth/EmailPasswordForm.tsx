@@ -428,3 +428,4 @@ export const EmailPasswordForm = ({
     </form>
   );
 };
+
