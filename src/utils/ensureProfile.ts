@@ -21,7 +21,10 @@ export async function ensureProfile(
 
     if (error) {
       console.error('Error fetching profile:', error);
-      // Continue to create new profile if fetch fails
+      // If it's not a simple "not found" error, return null
+      if (error.code !== 'PGRST116') {
+        return null;
+      }
     }
 
     if (profile) {

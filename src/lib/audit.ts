@@ -14,7 +14,9 @@ export async function logAudit(
     user_id: actor,
     action,
     result: 'SUCCESS',
-    metadata: { ...masked, resourceId, resource }
+    table_name: 'system',
+    resource: resource,
+    metadata: { ...masked, resourceId }
   });
   if (error) {
     console.error('logAudit error', error);

@@ -2021,6 +2021,10 @@ export type Database = {
         Args: { "": unknown }
         Returns: unknown
       }
+      is_admin_user: {
+        Args: { check_user_id: string }
+        Returns: boolean
+      }
       is_org_admin_simple: {
         Args: { check_org_id: string }
         Returns: boolean

@@ -108,6 +108,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email,
           action,
           result,
+          table_name: 'auth',
+          resource: 'authentication',
           ip_address: null, // Would need server-side implementation for real IP
           user_agent: navigator.userAgent,
           metadata: metadata || {}
