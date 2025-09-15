@@ -10,7 +10,7 @@ export interface Citation {
   link: string;
 }
 
-export interface ProcessoRow {
+export interface AssistJurProcessoRow {
   cnj: string;
   status?: string;
   fase?: string;
@@ -82,7 +82,7 @@ export interface ValidationReport {
   summary: ValidationSummary;
   issues: ValidationIssue[];
   samples: {
-    processos: ProcessoRow[];
+    processos: AssistJurProcessoRow[];
     testemunhas: TestemunhaRow[];
   };
   compliance: {

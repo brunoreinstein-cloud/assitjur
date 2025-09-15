@@ -29,8 +29,8 @@ export const TestemunhaRowSchema = z.object({
   reu_nome: z.string().optional().nullable(),
 });
 
-export type ProcessoRow = z.infer<typeof ProcessoRowSchema>;
-export type TestemunhaRow = z.infer<typeof TestemunhaRowSchema>;
+export type ImporterProcessoRow = z.infer<typeof ProcessoRowSchema>;
+export type ImporterTestemunhaRow = z.infer<typeof TestemunhaRowSchema>;
 
 // Tipos para detecção e mapeamento  
 export type SheetModel = 'processo' | 'testemunha' | 'ambiguous' | 'ignore';
@@ -79,8 +79,8 @@ export interface ValidationResult {
   summary: ValidationSummary;
   issues: ValidationIssue[];
   normalizedData: {
-    processos?: ProcessoRow[];
-    testemunhas?: TestemunhaRow[];
+    processos?: ImporterProcessoRow[];
+    testemunhas?: ImporterTestemunhaRow[];
   };
   downloadUrls?: {
     fixedXlsx: string;

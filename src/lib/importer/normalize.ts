@@ -1,4 +1,4 @@
-import { ProcessoRow, TestemunhaRow, DetectedSheet, OrgSettings } from './types';
+import { ImporterProcessoRow, ImporterTestemunhaRow, DetectedSheet, OrgSettings } from './types';
 import Papa from 'papaparse';
 import { validateCNJ, cleanCNJ } from '@/lib/validation/unified-cnj';
 import { resolveFieldName } from '@/etl/synonyms';
@@ -49,7 +49,7 @@ function normalizeProcessoData(
   sheet: DetectedSheet, 
   rawData: any[], 
   orgSettings: OrgSettings | null
-): ProcessoRow[] {
+): ImporterProcessoRow[] {
   const headerMap = mapHeaders(sheet.headers, 'processo');
   
   return rawData.map((row, index) => {
@@ -68,8 +68,8 @@ function normalizeProcessoData(
     const cnjValidation = validateCNJ(cnjRaw, 'correction');
     const processedCNJ = cnjValidation.cleaned;
     
-    // Build ProcessoRow object
-    const processo: ProcessoRow = {
+    // Build ImporterProcessoRow object
+    const processo: ImporterProcessoRow = {
       cnj: processedCNJ,
       cnj_digits: cleanCNJ(processedCNJ),
       reclamante_nome: mapped.reclamante_nome || '',
@@ -100,7 +100,7 @@ function normalizeTestemunhaData(
   sheet: DetectedSheet, 
   rawData: any[], 
   orgSettings: OrgSettings | null
-): TestemunhaRow[] {
+): ImporterTestemunhaRow[] {
   const headerMap = mapHeaders(sheet.headers, 'testemunha');
   
   return rawData.map((row) => {
@@ -187,7 +187,7 @@ export async function normalizeSheetData(
   file: File,
   sheet: DetectedSheet,
   orgSettings: OrgSettings | null = null
-): Promise<{ processos?: ProcessoRow[]; testemunhas?: TestemunhaRow[] }> {
+): Promise<{ processos?: ImporterProcessoRow[]; testemunhas?: ImporterTestemunhaRow[] }> {
   
   const rawData = await loadRawData(file, sheet);
   
