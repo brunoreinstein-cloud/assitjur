@@ -9,8 +9,8 @@ export const BRAND = {
   fullName: "AssistJur.IA - Assistente de Testemunhas",
 
   logo: {
-    light: "/logos/assistjur-logo-leaf.png",
-    dark: "/logos/assistjur-logo-leaf.png", // Same logo for both themes
+    light: "/logos/assistjur-logo.png",
+    dark: "/logos/assistjur-logo.png", // Same logo for both themes
     mark: "/logos/assistjur-icon.png", // Square icon version
   },
 
