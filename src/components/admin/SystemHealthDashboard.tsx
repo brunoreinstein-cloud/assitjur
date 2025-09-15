@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { observability } from '@/lib/observability';
 import { TestUtils } from '@/lib/testing-utilities';
+import { SecurityStatusBanner } from '@/components/security/SecurityStatusBanner';
 
 interface SystemMetrics {
   errors: {
@@ -147,6 +148,9 @@ export function SystemHealthDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Security Status Banner */}
+      <SecurityStatusBanner />
+      
       {/* Header com status geral */}
       <Card>
         <CardHeader>

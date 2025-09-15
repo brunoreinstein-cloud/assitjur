@@ -7,13 +7,34 @@ const PUBLISHABLE_KEY = Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
 const RATE_LIMIT_MAX = Number(Deno.env.get("RATE_LIMIT_MAX") ?? "20");
 const RATE_LIMIT_WINDOW_MS = Number(Deno.env.get("RATE_LIMIT_WINDOW_MS") ?? "60000");
 
+// Enhanced CORS configuration for production security
+const ALLOWED_ORIGINS = [
+  'https://c19fd3c7-1955-4ba3-bf12-37fcb264235a.lovableproject.com',
+  'http://localhost:3000',
+  'http://localhost:5173'
+];
+
 export const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Origin": "*", // Will be replaced by secure CORS function
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-request-id",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
+  "Access-Control-Max-Age": "86400",
   "Content-Type": "application/json",
-  Vary: "Origin"
+  "Vary": "Origin",
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "X-XSS-Protection": "1; mode=block",
+  "Referrer-Policy": "strict-origin-when-cross-origin"
 } as const;
+
+export function getSecureCorsHeaders(origin?: string): Record<string, string> {
+  const isAllowedOrigin = origin && ALLOWED_ORIGINS.includes(origin);
+  
+  return {
+    ...corsHeaders,
+    "Access-Control-Allow-Origin": isAllowedOrigin ? origin : ALLOWED_ORIGINS[0]
+  };
+}
 
 export { validateJWT };
 
