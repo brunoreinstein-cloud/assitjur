@@ -136,11 +136,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             try {
               let profileData = await fetchProfile(session.user.id);
               if (!profileData) {
+                // Use the safe database function to create profile
                 profileData = (await ensureProfile(session.user)) as any;
+                if (!profileData) {
+                  console.warn('Profile creation failed during auth state change');
+                  setProfile(null);
+                  setLoading(false);
+                  return;
+                }
               }
               setProfile(profileData as UserProfile);
               setLoading(false);
             } catch (error) {
+              console.error('Profile error during auth state change:', error);
               if (AuthErrorHandler.isAuthError(error)) {
                 await AuthErrorHandler.handleAuthError(error, { 
                   showNotification: false // Avoid notification spam on initial load
@@ -148,6 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               } else {
                 logError('Profile fetch error', { error }, 'useAuth');
               }
+              setProfile(null);
               setLoading(false);
             }
           }, 0);
@@ -181,11 +190,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             try {
               let profileData = await fetchProfile(session.user.id);
               if (!profileData) {
+                // Use the safe database function to create profile
                 profileData = (await ensureProfile(session.user)) as any;
+                if (!profileData) {
+                  console.warn('Profile creation failed during session init');
+                  setProfile(null);
+                  setLoading(false);
+                  return;
+                }
               }
               setProfile(profileData as UserProfile);
               setLoading(false);
             } catch (error) {
+              console.error('Profile error during session init:', error);
               if (AuthErrorHandler.isAuthError(error)) {
                 await AuthErrorHandler.handleAuthError(error, { 
                   showNotification: false
@@ -193,6 +210,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               } else {
                 logError('Profile fetch error in session init', { error }, 'useAuth');
               }
+              setProfile(null);
               setLoading(false);
             }
           }, 0);
@@ -322,8 +340,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         );
 
         if (!profileData) {
-          await logAuthAttempt(email, 'login', 'failure', { role, error: 'Profile not found' });
-          return { error: { message: 'Perfil de usuário não encontrado.' } };
+          await logAuthAttempt(email, 'login', 'failure', { role, error: 'Profile creation failed' });
+          return { error: { message: 'Não foi possível criar ou recuperar o perfil de usuário. Tente novamente ou contate o suporte.' } };
         }
 
         if (!profileData.is_active) {
@@ -390,10 +408,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data.user) {
-        await ensureProfile(data.user, 'VIEWER', orgId);
+        try {
+          await ensureProfile(data.user, 'VIEWER', orgId);
+          await logAuthAttempt(email, 'signup', 'success', {});
+        } catch (profileError) {
+          console.error('Profile creation error during signup:', profileError);
+          await logAuthAttempt(email, 'signup', 'partial_success', { 
+            message: 'User created but profile creation failed' 
+          });
+          // Don't fail the signup completely if profile creation fails
+        }
+      } else {
+        await logAuthAttempt(email, 'signup', 'success', {});
       }
-
-      await logAuthAttempt(email, 'signup', 'success', {});
       return { error: null };
     } catch (error: any) {
       await logAuthAttempt(email, 'signup', 'failure', { error: error.message });

@@ -3,8 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { UserRole, UserProfile } from '@/hooks/useAuth';
 
 /**
- * Ensures a profile exists for the given user. If none exists, it will be
- * created. Optionally associates the profile with an organization.
+ * Ensures a profile exists for the given user using the safe database function.
  */
 export async function ensureProfile(
   user: User,
@@ -12,72 +11,21 @@ export async function ensureProfile(
   organizationId?: string
 ): Promise<UserProfile | null> {
   try {
-    // First try to get existing profile with better error handling
+    // Use the new safe database function to create/get profile
     const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle(); // Use maybeSingle() instead of single() to avoid coercion errors
+      .rpc('ensure_user_profile', {
+        user_uuid: user.id,
+        user_email: user.email ?? '',
+        user_role: role,
+        org_id: organizationId || null
+      });
 
     if (error) {
-      console.error('Error fetching profile:', error);
-      // If it's not a simple "not found" error, return null
-      if (error.code !== 'PGRST116') {
-        return null;
-      }
-    }
-
-    if (profile) {
-      // Update organization if needed and not set
-      if (!profile.organization_id && organizationId) {
-        const { data: updated, error: updateError } = await supabase
-          .from('profiles')
-          .update({ organization_id: organizationId })
-          .eq('id', profile.id)
-          .select()
-          .maybeSingle();
-        
-        if (updateError) {
-          console.error('Error updating profile:', updateError);
-          return profile; // Return original profile if update fails
-        }
-        return updated as UserProfile;
-      }
-      return profile as UserProfile;
-    }
-
-    // Create new profile if none exists
-    const { data: newProfile, error: insertError } = await supabase
-      .from('profiles')
-      .insert({
-        user_id: user.id,
-        email: user.email ?? '',
-        role,
-        organization_id: organizationId,
-        is_active: true,
-        data_access_level: 'NONE'
-      })
-      .select()
-      .maybeSingle();
-
-    if (insertError) {
-      console.error('Error creating profile:', insertError);
-      
-      // If profile already exists (race condition), try to fetch it again
-      if (insertError.code === '23505') { // Unique constraint violation
-        const { data: existingProfile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
-        return existingProfile as UserProfile;
-      }
-      
+      console.error('Error ensuring profile with RPC:', error);
       return null;
     }
 
-    return newProfile as UserProfile;
+    return profile as UserProfile;
   } catch (err) {
     console.error('ensureProfile error:', err);
     return null;

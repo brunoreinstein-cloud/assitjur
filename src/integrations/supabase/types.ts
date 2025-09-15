@@ -1833,6 +1833,29 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string[]
       }
+      ensure_user_profile: {
+        Args: {
+          org_id?: string
+          user_email: string
+          user_role?: Database["public"]["Enums"]["user_role"]
+          user_uuid: string
+        }
+        Returns: {
+          created_at: string
+          data_access_level:
+            | Database["public"]["Enums"]["data_access_level"]
+            | null
+          email: string
+          id: string
+          is_active: boolean
+          last_login_at: string | null
+          organization_id: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          terms_accepted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+      }
       execute_retention_cleanup: {
         Args: { p_policy_id: string }
         Returns: Json
