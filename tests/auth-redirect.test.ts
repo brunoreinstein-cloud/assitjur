@@ -9,5 +9,9 @@ describe('getDefaultRedirect', () => {
   it('falls back to role default when next is invalid', () => {
     expect(getDefaultRedirect('ANALYST', '/malicioso')).toBe('/dados/mapa');
   });
+
+  it('normalizes path traversal attempts to default', () => {
+    expect(getDefaultRedirect('ANALYST', '/dados/mapa/../malicioso')).toBe('/dados/mapa');
+  });
 });
 
