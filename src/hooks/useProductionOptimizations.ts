@@ -5,7 +5,7 @@ import { useEffect } from 'react';
  */
 export const useProductionOptimizations = () => {
   useEffect(() => {
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.PROD) {
       // Disable React DevTools em produção
       if (typeof window !== 'undefined') {
         (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__ = {

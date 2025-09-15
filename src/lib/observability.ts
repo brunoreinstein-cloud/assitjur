@@ -26,7 +26,7 @@ interface ErrorMetric extends Metric {
 
 class ObservabilityManager {
   private metrics: Metric[] = [];
-  private isProduction = process.env.NODE_ENV === 'production';
+  private isProduction = import.meta.env.PROD;
 
   // Performance tracking
   startTiming(name: string, labels?: Record<string, string>) {

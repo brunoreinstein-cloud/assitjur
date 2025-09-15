@@ -35,7 +35,7 @@ export function HealthMonitor() {
   const { trackRender } = useDevDiagnostics('HealthMonitor');
 
   // Apenas renderizar em desenvolvimento
-  if (process.env.NODE_ENV !== 'development') {
+  if (import.meta.env.MODE !== 'development') {
     return null;
   }
 

@@ -17,7 +17,7 @@ const DEPRECATED_PATTERNS = [
 
 // Remove logs de desenvolvimento em produção
 export class ProductionOptimizer {
-  private isProduction = process.env.NODE_ENV === 'production';
+  private isProduction = import.meta.env.PROD;
   
   constructor() {
     if (this.isProduction) {
@@ -51,7 +51,7 @@ export class ProductionOptimizer {
 
   // Detecta uso de padrões deprecados (apenas em desenvolvimento)
   static checkDeprecatedUsage(codeString: string): string[] {
-    if (process.env.NODE_ENV === 'production') return [];
+    if (import.meta.env.PROD) return [];
     
     const issues: string[] = [];
     

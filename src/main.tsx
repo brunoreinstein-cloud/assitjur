@@ -18,7 +18,7 @@ if (sentryDsn) {
 }
 
 // Disable PostHog analytics in development to prevent noisy reconnect warnings
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   ;(globalThis as any).posthog?.opt_out_capturing?.()
 }
 

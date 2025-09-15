@@ -9,7 +9,7 @@ import { regressionDetector, TestUtils } from '@/lib/testing-utilities';
 
 // Diagnósticos específicos do AssistJur.IA
 export class DevDiagnostics {
-  private isEnabled = process.env.NODE_ENV === 'development';
+  private isEnabled = import.meta.env.DEV;
   private diagnosticsEnabled = false;
 
   enable() {
@@ -236,7 +236,7 @@ export class DevDiagnostics {
 export const devDiagnostics = new DevDiagnostics();
 
 // Auto-habilitar em desenvolvimento
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
   devDiagnostics.enable();
   
   // Análise inicial do bundle

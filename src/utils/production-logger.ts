@@ -6,7 +6,7 @@
 
 import { logger } from '@/lib/logger';
 
-const isDev = process.env.NODE_ENV !== 'production';
+const isDev = !import.meta.env.PROD;
 
 // DEPRECADOS - usar logger centralizado
 /** @deprecated Use logger.info() */

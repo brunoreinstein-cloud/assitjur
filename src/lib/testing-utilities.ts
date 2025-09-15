@@ -26,7 +26,7 @@ interface TestResult {
 // Sistema de detecção de regressões
 export class RegressionDetector {
   private testCases: TestCase[] = [];
-  private isDev = process.env.NODE_ENV !== 'production';
+  private isDev = !import.meta.env.PROD;
 
   // Registrar casos de teste automáticos
   registerTest(testCase: TestCase) {
@@ -221,7 +221,7 @@ export class PerformanceMonitor {
 
   // Alertas automáticos para desenvolvedores
   setupDevelopmentAlerts() {
-    if (process.env.NODE_ENV !== 'development') return;
+    if (!import.meta.env.DEV) return;
 
     // Verificação periódica de memória
     setInterval(() => {
