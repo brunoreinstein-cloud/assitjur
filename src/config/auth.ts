@@ -45,7 +45,7 @@ export function getDefaultRedirect(role?: UserRole | null, next?: string | null)
 
       if (
         url.origin === 'https://dummy' &&
-        AUTH_CONFIG.ALLOWED_REDIRECT_PATHS.includes(normalizedPath)
+        AUTH_CONFIG.ALLOWED_REDIRECT_PATHS.includes(normalizedPath as any)
       ) {
         return decodeURIComponent(next);
       }

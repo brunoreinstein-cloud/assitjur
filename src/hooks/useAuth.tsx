@@ -228,7 +228,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
-        options: { shouldCreateUser: false },
       });
 
       if (error) {
@@ -256,9 +255,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           await supabase.auth.setSession({
             access_token: sessionToPersist.access_token,
             refresh_token: sessionToPersist.refresh_token,
-            expires_at: rememberMe
-              ? sessionToPersist.expires_at
-              : Math.floor(Date.now() / 1000),
           });
         }
 
