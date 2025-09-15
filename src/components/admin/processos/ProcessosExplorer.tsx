@@ -136,50 +136,15 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
     if (!profile?.organization_id) throw new Error('No organization');
 
     const queryParams = buildQuery;
-    const apiFilters: ProcessoFilters = {
-      ...(queryParams.q ? { search: queryParams.q } : {}),
-      ...(queryParams.uf && queryParams.uf.length > 0 ? { uf: queryParams.uf[0] } : {}),
-      ...(queryParams.status && queryParams.status.length > 0 ? { status: queryParams.status[0] } : {}),
-      ...(queryParams.fase && queryParams.fase.length > 0 ? { fase: queryParams.fase[0] } : {}),
-      ...(queryParams.flags?.triang ? { temTriangulacao: true } : {}),
-      ...(queryParams.flags?.troca ? { temTroca: true } : {}),
-      ...(queryParams.flags?.prova ? { temProvaEmprestada: true } : {})
-    };
-    console.log('🔍 Fetching processos with filters:', apiFilters);
-
-    const specialMap: Record<string, string> = {
-      qtdDeposMin: 'qtd_depoimentos_min',
-      qtdDeposMax: 'qtd_depoimentos_max'
-    };
-    const mappedFilters = Object.fromEntries(
-      Object.entries(apiFilters).map(([key, value]) => [
-        specialMap[key] ?? key.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`),
-        value
-      ])
-    );
-
-    const { data: sessionData } = await supabase.auth.getSession();
-    const access_token = sessionData?.session?.access_token;
-    if (!access_token) throw new Error('Usuário não autenticado');
-
-    const { data, error } = await supabase.functions.invoke('mapa-testemunhas-processos', {
-      body: {
-        paginacao: { page: pageParam, limit },
-        filtros: mappedFilters
-      },
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${access_token}`
-      }
-    });
-
+    
+    const { data, error } = await supabase
+      .from('assistjur.por_processo_view')
+      .select('*', { count: 'exact' })
+      .eq('org_id', profile.organization_id!)
+      .range(page * limit, (page + 1) * limit - 1)
+      .order('numero', { ascending: false });
+    
     if (error) throw error;
-
-    const newItems = isPiiMasked ? applyPIIMask(data.items, true) : data.items;
-    setItems(prev => pageParam > 1 ? [...prev, ...newItems] : newItems);
-    setPage(pageParam);
-    setTotalCount(data.total ?? 0);
-    console.log('✅ Processos loaded:', data);
   };
 
   const loadInitial = async () => {

@@ -126,7 +126,6 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
       }
 
       setPreview(data?.preview);
-      console.log('Preview data loaded:', data?.preview);
     } catch (error) {
       console.error('Preview error:', error);
       toast({

@@ -264,13 +264,6 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
     reset();
   };
 
-  const handleOpen = () => {
-    // Track opening in development only
-    if (process.env.NODE_ENV === 'development') {
-      console.log('beta_form_opened');
-    }
-  };
-
   if (isSuccess) {
     return <BetaSuccess onReset={handleReset} className={className} />;
   }
