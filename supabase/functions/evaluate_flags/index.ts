@@ -2,8 +2,8 @@ import { serve } from '../_shared/observability.ts';
 import { json, jsonError } from "../_shared/http.ts";
 import { audit } from "../_shared/audit.ts";
 import { adminClient } from "../_shared/auth.ts";
+import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { jwtVerify } from "npm:jose@5.10.0";
-import { createHash } from "https://deno.land/std@0.224.0/hash/mod.ts";
 import { EvaluateFlagsRequestSchema, EvaluateFlagsResponseSchema } from "./schemas.ts";
 import { RateLimiter } from "./rateLimiter.ts";
 
@@ -12,14 +12,20 @@ const rateLimiter = new RateLimiter(
   60_000,
 );
 
-export function hashPercentage(flagId: string, userId: string): number {
-  const hash = createHash("sha256").update(flagId + userId).toString();
-  return parseInt(hash.slice(0, 8), 16) % 100;
+export async function hashPercentage(flagId: string, userId: string): Promise<number> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(flagId + userId);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = new Uint8Array(digest);
+  const hashHex = Array.from(hashArray)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+  return parseInt(hashHex.slice(0, 8), 16) % 100;
 }
 
-export function inRollout(flagId: string, userId: string, rollout: number): boolean {
+export async function inRollout(flagId: string, userId: string, rollout: number): Promise<boolean> {
   if (rollout >= 100) return true;
-  return hashPercentage(flagId, userId) < rollout;
+  return (await hashPercentage(flagId, userId)) < rollout;
 }
 
 export async function handler(req: Request): Promise<Response> {
@@ -99,7 +105,7 @@ export async function handler(req: Request): Promise<Response> {
       enabled = false;
     }
     if (enabled && typeof flag.rollout_percentage === "number" && flag.rollout_percentage < 100) {
-      enabled = inRollout(flag.flag_id, user_id, flag.rollout_percentage);
+      enabled = await inRollout(flag.flag_id, user_id, flag.rollout_percentage);
     }
     if (enabled && Array.isArray(flag.user_segments) && flag.user_segments.length > 0) {
       const inter = segments.filter((s) => flag.user_segments.includes(s));
