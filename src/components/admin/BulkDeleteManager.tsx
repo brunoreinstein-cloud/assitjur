@@ -98,19 +98,11 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
       });
 
       if (error) {
-        console.error('❌ RPC Error:', error);
-        console.error('❌ RPC Error details:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        });
         throw error;
       }
       
       setImpact(data as unknown as DeletionImpact);
     } catch (error) {
-      console.error('❌ Error loading deletion impact:', error);
       toast({
         title: "Erro ao carregar dados",
         description: error instanceof Error ? error.message : "Não foi possível carregar o impacto da exclusão",
@@ -153,7 +145,6 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
         };
         
       } catch (edgeFunctionError) {
-        console.warn('⚠️ Edge function failed, falling back to RPC:', edgeFunctionError);
         
         // Fallback to existing RPC method
         const { data: rpcData, error: rpcError } = await supabase.rpc('rpc_delete_all_processos', {
@@ -174,7 +165,7 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
         });
 
         if (cleanupError) {
-          console.warn('Warning during cleanup:', cleanupError);
+          // Silently handle cleanup warnings in production
         }
       }
 
@@ -192,7 +183,6 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
       }
 
     } catch (error) {
-      console.error('Error during deletion:', error);
       toast({
         title: "Erro na exclusão",
         description: error instanceof Error ? error.message : "Erro desconhecido durante a exclusão",
@@ -231,7 +221,6 @@ export function BulkDeleteManager({ type, onSuccess, className }: BulkDeleteMana
       resetState();
 
     } catch (error) {
-      console.error('Error during cleanup:', error);
       toast({
         title: "Erro na limpeza",
         description: error instanceof Error ? error.message : "Erro desconhecido durante a limpeza",

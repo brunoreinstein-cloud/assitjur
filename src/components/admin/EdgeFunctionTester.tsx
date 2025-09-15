@@ -41,7 +41,6 @@ export const EdgeFunctionTester = () => {
       }
 
       // Test 1: Basic connectivity
-      console.log('🔍 Testing basic connectivity...');
       try {
         const response = await fetch('https://fgjypmlszuzkgvhuszxn.functions.supabase.co/import-into-version', {
           method: 'OPTIONS',
@@ -69,7 +68,6 @@ export const EdgeFunctionTester = () => {
       }
 
       // Test 2: CORS Preflight
-      console.log('🔍 Testing CORS preflight...');
       try {
         const response = await fetch('https://fgjypmlszuzkgvhuszxn.functions.supabase.co/import-into-version', {
           method: 'OPTIONS',
@@ -106,7 +104,6 @@ export const EdgeFunctionTester = () => {
       }
 
       // Test 3: Authentication
-      console.log('🔍 Testing authentication...');
       try {
         const { data: testData, error: testError } = await supabase.functions.invoke('import-into-version', {
           body: { test: true, data: [] }
@@ -128,7 +125,6 @@ export const EdgeFunctionTester = () => {
       }
 
       // Test 4: Small payload test
-      console.log('🔍 Testing small payload...');
       try {
         const testProcessos = [{
           cnj: '12345678901234567890',

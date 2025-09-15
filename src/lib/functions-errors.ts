@@ -17,7 +17,7 @@ const ERROR_MESSAGE_MAP: Record<string, string> = {
  * Also logs extra context and response in development for easier debugging.
  */
 export function mapFunctionsError(error: FunctionsHttpError): string {
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     console.error('FunctionsHttpError context:', error.context);
     // Note: FunctionsHttpError doesn't have a direct response property
     console.error('FunctionsHttpError details:', error);

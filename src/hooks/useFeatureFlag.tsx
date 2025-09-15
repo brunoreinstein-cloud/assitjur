@@ -29,7 +29,7 @@ export const FeatureFlagProvider: FC<FeatureFlagProviderProps> = ({ children }) 
   const { user, profile } = useAuth();
   const tenantId = profile?.organization_id;
   const userId = user?.id;
-  const environment = import.meta.env.MODE || 'production';
+  const environment = process.env.NODE_ENV || 'production';
 
   const {
     featureFlagsRefreshInterval: refreshInterval,
@@ -118,7 +118,7 @@ export const useFeatureFlag = (flag: string, debug = false) => {
   const prev = useRef(value);
 
   useEffect(() => {
-    if (import.meta.env.DEV && debug && prev.current !== value) {
+    if (process.env.NODE_ENV === 'development' && debug && prev.current !== value) {
       console.debug(`[feature-flag] ${flag} ${value ? 'ON' : 'OFF'}`);
     }
     prev.current = value;

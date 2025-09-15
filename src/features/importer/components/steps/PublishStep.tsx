@@ -31,8 +31,6 @@ export function PublishStep() {
     setUploadProgress(0);
 
     try {
-      console.log('🔍 Testing Edge Function connectivity...');
-      
       // Get session token for authorization
       const { data: { session } } = await supabase.auth.getSession();
       const jwt = session?.access_token;
@@ -49,33 +47,17 @@ export function PublishStep() {
             'Access-Control-Request-Headers': 'authorization, content-type, apikey, x-retry-count'
           }
         });
-        console.log('✅ Direct CORS preflight test:', {
-          status: testResponse.status,
-          statusText: testResponse.statusText,
-          origin: testResponse.headers.get('access-control-allow-origin'),
-          methods: testResponse.headers.get('access-control-allow-methods'),
-          headers: testResponse.headers.get('access-control-allow-headers')
-        });
       } catch (testError) {
-        console.error('❌ Direct CORS preflight failed:', testError);
+        // Silently handle preflight test error in production
       }
 
       // Step 1: Create new version with improved error handling
       setUploadProgress(10);
-      console.log('📞 Calling create-version Edge Function...');
-      
       const { data: versionData, error: versionError } = await supabase.functions.invoke('create-version', {
         headers: { 'x-retry-count': retryCount.toString() }
       });
       
-      console.log('🔍 create-version response:', { versionData, versionError });
-      
       if (versionError) {
-        console.error('❌ Version creation failed:', {
-          message: versionError.message,
-          status: versionError.status,
-          details: versionError.details || 'No additional details'
-        });
         throw new Error('Falha ao criar nova versão: ' + versionError.message);
       }
 
@@ -84,14 +66,6 @@ export function PublishStep() {
       }
 
       // Step 2: Extract and validate data from validation result
-      console.log('🔍 Debug - Full validationResult:', {
-        hasNormalizedData: !!validationResult.normalizedData,
-        normalizedDataKeys: validationResult.normalizedData ? Object.keys(validationResult.normalizedData) : [],
-        processosLength: validationResult.normalizedData?.processos?.length || 0,
-        testemunhasLength: validationResult.normalizedData?.testemunhas?.length || 0,
-        summaryValid: validationResult.summary?.valid || 0,
-        summaryAnalyzed: validationResult.summary?.analyzed || 0
-      });
 
       const processos = validationResult.normalizedData?.processos || [];
       const testemunhas = validationResult.normalizedData?.testemunhas || [];
@@ -101,41 +75,8 @@ export function PublishStep() {
         throw new Error(`Nenhum dado válido encontrado para importação. Verifique se o arquivo contém dados no formato correto.`);
       }
       
-      // Log sample data for debugging
-      if (processos.length > 0) {
-        console.log('📋 Sample processo data:', {
-          firstProcesso: processos[0],
-          hasRequiredFields: {
-            cnj_digits: !!processos[0]?.cnj_digits,
-            cnj: !!processos[0]?.cnj,
-            reclamante_nome: !!processos[0]?.reclamante_nome
-          }
-        });
-      }
       
       // Step 3: Import data with enhanced diagnostics and retry logic
-      console.log('📤 Enviando dados para importação:', { 
-        processosCount: processos.length, 
-        testemunhasCount: testemunhas.length,
-        versionId: versionData.versionId,
-        totalValidRecords: validationResult.summary?.valid || 0
-      });
-
-      // Diagnostic: Test function availability first
-      console.log('🔍 Testing Edge Function connectivity...');
-      try {
-        const testResponse = await fetch(`https://fgjypmlszuzkgvhuszxn.functions.supabase.co/import-into-version`, {
-          method: 'OPTIONS',
-          headers: {
-            'Authorization': `Bearer ${jwt}`,
-            'Access-Control-Request-Method': 'POST',
-            'Access-Control-Request-Headers': 'authorization, content-type, apikey'
-          }
-        });
-        console.log('✅ CORS preflight test:', testResponse.status, testResponse.headers.get('access-control-allow-origin'));
-      } catch (testError) {
-        console.error('❌ CORS preflight failed:', testError);
-      }
 
       // Step 3: Import data with timeout handling
       setUploadProgress(30);
@@ -167,7 +108,7 @@ export function PublishStep() {
              importError.message?.includes('504') ||
              importError.message?.includes('502')) && retryCount < 2) {
           
-          console.log(`🔄 Retrying import (attempt ${retryCount + 1}/3)...`);
+          
           toast({
             title: "Conectividade instável",
             description: `Tentativa ${retryCount + 1}/3 - Tentando novamente...`,
@@ -218,7 +159,6 @@ export function PublishStep() {
       window.dispatchEvent(new Event('storage'));
 
     } catch (error: any) {
-      console.error('Publish error:', error);
       
       // More specific error messages
       let errorMessage = error.message || "Falha ao publicar dados";

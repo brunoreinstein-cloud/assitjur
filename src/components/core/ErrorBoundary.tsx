@@ -42,7 +42,7 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
       // Log to external service in production
-      if (import.meta.env.PROD) {
+      if (process.env.NODE_ENV === 'production') {
       // Example: Sentry, LogRocket, etc.
       logError('Production error', {
         error: error.message,
@@ -80,7 +80,7 @@ export function useErrorHandler() {
     }, 'useErrorHandler');
     
       // Log to external service
-      if (import.meta.env.PROD) {
+      if (process.env.NODE_ENV === 'production') {
       logError('Production component error', {
         error: error.message,
         stack: error.stack,

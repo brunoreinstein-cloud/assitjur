@@ -24,7 +24,9 @@ export function ImporterWizard() {
 
   // Criar nova versão quando o wizard inicia
   useEffect(() => {
-    createNewVersion().catch(console.error);
+    createNewVersion().catch(() => {
+      // Silently handle version creation errors
+    });
   }, [createNewVersion]);
 
   const steps = [

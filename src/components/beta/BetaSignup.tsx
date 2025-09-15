@@ -250,9 +250,9 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
     } catch (error) {
       console.error('beta_form_error', error);
       toast({
-        title: 'Erro',
-        description: 'Ocorreu um erro. Tente novamente em alguns instantes.',
-        variant: 'destructive',
+        title: "Erro no formulário",
+        description: "Ocorreu um erro inesperado. Tente novamente.",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
@@ -261,10 +261,14 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
 
   const handleReset = () => {
     setIsSuccess(false);
-    setShowEmailHint(false);
-    setShowOutroText(false);
     reset();
-    console.log('beta_form_opened');
+  };
+
+  const handleOpen = () => {
+    // Track opening in development only
+    if (process.env.NODE_ENV === 'development') {
+      console.log('beta_form_opened');
+    }
   };
 
   if (isSuccess) {

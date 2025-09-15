@@ -14,7 +14,7 @@ interface LogEntry {
 }
 
 class Logger {
-  private isDevelopment = import.meta.env.MODE === 'development';
+  private isDevelopment = process.env.NODE_ENV !== 'production';
   
   private log(level: LogLevel, message: string, context?: Record<string, any>, service?: string) {
     const entry: LogEntry = {
