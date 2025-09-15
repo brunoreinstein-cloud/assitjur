@@ -56,13 +56,13 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
           {/* Logo */}
           <a href="/" className="flex items-center gap-3">
             <img
-              src="/logos/assistjur-logo.svg"
+              src="/logos/assistjur-logo.png"
               alt="AssistJur.IA"
               className="h-8 w-auto"
               loading="lazy"
               decoding="async"
-              width="128"
-              height="32"
+              width="133"
+              height="40"
             />
             <span className="sr-only">AssistJur.IA</span>
           </a>

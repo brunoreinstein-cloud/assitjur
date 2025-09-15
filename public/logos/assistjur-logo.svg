@@ -1,63 +1,42 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 48" fill="none">
-  <!-- Gradient definitions -->
-  <defs>
-    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#8b5cf6"/>
-      <stop offset="100%" style="stop-color:#a855f7"/>
-    </linearGradient>
-    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#ffffff"/>
-      <stop offset="100%" style="stop-color:#e5e7eb"/>
-    </linearGradient>
-  </defs>
-  
-  <!-- Logo icon - scales and justice symbol -->
-  <g transform="translate(4, 8)">
-    <!-- Scale base -->
-    <rect x="14" y="28" width="4" height="4" fill="url(#logoGradient)" rx="1"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" fill="none">
+  <!-- Neural network icon -->
+  <g transform="translate(20, 30)">
+    <!-- Central purple circle -->
+    <circle cx="30" cy="30" r="12" fill="#8b5cf6"/>
     
-    <!-- Scale pole -->
-    <rect x="15" y="8" width="2" height="20" fill="url(#logoGradient)"/>
+    <!-- Connection lines -->
+    <line x1="30" y1="18" x2="30" y2="5" stroke="#d1d5db" stroke-width="2"/>
+    <line x1="42" y1="30" x2="55" y2="30" stroke="#d1d5db" stroke-width="2"/>
+    <line x1="30" y1="42" x2="30" y2="55" stroke="#d1d5db" stroke-width="2"/>
+    <line x1="18" y1="30" x2="5" y2="30" stroke="#d1d5db" stroke-width="2"/>
     
-    <!-- Scale beam -->
-    <rect x="6" y="8" width="20" height="1.5" fill="url(#logoGradient)" rx="0.75"/>
+    <line x1="38.5" y1="21.5" x2="48" y2="12" stroke="#d1d5db" stroke-width="2"/>
+    <line x1="38.5" y1="38.5" x2="48" y2="48" stroke="#d1d5db" stroke-width="2"/>
+    <line x1="21.5" y1="38.5" x2="12" y2="48" stroke="#d1d5db" stroke-width="2"/>
+    <line x1="21.5" y1="21.5" x2="12" y2="12" stroke="#d1d5db" stroke-width="2"/>
     
-    <!-- Left scale pan -->
-    <path d="M8 8 L2 18 L14 18 Z" fill="url(#logoGradient)" opacity="0.8"/>
-    <ellipse cx="8" cy="18" rx="6" ry="1" fill="url(#logoGradient)" opacity="0.6"/>
+    <!-- Connection nodes -->
+    <circle cx="30" cy="5" r="4" fill="#d4af37"/>
+    <circle cx="55" cy="30" r="4" fill="#d4af37"/>
+    <circle cx="30" cy="55" r="4" fill="#d4af37"/>
+    <circle cx="5" cy="30" r="4" fill="#d4af37"/>
     
-    <!-- Right scale pan -->
-    <path d="M24 8 L18 18 L30 18 Z" fill="url(#logoGradient)" opacity="0.8"/>
-    <ellipse cx="24" cy="18" rx="6" ry="1" fill="url(#logoGradient)" opacity="0.6"/>
-    
-    <!-- AI circuit pattern -->
-    <circle cx="8" cy="14" r="1" fill="#ffffff" opacity="0.9"/>
-    <circle cx="24" cy="14" r="1" fill="#ffffff" opacity="0.9"/>
-    <circle cx="16" cy="4" r="1" fill="#ffffff" opacity="0.9"/>
-    
-    <!-- Connecting lines for AI theme -->
-    <line x1="8" y1="14" x2="16" y2="4" stroke="#ffffff" stroke-width="0.5" opacity="0.6"/>
-    <line x1="24" y1="14" x2="16" y2="4" stroke="#ffffff" stroke-width="0.5" opacity="0.6"/>
+    <circle cx="48" cy="12" r="4" fill="#d1d5db"/>
+    <circle cx="48" cy="48" r="4" fill="#d1d5db"/>
+    <circle cx="12" cy="48" r="4" fill="#d1d5db"/>
+    <circle cx="12" cy="12" r="4" fill="#d1d5db"/>
   </g>
   
-  <!-- AssistJur.IA text -->
-  <g transform="translate(44, 0)">
-    <!-- AssistJur -->
-    <text x="0" y="20" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" 
-          font-size="14" font-weight="700" fill="url(#textGradient)">
+  <!-- Text -->
+  <g transform="translate(90, 35)">
+    <!-- AssistJur in gold -->
+    <text x="0" y="35" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#d4af37">
       AssistJur
     </text>
     
-    <!-- .IA with special styling -->
-    <text x="72" y="20" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" 
-          font-size="14" font-weight="700" fill="url(#logoGradient)">
+    <!-- .IA in purple -->
+    <text x="175" y="35" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#8b5cf6">
       .IA
-    </text>
-    
-    <!-- Subtitle -->
-    <text x="0" y="34" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" 
-          font-size="8" font-weight="400" fill="#d1d5db" opacity="0.8">
-      Inteligência Artificial Jurídica
     </text>
   </g>
 </svg>
