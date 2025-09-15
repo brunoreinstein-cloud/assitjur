@@ -56,7 +56,7 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
           {/* Logo */}
           <a href="/" className="flex items-center gap-3">
             <img
-              src="/logos/assistjur-logo.png"
+              src="/logos/assistjur-logo-leaf.png"
               alt="AssistJur.IA"
               className="h-8 w-auto"
               loading="lazy"
