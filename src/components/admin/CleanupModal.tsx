@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { CleanupProgress } from "./CleanupProgress";
+import { withErrorHandling, ErrorHandler, isValidOrgId } from "@/lib/error-handling";
 
 interface CleanupModalProps {
   open: boolean;
@@ -95,10 +96,10 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
   }, [open, profile]);
 
   const loadPreview = async () => {
-    if (!profile?.organization_id) return;
+    if (!isValidOrgId(profile?.organization_id)) return;
     
     setLoading(true);
-    try {
+    await withErrorHandling(async () => {
       const { data: session } = await supabase.auth.getSession();
       const token = session?.session?.access_token;
       
@@ -117,7 +118,6 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
       });
 
       if (error) {
-        console.error('Error loading preview:', error);
         throw error;
       }
 
@@ -126,16 +126,9 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
       }
 
       setPreview(data?.preview);
-    } catch (error) {
-      console.error('Preview error:', error);
-      toast({
-        title: "Erro ao carregar preview",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
+    }, 'CleanupModal.loadPreview').finally(() => {
       setLoading(false);
-    }
+    });
   };
 
   const handleOperationToggle = (operationId: string, checked: boolean) => {
@@ -158,7 +151,7 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
   };
 
   const handleExecuteCleanup = async () => {
-    if (!profile?.organization_id) return;
+    if (!isValidOrgId(profile?.organization_id)) return;
 
     const selectedOperations = operations.filter(op => op.enabled).map(op => op.id);
     
@@ -175,57 +168,49 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
     setIsRunning(true);
 
     try {
-      const { data: session } = await supabase.auth.getSession();
-      const token = session?.session?.access_token;
-      
-      if (!token) {
-        throw new Error('Token de autenticação não encontrado');
-      }
-
-      const { data, error } = await supabase.functions.invoke('database-cleanup', {
-        body: {
-          orgId: profile.organization_id,
-          operations: selectedOperations
-        },
-        headers: {
-          Authorization: `Bearer ${token}`
+      await withErrorHandling(async () => {
+        const { data: session } = await supabase.auth.getSession();
+        const token = session?.session?.access_token;
+        
+        if (!token) {
+          throw new Error('Token de autenticação não encontrado');
         }
-      });
 
-      if (error) {
-        console.error('Error executing cleanup:', error);
-        throw error;
-      }
-
-      if (data?.error) {
-        throw new Error(data.error);
-      }
-
-      console.log('Cleanup completed:', data);
-
-      if (data?.success) {
-        toast({
-          title: "Limpeza concluída",
-          description: `${data.totalProcessed} registros processados`,
-          variant: "default"
+        const { data, error } = await supabase.functions.invoke('database-cleanup', {
+          body: {
+            orgId: profile.organization_id,
+            operations: selectedOperations
+          },
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
-        onOpenChange(false);
-        // Recarregar a página para atualizar os dados
-        window.location.reload();
-      } else {
-        const failedOps = data?.results?.filter(r => !r.success) || [];
-        if (failedOps.length > 0) {
-          throw new Error(`Algumas operações falharam: ${failedOps.map(op => op.message).join(', ')}`);
+
+        if (error) {
+          throw error;
         }
-      }
+
+        if (data?.error) {
+          throw new Error(data.error);
+        }
+
+        if (data?.success) {
+          toast({
+            title: "Limpeza concluída",
+            description: `${data.totalProcessed} registros processados`,
+            variant: "default"
+          });
+          onOpenChange(false);
+          window.location.reload();
+        } else {
+          const failedOps = data?.results?.filter(r => !r.success) || [];
+          if (failedOps.length > 0) {
+            throw new Error(`Algumas operações falharam: ${failedOps.map(op => op.message).join(', ')}`);
+          }
+        }
+      }, 'CleanupModal.executeCleanup');
     } catch (error) {
-      console.error('Cleanup error:', error);
-      toast({
-        title: "Erro na limpeza",
-        description: error.message || "Falha ao executar limpeza da base",
-        variant: "destructive"
-      });
-      setStep('confirm'); // Volta para tela de confirmação
+      setStep('confirm');
     } finally {
       setIsRunning(false);
     }

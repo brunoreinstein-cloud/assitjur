@@ -8,6 +8,7 @@ import { RiskBadge } from "./RiskBadge"
 import { useToast } from "@/components/ui/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/hooks/useAuth"
+import { ErrorHandler, withErrorHandling, isValidOrgId } from "@/lib/error-handling"
 
 interface Message {
   id: string
@@ -61,13 +62,15 @@ export function ChatInterface({ onUploadClick, hasData }: ChatInterfaceProps) {
   }, [user, profile])
 
   const loadRecentConversation = async () => {
-    try {
+    await withErrorHandling(async () => {
+      if (!isValidOrgId(profile?.organization_id)) return;
+
       // Get most recent conversation
       const { data: conversation } = await supabase
         .from('conversations')
         .select('id')
         .eq('user_id', user?.id)
-        .eq('org_id', profile?.organization_id)
+        .eq('org_id', profile.organization_id)
         .order('updated_at', { ascending: false })
         .limit(1)
         .single()
@@ -92,9 +95,7 @@ export function ChatInterface({ onUploadClick, hasData }: ChatInterfaceProps) {
           setMessages(formattedMessages)
         }
       }
-    } catch (error) {
-      console.error('Error loading conversation:', error)
-    }
+    }, 'ChatInterface.loadConversation', false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -153,18 +154,13 @@ export function ChatInterface({ onUploadClick, hasData }: ChatInterfaceProps) {
       setMessages(prev => [...prev, assistantMessage])
 
     } catch (error) {
-      console.error('Error sending message:', error)
-      toast({
-        title: "Erro na consulta",
-        description: error.message || "Ocorreu um erro ao processar sua mensagem. Tente novamente.",
-        variant: "destructive",
-      })
+      const handledError = ErrorHandler.handleAndNotify(error, 'ChatInterface.handleSubmit')
 
       // Add error message
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: "Desculpe, ocorreu um erro ao processar sua consulta. Verifique se o OpenAI está configurado corretamente ou tente novamente.",
+        content: handledError.userMessage || "Desculpe, ocorreu um erro ao processar sua consulta.",
         timestamp: new Date()
       }
       setMessages(prev => [...prev, errorMessage])

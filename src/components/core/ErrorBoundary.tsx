@@ -1,5 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { logError } from '@/lib/logger';
+import { ErrorHandler, createError } from '@/lib/error-handling';
 import ServerError from '@/pages/ServerError';
 
 interface Props {
@@ -25,30 +25,25 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    logError('ErrorBoundary caught an error', { 
-      error: error.message || error,
-      stack: error.stack,
-      errorInfo: errorInfo.componentStack 
-    }, 'ErrorBoundary');
+    // Cria erro estruturado com contexto adicional
+    const appError = createError.system('React component error', {
+      componentStack: errorInfo.componentStack,
+      errorBoundary: true,
+      originalError: error.message,
+      stack: error.stack
+    });
+
+    // Usa o handler centralizado
+    const handledError = ErrorHandler.handle(appError, 'ErrorBoundary');
     
     this.setState({
-      error,
+      error: handledError,
       errorInfo
     });
 
     // Call custom error handler if provided
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
-    }
-
-      // Log to external service in production
-      if (process.env.NODE_ENV === 'production') {
-      // Example: Sentry, LogRocket, etc.
-      logError('Production error', {
-        error: error.message,
-        stack: error.stack,
-        componentStack: errorInfo.componentStack
-      }, 'ErrorBoundary-Production');
     }
   }
 
@@ -73,19 +68,12 @@ export class ErrorBoundary extends Component<Props, State> {
 // Hook version for functional components
 export function useErrorHandler() {
   return (error: Error, errorInfo?: ErrorInfo) => {
-    logError('Component error', { 
-      error: error.message || error,
-      stack: error.stack,
-      ...errorInfo 
-    }, 'useErrorHandler');
-    
-      // Log to external service
-      if (process.env.NODE_ENV === 'production') {
-      logError('Production component error', {
-        error: error.message,
-        stack: error.stack,
-        ...errorInfo
-      }, 'useErrorHandler-Production');
-    }
+    const appError = createError.system('Component error', {
+      ...errorInfo,
+      originalError: error.message,
+      stack: error.stack
+    });
+
+    ErrorHandler.handleAndNotify(appError, 'useErrorHandler');
   };
 }
