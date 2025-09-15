@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { NeedsForm } from './NeedsForm';
 import { track } from '@/lib/track';
 import heroDashboard from '@/assets/hero-dashboard.png';
-import heroBackground from '@/assets/hero-assistjur-dark-tech.jpg';
 
 interface ImprovedHeroProps {
   onSignup?: (data: { email: string; needs: string[]; otherNeed?: string }) => void;
@@ -31,17 +30,10 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
     return (
       <section
         id="hero"
-        className="relative min-h-screen flex flex-col justify-center overflow-hidden text-aj-text-high"
-        style={{
-          backgroundImage: `url(${heroBackground})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
+        className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-hero-gradient text-aj-text-high"
       >
         {/* Background Effects */}
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-gradient-glow" />
       
       {/* Content */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-20">
@@ -122,7 +114,7 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
                 />
                 
                 {/* Overlay with real-time indicators */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent backdrop-blur-[1px]" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                 
                 {/* Live indicator */}
                 <div className="absolute top-4 right-4 flex items-center gap-2 bg-black/20 backdrop-blur-sm rounded-full px-3 py-1">
