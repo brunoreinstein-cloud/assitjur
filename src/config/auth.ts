@@ -38,8 +38,20 @@ export type UserRole = 'ADMIN' | 'ANALYST' | 'VIEWER';
 
 export function getDefaultRedirect(role?: UserRole | null, next?: string | null): string {
   // Validate custom redirect first
-  if (next && AUTH_CONFIG.ALLOWED_REDIRECT_PATHS.some(path => next.startsWith(path))) {
-    return decodeURIComponent(next);
+  if (next) {
+    try {
+      const url = new URL(next, 'https://dummy');
+      const normalizedPath = decodeURIComponent(url.pathname);
+
+      if (
+        url.origin === 'https://dummy' &&
+        AUTH_CONFIG.ALLOWED_REDIRECT_PATHS.includes(normalizedPath)
+      ) {
+        return decodeURIComponent(next);
+      }
+    } catch {
+      // Ignore invalid URLs
+    }
   }
   
   // Use role-based redirect
