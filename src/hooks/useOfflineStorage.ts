@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNotifications } from '@/stores/useNotificationStore';
+import { logWarn } from '@/lib/logger';
 
 export interface CacheEntry<T = any> {
   data: T;
@@ -20,7 +21,7 @@ class OfflineStorage {
       
       localStorage.setItem(`${this.prefix}${key}`, JSON.stringify(entry));
     } catch (error) {
-      console.warn('Failed to save to localStorage:', error);
+      logWarn('Failed to save to localStorage', { key }, 'OfflineStorage');
     }
   }
 
@@ -39,7 +40,7 @@ class OfflineStorage {
 
       return entry.data;
     } catch (error) {
-      console.warn('Failed to read from localStorage:', error);
+      logWarn('Failed to read from localStorage', { key }, 'OfflineStorage');
       return null;
     }
   }
@@ -48,7 +49,7 @@ class OfflineStorage {
     try {
       localStorage.removeItem(`${this.prefix}${key}`);
     } catch (error) {
-      console.warn('Failed to remove from localStorage:', error);
+      logWarn('Failed to remove from localStorage', { key }, 'OfflineStorage');
     }
   }
 
@@ -58,7 +59,7 @@ class OfflineStorage {
         .filter(key => key.startsWith(this.prefix))
         .forEach(key => localStorage.removeItem(key));
     } catch (error) {
-      console.warn('Failed to clear localStorage:', error);
+      logWarn('Failed to clear localStorage', {}, 'OfflineStorage');
     }
   }
 
@@ -71,7 +72,7 @@ class OfflineStorage {
           total += localStorage.getItem(key)?.length || 0;
         });
     } catch (error) {
-      console.warn('Failed to calculate storage size:', error);
+      logWarn('Failed to calculate storage size', {}, 'OfflineStorage');
     }
     
     return `${(total / 1024).toFixed(2)} KB`;

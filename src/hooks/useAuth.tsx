@@ -139,7 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // Use the safe database function to create profile
                 profileData = (await ensureProfile(session.user)) as any;
                 if (!profileData) {
-                  console.warn('Profile creation failed during auth state change');
+                  logWarn('Profile creation failed during auth state change', {}, 'Authentication');
                   setProfile(null);
                   setLoading(false);
                   return;
@@ -193,7 +193,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // Use the safe database function to create profile
                 profileData = (await ensureProfile(session.user)) as any;
                 if (!profileData) {
-                  console.warn('Profile creation failed during session init');
+                  logWarn('Profile creation failed during session init', {}, 'Authentication');
                   setProfile(null);
                   setLoading(false);
                   return;

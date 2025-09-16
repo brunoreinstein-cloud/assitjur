@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 export interface KeyboardShortcut {
   key: string;
@@ -55,21 +56,27 @@ export const commonShortcuts = {
     key: 'n',
     ctrl: true,
     description: 'Nova conversa',
-    callback: () => console.log('New chat shortcut')
+    callback: () => {
+      logger.info('Nova conversa solicitada via shortcut');
+    }
   },
   
   search: {
     key: 'k',
     ctrl: true,
     description: 'Busca global',
-    callback: () => console.log('Search shortcut')
+    callback: () => {
+      logger.info('Busca global solicitada via shortcut');
+    }
   },
   
   send: {
     key: 'Enter',
     ctrl: true,
     description: 'Enviar mensagem',
-    callback: () => console.log('Send shortcut')
+    callback: () => {
+      logger.info('Envio de mensagem via shortcut');
+    }
   },
   
   promptImprover: {
@@ -77,21 +84,27 @@ export const commonShortcuts = {
     ctrl: true,
     shift: true,
     description: 'Melhorar prompt',
-    callback: () => console.log('Prompt improver shortcut')
+    callback: () => {
+      logger.info('Melhoria de prompt solicitada via shortcut');
+    }
   },
   
   toggleSidebar: {
     key: '\\',
     ctrl: true,
     description: 'Alternar sidebar',
-    callback: () => console.log('Toggle sidebar')
+    callback: () => {
+      logger.info('Toggle sidebar solicitado via shortcut');
+    }
   },
   
   help: {
     key: '?',
     shift: true,
     description: 'Mostrar ajuda',
-    callback: () => console.log('Help shortcut')
+    callback: () => {
+      logger.info('Ajuda solicitada via shortcut');
+    }
   }
 };
 
