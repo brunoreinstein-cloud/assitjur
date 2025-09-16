@@ -1,6 +1,13 @@
+console.log('🔧 Starting main.tsx...');
+
 import { StrictMode } from 'react'
+console.log('✅ React imported');
+
 import { createRoot } from 'react-dom/client'
+console.log('✅ ReactDOM imported');
+
 import App from '@/App'
+console.log('✅ App imported');
 import './styles/assistjur-brand.css'
 import { MaintenanceProvider } from '@/hooks/useMaintenance'
 import { getEnv } from '@/lib/getEnv'

@@ -1,4 +1,7 @@
-export const DEFAULT_TRANSITION = {
-  duration: 0.3,
-  ease: [0.25, 0.1, 0.25, 1],
-} as const;
+import { Transition } from "framer-motion";
+
+export const DEFAULT_TRANSITION: Transition = {
+  type: "tween",
+  duration: 0.2,
+  ease: "easeInOut",
+};
