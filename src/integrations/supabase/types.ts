@@ -2130,6 +2130,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_user_org_safe: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       gtrgm_compress: {
         Args: { "": unknown }
         Returns: unknown
