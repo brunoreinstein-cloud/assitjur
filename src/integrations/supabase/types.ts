@@ -1813,6 +1813,10 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: boolean
       }
+      check_financial_access: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       check_rate_limit: {
         Args: { p_key: string; p_limit?: number; p_window_ms?: number }
         Returns: boolean
