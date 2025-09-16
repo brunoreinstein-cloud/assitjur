@@ -1918,6 +1918,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_enhanced_security_status: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_gross_margin_secure: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -2246,6 +2250,10 @@ export type Database = {
           p_utm: Json
         }
         Returns: Json
+      }
+      security_maintenance_reminder: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       set_limit: {
         Args: { "": number }
