@@ -234,11 +234,11 @@ export const fetchPorProcesso = async (
       ? Object.fromEntries(Object.keys(parsed.filters).map(k => [k, '[redacted]']))
       : undefined
   });
-  console.debug('mapa-testemunhas-processos payload', sanitized);
+  // Payload debug removed for production build
   let requestId = uuidv4();
   try {
     if (!isSupabaseConfigured()) {
-      console.log('⚠️ Supabase not configured, using mock data');
+      // Supabase not configured, using mock data
       throw new Error('Supabase not configured');
     }
 
@@ -269,23 +269,15 @@ export const fetchPorProcesso = async (
     if (!response.ok) {
       const { error: err, detail, hint, example } = payload || {};
       const message = detail || hint || 'Verifique filtros e tente novamente.';
-      console.error(`[requestId=${requestId}] fetchPorProcesso HTTP error`, {
-        status: response.status,
-        url: response.url,
-        payload: sanitized,
-        error: { error: err, detail, hint, example }
-      });
+      // HTTP error logged internally
       return { data: [], total: 0, error: message };
     }
 
     const payloadTyped = payload as { data?: PorProcesso[]; count?: number; total?: number };
     if (!payloadTyped?.data || payloadTyped.data.length === 0) {
-      console.log(`[requestId=${requestId}] 📊 Supabase returned empty processos dataset`);
+      // Empty dataset returned
     } else {
-      console.log(`[requestId=${requestId}] 📊 Fetched processos from API:`, {
-        count: payloadTyped.data.length,
-        total: payloadTyped.count || payloadTyped.total || 0
-      });
+      // Processos fetched successfully
     }
 
     return {
@@ -296,7 +288,7 @@ export const fetchPorProcesso = async (
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw error;
     }
-    console.warn(`[requestId=${requestId}] 📊 Request failed, using mock processos data:`, error);
+    // Request failed, using mock processos data
 
     // Mock filtering logic
     let filteredData = [...mockProcessos];
@@ -375,11 +367,11 @@ export const fetchPorTestemunha = async (
       ? Object.fromEntries(Object.keys(parsed.filters).map(k => [k, '[redacted]']))
       : undefined
   });
-  console.debug('mapa-testemunhas-testemunhas payload', sanitized);
+  // Payload debug removed for production build
   let requestId = uuidv4();
   try {
     if (!isSupabaseConfigured()) {
-      console.log('⚠️ Supabase not configured, using mock data');
+      // Supabase not configured, using mock data
       throw new Error('Supabase not configured');
     }
 
@@ -410,23 +402,15 @@ export const fetchPorTestemunha = async (
     if (!response.ok) {
       const { error: err, detail, hint, example } = payload || {};
       const message = detail || hint || 'Verifique filtros e tente novamente.';
-      console.error(`[requestId=${requestId}] fetchPorTestemunha HTTP error`, {
-        status: response.status,
-        url: response.url,
-        payload: sanitized,
-        error: { error: err, detail, hint, example }
-      });
+      // HTTP error logged internally
       return { data: [], total: 0, error: message };
     }
 
     const payloadTyped = payload as { data?: PorTestemunha[]; count?: number; total?: number };
     if (!payloadTyped?.data || payloadTyped.data.length === 0) {
-      console.log(`[requestId=${requestId}] 📊 Supabase returned empty testemunhas dataset`);
+      // Empty dataset returned
     } else {
-      console.log(`[requestId=${requestId}] 📊 Fetched testemunhas from API:`, {
-        count: payloadTyped.data.length,
-        total: payloadTyped.count || payloadTyped.total || 0
-      });
+      // Testemunhas fetched successfully
     }
 
     return {
@@ -437,7 +421,7 @@ export const fetchPorTestemunha = async (
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw error;
     }
-    console.warn(`[requestId=${requestId}] 📊 Request failed, using mock testemunhas data:`, error);
+    // Request failed, using mock testemunhas data
 
     // Mock filtering logic
     let filteredData = [...mockTestemunhas];

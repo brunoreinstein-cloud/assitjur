@@ -47,37 +47,28 @@ const OpenAIKeys = () => {
   // Add new key
   const addKeyMutation = useMutation({
     mutationFn: async (keyData: typeof newKey) => {
-      console.log('=== FIXED AUTH APPROACH ===');
-      console.log('Starting at:', new Date().toISOString());
+      // Starting key creation process
       
       try {
         // Get fresh session with explicit refresh
-        console.log('🔄 Getting fresh session...');
         const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
-          console.error('❌ Session error:', sessionError);
           throw new Error('Falha na autenticação: ' + sessionError.message);
         }
         
         let session = initialSession;
         
         if (!session || !session.access_token) {
-          console.error('❌ No valid session or access token');
           // Try to refresh the session
           const { data: { session: refreshedSession } } = await supabase.auth.refreshSession();
           if (!refreshedSession) {
             throw new Error('Sessão expirada. Faça login novamente.');
           }
-          console.log('✅ Session refreshed');
           session = refreshedSession;
         }
-        
-        console.log('✅ Valid session found, token length:', session.access_token.length);
-        console.log('✅ Token expires at:', new Date(session.expires_at * 1000).toISOString());
 
         // Use supabase.functions.invoke with fresh session
-        console.log('🚀 Calling function with supabase.functions.invoke...');
         const result = await supabase.functions.invoke('admin-openai-keys', {
           body: { 
             action: 'create',
@@ -90,28 +81,17 @@ const OpenAIKeys = () => {
           }
         });
         
-        console.log('📡 Function result:', result);
-        console.log('📡 Result data:', result.data);
-        console.log('📡 Result error:', result.error);
-        
         if (result.error) {
-          console.error('❌ Function returned error:', result.error);
           throw new Error(`Erro na função: ${result.error.message || result.error}`);
         }
         
         if (!result.data) {
-          console.error('❌ No data returned');
           throw new Error('Nenhum dado retornado da função');
         }
         
-        console.log('✅ Success:', result.data);
         return result.data;
 
       } catch (error) {
-        console.error('=== FINAL ERROR ===');
-        console.error('Error type:', error.constructor?.name);
-        console.error('Error message:', error.message);
-        console.error('Full error:', error);
         throw new Error(`Falha ao salvar chave: ${error.message}`);
       }
     },
@@ -308,24 +288,10 @@ const OpenAIKeys = () => {
               </Button>
               <Button 
                 onClick={() => {
-                  console.log('=== Submit button clicked ===');
-                  console.log('newKey state:', {
-                    alias: newKey.alias,
-                    key: newKey.key ? 'present' : 'missing',
-                    notes: newKey.notes
-                  });
-                  console.log('Form validation:', {
-                    aliasValid: !!newKey.alias,
-                    keyValid: !!newKey.key,
-                    isPending: addKeyMutation.isPending
-                  });
-                  
                   if (!newKey.alias || !newKey.key) {
-                    console.error('Form validation failed');
                     return;
                   }
                   
-                  console.log('Calling addKeyMutation.mutate');
                   addKeyMutation.mutate(newKey);
                 }}
                 disabled={!newKey.alias || !newKey.key || addKeyMutation.isPending}
