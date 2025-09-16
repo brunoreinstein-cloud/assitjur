@@ -2232,6 +2232,10 @@ export type Database = {
           updated_count: number
         }[]
       }
+      validate_org_access: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       data_access_level: "FULL" | "MASKED" | "NONE"
