@@ -1799,6 +1799,71 @@ export type Database = {
         }
         Relationships: []
       }
+      vw_processos_secure: {
+        Row: {
+          classificacao_final: string | null
+          cnj: string | null
+          cnj_normalizado: string | null
+          comarca: string | null
+          created_at: string | null
+          data_audiencia: string | null
+          fase: string | null
+          id: string | null
+          org_id: string | null
+          reclamante_nome: string | null
+          reu_nome: string | null
+          score_risco: number | null
+          status: string | null
+          tribunal: string | null
+          updated_at: string | null
+          vara: string | null
+        }
+        Insert: {
+          classificacao_final?: string | null
+          cnj?: string | null
+          cnj_normalizado?: string | null
+          comarca?: string | null
+          created_at?: string | null
+          data_audiencia?: string | null
+          fase?: string | null
+          id?: string | null
+          org_id?: string | null
+          reclamante_nome?: never
+          reu_nome?: never
+          score_risco?: number | null
+          status?: string | null
+          tribunal?: string | null
+          updated_at?: string | null
+          vara?: string | null
+        }
+        Update: {
+          classificacao_final?: string | null
+          cnj?: string | null
+          cnj_normalizado?: string | null
+          comarca?: string | null
+          created_at?: string | null
+          data_audiencia?: string | null
+          fase?: string | null
+          id?: string | null
+          org_id?: string | null
+          reclamante_nome?: never
+          reu_nome?: never
+          score_risco?: number | null
+          status?: string | null
+          tribunal?: string | null
+          updated_at?: string | null
+          vara?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "processos_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_invitation: {
@@ -1808,6 +1873,10 @@ export type Database = {
       calculate_next_cleanup: {
         Args: { last_cleanup: string; retention_months: number }
         Returns: string
+      }
+      can_access_legal_data: {
+        Args: { p_org_id: string }
+        Returns: boolean
       }
       can_access_sensitive_data: {
         Args: { user_uuid: string }
@@ -2111,6 +2180,16 @@ export type Database = {
         Args: {
           p_access_type?: string
           p_record_ids?: string[]
+          p_table_name: string
+        }
+        Returns: undefined
+      }
+      log_legal_data_access: {
+        Args: {
+          p_access_type: string
+          p_metadata?: Json
+          p_org_id: string
+          p_record_count?: number
           p_table_name: string
         }
         Returns: undefined
