@@ -19,12 +19,12 @@ import {
   ChevronDown,
   HelpCircle
 } from 'lucide-react';
-import { UploadStep } from './steps/UploadStep';
-import { ValidationStep } from './steps/ValidationStep';
-import { PreviewStep } from './steps/PreviewStep';
-import { PublishStep } from './steps/PublishStep';
-import { ImportProgressMonitor } from './ImportProgressMonitor';
-import { useImportStore } from '../store/useImportStore';
+import { UploadStep } from '@/features/importer/components/steps/UploadStep';
+import { ValidationStep } from '@/features/importer/components/steps/ValidationStep';
+import { PreviewStep } from '@/features/importer/components/steps/PreviewStep';
+import { PublishStep } from '@/features/importer/components/steps/PublishStep';
+import { ImportProgressMonitor } from '@/features/importer/components/ImportProgressMonitor';
+import { useImportStore } from '@/features/importer/store/useImportStore';
 
 const STEPS = [
   { id: 'upload', label: 'Upload', icon: Upload },

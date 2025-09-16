@@ -7,10 +7,10 @@ import { Progress } from '@/components/ui/progress';
 import { Upload, FileSpreadsheet, AlertCircle, CheckCircle, FileText, Download } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { toast } from '@/hooks/use-toast';
-import { detectFileStructure } from '../../etl/detect';
-import { generateSessionId } from '../../etl/utils';
-import { MappingDialog } from '../MappingDialog';
-import { useImportStore } from '../../store/useImportStore';
+import { detectFileStructure } from '@/features/importer/etl/detect';
+import { generateSessionId } from '@/features/importer/etl/utils';
+import { MappingDialog } from '@/features/importer/components/MappingDialog';
+import { useImportStore } from '@/features/importer/store/useImportStore';
 import type { ImportSession, DetectedSheet } from '@/lib/importer/types';
 import { useState } from 'react';
 

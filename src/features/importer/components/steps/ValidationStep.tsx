@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, AlertTriangle, Info, Download, FileSpreadsheet, AlertCircle, CheckCircle2, RefreshCw, Wand2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { useImportStore } from '../../store/useImportStore';
+import { useImportStore } from '@/features/importer/store/useImportStore';
 import type { ImportSession } from '@/lib/importer/types';
 import { CorrectionInterface } from '@/components/importer/CorrectionInterface';
 import { IssuesDataTable } from '@/components/assistjur/IssuesDataTable';

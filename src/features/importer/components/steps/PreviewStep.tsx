@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Eye, AlertCircle, Users, Scale, TrendingUp } from 'lucide-react';
-import { useImportStore } from '../../store/useImportStore';
+import { useImportStore } from '@/features/importer/store/useImportStore';
 import { maskCPF } from '@/utils/pii-mask';
 
 export function PreviewStep() {

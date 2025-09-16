@@ -7,7 +7,7 @@ import { EdgeFunctionTester } from '@/components/admin/EdgeFunctionTester';
 import { CheckCircle, AlertCircle, RefreshCw, PartyPopper } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useImportStore } from '../../store/useImportStore';
+import { useImportStore } from '@/features/importer/store/useImportStore';
 
 export function PublishStep() {
   const { 
