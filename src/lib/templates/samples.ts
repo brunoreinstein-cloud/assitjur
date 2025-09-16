@@ -30,7 +30,7 @@ export interface DicionarioField {
 }
 
 // Import the CNJ generator with valid check digits
-import { generateSequentialCNJs } from '../cnj-generator';
+import { generateSequentialCNJs } from '@/lib/cnj-generator';
 
 // Gerar CNJs sequenciais com dígitos verificadores corretos
 const correctCNJs = generateSequentialCNJs(10, 2024);

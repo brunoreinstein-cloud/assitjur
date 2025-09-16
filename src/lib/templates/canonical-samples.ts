@@ -3,7 +3,7 @@
  * Headers and sample data following the standardized format
  */
 
-import { generateSequentialCNJs } from '../cnj-generator';
+import { generateSequentialCNJs } from '@/lib/cnj-generator';
 
 // ===== CANONICAL HEADERS =====
 

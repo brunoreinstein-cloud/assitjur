@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
   readonly VITE_SUPABASE_URL: string
+  readonly VITE_SUPABASE_ANON_KEY: string
   readonly VITE_SUPABASE_PUBLISHABLE_KEY: string
   readonly VITE_PUBLIC_SITE_URL: string
   readonly VITE_SENTRY_DSN?: string
@@ -12,6 +13,9 @@ interface ImportMetaEnv {
   readonly VITE_ALLOWED_ORIGINS?: string
   readonly VITE_EXTRA_ORIGINS?: string
   readonly VITE_PREVIEW_TIMESTAMP?: string
+  readonly VITE_OPENAI_API_KEY?: string
+  readonly VITE_OPENAI_ORG?: string
+  readonly VITE_OPENAI_PROJECT?: string
 }
 
 interface ImportMeta {

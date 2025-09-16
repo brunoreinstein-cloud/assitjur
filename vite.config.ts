@@ -63,7 +63,11 @@ export default defineConfig(async ({ mode }) => {
       port: 8080,
     },
     plugins: plugins.filter(Boolean),
+    define: {
+      global: 'globalThis',
+    },
     build: {
+      target: 'ES2022',
       rollupOptions: {
         output: {
           manualChunks(id: string) {

@@ -3,10 +3,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Circle, ArrowRight } from 'lucide-react';
 import { useImportStore } from '@/features/importer/store/useImportStore';
-import { UploadStep } from '../importer/UploadStep';
-import { ValidationStep } from '../importer/ValidationStep';  
-import { ConfirmStep } from '../importer/ConfirmStep';
-import { TrustNote } from '../importer/TrustNote';
+import { UploadStep } from '@/components/importer/UploadStep';
+import { ValidationStep } from '@/components/importer/ValidationStep';  
+import { ConfirmStep } from '@/components/importer/ConfirmStep';
+import { TrustNote } from '@/components/importer/TrustNote';
 
 export function ImporterWizard() {
   const { 
