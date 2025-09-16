@@ -1814,11 +1814,7 @@ export type Database = {
         Returns: boolean
       }
       check_rate_limit: {
-        Args: {
-          endpoint_name: string
-          max_requests?: number
-          window_minutes?: number
-        }
+        Args: { p_key: string; p_limit?: number; p_window_ms?: number }
         Returns: boolean
       }
       cleanup_old_data: {
@@ -2056,6 +2052,10 @@ export type Database = {
           vara: string
           version_id: string
         }[]
+      }
+      get_security_monitoring_status: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       get_security_status: {
         Args: Record<PropertyKey, never>

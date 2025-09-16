@@ -44,6 +44,7 @@ import FeatureFlagGuard from "@/components/FeatureFlagGuard";
 import { MaintenanceBanner } from "@/components/common/MaintenanceBanner";
 import { useMaintenance } from "@/hooks/useMaintenance";
 import { FeatureFlagProvider } from "@/hooks/useFeatureFlag";
+import { ProductionOptimizer } from "@/components/production/ProductionOptimizer";
 
 const MapaPage = lazy(() => import("./pages/MapaPage"));
 const PublicHome = lazy(() => import("./pages/PublicHome"));
@@ -178,6 +179,7 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <ErrorBoundary>
+    <ProductionOptimizer />
     <MotionConfig reducedMotion="user" transition={DEFAULT_TRANSITION}>
       <QueryClientProvider client={queryClient}>
         <ServiceHealthProvider>
