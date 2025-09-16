@@ -13,7 +13,7 @@ import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, AlertTriangle, XCircle, Download, Upload } from 'lucide-react';
 import { ValidationReport, ValidationIssue } from '@/types/assistjur';
-import { IssuesDataTable } from './IssuesDataTable';
+import { IssuesDataTable } from '@/components/assistjur/IssuesDataTable';
 
 interface ValidationModalProps {
   open: boolean;

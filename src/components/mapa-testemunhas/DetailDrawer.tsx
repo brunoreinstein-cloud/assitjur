@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Copy, CheckCircle, XCircle } from "lucide-react";
 import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
-import { ArrayField } from "./ArrayField";
+import { ArrayField } from "@/components/mapa-testemunhas/ArrayField";
 import { applyPIIMask } from "@/utils/pii-mask";
 import { useToast } from "@/hooks/use-toast";
 

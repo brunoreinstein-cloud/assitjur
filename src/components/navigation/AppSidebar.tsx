@@ -28,8 +28,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { NAV_GROUPS } from '@/config/sidebar';
-import { ThemeToggle } from './ThemeToggle';
-import { CommandPalette } from './CommandPalette';
+import { ThemeToggle } from '@/components/navigation/ThemeToggle';
+import { CommandPalette } from '@/components/navigation/CommandPalette';
 import {
   User,
   LogOut,

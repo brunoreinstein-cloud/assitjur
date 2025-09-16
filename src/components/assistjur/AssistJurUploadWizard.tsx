@@ -5,7 +5,7 @@ import { Upload, FileSpreadsheet, AlertTriangle, CheckCircle } from 'lucide-reac
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'sonner';
 import { useAssistJurImport } from '@/hooks/useAssistJurImport';
-import { ValidationModal } from './ValidationModal';
+import { ValidationModal } from '@/components/assistjur/ValidationModal';
 import { AssistJurImportResult } from '@/types/assistjur';
 
 export const AssistJurUploadWizard = () => {

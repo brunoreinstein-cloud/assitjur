@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ProcessoRow } from '@/types/processos-explorer';
 import { TooltipWrapper } from '@/components/ui/tooltip-wrapper';
-import { ProcessosClassificationChip } from './ProcessosClassificationChip';
+import { ProcessosClassificationChip } from '@/components/admin/processos/ProcessosClassificationChip';
 import { formatDatePtBR, formatRelativeTime, formatCNJ } from '@/utils/date-formatter';
 
 interface ProcessosGridProps {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowDown } from 'lucide-react';
-import { NeedsForm } from './NeedsForm';
+import { NeedsForm } from '@/components/site/NeedsForm';
 import { BrandLogo } from '@/components/brand/BrandLogo';
 import { track } from '@/lib/track';
 

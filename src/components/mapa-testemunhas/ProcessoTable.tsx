@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, Edit, Trash2 } from "lucide-react";
 import { PorProcesso } from "@/types/mapa-testemunhas";
-import { ArrayField } from "./ArrayField";
+import { ArrayField } from "@/components/mapa-testemunhas/ArrayField";
 import { useMapaTestemunhasStore, selectColumnVisibility } from "@/lib/store/mapa-testemunhas";
 import { applyPIIMask } from "@/utils/pii-mask";
 import { RiskBadge } from "@/components/RiskBadge";

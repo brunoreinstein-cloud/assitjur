@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Circle, ArrowRight } from 'lucide-react';
-import { UploadStep } from './UploadStep';
-import { ValidationStep } from './ValidationStep';
-import { ConfirmStep } from './ConfirmStep';
-import { TrustNote } from './TrustNote';
+import { UploadStep } from '@/components/importer/UploadStep';
+import { ValidationStep } from '@/components/importer/ValidationStep';
+import { ConfirmStep } from '@/components/importer/ConfirmStep';
+import { TrustNote } from '@/components/importer/TrustNote';
 import type { ImportSession, ValidationResult } from '@/lib/importer/types';
 
 type WizardStep = 'upload' | 'validation' | 'confirm';

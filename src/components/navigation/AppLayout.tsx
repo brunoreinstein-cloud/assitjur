@@ -1,7 +1,7 @@
 import React from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from './AppSidebar';
-import { AppHeader } from './AppHeader';
+import { AppSidebar } from '@/components/navigation/AppSidebar';
+import { AppHeader } from '@/components/navigation/AppHeader';
 import { PageFade } from '@/components/core/PageFade';
 
 interface AppLayoutProps {

@@ -28,8 +28,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { ProcessoFiltersState } from '@/types/processos-explorer';
 import { useDebounce } from '@/hooks/useDebounce';
-import { ProcessosSavedFilters } from './ProcessosSavedFilters';
-import { ProcessosDeleteConfirmModal } from './ProcessosDeleteConfirmModal';
+import { ProcessosSavedFilters } from '@/components/admin/processos/ProcessosSavedFilters';
+import { ProcessosDeleteConfirmModal } from '@/components/admin/processos/ProcessosDeleteConfirmModal';
 
 interface ProcessosToolbarProps {
   filters: ProcessoFiltersState;

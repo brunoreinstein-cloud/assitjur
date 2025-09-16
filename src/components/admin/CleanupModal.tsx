@@ -8,7 +8,7 @@ import { AlertTriangle, CheckCircle, Loader2, AlertCircle, Trash2 } from "lucide
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { CleanupProgress } from "./CleanupProgress";
+import { CleanupProgress } from "@/components/admin/CleanupProgress";
 import { withErrorHandling, ErrorHandler, isValidOrgId } from "@/lib/error-handling";
 
 interface CleanupModalProps {

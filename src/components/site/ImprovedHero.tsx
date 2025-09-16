@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowDown, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { NeedsForm } from './NeedsForm';
+import { NeedsForm } from '@/components/site/NeedsForm';
 import { track } from '@/lib/track';
 const heroAssistJurCustom = '/assets/hero-assistjur-custom.png';
 

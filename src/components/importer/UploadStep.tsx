@@ -9,7 +9,7 @@ import { Upload, FileSpreadsheet, AlertCircle, CheckCircle, FileText, Download }
 import { Link } from 'react-router-dom';
 import { detectFileStructure } from '@/lib/importer/detect';
 import { generateSessionId } from '@/lib/importer/utils';
-import { MappingDialog } from './MappingDialog';
+import { MappingDialog } from '@/components/importer/MappingDialog';
 import type { ImportSession, DetectedSheet } from '@/lib/importer/types';
 
 interface UploadStepProps {
