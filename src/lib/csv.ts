@@ -1,7 +1,7 @@
 import Papa from 'papaparse';
 import { PorProcesso, PorTestemunha } from '@/types/mapa-testemunhas';
-import { formatProcessoToCanonical, formatTestemunhaToCanonical } from './formatters-canonical';
-import { applyPIIMask } from './pii';
+import { formatProcessoToCanonical, formatTestemunhaToCanonical } from '@/lib/formatters-canonical';
+import { applyPIIMask } from '@/lib/pii';
 
 export interface ExportOptions {
   filename?: string;

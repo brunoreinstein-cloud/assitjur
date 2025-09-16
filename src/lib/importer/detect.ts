@@ -1,6 +1,6 @@
 import Papa from 'papaparse';
-import { DetectedSheet, SheetModel } from './types';
-import { toSlugCase, detectCsvSeparator, onlyDigits } from './utils';
+import { DetectedSheet, SheetModel } from '@/lib/importer/types';
+import { toSlugCase, detectCsvSeparator, onlyDigits } from '@/lib/importer/utils';
 
 /**
  * Detecta modelo da aba baseado em MAPEAMENTO EXATO de colunas

@@ -13,9 +13,9 @@ import {
   Target
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { ExecutiveSummaryCard } from './ExecutiveSummaryCard';
-import { AnalysisAccordion } from './AnalysisAccordion';
-import { Citations } from './Citations';
+import { ExecutiveSummaryCard } from '@/features/testemunhas/ExecutiveSummaryCard';
+import { AnalysisAccordion } from '@/features/testemunhas/AnalysisAccordion';
+import { Citations } from '@/features/testemunhas/Citations';
 import { ResultBlock } from '@/lib/store/mapa-testemunhas';
 import { ExportActions } from '@/components/brand/ExportActions';
 import { cn } from '@/lib/utils';

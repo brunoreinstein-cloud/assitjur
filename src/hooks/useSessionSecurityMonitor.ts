@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useRef, useCallback } from 'react';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   generateDeviceFingerprint, 
   calculateSessionRisk, 

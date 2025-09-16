@@ -1,1 +1,1 @@
-export * from './CnpjOabForm'
+export * from '@/components/forms/CnpjOabForm'

@@ -1,12 +1,12 @@
-import { TestemunhaRowSchema, ProcessoRowSchema } from './types';
-import { normalizeSheetData } from './normalize';
+import { TestemunhaRowSchema, ProcessoRowSchema } from '@/lib/importer/types';
+import { normalizeSheetData } from '@/lib/importer/normalize';
 import type { 
   ImportSession, 
   ValidationResult, 
   ValidationIssue, 
   ValidationSummary,
   OrgSettings 
-} from './types';
+} from '@/lib/importer/types';
 
 /**
  * Configurações padrão da organização (mock)

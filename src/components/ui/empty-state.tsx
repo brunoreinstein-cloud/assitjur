@@ -1,7 +1,7 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
-import { tokens, type Density } from "./design-tokens"
+import { tokens, type Density } from "@/components/ui/design-tokens"
 
 export interface EmptyStateProps
   extends React.HTMLAttributes<HTMLDivElement> {

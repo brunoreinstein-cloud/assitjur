@@ -2,7 +2,7 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
-import { tokens, type Contrast, type Density } from "./design-tokens"
+import { tokens, type Contrast, type Density } from "@/components/ui/design-tokens"
 
 const bannerVariants = cva(
   "w-full rounded-md border flex items-start gap-2",

@@ -1,4 +1,4 @@
-import { processoSamples, testemunhaSamples, dicionarioFields } from './samples';
+import { processoSamples, testemunhaSamples, dicionarioFields } from '@/lib/templates/samples';
 
 export function buildCsv(sheetName: string): string {
   let data: any[] = [];

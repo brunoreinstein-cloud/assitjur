@@ -1,4 +1,4 @@
-import { ImporterProcessoRow, ImporterTestemunhaRow, DetectedSheet, OrgSettings } from './types';
+import { ImporterProcessoRow, ImporterTestemunhaRow, DetectedSheet, OrgSettings } from '@/lib/importer/types';
 import Papa from 'papaparse';
 import { validateCNJ, cleanCNJ } from '@/lib/validation/unified-cnj';
 import { resolveFieldName } from '@/etl/synonyms';

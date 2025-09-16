@@ -1,4 +1,4 @@
-import openai from "./openai";
+import openai from "@/lib/openai";
 
 // Temporary implementation - vector stores API has changed
 export async function getOrCreateVectorStore(name: string) {

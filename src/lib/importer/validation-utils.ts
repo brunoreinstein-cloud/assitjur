@@ -1,4 +1,4 @@
-import type { ValidationIssue, ValidationSeverity } from './types';
+import type { ValidationIssue, ValidationSeverity } from '@/lib/importer/types';
 
 // Utility function to create consistent ValidationIssue objects
 export function createValidationIssue({

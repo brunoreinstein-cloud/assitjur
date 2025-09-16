@@ -3,7 +3,7 @@
  * Implements security best practices while maintaining usability.
  */
 
-import { checkPasswordBreach, assessPasswordStrength } from './breachDetection';
+import { checkPasswordBreach, assessPasswordStrength } from '@/utils/security/breachDetection';
 import { sanitizeInput } from '@/utils/security';
 
 export const MIN_PASSWORD_LENGTH = 12;

@@ -1,4 +1,4 @@
-import { intelligentValidateAndCorrect } from './intelligent-corrector';
+import { intelligentValidateAndCorrect } from '@/lib/importer/intelligent-corrector';
 
 // Enhanced validation with intelligent correction
 export { intelligentValidateAndCorrect };

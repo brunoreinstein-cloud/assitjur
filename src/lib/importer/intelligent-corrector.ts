@@ -1,5 +1,5 @@
-import type { DetectedSheet, ImportSession, ValidationResult, ValidationIssue } from './types';
-import { normalizeSheetData } from './normalize';
+import type { DetectedSheet, ImportSession, ValidationResult, ValidationIssue } from '@/lib/importer/types';
+import { normalizeSheetData } from '@/lib/importer/normalize';
 import { findNormalizedColumnName, applyColumnMapping } from '@/features/importer/etl/synonyms';
 import { validateCNJ, correctCNJ, cleanCNJ } from '@/lib/validation/unified-cnj';
 

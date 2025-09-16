@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Scale, Users, User, Zap, Loader2, AlertTriangle, Bot, CheckCircle, AlertOctagon } from 'lucide-react';
 import { useMapaTestemunhasStore, QueryKind } from '@/lib/store/mapa-testemunhas';
-import { useAssistente } from './chat-engine/useAssistente';
+import { useAssistente } from '@/features/testemunhas/chat-engine/useAssistente';
 import { cn } from '@/lib/utils';
 
 const QUERY_CHIPS = [

@@ -23,7 +23,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { ConclusiveReportTemplate, type ConclusiveReportData } from './ConclusiveReportTemplate';
+import { ConclusiveReportTemplate, type ConclusiveReportData } from '@/components/reports/ConclusiveReportTemplate';
 
 interface ReportConfig {
   organizacao: string;

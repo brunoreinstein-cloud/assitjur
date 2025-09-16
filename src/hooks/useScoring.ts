@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ScoringEngine } from '@/lib/scoring/scoring-engine'
-import { usePatternAnalysis } from './usePatternAnalysis'
+import { usePatternAnalysis } from '@/hooks/usePatternAnalysis'
 import type { ProcessoScore, TestemunhaScore, ScoringMetrics, ScoreHistory } from '@/types/scoring'
 import type { AnalysisResult } from '@/types/mapa-testemunhas-analysis'
 

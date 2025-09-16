@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { getEnv } from './getEnv'
+import { getEnv } from '@/lib/getEnv'
 
 const { supabaseUrl, supabaseKey } = getEnv()
 

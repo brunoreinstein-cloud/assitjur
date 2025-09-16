@@ -1,4 +1,4 @@
-import type { ValidationResult } from './types';
+import type { ValidationResult } from '@/lib/importer/types';
 import type { WorkSheet } from 'xlsx';
 import { getExcelAddress, isValidExcelAddress } from '@/lib/excel/cell-addressing';
 

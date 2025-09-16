@@ -4,8 +4,8 @@
  */
 
 import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
-import { CANONICAL_HEADERS_PROCESSO, CANONICAL_HEADERS_TESTEMUNHA } from "./templates/canonical-samples";
-import { formatToCanonicalList } from "./templates/canonical-builders";
+import { CANONICAL_HEADERS_PROCESSO, CANONICAL_HEADERS_TESTEMUNHA } from "@/lib/templates/canonical-samples";
+import { formatToCanonicalList } from "@/lib/templates/canonical-builders";
 
 export const formatCNJ = (cnj: string) => {
   if (!cnj) return '';

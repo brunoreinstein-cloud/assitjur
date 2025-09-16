@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useMapaTestemunhasStore } from './mapa-testemunhas';
+import { useMapaTestemunhasStore } from '@/lib/store/mapa-testemunhas';
 
 describe('mapa-testemunhas store filters', () => {
   beforeEach(() => {

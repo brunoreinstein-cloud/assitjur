@@ -1,6 +1,6 @@
 // Export all report components
-export { ConclusiveReportTemplate, type ConclusiveReportData } from './ConclusiveReportTemplate';
-export { ReportGenerator } from './ReportGenerator';
+export { ConclusiveReportTemplate, type ConclusiveReportData } from '@/components/reports/ConclusiveReportTemplate';
+export { ReportGenerator } from '@/components/reports/ReportGenerator';
 
 // Re-export related types for convenience
 export type {

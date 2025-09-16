@@ -1,4 +1,4 @@
-import { processoSamples, testemunhaSamples, dicionarioFields } from './samples';
+import { processoSamples, testemunhaSamples, dicionarioFields } from '@/lib/templates/samples';
 
 export async function buildTemplateXlsx(): Promise<Buffer> {
   // Import XLSX only when generating the template

@@ -12,7 +12,7 @@ import {
   type CanonicalProcessoSample,
   type CanonicalTestemunhaSample,
   type DicionarioField
-} from './canonical-samples';
+} from '@/lib/templates/canonical-samples';
 
 /**
  * Build canonical XLSX template with 3 sheets

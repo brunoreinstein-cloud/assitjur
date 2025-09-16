@@ -1,4 +1,4 @@
-import type { ValidationResult, ValidationIssue } from './types';
+import type { ValidationResult, ValidationIssue } from '@/lib/importer/types';
 
 /**
  * Enhanced validation statistics and reporting

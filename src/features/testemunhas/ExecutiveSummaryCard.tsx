@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { RiskBadge } from '@/components/RiskBadge';
-import { KeyValue } from './KeyValue';
+import { KeyValue } from '@/features/testemunhas/KeyValue';
 import { Sparkles, Copy, FileDown, Braces, TrendingUp, Link, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
