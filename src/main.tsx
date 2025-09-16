@@ -5,6 +5,7 @@ import './styles/assistjur-brand.css'
 import { MaintenanceProvider } from '@/hooks/useMaintenance'
 import { getEnv } from '@/lib/getEnv'
 import { getConsent, onConsentChange } from '@/lib/consent'
+import { logger } from '@/lib/logger'
 
 const { sentryDsn } = getEnv()
 
@@ -12,8 +13,9 @@ const { sentryDsn } = getEnv()
 if (sentryDsn) {
   import('@sentry/react').then((Sentry: any) => {
     Sentry.init({ dsn: sentryDsn, tracesSampleRate: 1.0 })
+    logger.info('Sentry initialized successfully', {}, 'MainApp')
   }).catch(() => {
-    console.warn('Sentry not available')
+    logger.warn('Sentry not available', {}, 'MainApp')
   })
 }
 

@@ -1,34 +1,42 @@
 /**
  * Componente de otimização para produção
- * Remove console.logs desnecessários e otimiza performance
+ * Aplica otimizações críticas e limpeza de logs
  */
 
 import { useEffect } from 'react';
+import { cleanConsoleInProduction } from '@/utils/production/logCleaner';
+import { applyProductionOptimizations } from '@/utils/production/performanceOptimizer';
+import { logger } from '@/lib/logger';
 
 export const ProductionOptimizer = () => {
   useEffect(() => {
-    // Remove console logs desnecessários em produção
     if (import.meta.env.PROD) {
-      // Preserva apenas console.error para logs críticos
-      const originalConsole = {
-        log: console.log,
-        warn: console.warn,
-        info: console.info,
-        debug: console.debug
-      };
+      try {
+        // Aplica limpeza de console.logs
+        cleanConsoleInProduction();
+        
+        // Aplica otimizações de performance
+        applyProductionOptimizations();
+        
+        // Remove React DevTools em produção
+        if (typeof window !== 'undefined') {
+          (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
+            ...((window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__ || {}),
+            onCommitFiberRoot: () => {},
+            onCommitFiberUnmount: () => {},
+            isDisabled: true
+          };
+        }
 
-      console.log = () => {};
-      console.warn = () => {};
-      console.info = () => {};
-      console.debug = () => {};
-
-      // Mantém console.error para erros críticos
-      // console.error permanece ativo
-
-      return () => {
-        // Restore em desenvolvimento se necessário
-        Object.assign(console, originalConsole);
-      };
+        // Remove Redux DevTools
+        delete (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__;
+        delete (window as any).__REDUX_DEVTOOLS_EXTENSION__;
+        
+        logger.info('Production optimizations initialized', {}, 'ProductionOptimizer');
+      } catch (error) {
+        // Usa console.error diretamente para erros críticos
+        console.error('Failed to initialize production optimizations:', error);
+      }
     }
   }, []);
 
