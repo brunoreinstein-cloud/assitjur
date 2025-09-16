@@ -10,7 +10,6 @@ export default tseslint.config(
       "dist",
       "app/**",
       "audit/**",
-      "src/**",
       "tests/**",
       "scripts/**",
       "tools/**",
@@ -24,7 +23,7 @@ export default tseslint.config(
   },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["vite.config.ts"],
+    files: ["**/*.{ts,tsx}", "vite.config.ts"],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
