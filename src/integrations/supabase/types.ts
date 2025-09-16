@@ -1762,10 +1762,6 @@ export type Database = {
       }
     }
     Views: {
-      minha_view: {
-        Row: {}
-        Relationships: []
-      }
       v_arpa_by_month: {
         Row: {
           arpa: number | null
@@ -1798,71 +1794,6 @@ export type Database = {
           revenue: number | null
         }
         Relationships: []
-      }
-      vw_processos_secure: {
-        Row: {
-          classificacao_final: string | null
-          cnj: string | null
-          cnj_normalizado: string | null
-          comarca: string | null
-          created_at: string | null
-          data_audiencia: string | null
-          fase: string | null
-          id: string | null
-          org_id: string | null
-          reclamante_nome: string | null
-          reu_nome: string | null
-          score_risco: number | null
-          status: string | null
-          tribunal: string | null
-          updated_at: string | null
-          vara: string | null
-        }
-        Insert: {
-          classificacao_final?: string | null
-          cnj?: string | null
-          cnj_normalizado?: string | null
-          comarca?: string | null
-          created_at?: string | null
-          data_audiencia?: string | null
-          fase?: string | null
-          id?: string | null
-          org_id?: string | null
-          reclamante_nome?: never
-          reu_nome?: never
-          score_risco?: number | null
-          status?: string | null
-          tribunal?: string | null
-          updated_at?: string | null
-          vara?: string | null
-        }
-        Update: {
-          classificacao_final?: string | null
-          cnj?: string | null
-          cnj_normalizado?: string | null
-          comarca?: string | null
-          created_at?: string | null
-          data_audiencia?: string | null
-          fase?: string | null
-          id?: string | null
-          org_id?: string | null
-          reclamante_nome?: never
-          reu_nome?: never
-          score_risco?: number | null
-          status?: string | null
-          tribunal?: string | null
-          updated_at?: string | null
-          vara?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "processos_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Functions: {
@@ -2120,6 +2051,27 @@ export type Database = {
           updated_at: string
           vara: string
           version_id: string
+        }[]
+      }
+      get_secure_processos: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          classificacao_final: string
+          cnj: string
+          cnj_normalizado: string
+          comarca: string
+          created_at: string
+          data_audiencia: string
+          fase: string
+          id: string
+          org_id: string
+          reclamante_nome: string
+          reu_nome: string
+          score_risco: number
+          status: string
+          tribunal: string
+          updated_at: string
+          vara: string
         }[]
       }
       get_security_monitoring_status: {
