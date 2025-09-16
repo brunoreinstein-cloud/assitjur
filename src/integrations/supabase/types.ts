@@ -1939,6 +1939,15 @@ export type Database = {
           revenue: number
         }[]
       }
+      get_invoice_summary_secure: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          paid_amount: number
+          pending_amount: number
+          total_invoices: number
+          total_revenue: number
+        }[]
+      }
       get_mrr_by_month_secure: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -2318,6 +2327,10 @@ export type Database = {
       verify_financial_protection: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      verify_invoice_security: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
     }
     Enums: {
