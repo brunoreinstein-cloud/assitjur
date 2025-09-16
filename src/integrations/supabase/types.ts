@@ -2140,6 +2140,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      log_financial_data_access: {
+        Args: { p_action?: string; p_table_name: string }
+        Returns: undefined
+      }
       log_legal_data_access: {
         Args: {
           p_access_type: string
@@ -2226,6 +2230,10 @@ export type Database = {
       sanitize_input: {
         Args: { input_text: string }
         Returns: string
+      }
+      secure_financial_access: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       secure_insert_beta_signup: {
         Args: {
