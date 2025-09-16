@@ -1922,6 +1922,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_financial_security_status: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_gross_margin_secure: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -2056,6 +2060,26 @@ export type Database = {
           vara: string
           version_id: string
         }[]
+      }
+      get_secure_arpa_data: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_secure_burn_data: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_secure_financial_data: {
+        Args: { p_view_name?: string }
+        Returns: Json
+      }
+      get_secure_margin_data: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_secure_mrr_data: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       get_secure_processos: {
         Args: Record<PropertyKey, never>
@@ -2286,6 +2310,10 @@ export type Database = {
       validate_org_access: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      verify_financial_protection: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
     }
     Enums: {
