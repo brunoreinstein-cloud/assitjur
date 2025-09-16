@@ -1926,6 +1926,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_financial_dashboard_secure: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_financial_security_status: {
         Args: Record<PropertyKey, never>
         Returns: Json
