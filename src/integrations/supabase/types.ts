@@ -2363,6 +2363,10 @@ export type Database = {
           updated_count: number
         }[]
       }
+      validate_final_security_state: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       validate_org_access: {
         Args: Record<PropertyKey, never>
         Returns: boolean
