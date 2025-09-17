@@ -1,5 +1,14 @@
 import { spawn } from 'child_process';
-import { mkdir, writeFile } from 'fs/promises';
+import { mkdir, writeFile, rm } from 'fs/promises';
+
+async function cleanDist() {
+  try {
+    await rm('dist', { recursive: true, force: true });
+    console.log('🧹 Cleaned dist directory');
+  } catch (error) {
+    console.log('📁 No previous dist directory found');
+  }
+}
 
 async function runBuild() {
   return await new Promise(resolve => {
@@ -15,7 +24,16 @@ async function writeStatus(success) {
 }
 
 (async () => {
+  console.log('🚀 Starting clean build process...');
+  await cleanDist();
   const success = await runBuild();
   await writeStatus(success);
+  
+  if (success) {
+    console.log('✅ Build completed successfully');
+  } else {
+    console.log('❌ Build failed');
+  }
+  
   process.exit(success ? 0 : 1);
 })();

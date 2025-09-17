@@ -43,12 +43,33 @@ function compressPlugin(): Plugin {
   };
 }
 
+function spaFallbackPlugin(): Plugin {
+  return {
+    name: "spa-fallback-plugin",
+    async generateBundle(
+      this: PluginContext,
+      _options: NormalizedOutputOptions,
+      bundle: OutputBundle,
+    ) {
+      const indexHtml = bundle['index.html'];
+      if (indexHtml && indexHtml.type === 'asset') {
+        this.emitFile({
+          type: "asset",
+          fileName: "404.html",
+          source: indexHtml.source,
+        });
+      }
+    },
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(async ({ mode }) => {
   const plugins = [
     react(),
     tsconfigPaths(),
     mode === 'development' && componentTagger(),
+    mode !== 'development' && spaFallbackPlugin(),
     mode !== 'development' && compressPlugin(),
   ];
 
@@ -58,6 +79,7 @@ export default defineConfig(async ({ mode }) => {
   }
 
   return {
+    base: '/',
     server: {
       host: "::",
       port: 8080,
@@ -68,6 +90,8 @@ export default defineConfig(async ({ mode }) => {
     },
     build: {
       target: 'ES2022',
+      outDir: 'dist',
+      sourcemap: false,
       rollupOptions: {
         output: {
           manualChunks(id: string) {
