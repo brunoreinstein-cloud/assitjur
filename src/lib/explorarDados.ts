@@ -1,4 +1,5 @@
-import { supabase, ensureSessionOrThrow } from '@/lib/supabaseClient'
+import { supabase } from '@/integrations/supabase/client'
+import { ensureSessionOrThrow } from '@/lib/supabaseClient'
 
 export interface TestemunhaPublica {
   id: number
