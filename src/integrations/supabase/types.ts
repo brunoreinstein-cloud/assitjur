@@ -2272,6 +2272,10 @@ export type Database = {
         Args: { p_org_id: string }
         Returns: Json
       }
+      safe_fn: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       sanitize_input: {
         Args: { input_text: string }
         Returns: string
