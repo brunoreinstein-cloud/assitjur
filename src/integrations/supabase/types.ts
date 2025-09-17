@@ -2087,7 +2087,7 @@ export type Database = {
         Returns: Json
       }
       get_secure_financial_data: {
-        Args: { p_view_name?: string }
+        Args: { view_name: string }
         Returns: Json
       }
       get_secure_margin_data: {
@@ -2337,6 +2337,10 @@ export type Database = {
         Returns: string
       }
       verify_invoice_security: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      verify_tenant_isolation: {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
