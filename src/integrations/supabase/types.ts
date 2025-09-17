@@ -2316,6 +2316,10 @@ export type Database = {
         Args: { "": string }
         Returns: string[]
       }
+      test_anonymous_access: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       upsert_padroes_agregados: {
         Args: { p_data: Json; p_org_id: string }
         Returns: undefined
@@ -2331,6 +2335,10 @@ export type Database = {
       validate_org_access: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      validate_security_fixes: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       verify_financial_protection: {
         Args: Record<PropertyKey, never>
