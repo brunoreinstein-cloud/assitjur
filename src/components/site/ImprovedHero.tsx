@@ -4,7 +4,7 @@ import { ArrowDown, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NeedsForm } from '@/components/site/NeedsForm';
 import { track } from '@/lib/track';
-const heroAssistJurCustom = '/assets/hero-assistjur-custom.png';
+const heroAssistJurCustom = '/public/assets/hero-assistjur-custom.png';
 
 interface ImprovedHeroProps {
   onSignup?: (data: { email: string; needs: string[]; otherNeed?: string }) => void;
