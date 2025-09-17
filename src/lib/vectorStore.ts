@@ -7,6 +7,9 @@ export async function getOrCreateVectorStore(name: string) {
 }
 
 export async function uploadFile(file: Blob | File) {
+  if (!openai) {
+    throw new Error("OpenAI client not configured");
+  }
   const uploaded = await openai.files.create({ file, purpose: "assistants" });
   return uploaded.id;
 }

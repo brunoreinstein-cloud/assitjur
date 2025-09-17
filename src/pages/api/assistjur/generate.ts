@@ -48,6 +48,10 @@ export default async function handler(req: Request): Promise<Response> {
       },
     ];
 
+    if (!openai) {
+      throw new Error("OpenAI client not configured");
+    }
+
     const options: Record<string, unknown> = {};
     if (body.useRag) {
       const store = await getOrCreateVectorStore("assistjur");
