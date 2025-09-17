@@ -2082,6 +2082,13 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_secure_arpa_monthly: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          arpa: number
+          month: string
+        }[]
+      }
       get_secure_burn_data: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -2090,6 +2097,15 @@ export type Database = {
         Args: { view_name: string }
         Returns: Json
       }
+      get_secure_gross_margin: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          cogs: number
+          gm_pct: number
+          month: string
+          revenue: number
+        }[]
+      }
       get_secure_margin_data: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -2097,6 +2113,13 @@ export type Database = {
       get_secure_mrr_data: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      get_secure_mrr_monthly: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          month: string
+          revenue: number
+        }[]
       }
       get_secure_processos: {
         Args: Record<PropertyKey, never>
@@ -2118,6 +2141,10 @@ export type Database = {
           updated_at: string
           vara: string
         }[]
+      }
+      get_security_audit_status: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       get_security_monitoring_status: {
         Args: Record<PropertyKey, never>
@@ -2183,6 +2210,10 @@ export type Database = {
           p_record_ids?: string[]
           p_table_name: string
         }
+        Returns: undefined
+      }
+      log_financial_access: {
+        Args: { access_type: string; data_type: string }
         Returns: undefined
       }
       log_financial_data_access: {
