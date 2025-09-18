@@ -2,30 +2,30 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>http://localhost:5173/</loc>
-    <lastmod>2025-09-18T17:17:49.496Z</lastmod>
+    <lastmod>2025-09-18T17:29:28.279Z</lastmod>
   </url>
   <url>
     <loc>http://localhost:5173/blog</loc>
-    <lastmod>2025-09-18T17:17:49.496Z</lastmod>
+    <lastmod>2025-09-18T17:29:28.279Z</lastmod>
   </url>
   <url>
     <loc>http://localhost:5173/contato</loc>
-    <lastmod>2025-09-18T17:17:49.496Z</lastmod>
+    <lastmod>2025-09-18T17:29:28.279Z</lastmod>
   </url>
   <url>
     <loc>http://localhost:5173/mapa</loc>
-    <lastmod>2025-09-18T17:17:49.496Z</lastmod>
+    <lastmod>2025-09-18T17:29:28.279Z</lastmod>
   </url>
   <url>
     <loc>http://localhost:5173/planos</loc>
-    <lastmod>2025-09-18T17:17:49.496Z</lastmod>
+    <lastmod>2025-09-18T17:29:28.279Z</lastmod>
   </url>
   <url>
     <loc>http://localhost:5173/privacidade</loc>
-    <lastmod>2025-09-18T17:17:49.496Z</lastmod>
+    <lastmod>2025-09-18T17:29:28.279Z</lastmod>
   </url>
   <url>
     <loc>http://localhost:5173/termos</loc>
-    <lastmod>2025-09-18T17:17:49.496Z</lastmod>
+    <lastmod>2025-09-18T17:29:28.279Z</lastmod>
   </url>
 </urlset>

@@ -1,6 +1,7 @@
 # Ambiente local (não versionar nunca)
 .env
 .env.*
+*.env.local
 !.env.example
 out/
 bun.lockb
