@@ -145,5 +145,10 @@
     "vite": "^5.4.19",
     "vite-tsconfig-paths": "^5.1.4",
     "yargs": "^17.0.0"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}
 
 
