@@ -3,7 +3,7 @@
 import { spawn } from 'child_process';
 import { mkdir, writeFile, rm } from 'fs/promises';
 
-console.log('🔧 AssistJur.IA - Clean Build Script');
+console.log('🔧 AssistJur.IA - Complete Build & Validation Script');
 
 async function cleanDist() {
   try {
@@ -14,34 +14,41 @@ async function cleanDist() {
   }
 }
 
-async function runTypeCheck() {
+async function runCommand(command, args, description, optional = false) {
   return new Promise(resolve => {
-    console.log('🔍 Running type check...');
-    const proc = spawn('npx', ['tsc', '--noEmit'], { stdio: 'inherit' });
+    console.log(`🔧 ${description}...`);
+    const proc = spawn(command, args, { stdio: 'inherit' });
     proc.on('close', code => {
       if (code === 0) {
-        console.log('✅ Type check passed');
+        console.log(`✅ ${description} completed`);
+        resolve(true);
       } else {
-        console.log('⚠️  Type check found issues (continuing anyway)');
+        const level = optional ? '⚠️ ' : '❌';
+        console.log(`${level} ${description} failed (code ${code})`);
+        resolve(optional ? true : false);
       }
-      resolve(code === 0);
     });
   });
 }
 
+async function runTypeCheck() {
+  return await runCommand('npx', ['tsc', '--noEmit'], 'Type check', true);
+}
+
 async function runViteBuild() {
-  return new Promise(resolve => {
-    console.log('📦 Running Vite build...');
-    const proc = spawn('npx', ['vite', 'build'], { stdio: 'inherit' });
-    proc.on('close', code => {
-      if (code === 0) {
-        console.log('✅ Vite build completed');
-      } else {
-        console.log('❌ Vite build failed');
-      }
-      resolve(code === 0);
-    });
-  });
+  return await runCommand('npx', ['vite', 'build'], 'Vite build');
+}
+
+async function runPrerender() {
+  return await runCommand('node', ['scripts/prerender.mjs'], 'Prerender static pages', true);
+}
+
+async function runSitemap() {
+  return await runCommand('node', ['scripts/generate-sitemap.mjs'], 'Generate sitemap', true);
+}
+
+async function runValidation() {
+  return await runCommand('node', ['scripts/validate-build.mjs'], 'Validate build output', true);
 }
 
 async function writeStatus(success) {
@@ -56,25 +63,41 @@ async function writeStatus(success) {
 
 (async () => {
   try {
+    console.log('🚀 Starting complete build & validation process...\n');
+    
+    // Step 1: Clean
     await cleanDist();
     
-    // Type check é opcional - não bloqueia o build
+    // Step 2: Type check (optional)
     await runTypeCheck();
     
-    // Build principal
+    // Step 3: Main build (critical)
     const buildSuccess = await runViteBuild();
-    await writeStatus(buildSuccess);
-    
-    if (buildSuccess) {
-      console.log('🚀 Clean build completed successfully!');
-      console.log('📁 Check dist/ directory for output files');
-    } else {
-      console.log('💥 Build failed - check logs above');
+    if (!buildSuccess) {
+      await writeStatus(false);
+      console.log('\n💥 Main build failed - stopping process');
+      process.exit(1);
     }
     
-    process.exit(buildSuccess ? 0 : 1);
+    // Step 4: Post-build enhancements (optional)
+    console.log('\n📦 Running post-build enhancements...');
+    await runPrerender();
+    await runSitemap();
+    
+    // Step 5: Validation
+    console.log('\n🔍 Validating build output...');
+    await runValidation();
+    
+    // Step 6: Final status
+    await writeStatus(true);
+    console.log('\n🎉 Complete build & validation process finished successfully!');
+    console.log('📁 Check dist/ directory for all generated files');
+    
+    process.exit(0);
+    
   } catch (error) {
-    console.error('💥 Build script error:', error);
+    console.error('\n💥 Build process error:', error);
+    await writeStatus(false);
     process.exit(1);
   }
 })();
