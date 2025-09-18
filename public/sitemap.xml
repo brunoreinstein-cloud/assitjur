@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://assistjur.com.br/</loc>
-    <lastmod>2025-09-13T13:43:43.065Z</lastmod>
+    <loc>http://localhost:5173/</loc>
+    <lastmod>2025-09-18T17:29:28.279Z</lastmod>
   </url>
   <url>
-    <loc>https://assistjur.com.br/blog</loc>
-    <lastmod>2025-09-13T13:43:43.065Z</lastmod>
+    <loc>http://localhost:5173/blog</loc>
+    <lastmod>2025-09-18T17:29:28.279Z</lastmod>
   </url>
   <url>
-    <loc>https://assistjur.com.br/contato</loc>
-    <lastmod>2025-09-13T13:43:43.065Z</lastmod>
+    <loc>http://localhost:5173/contato</loc>
+    <lastmod>2025-09-18T17:29:28.279Z</lastmod>
   </url>
   <url>
-    <loc>https://assistjur.com.br/mapa</loc>
-    <lastmod>2025-09-13T13:43:43.065Z</lastmod>
+    <loc>http://localhost:5173/mapa</loc>
+    <lastmod>2025-09-18T17:29:28.279Z</lastmod>
   </url>
   <url>
-    <loc>https://assistjur.com.br/planos</loc>
-    <lastmod>2025-09-13T13:43:43.065Z</lastmod>
+    <loc>http://localhost:5173/planos</loc>
+    <lastmod>2025-09-18T17:29:28.279Z</lastmod>
   </url>
   <url>
-    <loc>https://assistjur.com.br/privacidade</loc>
-    <lastmod>2025-09-13T13:43:43.065Z</lastmod>
+    <loc>http://localhost:5173/privacidade</loc>
+    <lastmod>2025-09-18T17:29:28.279Z</lastmod>
   </url>
   <url>
-    <loc>https://assistjur.com.br/termos</loc>
-    <lastmod>2025-09-13T13:43:43.065Z</lastmod>
+    <loc>http://localhost:5173/termos</loc>
+    <lastmod>2025-09-18T17:29:28.279Z</lastmod>
   </url>
 </urlset>
