@@ -1,11 +1,19 @@
+// Ensure required envs exist during prerender stage without hitting real backends
+process.env.VITE_SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://placeholder.supabase.co';
+process.env.VITE_SUPABASE_PUBLISHABLE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || 'placeholder-key';
+process.env.VITE_PUBLIC_SITE_URL = process.env.VITE_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://assistjur.com.br';
+
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import React from 'react';
 import { renderToString, renderToStaticMarkup } from 'react-dom/server';
 import { StaticRouter } from 'react-router-dom/server';
 import PublicHome from '../src/pages/PublicHome';
 import { Head } from '../src/lib/head';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const staticPagesDir = path.resolve(__dirname, '..', 'src', 'pages-static');
 
 const routes = [

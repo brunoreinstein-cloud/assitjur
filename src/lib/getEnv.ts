@@ -14,16 +14,21 @@ export interface Env {
 
 export function getEnv(): Env {
   // Secure environment configuration - no hardcoded credentials
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://fgjypmlszuzkgvhuszxn.supabase.co';
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const isNode = typeof window === 'undefined';
+  const viteEnv = (typeof import.meta !== 'undefined' ? (import.meta as any).env : undefined) as Record<string, string | undefined> | undefined;
+  const nodeEnv = isNode ? (process.env as Record<string, string | undefined>) : undefined;
+
+  const supabaseUrl = (viteEnv?.VITE_SUPABASE_URL) || nodeEnv?.VITE_SUPABASE_URL || nodeEnv?.SUPABASE_URL;
+  const supabaseKey = (viteEnv?.VITE_SUPABASE_ANON_KEY) || (viteEnv?.VITE_SUPABASE_PUBLISHABLE_KEY) || nodeEnv?.VITE_SUPABASE_ANON_KEY || nodeEnv?.VITE_SUPABASE_PUBLISHABLE_KEY || nodeEnv?.SUPABASE_ANON_KEY || nodeEnv?.SUPABASE_PUBLISHABLE_KEY;
   
+  if (!supabaseUrl) {
+    throw new Error('VITE_SUPABASE_URL must be set');
+  }
   if (!supabaseKey) {
     throw new Error('VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_KEY must be set');
   }
     
-  const siteUrl = import.meta.env.VITE_PUBLIC_SITE_URL || 
-                  import.meta.env.VITE_SITE_URL || 
-                  (typeof window !== 'undefined' ? window.location.origin : 'https://app.assistjur.com');
+  const siteUrl = (viteEnv?.VITE_PUBLIC_SITE_URL) || (viteEnv?.VITE_SITE_URL) || nodeEnv?.VITE_PUBLIC_SITE_URL || nodeEnv?.SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://app.assistjur.com');
 
   return {
     supabaseUrl,

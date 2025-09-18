@@ -6,7 +6,7 @@
  */
 
 import { spawn } from 'child_process';
-import { existsSync, writeFileSync, mkdirSync, copyFileSync } from 'fs';
+import { existsSync, writeFileSync, mkdirSync, copyFileSync, rmSync } from 'fs';
 import { join } from 'path';
 
 const runCommand = (command, args = [], options = {}) => {
@@ -86,13 +86,19 @@ async function main() {
     // Step 1: Clean install
     console.log('\n📁 Step 1: Clean dependencies');
     if (existsSync('dist')) {
-      await runCommand('rm', ['-rf', 'dist']);
+      try {
+        rmSync('dist', { recursive: true, force: true });
+        console.log('✅ Removed dist directory');
+      } catch (e) {
+        console.log('ℹ️  Fallback to shell remove for dist');
+        await runCommand(process.platform === 'win32' ? 'rmdir' : 'rm', process.platform === 'win32' ? ['/s', '/q', 'dist'] : ['-rf', 'dist']);
+      }
     }
     
     if (pm === 'bun') {
       await runCommand('bun', ['install', '--force']);
     } else if (pm === 'npm') {
-      await runCommand('npm', ['ci']);
+      await runCommand('npm', ['ci', '--legacy-peer-deps']);
     } else if (pm === 'pnpm') {
       await runCommand('pnpm', ['install', '--frozen-lockfile']);
     } else if (pm === 'yarn') {

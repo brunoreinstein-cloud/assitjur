@@ -1,14 +1,19 @@
 import OpenAI from "openai";
 
-const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-const organization = import.meta.env.VITE_OPENAI_ORG;
-const project = import.meta.env.VITE_OPENAI_PROJECT;
+const isServer = typeof window === 'undefined';
 
-// Only initialize OpenAI if API key is provided
-export const openai = apiKey ? new OpenAI({
-  apiKey,
-  organization,
-  project,
-}) : null;
+let openai: OpenAI | null = null;
 
+if (isServer) {
+  const env: Record<string, string | undefined> = (globalThis as any)?.process?.env ?? {};
+  const apiKey = env.OPENAI_API_KEY || env.VITE_OPENAI_API_KEY;
+  const organization = env.OPENAI_ORG || env.VITE_OPENAI_ORG;
+  const project = env.OPENAI_PROJECT || env.VITE_OPENAI_PROJECT;
+
+  if (apiKey) {
+    openai = new OpenAI({ apiKey, organization, project });
+  }
+}
+
+export { openai };
 export default openai;

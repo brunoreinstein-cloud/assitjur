@@ -10,40 +10,40 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.admin-openai-keys]
-verify_jwt = false
+verify_jwt = true
 
 [functions.admin-openai-test]
-verify_jwt = false
+verify_jwt = true
 
 [functions.admin-openai-settings]
-verify_jwt = false
+verify_jwt = true
 
 [functions.admin-prompts]
-verify_jwt = false
+verify_jwt = true
 
 [functions.database-cleanup]
 verify_jwt = true
 
 [functions.templates-xlsx]
-verify_jwt = false
+verify_jwt = true
 
 [functions.templates-csv]
-verify_jwt = false
+verify_jwt = true
 
 [functions.lgpd-requests]
-verify_jwt = false
+verify_jwt = true
 
 [functions.data-retention]
 verify_jwt = true
 
 [functions.automated-retention]
-verify_jwt = false
+verify_jwt = true
 
 [functions.mapa-testemunhas-processos]
-verify_jwt = false
+verify_jwt = true
 
 [functions.mapa-testemunhas-testemunhas]
-verify_jwt = false
+verify_jwt = true
 
 [functions.mapa-testemunhas-analysis]
 verify_jwt = true
@@ -55,7 +55,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.beta-signup]
-verify_jwt = false
+verify_jwt = true
 
 [functions.admin-analytics]
 verify_jwt = true

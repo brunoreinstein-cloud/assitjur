@@ -1,0 +1,55 @@
+# Contexto do Projeto
+Este é o projeto Assistjur.IA - uma plataforma SaaS para escritórios jurídicos.
+
+## Stack Tecnológica
+- Frontend: Vite + React + TypeScript + Tailwind CSS + shadcn/ui
+- Backend: Supabase (PostgreSQL + RLS + Edge Functions em Deno)
+- Automação: n8n
+- Testes: Vitest + Testing Library
+
+## Convenções de Código
+
+### TypeScript/React
+- Use TypeScript strict mode
+- Componentes funcionais com hooks
+- Props tipadas explicitamente
+- Evite "any" - use tipos específicos ou generics
+
+### Estilo e Formatação
+- Tailwind CSS para estilização
+- shadcn/ui para componentes base
+- Evite CSS inline ou styled-components
+
+### Padrões de Nomenclatura
+- Componentes: PascalCase (ex: WitnessMap.tsx)
+- Hooks: camelCase com prefixo "use" (ex: useWitnessData.ts)
+- Utilitários: camelCase (ex: formatCnj.ts)
+- Constantes: UPPER_SNAKE_CASE
+
+### Segurança
+- SEMPRE use RLS (Row Level Security) no Supabase
+- Sanitize todas as entradas de usuário
+- Nunca exponha chaves privadas no código
+- Use variáveis de ambiente para configurações sensíveis
+
+### Estrutura de Pastas
+- /src/components: Componentes React reutilizáveis
+- /src/hooks: Hooks customizados
+- /src/lib: Utilitários, configuração do Supabase, helpers
+- /src/pages: Páginas principais da aplicação
+- /supabase: Migrações e Edge Functions
+- /app/api: Rotas de API (se usar Next.js)
+
+## Funcionalidades Principais
+1. Inteligência de Testemunhas (triangulação, prova emprestada)
+2. Análise de Processos CNJ
+3. Compliance LGPD e ISO/IEC 42001
+4. Gestão de documentos jurídicos
+5. Chat com IA para consultas legais
+
+## Instruções Especiais
+- Ao criar novos componentes, sempre inclua testes
+- Use o padrão de composição para componentes complexos
+- Implemente loading states e error boundaries
+- Otimize queries do Supabase com select específico
+- Use React Query ou SWR para cache de dados

@@ -1,6 +1,6 @@
+import React, { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
-import { ReactNode } from "react";
 
 export type DataStatus = "empty" | "loading" | "success" | "error" | "offline";
 

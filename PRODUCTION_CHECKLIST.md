@@ -7,7 +7,7 @@
 #### 🔧 Otimizações Técnicas
 - [x] Logger estruturado implementado
 - [x] Console.logs removidos dos arquivos críticos
-- [x] Variáveis import.meta.env substituídas por process.env
+- [x] Variáveis de ambiente corretas por contexto: `import.meta.env` no frontend (Vite) e `process.env`/`Deno.env` em Node/Edge
 - [x] ProductionOptimizer implementado
 - [x] Utilitários de produção criados
 

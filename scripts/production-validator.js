@@ -127,8 +127,11 @@ class ProductionValidator {
     console.log('🌍 Verificando variáveis de ambiente...');
     
     const requiredEnvVars = [
-      'VITE_SUPABASE_URL',
-      'VITE_SUPABASE_ANON_KEY'
+      'VITE_SUPABASE_URL'
+    ];
+
+    const alternatives = [
+      ['VITE_SUPABASE_ANON_KEY', 'VITE_SUPABASE_PUBLISHABLE_KEY']
     ];
 
     const missingVars = [];
@@ -139,15 +142,17 @@ class ProductionValidator {
       }
     });
 
-    if (missingVars.length > 0) {
+    const missingAlternatives = alternatives.filter(pair => !pair.some(v => !!process.env[v])).map(pair => pair.join(' | '));
+
+    if (missingVars.length > 0 || missingAlternatives.length > 0) {
       this.issues.push({
         type: 'MISSING_ENV_VARS',
-        variables: missingVars,
-        severity: 'HIGH'
+        variables: [...missingVars, ...missingAlternatives],
+        severity: 'CRITICAL'
       });
     }
 
-    console.log(`   ${missingVars.length > 0 ? '⚠️' : '✅'} ${missingVars.length} variáveis ausentes\n`);
+    console.log(`   ${missingVars.length + missingAlternatives.length > 0 ? '⚠️' : '✅'} ${missingVars.length + missingAlternatives.length} variáveis ausentes\n`);
   }
 
   /**

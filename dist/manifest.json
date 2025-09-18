@@ -1,0 +1,20 @@
+{
+  "name": "AssistJur.IA - Plataforma de IA para Contencioso",
+  "short_name": "AssistJur.IA",
+  "description": "Plataforma de inteligência artificial para gestão e análise de contencioso jurídico",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1f2937",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "16x16 32x32",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["productivity", "business", "utilities"],
+  "lang": "pt-BR",
+  "scope": "/"
+}
