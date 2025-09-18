@@ -4,6 +4,7 @@
     "lib": ["ES2023"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "types": ["node"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -11,6 +12,7 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": false,
+    "outDir": "./dist-tsc",
 
     /* Linting */
     "strict": true,
