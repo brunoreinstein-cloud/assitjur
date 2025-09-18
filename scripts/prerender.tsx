@@ -1,3 +1,6 @@
+// garante o flag mesmo se alguém rodar localmente sem script do npm
+process.env.PRERENDER = process.env.PRERENDER ?? '1';
+
 // Ensure required envs exist during prerender stage without hitting real backends
 process.env.VITE_SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://placeholder.supabase.co';
 process.env.VITE_SUPABASE_PUBLISHABLE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || 'placeholder-key';

@@ -13,6 +13,23 @@ export interface Env {
 }
 
 export function getEnv(): Env {
+  // Afrouxa exigência no prerender (postbuild em Node).
+  if (process.env.PRERENDER === '1') {
+    return {
+      supabaseUrl: process.env.VITE_SUPABASE_URL ?? 'https://dummy.supabase.local',
+      supabaseKey: process.env.VITE_SUPABASE_ANON_KEY ?? 'anon',
+      siteUrl: process.env.VITE_PUBLIC_SITE_URL ?? 'https://assistjur.com.br',
+      sentryDsn: undefined,
+      inactivityTimeoutMinutes: 30,
+      featureFlagsRefreshInterval: 60000,
+      featureFlagsCacheTtl: 300000,
+      maintenance: false,
+      allowedOrigins: '',
+      extraOrigins: '',
+      previewTimestamp: undefined,
+    };
+  }
+
   // Secure environment configuration - no hardcoded credentials
   const isNode = typeof window === 'undefined';
   const viteEnv = (typeof import.meta !== 'undefined' ? (import.meta as any).env : undefined) as Record<string, string | undefined> | undefined;
