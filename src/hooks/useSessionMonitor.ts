@@ -41,7 +41,7 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
       // Check if token expires soon
       const expiresAt = session.expires_at;
       const now = Math.floor(Date.now() / 1000);
-      const timeUntilExpiry = expiresAt - now;
+      const timeUntilExpiry = (expiresAt ?? 0) - now;
       const refreshThreshold = preemptiveRefresh * 60; // Convert to seconds
 
       if (timeUntilExpiry < refreshThreshold) {

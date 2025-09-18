@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { BetaHeader } from '@/components/beta/BetaHeader';
 import { BetaHero } from '@/components/beta/BetaHero';
 import { BetaBenefits } from '@/components/beta/BetaBenefits';

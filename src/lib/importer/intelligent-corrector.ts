@@ -180,7 +180,7 @@ function correctRowData(row: any, rowIndex: number, sheetType: 'processo' | 'tes
         ? correctedData.cnjs_como_testemunha 
         : String(correctedData.cnjs_como_testemunha).split(/[;,]/).map(s => s.trim());
       
-      const validCnjs = cnjs.filter(cnj => {
+      const validCnjs = cnjs.filter((cnj: any) => {
         const validation = validateCNJ(cnj, 'final');
         return validation.isValid;
       });

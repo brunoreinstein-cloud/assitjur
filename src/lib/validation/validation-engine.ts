@@ -498,7 +498,7 @@ export class ValidationEngine {
         )
 
         // Validações específicas
-        const cnjValid = this.validateCNJ(cnj)
+        const cnjValid = this.validateCNJ(cnj ?? '')
         const hasRequiredFields = !!(cnj && uf && comarca && advogados_ativo.length > 0)
 
         if (!cnjValid && cnj) {

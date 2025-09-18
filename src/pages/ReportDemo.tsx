@@ -1,4 +1,3 @@
-import React from 'react';
 import { ReportGenerator } from '@/components/reports/ReportGenerator';
 import { mockReportData } from '@/lib/mock-data/report-sample';
 import { AppLayout } from '@/components/navigation/AppLayout';

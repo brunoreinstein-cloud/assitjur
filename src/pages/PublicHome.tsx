@@ -1,4 +1,4 @@
-import React, { useState, lazy, Suspense } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { PublicHeader } from '@/components/site/PublicHeader';
 import { ImprovedHero } from '@/components/site/ImprovedHero';
 import { Footer } from '@/components/site/Footer';

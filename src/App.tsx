@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from "react";
+import { Suspense, lazy } from "react";
 import { MotionConfig } from "framer-motion";
 import { DEFAULT_TRANSITION } from "@/config/motion";
 import { Toaster } from "@/components/ui/toaster";

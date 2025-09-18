@@ -97,7 +97,7 @@ export function useOnlineStatus() {
       warning(
         'Sem conexão', 
         'Modo offline ativado. Algumas funcionalidades podem não estar disponíveis.',
-        { duration: null } // Persistent notification
+        { duration: undefined } // Persistent notification
       );
     };
 

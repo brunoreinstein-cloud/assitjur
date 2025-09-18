@@ -1,4 +1,3 @@
-import React from 'react';
 import { AssistJurUploadWizard } from '@/components/assistjur/AssistJurUploadWizard';
 
 const Import = () => {

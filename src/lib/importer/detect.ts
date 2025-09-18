@@ -160,7 +160,7 @@ function processCsvFile(file: File): Promise<DetectedSheet[]> {
               hasListColumn
             }]);
           },
-          error: (error) => {
+          error: (error: unknown) => {
             reject(new Error(`Erro ao processar CSV: ${error}`));
           }
         });

@@ -1,4 +1,3 @@
-import React from 'react';
 import { ValidationTestButton } from '@/components/importer/ValidationTestButton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle2, AlertTriangle, FileText, Wand2 } from 'lucide-react';

@@ -1,4 +1,3 @@
-import React from 'react';
 import { BRAND } from '@/branding/brand';
 
 // Email template interface for WelcomeBeta

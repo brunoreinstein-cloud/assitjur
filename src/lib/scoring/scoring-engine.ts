@@ -605,7 +605,7 @@ export class ScoringEngine {
   }
 
   private static extractRiskFactors(components: ScoreBreakdown['components']): string[] {
-    const factors = []
+    const factors: any[] = []
 
     Object.entries(components).forEach(([key, component]) => {
       if (component.score >= 30) {

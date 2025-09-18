@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -92,7 +92,7 @@ const OpenAIKeys = () => {
         return result.data;
 
       } catch (error) {
-        throw new Error(`Falha ao salvar chave: ${error.message}`);
+        throw new Error(`Falha ao salvar chave: ${error instanceof Error ? error.message : String(error)}`);
       }
     },
     onSuccess: () => {

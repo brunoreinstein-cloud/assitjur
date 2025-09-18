@@ -227,10 +227,10 @@ export async function apiCall<T>(
   if (fallback !== undefined) {
     logger.warn(`Usando fallback após ${retries + 1} tentativas`, {
       service,
-      error: lastError.message
+      error: lastError?.message ?? 'Unknown error'
     }, service);
     return fallback;
   }
   
-  throw lastError;
+  throw lastError ?? new Error('Unknown error');
 }

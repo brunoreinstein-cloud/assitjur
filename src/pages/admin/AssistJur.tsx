@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,7 +8,7 @@ import { BarChart3, FileSpreadsheet, RefreshCw, Upload } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function AssistJur() {
-  const { user } = useAuth();
+  const { } = useAuth();
 
   return (
     <div className="container mx-auto py-6 space-y-6">

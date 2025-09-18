@@ -33,7 +33,7 @@ export async function fetchWithAuth(url: string, init?: RequestInit) {
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  let response: Response;
+  let response: Response | undefined;
   let body: any;
   const execute = async () => {
     response = await fetch(url, { ...init, headers });
@@ -57,7 +57,7 @@ export async function fetchWithAuth(url: string, init?: RequestInit) {
   }
 
   let refreshAttempted = false;
-  if ((response.status === 401 || response.status === 403) && !refreshAttempted) {
+  if (response && (response.status === 401 || response.status === 403) && !refreshAttempted) {
     refreshAttempted = true;
     try {
       const { data: refreshed, error } = await supabase.auth.refreshSession();
@@ -73,24 +73,24 @@ export async function fetchWithAuth(url: string, init?: RequestInit) {
   }
 
   const responseRequestId =
-    body?.requestId || response.headers.get('x-request-id') || requestId;
+    body?.requestId || response?.headers.get('x-request-id') || requestId;
 
-  if (!response.ok) {
+  if (!response?.ok) {
     const errorResponse = {
       ok: false,
-      status: response.status,
+      status: response?.status ?? 0,
       requestId: responseRequestId,
-      error: body?.error || response.statusText,
+      error: body?.error || (response?.statusText ?? 'Unknown error'),
       details: body?.details
     };
 
-    if (response.status === 401 || response.status === 403) {
+    if (response?.status === 401 || response?.status === 403) {
       const isAuthError =
         AuthErrorHandler.isAuthError(body) ||
-        AuthErrorHandler.isAuthError({ message: response.statusText });
+        AuthErrorHandler.isAuthError({ message: response?.statusText ?? 'Unknown error' });
 
       if (isAuthError) {
-        AuthErrorHandler.handleAuthError(body || { message: response.statusText });
+        AuthErrorHandler.handleAuthError(body || { message: response?.statusText ?? 'Unknown error' });
       }
     }
 
@@ -99,7 +99,7 @@ export async function fetchWithAuth(url: string, init?: RequestInit) {
 
   return {
     ok: true,
-    status: response.status,
+    status: response?.status ?? 0,
     requestId: responseRequestId,
     data: body
   };

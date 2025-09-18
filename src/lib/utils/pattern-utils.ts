@@ -330,7 +330,7 @@ export function groupPatternsByType(analysis: AnalysisResult) {
  * Extract actionable items from analysis
  */
 export function extractActionableItems(analysis: AnalysisResult) {
-  const items = []
+  const items: any[] = []
 
   // Immediate actions
   analysis.duploPapel

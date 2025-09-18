@@ -164,7 +164,7 @@ async function loadRawData(file: File, sheet: DetectedSheet): Promise<any[]> {
         const objectData = rows.map(row => {
           const obj: any = {};
           headers.forEach((header, index) => {
-            obj[header] = row[index];
+            obj[header] = (row as any)[index];
           });
           return obj;
         });

@@ -1,4 +1,3 @@
-import React from 'react';
 import { ProcessosDataTable } from '@/components/assistjur/ProcessosDataTable';
 import { BulkDeleteManager } from '@/components/admin/BulkDeleteManager';
 import { RestoreButton } from '@/components/admin/RestoreButton';

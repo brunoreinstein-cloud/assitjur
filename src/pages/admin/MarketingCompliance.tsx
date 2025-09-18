@@ -1,4 +1,3 @@
-import React from 'react';
 import { AppLayout } from '@/components/navigation/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

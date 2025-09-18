@@ -153,7 +153,7 @@ export function useAssistente() {
           notifyError(
             'Limite de créditos atingido',
             'As funções de chat/assistente estão temporariamente indisponíveis. Tente novamente mais tarde.',
-            { duration: null }
+            { duration: undefined }
           );
           setAgentOnline(false);
           updateChatMessage(assistantMessageId, {

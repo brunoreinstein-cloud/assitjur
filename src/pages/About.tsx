@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { AboutHeader } from '@/components/sobre/AboutHeader';
 import { HeroAbout } from '@/components/sobre/HeroAbout';
 import { HubSection } from '@/components/sobre/HubSection';

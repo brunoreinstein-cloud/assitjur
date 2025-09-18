@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,7 +10,6 @@ import {
   TrendingUp, 
   TrendingDown,
   Calendar,
-  Filter,
   FileText,
   BarChart3,
   Brain,
@@ -556,7 +555,7 @@ const Analytics = () => {
 
         <TabsContent value="recommendations" className="space-y-6">
           {/* AI-Generated Insights */}
-          {reportData?.insights?.length > 0 && (
+          {(reportData?.insights?.length ?? 0) > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -568,7 +567,7 @@ const Analytics = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {reportData.insights.map((insight: any, index: number) => (
+                {reportData?.insights?.map((insight: any, index: number) => (
                   <div 
                     key={index}
                     className={`border-l-4 pl-4 ${
@@ -602,8 +601,8 @@ const Analytics = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {reportData?.recommendations?.length > 0 ? (
-                reportData.recommendations.map((rec: any, index: number) => (
+              {(reportData?.recommendations?.length ?? 0) > 0 ? (
+                reportData?.recommendations?.map((rec: any, index: number) => (
                   <div 
                     key={index}
                     className={`border-l-4 pl-4 ${
