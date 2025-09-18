@@ -144,9 +144,8 @@
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19",
     "vite-tsconfig-paths": "^5.1.4",
-    "yargs": "^17.7.2"
-  },
-  "engines": {
-    "node": ">=18 <20"
-  }
+    "yargs": "^17{
+-  "engines": { "node": ">=18 <20" }
++  "engines": { "node": "22.x" }
 }
+
