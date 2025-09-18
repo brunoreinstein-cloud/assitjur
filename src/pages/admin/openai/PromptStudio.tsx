@@ -343,7 +343,7 @@ const PromptStudio = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {promptsByType[type.id].map((prompt) => (
+                      {promptsByType[type.id].map((prompt: any) => (
                         <TableRow key={prompt.id}>
                           <TableCell className="font-medium">{prompt.label}</TableCell>
                           <TableCell>v{prompt.version}</TableCell>

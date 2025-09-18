@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Upload, FileSpreadsheet, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useAssistJurImport } from '@/hooks/useAssistJurImport';
 import { ValidationModal } from '@/components/assistjur/ValidationModal';
 import { AssistJurImportResult } from '@/types/assistjur';
+import { asString } from '@/types/safe';
 
 export const AssistJurUploadWizard = () => {
   const [validationResult, setValidationResult] = useState<AssistJurImportResult | null>(null);
@@ -116,19 +117,19 @@ export const AssistJurUploadWizard = () => {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 <div className="bg-accent p-3 rounded-lg">
-                  <div className="text-2xl font-bold text-foreground">{validationResult.report.summary.total_rows}</div>
+                  <div className="text-2xl font-bold text-foreground">{validationResult.report?.summary.total_rows ?? 0}</div>
                   <div className="text-sm text-muted-foreground">Total</div>
                 </div>
                 <div className="bg-green-50 p-3 rounded-lg">
-                  <div className="text-2xl font-bold text-green-700">{validationResult.report.summary.valid_rows}</div>
+                  <div className="text-2xl font-bold text-green-700">{validationResult.report?.summary.valid_rows ?? 0}</div>
                   <div className="text-sm text-green-600">Válidas</div>
                 </div>
                 <div className="bg-red-50 p-3 rounded-lg">
-                  <div className="text-2xl font-bold text-red-700">{validationResult.report.summary.error_count}</div>
+                  <div className="text-2xl font-bold text-red-700">{validationResult.report?.summary.error_count ?? 0}</div>
                   <div className="text-sm text-red-600">Erros</div>
                 </div>
                 <div className="bg-amber-50 p-3 rounded-lg">
-                  <div className="text-2xl font-bold text-amber-700">{validationResult.report.summary.warning_count}</div>
+                  <div className="text-2xl font-bold text-amber-700">{validationResult.report?.summary.warning_count ?? 0}</div>
                   <div className="text-sm text-amber-600">Avisos</div>
                 </div>
               </div>
@@ -149,8 +150,8 @@ export const AssistJurUploadWizard = () => {
         <ValidationModal
           open={showValidation}
           onClose={() => setShowValidation(false)}
-          report={validationResult.report}
-          uploadId={validationResult.upload_id}
+          report={validationResult.report ?? { issues: [], summary: { total_rows: 0, valid_rows: 0, error_count: 0, warning_count: 0, total_sheets: 0, success_rate: 0 }, samples: { processos: [], testemunhas: [] }, compliance: { lgpd_compliant: true, warning_message: '' } }}
+          uploadId={asString(validationResult.upload_id)}
         />
       )}
     </>

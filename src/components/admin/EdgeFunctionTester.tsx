@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -58,11 +58,12 @@ export const EdgeFunctionTester = () => {
             headers: Object.fromEntries(response.headers.entries())
           }
         });
-      } catch (error) {
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
         newResults.push({
           test: 'Basic Connectivity',
           status: 'error',
-          message: `Connection failed: ${error.message}`,
+          message: `Connection failed: ${message}`,
           details: error
         });
       }
@@ -98,7 +99,7 @@ export const EdgeFunctionTester = () => {
         newResults.push({
           test: 'CORS Preflight',
           status: 'error',
-          message: `CORS test failed: ${error.message}`,
+          message: `CORS test failed: ${error instanceof Error ? error.message : String(error)}`,
           details: error
         });
       }
@@ -119,7 +120,7 @@ export const EdgeFunctionTester = () => {
         newResults.push({
           test: 'Authentication & Function Call',
           status: 'error',
-          message: `Function call failed: ${error.message}`,
+          message: `Function call failed: ${error instanceof Error ? error.message : String(error)}`,
           details: error
         });
       }
@@ -157,7 +158,7 @@ export const EdgeFunctionTester = () => {
         newResults.push({
           test: 'Small Payload Import',
           status: 'error',
-          message: `Payload test failed: ${error.message}`,
+          message: `Payload test failed: ${error instanceof Error ? error.message : String(error)}`,
           details: error
         });
       }

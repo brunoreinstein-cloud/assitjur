@@ -133,7 +133,7 @@ const WizardSteps: React.FC<WizardStepsProps> = ({
     if (stepIndex < currentIndex) {
       return 'completed';
     } else if (stepIndex === currentIndex) {
-      if (stepId === 'validation' && validationResults?.errors.length > 0) {
+      if (stepId === 'validation' && (validationResults?.errors?.length ?? 0) > 0) {
         return 'error';
       }
       return 'current';
@@ -848,7 +848,7 @@ export function ImportModal() {
             </AlertDescription>
           </Alert>
 
-          {validationResults?.processos.length > 0 && (
+          {(validationResults?.processos?.length ?? 0) > 0 && (
             <div className="border rounded-lg overflow-hidden">
               <table className="w-full">
                 <thead className="bg-muted">
@@ -859,7 +859,7 @@ export function ImportModal() {
                   </tr>
                 </thead>
                 <tbody>
-                  {validationResults.processos.slice(0, 3).map((processo, i) => (
+                  {validationResults?.processos?.slice(0, 3).map((processo, i) => (
                     <tr key={i} className="border-t">
                       <td className="p-3 font-mono text-sm">{processo.cnj}</td>
                       <td className="p-3">{processo.reclamante_limpo}</td>
@@ -964,7 +964,7 @@ export function ImportModal() {
 
         <WizardSteps
           currentStep={currentStep}
-          validationResults={validationResults}
+          validationResults={validationResults ?? undefined}
           isProcessing={isProcessing}
         />
 

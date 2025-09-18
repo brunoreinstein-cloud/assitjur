@@ -193,7 +193,7 @@ export async function apiCall<T>(
 ): Promise<T> {
   const { retries = 2, timeout = 30000, fallback } = options || {};
   
-  let lastError: AppError;
+  let lastError: AppError | undefined;
   
   for (let attempt = 1; attempt <= retries + 1; attempt++) {
     try {

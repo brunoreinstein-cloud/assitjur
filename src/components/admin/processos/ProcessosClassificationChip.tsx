@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,6 +30,14 @@ interface ProcessosClassificationChipProps {
 }
 
 type ClassificationType = 'A validar' | 'Descartar' | 'Baixo' | 'Médio' | 'Alto';
+
+const LABELS: Record<ClassificationType, string> = {
+  'A validar': 'A validar',
+  'Descartar': 'Descartar',
+  'Baixo': 'Baixo',
+  'Médio': 'Médio',
+  'Alto': 'Alto'
+};
 
 const CLASSIFICATION_CONFIG = {
   'A validar': {
@@ -86,7 +94,8 @@ export function ProcessosClassificationChip({
     'Outro (especificar abaixo)'
   ];
 
-  const impactos = {
+  const impactos: Record<ClassificationType, string> = {
+    'A validar': 'Processo aguardando classificação.',
     'Descartar': 'Este processo será marcado como não relevante e poderá ser excluído em limpezas futuras.',
     'Baixo': 'Processo classificado como baixo risco, monitoramento básico.',
     'Médio': 'Processo requer atenção moderada e acompanhamento regular.',
@@ -178,7 +187,7 @@ export function ProcessosClassificationChip({
         onClick={handleChipClick}
       >
         <Icon className="h-3 w-3 mr-1" />
-        {currentClassification}
+        {LABELS[currentClassification]}
       </Badge>
 
       <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>

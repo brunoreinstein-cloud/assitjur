@@ -90,7 +90,7 @@ export function ProcessosDataTable() {
       const headers = ['CNJ', 'Reclamante', 'Reclamada', 'Testemunhas Ativas', 'Testemunhas Passivas', 'Qtd Total', 'Classificação', 'Data Criação'];
       const csvData = [
         headers.join(','),
-        ...processos.map(processo => [
+        ...processos.map((processo: any) => [
           processo.cnj,
           `"${processo.reclamante}"`,
           `"${processo.reclamada}"`,
@@ -284,7 +284,7 @@ export function ProcessosDataTable() {
                   </TableCell>
                 </TableRow>
               ) : (
-                processos.map((processo) => (
+                processos.map((processo: any) => (
                   <TableRow key={processo.cnj} className="hover:bg-muted/20">
                     <TableCell className="font-mono text-xs max-w-[120px] truncate">
                       {applyPIIMask(processo.cnj, isPiiMasked)}

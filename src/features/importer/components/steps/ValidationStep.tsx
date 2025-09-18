@@ -142,7 +142,7 @@ export function ValidationStep() {
       const correctionsMap = new Map<string, any>();
       
       corrections.forEach((row, rowIndex) => {
-        row.corrections.forEach((correction) => {
+        row.corrections.forEach((correction: any) => {
           // Find field index in the data structure for correct column mapping
           const sampleData = correctedData[0] || {};
           const fieldNames = Object.keys(sampleData);

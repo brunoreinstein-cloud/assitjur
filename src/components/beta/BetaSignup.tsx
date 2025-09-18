@@ -281,7 +281,6 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <input
           type="text"
-          name="website"
           className="hidden"
           tabIndex={-1}
           autoComplete="off"

@@ -177,7 +177,7 @@ RECOMENDAÇÕES
 =============
 ${validationResults.errors.length > 0 ? '- Corrija os erros listados antes de prosseguir com a importação' : ''}
 ${validationResults.warnings.length > 0 ? '- Revise os avisos para garantir a qualidade dos dados' : ''}
-${validationResults.headerMapping?.unmappedFields.length > 0 ? '- Considere mapear as colunas não reconhecidas' : ''}
+${(validationResults.headerMapping?.unmappedFields?.length ?? 0) > 0 ? '- Considere mapear as colunas não reconhecidas' : ''}
 ${validationResults.validRows === 0 ? '- Arquivo não contém dados válidos para importação' : ''}
 
 ---

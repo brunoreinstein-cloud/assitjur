@@ -93,7 +93,7 @@ export async function buildPadroesAgregados(
   const testemunhasProfissionais = buildTestemunhasProfissionais(testemunhas, processos);
   
   // 3. Advogados recorrentes
-  const advogadosRecorrentes = buildAdvogadosRecorrentes(processos, testemunhas);
+  const advogadosRecorrentes = buildAdvogadosRecorrentes(processos);
   
   // 4. Concentração geográfica
   const { concentracaoUF, concentracaoComarca } = buildConcentracaoGeografica(processos);
@@ -191,8 +191,7 @@ function buildTestemunhasProfissionais(
  * Constrói lista de advogados recorrentes
  */
 function buildAdvogadosRecorrentes(
-  processos: ProcessoData[],
-  testemunhas: TestemunhaData[]
+  processos: ProcessoData[]
 ): AdvogadoRecorrente[] {
   const advogadoStats = new Map<string, {
     processos: Set<string>;
@@ -232,7 +231,7 @@ function buildAdvogadosRecorrentes(
       }
       
       const stats = advogadoStats.get(nome)!;
-      stats.processos.add(processo.cnj);
+      stats.processos.add(processo.cnj ?? '');
       stats.ufs.set(uf, (stats.ufs.get(uf) || 0) + 1);
       
       padroes.forEach(p => stats.padroes.add(p));

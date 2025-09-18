@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { ChevronUp, ChevronDown, ChevronsUpDown, Eye, MoreHorizontal, FileText, Edit, Trash2, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -14,6 +14,8 @@ import { ProcessoRow } from '@/types/processos-explorer';
 import { TooltipWrapper } from '@/components/ui/tooltip-wrapper';
 import { ProcessosClassificationChip } from '@/components/admin/processos/ProcessosClassificationChip';
 import { formatDatePtBR, formatRelativeTime, formatCNJ } from '@/utils/date-formatter';
+import { maskPII } from '@/utils/pii-mask';
+import { asString } from '@/types/safe';
 
 interface ProcessosGridProps {
   data: ProcessoRow[];
@@ -263,7 +265,7 @@ export const ProcessosGrid = memo(function ProcessosGrid({
                   </TableCell>
                   
                   <TableCell>
-                    <TooltipWrapper content={processo.comarca}>
+                    <TooltipWrapper content={asString(processo.comarca)}>
                       <span className="text-sm">{truncateText(processo.comarca || '—', 15)}</span>
                     </TooltipWrapper>
                   </TableCell>
@@ -281,17 +283,17 @@ export const ProcessosGrid = memo(function ProcessosGrid({
                   </TableCell>
                   
                   <TableCell>
-                    <TooltipWrapper content={maskPII(reclamanteText)}>
+                    <TooltipWrapper content={maskPII(asString(reclamanteText)) ?? ''}>
                       <span className="text-sm">
-                        {truncateText(maskPII(reclamanteText), 20)}
+                        {truncateText(maskPII(asString(reclamanteText)) ?? '', 20)}
                       </span>
                     </TooltipWrapper>
                   </TableCell>
                   
                   <TableCell>
-                    <TooltipWrapper content={maskPII(reuText)}>
+                    <TooltipWrapper content={maskPII(asString(reuText)) ?? ''}>
                       <span className="text-sm">
-                        {truncateText(maskPII(reuText), 20)}
+                        {truncateText(maskPII(asString(reuText)) ?? '', 20)}
                       </span>
                     </TooltipWrapper>
                   </TableCell>

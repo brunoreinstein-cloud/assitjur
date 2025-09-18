@@ -389,10 +389,10 @@ export function ValidationStep({ session, file, onComplete }: ValidationStepProp
                 <CardTitle>Downloads Disponíveis</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {result.downloadUrls.fixedXlsx && (
+                {result.downloadUrls?.fixedXlsx && (
                   <div className="space-y-2">
                     <Button asChild className="w-full">
-                      <a href={result.downloadUrls.fixedXlsx} download={`${session.fileName.replace(/\.[^/.]+$/, '')}_corrigido.xlsx`}>
+                      <a href={result.downloadUrls?.fixedXlsx} download={`${session.fileName.replace(/\.[^/.]+$/, '')}_corrigido.xlsx`}>
                         <Download className="h-4 w-4 mr-2" />
                         Baixar Arquivo Corrigido (XLSX)
                       </a>
@@ -405,18 +405,18 @@ export function ValidationStep({ session, file, onComplete }: ValidationStepProp
                   </div>
                 )}
                 
-                {result.downloadUrls.reportCsv && (
+                {result.downloadUrls?.reportCsv && (
                   <Button asChild variant="outline" className="w-full">
-                    <a href={result.downloadUrls.reportCsv} download>
+                    <a href={result.downloadUrls?.reportCsv} download>
                       <FileX className="h-4 w-4 mr-2" />
                       Baixar Relatório (CSV)
                     </a>
                   </Button>
                 )}
                 
-                {result.downloadUrls.reportJson && (
+                {result.downloadUrls?.reportJson && (
                   <Button asChild variant="outline" className="w-full">
-                    <a href={result.downloadUrls.reportJson} download>
+                    <a href={result.downloadUrls?.reportJson} download>
                       <Download className="h-4 w-4 mr-2" />
                       Baixar Relatório (JSON)
                     </a>

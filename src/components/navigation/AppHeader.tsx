@@ -1,4 +1,4 @@
-import React from 'react';
+import { RoutesMap, BreadcrumbInfo } from '@/types/routes';
 import { useLocation } from 'react-router-dom';
 import { 
   SidebarTrigger, 
@@ -25,7 +25,7 @@ import {
   Home
 } from 'lucide-react';
 
-const routeConfig = {
+const routeConfig: RoutesMap = {
   '/': { label: 'Início', icon: Home },
   '/chat': { label: 'Chat Assistente', icon: MessageSquare },
   '/dados': { label: 'Dados', icon: Database },
@@ -48,9 +48,9 @@ export function AppHeader() {
   const location = useLocation();
   const { open: sidebarOpen } = useSidebar();
 
-  const generateBreadcrumbs = () => {
+  const generateBreadcrumbs = (): BreadcrumbInfo[] => {
     const pathSegments = location.pathname.split('/').filter(Boolean);
-    const breadcrumbs = [];
+    const breadcrumbs: BreadcrumbInfo[] = [];
 
     // Always start with home if not on home page
     if (location.pathname !== '/') {
@@ -81,7 +81,7 @@ export function AppHeader() {
   };
 
   const breadcrumbs = generateBreadcrumbs();
-  const currentRoute = routeConfig[location.pathname];
+  const currentRoute = routeConfig[location.pathname] ?? routeConfig["/"];
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -113,9 +113,9 @@ export function AppHeader() {
             <Breadcrumb>
               <BreadcrumbList>
                 {breadcrumbs.map((breadcrumb, index) => (
-                  <React.Fragment key={breadcrumb.path}>
+                  <div key={breadcrumb.path}>
                     <BreadcrumbItem>
-                      {breadcrumb.isLast ? (
+                      {breadcrumb.isLast ?? false ? (
                         <BreadcrumbPage className="flex items-center gap-2">
                           <breadcrumb.icon
                             className="h-4 w-4"
@@ -147,7 +147,7 @@ export function AppHeader() {
                         />
                       </BreadcrumbSeparator>
                     )}
-                  </React.Fragment>
+                  </div>
                 ))}
               </BreadcrumbList>
             </Breadcrumb>

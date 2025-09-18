@@ -203,9 +203,9 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
           onOpenChange(false);
           window.location.reload();
         } else {
-          const failedOps = data?.results?.filter(r => !r.success) || [];
+          const failedOps = data?.results?.filter((r: any) => !r.success) || [];
           if (failedOps.length > 0) {
-            throw new Error(`Algumas operações falharam: ${failedOps.map(op => op.message).join(', ')}`);
+            throw new Error(`Algumas operações falharam: ${failedOps.map((op: any) => op.message).join(', ')}`);
           }
         }
       }, 'CleanupModal.executeCleanup');

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -206,9 +206,18 @@ export function ReportGenerator({ onGenerate, mockData }: ReportGeneratorProps) 
     }));
   };
   
-  const handleExportReport = (format: 'pdf' | 'docx' | 'json') => {
+  const handleExportReport = (format: 'pdf' | 'docx' | 'json' | 'csv') => {
     if (format === 'pdf') {
       window.print();
+      return;
+    }
+    if (format === 'csv') {
+      // CSV export not implemented yet
+      toast({
+        title: "Exportação CSV",
+        description: "Funcionalidade em desenvolvimento.",
+        variant: "default",
+      });
       return;
     }
     toast({
