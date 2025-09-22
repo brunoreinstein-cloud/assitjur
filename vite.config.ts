@@ -89,12 +89,12 @@ export default defineConfig(async ({ mode }) => {
     },
     plugins: plugins.filter(Boolean),
     resolve: {
-      alias: {
-        '@': path.resolve(__dirname, './src'),
-        '@components': path.resolve(__dirname, './src/components'),
-        '@hooks': path.resolve(__dirname, './src/hooks'),
-        '@lib': path.resolve(__dirname, './src/lib'),
-      },
+      alias: [
+        { find: '@', replacement: path.resolve(__dirname, 'src') },
+        { find: '@components', replacement: path.resolve(__dirname, 'src/components') },
+        { find: '@hooks', replacement: path.resolve(__dirname, 'src/hooks') },
+        { find: '@lib', replacement: path.resolve(__dirname, 'src/lib') }
+      ]
     },
     esbuild: {
       target: 'ES2022',
