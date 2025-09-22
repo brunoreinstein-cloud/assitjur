@@ -67,7 +67,9 @@ function spaFallbackPlugin(): Plugin {
 export default defineConfig(async ({ mode }) => {
   const plugins = [
     react(),
-    tsconfigPaths(),
+    tsconfigPaths({
+      projects: ["./tsconfig.dev.json"]
+    }),
     mode === 'development' && componentTagger(),
     mode !== 'development' && spaFallbackPlugin(),
     mode !== 'development' && compressPlugin(),
@@ -85,6 +87,9 @@ export default defineConfig(async ({ mode }) => {
       port: 8080,
     },
     plugins: plugins.filter(Boolean),
+    esbuild: {
+      target: 'ES2022',
+    },
     define: {
       global: 'globalThis',
       'process.env': {},

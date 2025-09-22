@@ -38,6 +38,7 @@ import { ImportModal } from "@/components/mapa-testemunhas/ImportModal";
 import { MaskPIISwitch } from "@/components/mapa/MaskPIISwitch";
 import { ExportCsvButton } from "@/components/mapa/ExportCsvButton";
 import { useToast } from "@/hooks/use-toast";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { fetchPorProcesso, fetchPorTestemunha } from "@/lib/supabase";
@@ -47,6 +48,7 @@ import { ChatBar } from "@/features/testemunhas/ChatBar";
 import { ResultBlocks } from "@/features/testemunhas/ResultBlocks";
 import { LoadMoreButton } from "@/components/mapa-testemunhas/LoadMoreButton";
 import { ConnectionStatus } from "@/components/mapa-testemunhas/ConnectionStatus";
+import { DataState, DataStatus } from "@/components/ui/data-state";
 
 // Updated types to match mapa-testemunhas structure
 type Processo = PorProcesso;
