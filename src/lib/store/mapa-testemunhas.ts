@@ -86,6 +86,8 @@ interface MapaTestemunhasStore {
   pageSize: number;
   totalProcessos: number;
   totalTestemunhas: number;
+  hasMoreProcessos: boolean;
+  hasMoreTestemunhas: boolean;
 
   // Chat State
   chatKind: QueryKind;
@@ -121,6 +123,10 @@ interface MapaTestemunhasStore {
   setTestemunhasPage: (page: number) => void;
   setTotalProcessos: (total: number) => void;
   setTotalTestemunhas: (total: number) => void;
+  setHasMoreProcessos: (hasMore: boolean) => void;
+  setHasMoreTestemunhas: (hasMore: boolean) => void;
+  loadMoreProcessos: () => void;
+  loadMoreTestemunhas: () => void;
   removeProcesso: (cnj: string) => PorProcesso | null;
   restoreProcesso: (processo: PorProcesso) => void;
   removeTestemunha: (nome: string) => PorTestemunha | null;
@@ -192,9 +198,11 @@ export const useMapaTestemunhasStore = create<MapaTestemunhasStore>((set, get) =
   activeView: null,
   processosPage: 1,
   testemunhasPage: 1,
-  pageSize: 10,
+  pageSize: 100,
   totalProcessos: 0,
   totalTestemunhas: 0,
+  hasMoreProcessos: false,
+  hasMoreTestemunhas: false,
 
   // Chat initial state
   chatKind: 'processo',
@@ -299,6 +307,16 @@ export const useMapaTestemunhasStore = create<MapaTestemunhasStore>((set, get) =
   setTestemunhasPage: (page) => set({ testemunhasPage: page }),
   setTotalProcessos: (total) => set({ totalProcessos: total }),
   setTotalTestemunhas: (total) => set({ totalTestemunhas: total }),
+  setHasMoreProcessos: (hasMore) => set({ hasMoreProcessos: hasMore }),
+  setHasMoreTestemunhas: (hasMore) => set({ hasMoreTestemunhas: hasMore }),
+  loadMoreProcessos: () =>
+    set((state) => ({
+      processosPage: state.processosPage + 1,
+    })),
+  loadMoreTestemunhas: () =>
+    set((state) => ({
+      testemunhasPage: state.testemunhasPage + 1,
+    })),
   removeProcesso: (cnj) => {
     let removed: PorProcesso | null = null;
     set((state) => {

@@ -199,8 +199,8 @@ const mapaRequestSchema = z.object({
     .coerce.number()
     .int()
     .min(1)
-    .default(20)
-    .transform(n => (n > 200 ? 200 : n)),
+    .max(100)
+    .default(20),
   sortBy: z.string().trim().optional(),
   sortDir: z.enum(["asc", "desc"]).optional(),
   filters: z

@@ -45,9 +45,8 @@ import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
 import { normalizeMapaRequest } from "@/lib/normalizeMapaRequest";
 import { ChatBar } from "@/features/testemunhas/ChatBar";
 import { ResultBlocks } from "@/features/testemunhas/ResultBlocks";
-import { LoadingHints } from "@/features/testemunhas/LoadingHints";
-import { useDebounce } from "@/hooks/useDebounce";
-import { DataState, DataStatus } from "@/components/ui/data-state";
+import { LoadMoreButton } from "@/components/mapa-testemunhas/LoadMoreButton";
+import { ConnectionStatus } from "@/components/mapa-testemunhas/ConnectionStatus";
 
 // Updated types to match mapa-testemunhas structure
 type Processo = PorProcesso;
@@ -200,7 +199,7 @@ const MapaPage = () => {
         fetchPorProcesso(
           normalizeMapaRequest({
             page: 1,
-            limit: 1000,
+            limit: 100,
             filters: debouncedProcessFilters
           }),
           processoController.signal
@@ -208,7 +207,7 @@ const MapaPage = () => {
         fetchPorTestemunha(
           normalizeMapaRequest({
             page: 1,
-            limit: 1000,
+            limit: 100,
             filters: debouncedTestemunhaFilters
           }),
           testemunhaController.signal
@@ -224,10 +223,10 @@ const MapaPage = () => {
 
       const errorMsg = processosResult.error || testemunhasResult.error;
       if (errorMsg) {
-        setError(true, errorMsg);
+        setError(true, `Erro ao conectar com servidor: ${errorMsg}`);
         toast({
-          title: "Falha ao carregar dados",
-          description: errorMsg,
+          title: "Falha ao conectar",
+          description: `Erro de validação ou conexão: ${errorMsg}. Verifique os filtros e tente novamente.`,
           variant: "destructive",
         });
       } else {
@@ -247,13 +246,13 @@ const MapaPage = () => {
       }
       console.error('Erro ao carregar dados:', error);
       const message = error instanceof Error
-        ? error.message
-        : 'Verifique filtros e tente novamente.';
+        ? `Erro de conexão: ${error.message}`
+        : 'Erro interno. Verifique sua conexão e filtros.';
       setError(true, message);
 
       toast({
-        title: "Falha ao carregar dados",
-        description: message,
+        title: "Falha na conexão",
+        description: `${message} Se o problema persistir, os dados mock serão exibidos.`,
         variant: "destructive",
       });
     } finally {
@@ -466,6 +465,14 @@ const MapaPage = () => {
             </div>
 
             <TabsContent value="processos" className="space-y-6">
+              <ConnectionStatus
+                isLoading={isLoading}
+                hasError={hasError}
+                errorMessage={errorMessage}
+                isConnected={!hasError || processos.length > 3}
+                dataCount={processos.length}
+                dataType="processos"
+              />
               <ProcessoFilters />
               {processoStatus !== 'success' ? (
                 <DataState status={processoStatus} onRetry={loadData} />
@@ -475,6 +482,14 @@ const MapaPage = () => {
             </TabsContent>
 
             <TabsContent value="testemunhas" className="space-y-6">
+              <ConnectionStatus
+                isLoading={isLoading}
+                hasError={hasError}
+                errorMessage={errorMessage}
+                isConnected={!hasError || testemunhas.length > 3}
+                dataCount={testemunhas.length}
+                dataType="testemunhas"
+              />
               <TestemunhaFilters />
               {testemunhaStatus !== 'success' ? (
                 <DataState status={testemunhaStatus} onRetry={loadData} />
