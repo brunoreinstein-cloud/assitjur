@@ -15,7 +15,6 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
       "@components/*": ["./src/components/*"],
@@ -23,6 +22,5 @@
       "@lib/*": ["./src/lib/*"]
     }
   },
-  "include": ["src/**/*", "vite.config.ts"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx"]
+  "include": ["src", "vite.config.ts"]
 }
