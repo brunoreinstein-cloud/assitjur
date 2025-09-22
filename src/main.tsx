@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import '@/polyfills/process'
 import App from '@/App'
 import './styles/assistjur-brand.css'
 import { MaintenanceProvider } from '@/hooks/useMaintenance'

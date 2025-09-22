@@ -87,6 +87,7 @@ export default defineConfig(async ({ mode }) => {
     plugins: plugins.filter(Boolean),
     define: {
       global: 'globalThis',
+      'process.env': {},
     },
     build: {
       target: 'ES2022',
