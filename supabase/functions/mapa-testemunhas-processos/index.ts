@@ -56,7 +56,8 @@ serve('mapa-testemunhas-processos', async (req) => {
   const from = (page - 1) * limit;
   const to = from + limit - 1;
   let query = supabase
-    .rpc("assistjur.listar_processos", {}, { count: "exact" })
+    .from("processos")
+    .select("*", { count: "exact" })
     .range(from, to);
 
   query = applyProcessosFilters(query, filtros);

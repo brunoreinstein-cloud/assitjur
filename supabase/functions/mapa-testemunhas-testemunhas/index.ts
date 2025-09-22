@@ -56,7 +56,7 @@ serve('mapa-testemunhas-testemunhas', async (req) => {
   const from = (page - 1) * limit;
   const to = from + limit - 1;
   let query = supabase
-    .from("assistjur_testemunhas_view")
+    .from("pessoas")
     .select("*", { count: "exact" })
     .range(from, to);
 
