@@ -5,6 +5,7 @@ import { componentTagger } from "lovable-tagger";
 import { brotliCompress, gzip } from "node:zlib";
 import { promisify } from "node:util";
 import type { NormalizedOutputOptions, OutputBundle, PluginContext } from "rollup";
+import path from "path";
 
 const gzipAsync = promisify(gzip);
 const brotliAsync = promisify(brotliCompress);
@@ -68,7 +69,7 @@ export default defineConfig(async ({ mode }) => {
   const plugins = [
     react(),
     tsconfigPaths({
-      projects: ["./tsconfig.dev.json"]
+      projects: ["./tsconfig.vite.json"]
     }),
     mode === 'development' && componentTagger(),
     mode !== 'development' && spaFallbackPlugin(),
