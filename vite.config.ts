@@ -1,6 +1,5 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import tsconfigPaths from "vite-tsconfig-paths";
 import { componentTagger } from "lovable-tagger";
 import { brotliCompress, gzip } from "node:zlib";
 import { promisify } from "node:util";
@@ -68,9 +67,6 @@ function spaFallbackPlugin(): Plugin {
 export default defineConfig(async ({ mode }) => {
   const plugins = [
     react(),
-    tsconfigPaths({
-      projects: ["./tsconfig.vite.json"]
-    }),
     mode === 'development' && componentTagger(),
     mode !== 'development' && spaFallbackPlugin(),
     mode !== 'development' && compressPlugin(),
@@ -88,6 +84,14 @@ export default defineConfig(async ({ mode }) => {
       port: 8080,
     },
     plugins: plugins.filter(Boolean),
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+        '@components': path.resolve(__dirname, './src/components'),
+        '@hooks': path.resolve(__dirname, './src/hooks'),
+        '@lib': path.resolve(__dirname, './src/lib'),
+      },
+    },
     esbuild: {
       target: 'ES2022',
     },
