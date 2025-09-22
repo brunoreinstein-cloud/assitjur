@@ -14,7 +14,7 @@ export interface Env {
 
 export function getEnv(): Env {
   // Afrouxa exigência no prerender (postbuild em Node).
-  if (process.env.PRERENDER === '1') {
+  if (typeof process !== 'undefined' && process.env.PRERENDER === '1') {
     return {
       supabaseUrl: process.env.VITE_SUPABASE_URL ?? 'https://dummy.supabase.local',
       supabaseKey: process.env.VITE_SUPABASE_ANON_KEY ?? 'anon',
@@ -33,7 +33,7 @@ export function getEnv(): Env {
   // Secure environment configuration - no hardcoded credentials
   const isNode = typeof window === 'undefined';
   const viteEnv = (typeof import.meta !== 'undefined' ? (import.meta as any).env : undefined) as Record<string, string | undefined> | undefined;
-  const nodeEnv = isNode ? (process.env as Record<string, string | undefined>) : undefined;
+  const nodeEnv = isNode && typeof process !== 'undefined' ? (process.env as Record<string, string | undefined>) : undefined;
 
   const supabaseUrl = (viteEnv?.VITE_SUPABASE_URL) || nodeEnv?.VITE_SUPABASE_URL || nodeEnv?.SUPABASE_URL;
   const supabaseKey = (viteEnv?.VITE_SUPABASE_ANON_KEY) || (viteEnv?.VITE_SUPABASE_PUBLISHABLE_KEY) || nodeEnv?.VITE_SUPABASE_ANON_KEY || nodeEnv?.VITE_SUPABASE_PUBLISHABLE_KEY || nodeEnv?.SUPABASE_ANON_KEY || nodeEnv?.SUPABASE_PUBLISHABLE_KEY;
