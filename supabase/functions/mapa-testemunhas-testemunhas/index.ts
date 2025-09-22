@@ -5,6 +5,7 @@ import { ListaResponseSchema, TestemunhasRequestSchema } from "../_shared/mapa-c
 import { applyTestemunhasFilters } from "../_shared/mapa-filters.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { toFieldErrors } from "../_shared/validation.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.56.0";
 
 const origins = parseAllowedOrigins(Deno.env.get("ALLOWED_ORIGINS"));
 

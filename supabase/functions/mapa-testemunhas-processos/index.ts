@@ -5,6 +5,7 @@ import { ListaResponseSchema, ProcessosRequestSchema } from "../_shared/mapa-con
 import { applyProcessosFilters } from "../_shared/mapa-filters.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { toFieldErrors } from "../_shared/validation.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.56.0";
 
 const origins = parseAllowedOrigins(Deno.env.get("ALLOWED_ORIGINS"));
 
