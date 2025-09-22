@@ -64,11 +64,11 @@ function spaFallbackPlugin(): Plugin {
   };
 }
 
-// https://vitejs.dev/config/
-export default defineConfig(async ({ mode }) => {
-  // Load tsconfig.vite.json content for esbuild
-  const tsconfigContent = JSON.parse(readFileSync('./tsconfig.vite.json', 'utf-8'));
+// Load tsconfig.vite.json content for esbuild - COMPLETELY ISOLATED from root tsconfig.json
+const tsconfigContent = JSON.parse(readFileSync('./tsconfig.vite.json', 'utf-8'));
 
+// https://vitejs.dev/config/
+export default defineConfig(({ mode }) => {
   const plugins = [
     react(),
     mode === 'development' && componentTagger(),
@@ -76,9 +76,14 @@ export default defineConfig(async ({ mode }) => {
     mode !== 'development' && compressPlugin(),
   ];
 
+  // Handle analyzer plugin dynamically but synchronously
   if (process.env.ANALYZE) {
-    const { visualizer } = await import('rollup-plugin-visualizer');
-    plugins.push(visualizer({ open: true }) as Plugin);
+    try {
+      const { visualizer } = require('rollup-plugin-visualizer');
+      plugins.push(visualizer({ open: true }) as Plugin);
+    } catch {
+      console.warn('rollup-plugin-visualizer not available');
+    }
   }
 
   return {
@@ -96,13 +101,17 @@ export default defineConfig(async ({ mode }) => {
         { find: '@lib', replacement: path.resolve(__dirname, 'src/lib') }
       ]
     },
+    // Force esbuild to use ONLY tsconfig.vite.json, completely ignore root tsconfig.json
     esbuild: {
       target: 'ES2022',
-      tsconfigRaw: tsconfigContent
+      tsconfigRaw: tsconfigContent,
+      logLevel: 'silent' // Suppress TS warnings from esbuild
     },
     optimizeDeps: {
       esbuildOptions: {
-        tsconfigRaw: tsconfigContent
+        target: 'ES2022',
+        tsconfigRaw: tsconfigContent,
+        logLevel: 'silent'
       }
     },
     define: {
