@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import tsconfigPaths from "vite-tsconfig-paths";
 import { componentTagger } from "lovable-tagger";
 import { brotliCompress, gzip } from "node:zlib";
 import { promisify } from "node:util";
@@ -94,6 +95,7 @@ export default defineConfig(async ({ mode }) => {
     },
     esbuild: {
       target: 'ES2022',
+      tsconfig: './tsconfig.vite.json'
     },
     define: {
       global: 'globalThis',
