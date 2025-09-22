@@ -4,6 +4,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { componentTagger } from "lovable-tagger";
 import { brotliCompress, gzip } from "node:zlib";
 import { promisify } from "node:util";
+import { readFileSync } from "node:fs";
 import type { NormalizedOutputOptions, OutputBundle, PluginContext } from "rollup";
 import path from "path";
 
@@ -66,8 +67,16 @@ function spaFallbackPlugin(): Plugin {
 
 // https://vitejs.dev/config/
 export default defineConfig(async ({ mode }) => {
+  // Load tsconfig.vite.json content for esbuild
+  const tsconfigContent = JSON.parse(readFileSync('./tsconfig.vite.json', 'utf-8'));
+
   const plugins = [
     react(),
+    // Configure vite-tsconfig-paths to use only tsconfig.vite.json
+    tsconfigPaths({
+      projects: ['./tsconfig.vite.json'],
+      parseNative: false
+    }),
     mode === 'development' && componentTagger(),
     mode !== 'development' && spaFallbackPlugin(),
     mode !== 'development' && compressPlugin(),
@@ -85,17 +94,14 @@ export default defineConfig(async ({ mode }) => {
       port: 8080,
     },
     plugins: plugins.filter(Boolean),
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, './src'),
-        '@components': path.resolve(__dirname, './src/components'),
-        '@hooks': path.resolve(__dirname, './src/hooks'),
-        '@lib': path.resolve(__dirname, './src/lib'),
-      },
-    },
     esbuild: {
       target: 'ES2022',
-      tsconfig: './tsconfig.vite.json'
+      tsconfigRaw: tsconfigContent
+    },
+    optimizeDeps: {
+      esbuildOptions: {
+        tsconfigRaw: tsconfigContent
+      }
     },
     define: {
       global: 'globalThis',
@@ -105,6 +111,7 @@ export default defineConfig(async ({ mode }) => {
       target: 'ES2022',
       outDir: 'dist',
       sourcemap: false,
+      minify: true,
       rollupOptions: {
         output: {
           manualChunks(id: string) {
