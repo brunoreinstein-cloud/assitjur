@@ -53,11 +53,30 @@ serve('mapa-testemunhas-processos', async (req) => {
     { global: { headers: { Authorization: authHeader } }, auth: { autoRefreshToken: false, persistSession: false } },
   );
 
+  // Get user organization for multi-tenant isolation
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
+    logger.error(`auth error: ${userError?.message ?? "invalid user token"}`);
+    return jsonError(401, "UNAUTHORIZED", { requestId }, { ...ch, "x-request-id": requestId });
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("organization_id")
+    .eq("user_id", user.id)
+    .single();
+  
+  if (profileError || !profile?.organization_id) {
+    logger.error(`profile error: ${profileError?.message ?? "no organization"}`);
+    return jsonError(401, "UNAUTHORIZED", { requestId }, { ...ch, "x-request-id": requestId });
+  }
+
   const from = (page - 1) * limit;
   const to = from + limit - 1;
   let query = supabase
-    .from("processos")
+    .from("assistjur.por_processo_staging")
     .select("*", { count: "exact" })
+    .eq("org_id", profile.organization_id)
     .range(from, to);
 
   query = applyProcessosFilters(query, filtros);
