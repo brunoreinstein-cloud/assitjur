@@ -27,6 +27,8 @@
     "**/*.test.ts",
     "**/*.test.tsx",
     "src/pages/Demo*/**",
-    "src/features/**/demo/**"
+    "src/features/**/demo/**",
+    "tsconfig.node.json",
+    "vite.config.ts"
   ]
 }
