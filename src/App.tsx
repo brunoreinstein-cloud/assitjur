@@ -127,6 +127,7 @@ function AppRoutes() {
 
           {/* Admin routes */}
           <Route path="/admin" element={<Dashboard />} />
+          <Route path="/admin/dashboard" element={<Dashboard />} />
           <Route path="/admin/analytics" element={<Analytics />} />
           <Route path="/admin/metrics" element={<Metrics />} />
           <Route path="/admin/feature-flags/metrics" element={<FeatureFlagMetrics />} />
