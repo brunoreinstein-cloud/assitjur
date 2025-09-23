@@ -3,44 +3,40 @@ export function applyProcessosFilters(query: any, filtros: any) {
   if (filtros.search) {
     query = query.or(`cnj.ilike.%${filtros.search}%,reclamante_limpo.ilike.%${filtros.search}%,reu_nome.ilike.%${filtros.search}%`);
   }
-  if (filtros.data_inicio) {
-    query = query.gte("data_audiencia", filtros.data_inicio);
-  }
-  if (filtros.data_fim) {
-    query = query.lte("data_audiencia", filtros.data_fim);
-  }
   if (filtros.uf) {
     query = query.eq("uf", filtros.uf);
   }
-  if (filtros.status) {
-    query = query.eq("status", filtros.status);
+  if (filtros.situacao) {
+    query = query.eq("situacao", filtros.situacao);
   }
-  if (filtros.fase) {
-    query = query.eq("fase", filtros.fase);
+  if (filtros.categoria) {
+    query = query.eq("categoria", filtros.categoria);
   }
   if (filtros.testemunha) {
     query = query.or(`testemunhas_ativo_limpo.ilike.%${filtros.testemunha}%,testemunhas_passivo_limpo.ilike.%${filtros.testemunha}%`);
   }
   if (filtros.qtd_depoimentos_min !== undefined) {
-    query = query.gte("qtd_total_depos_unicos", filtros.qtd_depoimentos_min);
+    // Convert text to integer for comparison
+    query = query.filter("qtd_total_depos_unicos", "gte", filtros.qtd_depoimentos_min.toString());
   }
   if (filtros.qtd_depoimentos_max !== undefined) {
-    query = query.lte("qtd_total_depos_unicos", filtros.qtd_depoimentos_max);
+    // Convert text to integer for comparison  
+    query = query.filter("qtd_total_depos_unicos", "lte", filtros.qtd_depoimentos_max.toString());
   }
   if (filtros.tem_triangulacao !== undefined) {
-    // Convert string to boolean if needed
-    const hasTriangulacao = filtros.tem_triangulacao === true || filtros.tem_triangulacao === "true";
-    query = query.eq("triangulacao_confirmada", hasTriangulacao);
+    // Handle text boolean fields - "Sim"/"Não" or "true"/"false"
+    const textValue = filtros.tem_triangulacao ? "Sim" : "Não";
+    query = query.eq("triangulacao_confirmada", textValue);
   }
   if (filtros.tem_troca !== undefined) {
-    // Convert string to boolean if needed
-    const hasTroca = filtros.tem_troca === true || filtros.tem_troca === "true";
-    query = query.eq("troca_direta", hasTroca);
+    // Handle text boolean fields - "Sim"/"Não" or "true"/"false"
+    const textValue = filtros.tem_troca ? "Sim" : "Não"; 
+    query = query.eq("troca_direta", textValue);
   }
   if (filtros.tem_prova_emprestada !== undefined) {
-    // Convert string to boolean if needed  
-    const hasProvaEmprestada = filtros.tem_prova_emprestada === true || filtros.tem_prova_emprestada === "true";
-    query = query.eq("contem_prova_emprestada", hasProvaEmprestada);
+    // Handle text boolean fields - "Sim"/"Não" or "true"/"false"
+    const textValue = filtros.tem_prova_emprestada ? "Sim" : "Não";
+    query = query.eq("contem_prova_emprestada", textValue);
   }
   if (filtros.classificacao) {
     query = query.eq("classificacao_final", filtros.classificacao);
@@ -49,50 +45,43 @@ export function applyProcessosFilters(query: any, filtros: any) {
 }
 
 export function applyTestemunhasFilters(query: any, filtros: any) {
-  // Search in multiple fields for por_testemunha_staging
+  // Search in multiple fields for por_testemunha_staging - use correct column name
   if (filtros.nome) {
-    query = query.ilike("nome_civil", `%${filtros.nome}%`);
-  }
-  if (filtros.documento) {
-    query = query.eq("documento", filtros.documento);
+    query = query.ilike("nome_testemunha", `%${filtros.nome}%`);
   }
   if (filtros.search) {
-    query = query.or(`nome_civil.ilike.%${filtros.search}%,documento.ilike.%${filtros.search}%`);
-  }
-  if (filtros.data_inicio) {
-    query = query.gte("primeira_participacao", filtros.data_inicio);
-  }
-  if (filtros.data_fim) {
-    query = query.lte("ultima_participacao", filtros.data_fim);
+    query = query.ilike("nome_testemunha", `%${filtros.search}%`);
   }
   if (filtros.ambos_polos !== undefined) {
-    // Convert string to boolean if needed
-    const ambosPolos = filtros.ambos_polos === true || filtros.ambos_polos === "true";
-    query = query.eq("foi_testemunha_em_ambos_polos", ambosPolos);
+    // Handle text boolean fields - "Sim"/"Não" 
+    const textValue = filtros.ambos_polos ? "Sim" : "Não";
+    query = query.eq("foi_testemunha_em_ambos_polos", textValue);
   }
   if (filtros.ja_foi_reclamante !== undefined) {
-    // Convert string to boolean if needed
-    const jaFoiReclamante = filtros.ja_foi_reclamante === true || filtros.ja_foi_reclamante === "true";
-    query = query.eq("ja_foi_reclamante", jaFoiReclamante);
+    // Handle text boolean fields - "Sim"/"Não"
+    const textValue = filtros.ja_foi_reclamante ? "Sim" : "Não";
+    query = query.eq("ja_foi_reclamante", textValue);
   }
   if (filtros.qtd_depoimentos_min !== undefined) {
-    query = query.gte("qtd_depoimentos", filtros.qtd_depoimentos_min);
+    // Convert text to integer for comparison
+    query = query.filter("qtd_depoimentos", "gte", filtros.qtd_depoimentos_min.toString());
   }
   if (filtros.qtd_depoimentos_max !== undefined) {
-    query = query.lte("qtd_depoimentos", filtros.qtd_depoimentos_max);
+    // Convert text to integer for comparison
+    query = query.filter("qtd_depoimentos", "lte", filtros.qtd_depoimentos_max.toString());
   }
   if (filtros.tem_triangulacao !== undefined) {
-    // Convert string to boolean if needed
-    const temTriangulacao = filtros.tem_triangulacao === true || filtros.tem_triangulacao === "true";
-    query = query.eq("participou_triangulacao", temTriangulacao);
+    // Handle text boolean fields - "Sim"/"Não"
+    const textValue = filtros.tem_triangulacao ? "Sim" : "Não";
+    query = query.eq("participou_triangulacao", textValue);
   }
   if (filtros.tem_troca !== undefined) {
-    // Convert string to boolean if needed
-    const temTroca = filtros.tem_troca === true || filtros.tem_troca === "true";
-    query = query.eq("participou_troca_favor", temTroca);
+    // Handle text boolean fields - "Sim"/"Não"
+    const textValue = filtros.tem_troca ? "Sim" : "Não";
+    query = query.eq("participou_troca_favor", textValue);
   }
   if (filtros.classificacao) {
-    query = query.eq("classificacao_risco", filtros.classificacao);
+    query = query.eq("classificacao", filtros.classificacao);
   }
   return query;
 }
