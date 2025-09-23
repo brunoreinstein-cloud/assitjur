@@ -13,6 +13,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { NotificationCenter } from '@/components/core/NotificationCenter';
+import { OrgBadge } from '@/components/auth/OrgBadge';
 import { 
   ChevronRight,
   MessageSquare,
@@ -155,11 +156,16 @@ export function AppHeader() {
         </div>
 
         {/* Right side actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* Organization Selector */}
+          <div className="hidden md:block">
+            <OrgBadge />
+          </div>
+          
           <NotificationCenter />
           
           {/* Status indicator */}
-          <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="hidden lg:flex items-center gap-2 text-sm text-muted-foreground">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
             <span>Sistema Online</span>
           </div>
