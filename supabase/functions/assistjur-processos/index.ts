@@ -2,6 +2,7 @@ import { serve } from '../_shared/observability.ts';
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { z } from "npm:zod@3.23.8";
+import { createClient } from "npm:@supabase/supabase-js@2.56.0";
 
 serve('assistjur-processos', async (req) => {
   const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();

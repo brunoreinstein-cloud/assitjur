@@ -2383,6 +2383,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      verify_org_consistency: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       verify_tenant_isolation: {
         Args: Record<PropertyKey, never>
         Returns: Json
