@@ -1,34 +1,16 @@
 {
+  "extends": "./tsconfig.isolated.json",
   "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "strict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "@/*": ["./src/*"],
-      "@components/*": ["./src/components/*"],
-      "@hooks/*": ["./src/hooks/*"],
-      "@lib/*": ["./src/lib/*"]
-    }
+    "noEmit": true
   },
-  "include": ["src"],
+  "include": ["src/**/*"],
   "exclude": [
+    "node_modules",
+    "dist", 
     "**/*.test.ts",
     "**/*.test.tsx",
     "src/pages/Demo*/**",
     "src/features/**/demo/**",
-    "tsconfig.node.json",
     "vite.config.ts"
   ]
 }
