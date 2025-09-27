@@ -1833,6 +1833,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string[]
       }
+      enhanced_log_user_action: {
+        Args: {
+          action_type: string
+          metadata?: Json
+          resource_id?: string
+          resource_type?: string
+        }
+        Returns: undefined
+      }
       ensure_user_profile: {
         Args: {
           org_id?: string
@@ -2368,7 +2377,7 @@ export type Database = {
         Returns: Json
       }
       validate_org_access: {
-        Args: Record<PropertyKey, never>
+        Args: Record<PropertyKey, never> | { target_org_id: string }
         Returns: boolean
       }
       validate_security_fixes: {
