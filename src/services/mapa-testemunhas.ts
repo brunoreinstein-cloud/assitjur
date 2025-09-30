@@ -80,12 +80,27 @@ export async function fetchTestemunhas(params: {
   search?: string;
   filters?: TestemunhaFilters;
 }): Promise<{ data: PorTestemunha[]; total: number }> {
+  const requestId = Math.random().toString(36).substring(7);
+  
+  console.log(`🔍 [${requestId}] fetchTestemunhas iniciado`, {
+    page: params.page,
+    limit: params.limit,
+    search: params.search,
+    filters: params.filters,
+    timestamp: new Date().toISOString(),
+  });
+
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData?.session?.access_token) {
-      console.error('Usuário não autenticado');
+      console.error(`❌ [${requestId}] Usuário não autenticado`);
       return getMockTestemunhasData(params.page || 1, params.limit || 20);
     }
+
+    console.log(`✅ [${requestId}] Sessão válida`, {
+      userId: sessionData.session.user?.id,
+      hasToken: !!sessionData.session.access_token,
+    });
 
     const filtros = toSnakeCaseFilters({
       ...(params.filters ?? {}),
@@ -100,26 +115,35 @@ export async function fetchTestemunhas(params: {
       filtros,
     } satisfies TestemunhasRequest;
     
+    console.log(`📦 [${requestId}] Payload preparado`, body);
     TestemunhasRequestSchema.parse(body);
 
     // Use Edge Function com retry automático
     const result = await retryWithBackoff(async () => {
+      console.log(`🚀 [${requestId}] Chamando Edge Function: ${MAPA_TESTEMUNHAS_TESTEMUNHAS_FN}`);
+      
       const { data, error } = await supabase.functions.invoke(
         MAPA_TESTEMUNHAS_TESTEMUNHAS_FN,
         { body }
       );
 
       if (error) {
-        console.error('Error fetching testemunhas:', error);
+        console.error(`❌ [${requestId}] Erro na Edge Function:`, error);
         throw new Error(`Erro ao buscar testemunhas: ${error.message}`);
       }
+
+      console.log(`✅ [${requestId}] Resposta recebida`, {
+        hasData: !!data,
+        dataKeys: data ? Object.keys(data) : [],
+      });
 
       return data;
     });
 
+    console.log(`🎉 [${requestId}] fetchTestemunhas concluído com sucesso`);
     return result;
   } catch (error) {
-    console.error('Erro fatal ao buscar testemunhas:', error);
+    console.error(`💥 [${requestId}] Erro fatal ao buscar testemunhas:`, error);
     // Fallback para dados mock em caso de erro
     return getMockTestemunhasData(params.page || 1, params.limit || 20);
   }
@@ -141,12 +165,26 @@ export async function fetchProcessos(params: {
   limit?: number;
   filters?: ProcessoFilters;
 }): Promise<{ data: any[]; total: number }> {
+  const requestId = Math.random().toString(36).substring(7);
+  
+  console.log(`🔍 [${requestId}] fetchProcessos iniciado`, {
+    page: params.page,
+    limit: params.limit,
+    filters: params.filters,
+    timestamp: new Date().toISOString(),
+  });
+
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData?.session?.access_token) {
-      console.error('Usuário não autenticado');
+      console.error(`❌ [${requestId}] Usuário não autenticado`);
       return getMockProcessosData(params.page || 1, params.limit || 20);
     }
+
+    console.log(`✅ [${requestId}] Sessão válida`, {
+      userId: sessionData.session.user?.id,
+      hasToken: !!sessionData.session.access_token,
+    });
 
     const filtros = toSnakeCaseFilters(params.filters);
 
@@ -158,26 +196,35 @@ export async function fetchProcessos(params: {
       filtros,
     } satisfies ProcessosRequest;
     
+    console.log(`📦 [${requestId}] Payload preparado`, body);
     ProcessosRequestSchema.parse(body);
 
     // Use Edge Function com retry automático
     const result = await retryWithBackoff(async () => {
+      console.log(`🚀 [${requestId}] Chamando Edge Function: ${MAPA_TESTEMUNHAS_PROCESSOS_FN}`);
+      
       const { data, error } = await supabase.functions.invoke(
         MAPA_TESTEMUNHAS_PROCESSOS_FN,
         { body }
       );
 
       if (error) {
-        console.error('Error fetching processos:', error);
+        console.error(`❌ [${requestId}] Erro na Edge Function:`, error);
         throw new Error(`Erro ao buscar processos: ${error.message}`);
       }
+
+      console.log(`✅ [${requestId}] Resposta recebida`, {
+        hasData: !!data,
+        dataKeys: data ? Object.keys(data) : [],
+      });
 
       return data;
     });
 
+    console.log(`🎉 [${requestId}] fetchProcessos concluído com sucesso`);
     return result;
   } catch (error) {
-    console.error('Erro fatal ao buscar processos:', error);
+    console.error(`💥 [${requestId}] Erro fatal ao buscar processos:`, error);
     // Fallback para dados mock em caso de erro
     return getMockProcessosData(params.page || 1, params.limit || 20);
   }

@@ -170,7 +170,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {overviewData?.counts.processos?.toLocaleString() || 0}
+                  {overviewData?.counts?.processos?.toLocaleString() || 0}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Registros na base ativa
@@ -185,7 +185,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {overviewData?.counts.pessoas?.toLocaleString() || 0}
+                  {overviewData?.counts?.pessoas?.toLocaleString() || 0}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Cadastros únicos
@@ -200,7 +200,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {overviewData?.counts.conversations || 0}
+                  {overviewData?.counts?.conversations || 0}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Interações com IA
@@ -215,7 +215,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  v{overviewData?.counts.activeVersion || 'N/A'}
+                  v{overviewData?.counts?.activeVersion || 'N/A'}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Base de dados atual
