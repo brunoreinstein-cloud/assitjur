@@ -2,7 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.56.0";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const PUBLISHABLE_KEY = Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
+const PUBLISHABLE_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 export function clientRLS(req: Request) {
   return createClient(SUPABASE_URL, PUBLISHABLE_KEY, {
