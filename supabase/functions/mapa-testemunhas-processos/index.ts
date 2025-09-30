@@ -73,8 +73,16 @@ serve('mapa-testemunhas-processos', async (req) => {
 
   const from = (page - 1) * limit;
   const to = from + limit - 1;
+  
+  // Use canonical view from assistjur schema with proper schema specification
+  const { data: schemaData, error: schemaError } = await supabase.rpc('set_config', {
+    setting_name: 'search_path',
+    new_value: 'assistjur, public'
+  }).single();
+  
   let query = supabase
-    .from("assistjur.por_processo_staging")
+    .schema('assistjur')
+    .from("por_processo_view")
     .select("*", { count: "exact" })
     .eq("org_id", profile.organization_id)
     .range(from, to);
