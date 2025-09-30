@@ -125,5 +125,3 @@ export async function handler(req: Request): Promise<Response> {
 }
 
 serve('evaluate_flags', handler);
-
-export { handler };

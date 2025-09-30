@@ -203,12 +203,12 @@ const MapaPage = () => {
       const [processosResult, testemunhasResult] = await Promise.all([
         fetchProcessos({
           page: 1,
-          limit: 500, // Increased from 100 to show more data
+          limit: 250,
           filters: debouncedProcessFilters
         }),
         fetchTestemunhas({
           page: 1,
-          limit: 500, // Increased from 100 to show more data
+          limit: 250,
           filters: debouncedTestemunhaFilters
         })
       ]);
