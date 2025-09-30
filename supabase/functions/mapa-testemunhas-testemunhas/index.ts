@@ -71,37 +71,32 @@ serve('mapa-testemunhas-testemunhas', async (req) => {
     return jsonError(401, "UNAUTHORIZED", { requestId }, { ...ch, "x-request-id": requestId });
   }
 
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
-  
-  // TEMPORARY: Using assistjur schema until migration is executed
-  // Query assistjur.por_testemunha_staging with proper multi-tenant isolation
-  // @ts-ignore - schema() method exists but may not be in types
-  let query = supabase
-    .schema('assistjur')
-    .from('por_testemunha_staging')
-    .select("*", { count: "exact" })
-    .eq("org_id", profile.organization_id)
-    .range(from, to);
+  // Use RPC function to access assistjur schema data with proper security
+  const { data: rpcResult, error } = await supabase.rpc('rpc_get_assistjur_testemunhas', {
+    p_org_id: profile.organization_id,
+    p_filters: filtros,
+    p_page: page,
+    p_limit: limit
+  });
 
-  query = applyTestemunhasFilters(query, filtros);
-
-  const { data, count, error } = await query;
   if (error) {
-    logger.error(`database: ${error.message}`);
-    return jsonError(500, "DB_ERROR", { message: error.message, requestId }, { ...ch, "x-request-id": requestId });
+    logger.error(`rpc error: ${error.message}`);
+    return jsonError(500, "RPC_ERROR", { message: error.message, requestId }, { ...ch, "x-request-id": requestId });
   }
 
+  // Extract data and total from RPC result
+  const items = rpcResult?.[0]?.data || [];
+  const totalRecords = rpcResult?.[0]?.total_count || 0;
+  
   // 📊 Enhanced logging for diagnostics
-  const totalRecords = count ?? 0;
-  logger.info(`query executed: org_id=${profile.organization_id}, total=${totalRecords}, returned=${data?.length ?? 0}, page=${page}, limit=${limit}`);
+  logger.info(`rpc executed: org_id=${profile.organization_id}, total=${totalRecords}, returned=${items.length}, page=${page}, limit=${limit}`);
   
   // ✅ Empty data is NOT an error - it's a valid state
   if (totalRecords === 0) {
     logger.info(`no data found: table may be empty for org_id=${profile.organization_id}`);
   }
 
-  const result = { items: data ?? [], page, limit, total: totalRecords, next_cursor: null, requestId };
+  const result = { items, page, limit, total: totalRecords, next_cursor: null, requestId };
   const resultValidation = ListaResponseSchema.safeParse(result);
   if (!resultValidation.success) {
     logger.error(`response validation: ${resultValidation.error.message}`);
