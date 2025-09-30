@@ -244,35 +244,13 @@ export const fetchPorProcesso = async (
 
     const { data: sessionData } = await supabase.auth.getSession();
     const access_token = sessionData?.session?.access_token;
-    const userId = sessionData?.session?.user?.id;
-    if (!access_token || !userId) throw new Error("Usuário não autenticado");
-
-    // 🔐 CRITICAL: Get user's org_id from profile for multi-tenant isolation
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('organization_id')
-      .eq('user_id', userId)
-      .single();
-
-    if (profileError || !profileData?.organization_id) {
-      throw new Error('Organização não encontrada para o usuário');
-    }
-
-    const org_id = profileData.organization_id;
-    console.log(`🔐 [${requestId}] Multi-tenant: org_id = ${org_id}`);
+    if (!access_token) throw new Error("Usuário não autenticado");
 
     const projectRef = getProjectRef();
     const fnUrl = `https://${projectRef}.functions.supabase.co/mapa-testemunhas-processos`;
-    
-    // Add org_id to payload for multi-tenant isolation
-    const payload = {
-      ...toMapaEdgeRequest(parsed),
-      org_id
-    };
-
     const response = await fetch(fnUrl, {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(toMapaEdgeRequest(parsed)),
       headers: {
         'Content-Type': 'application/json',
         'x-request-id': requestId,
@@ -399,35 +377,13 @@ export const fetchPorTestemunha = async (
 
     const { data: sessionData } = await supabase.auth.getSession();
     const access_token = sessionData?.session?.access_token;
-    const userId = sessionData?.session?.user?.id;
-    if (!access_token || !userId) throw new Error("Usuário não autenticado");
-
-    // 🔐 CRITICAL: Get user's org_id from profile for multi-tenant isolation
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('organization_id')
-      .eq('user_id', userId)
-      .single();
-
-    if (profileError || !profileData?.organization_id) {
-      throw new Error('Organização não encontrada para o usuário');
-    }
-
-    const org_id = profileData.organization_id;
-    console.log(`🔐 [${requestId}] Multi-tenant: org_id = ${org_id}`);
+    if (!access_token) throw new Error("Usuário não autenticado");
 
     const projectRef = getProjectRef();
     const fnUrl = `https://${projectRef}.functions.supabase.co/mapa-testemunhas-testemunhas`;
-    
-    // Add org_id to payload for multi-tenant isolation
-    const payload = {
-      ...toMapaEdgeRequest(parsed),
-      org_id
-    };
-
     const response = await fetch(fnUrl, {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(toMapaEdgeRequest(parsed)),
       headers: {
         'Content-Type': 'application/json',
         'x-request-id': requestId,
