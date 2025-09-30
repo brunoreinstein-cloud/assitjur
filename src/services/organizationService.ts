@@ -1,6 +1,26 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logError } from '@/lib/logger';
 
+// Cache for authenticated user to avoid redundant calls
+let cachedUser: { id: string; timestamp: number } | null = null;
+const CACHE_TTL = 60000; // 1 minute
+
+async function getCachedUser() {
+  const now = Date.now();
+  
+  if (cachedUser && (now - cachedUser.timestamp) < CACHE_TTL) {
+    return cachedUser.id;
+  }
+
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) {
+    throw new Error('User not authenticated');
+  }
+
+  cachedUser = { id: data.user.id, timestamp: now };
+  return data.user.id;
+}
+
 export interface Organization {
   id: string;
   name: string;
@@ -18,6 +38,8 @@ export class OrganizationService {
    */
   async getUserOrganizations(): Promise<Organization[]> {
     try {
+      const userId = await getCachedUser();
+      
       const { data, error } = await supabase
         .from('profiles')
         .select(`
@@ -33,7 +55,7 @@ export class OrganizationService {
             updated_at
           )
         `)
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('user_id', userId)
         .eq('is_active', true)
         .eq('organizations.is_active', true);
 
@@ -63,10 +85,12 @@ export class OrganizationService {
    */
   async getUserRoleInOrg(orgId: string): Promise<'ADMIN' | 'ANALYST' | 'VIEWER' | null> {
     try {
+      const userId = await getCachedUser();
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('role')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('user_id', userId)
         .eq('organization_id', orgId)
         .eq('is_active', true)
         .single();

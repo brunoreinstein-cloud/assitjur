@@ -10,7 +10,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { AuthProvider as AuthContextProvider } from "@/hooks/useAuth";
 import { AuthProvider as SupabaseAuthProvider } from "@/providers/AuthProvider";
-import { OrganizationProvider } from "@/contexts/OrganizationContext";
+import { MultiTenantProvider } from '@/contexts/MultiTenantContext';
+import { OrganizationErrorBoundary } from '@/components/core/OrganizationErrorBoundary';
+import { AuthErrorBoundary } from '@/components/core/AuthErrorBoundary';
 import AuthGuard from "@/components/AuthGuard";
 import { AppLayout } from "@/components/navigation/AppLayout";
 import { ErrorBoundary } from "@/components/core/ErrorBoundary";
@@ -200,18 +202,22 @@ const App = () => (
                   }}
                 >
                   <SupabaseAuthProvider>
-                    <OrganizationProvider>
-                      <div className="min-h-screen flex flex-col">
-                        <MaintenanceBanner />
-                        <StatusBanner />
-                        <main id="conteudo" className="flex-1">
-                          <Suspense fallback={<div className="p-4">Carregando...</div>}>
-                            <AppRoutes />
-                          </Suspense>
-                        </main>
-                        <FooterLegal />
-                      </div>
-                    </OrganizationProvider>
+                    <AuthErrorBoundary>
+                      <MultiTenantProvider>
+                        <OrganizationErrorBoundary>
+                          <div className="min-h-screen flex flex-col">
+                            <MaintenanceBanner />
+                            <StatusBanner />
+                            <main id="conteudo" className="flex-1">
+                              <Suspense fallback={<div className="p-4">Carregando...</div>}>
+                                <AppRoutes />
+                              </Suspense>
+                            </main>
+                            <FooterLegal />
+                          </div>
+                        </OrganizationErrorBoundary>
+                      </MultiTenantProvider>
+                    </AuthErrorBoundary>
                   </SupabaseAuthProvider>
                 </BrowserRouter>
               </ConsentProvider>
