@@ -107,6 +107,8 @@ const MapaPage = () => {
 
   // Stable lastUpdate state
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [totalProcessos, setTotalProcessos] = useState(0);
+  const [totalTestemunhas, setTotalTestemunhas] = useState(0);
 
   // Helper function for date formatting
   const formatDate = (date: Date) => {
@@ -119,10 +121,8 @@ const MapaPage = () => {
     });
   };
 
-  // KPIs calculation with useMemo - fixed boolean check
+  // KPIs calculation with useMemo - using real totals from API
   const stats: StatsData = useMemo(() => {
-    const totalProcessos = processos.length;
-    const totalTestemunhas = testemunhas.length;
     const processosAltoRisco = processos.filter(p => p.classificacao_final === "Risco Alto").length;
     const testemunhasAmbosPolos = testemunhas.filter(t => t.foi_testemunha_em_ambos_polos === true).length;
     const pct = (a: number, b: number) => b > 0 ? Math.round((a / b) * 100) : 0;
@@ -135,7 +135,7 @@ const MapaPage = () => {
       pctProcAlto: pct(processosAltoRisco, totalProcessos), 
       pctAmbos: pct(testemunhasAmbosPolos, totalTestemunhas) 
     };
-  }, [processos, testemunhas]);
+  }, [processos, testemunhas, totalProcessos, totalTestemunhas]);
 
   const computeStatus = (items: any[]): DataStatus => {
     if (isLoading) return 'loading';
@@ -203,12 +203,12 @@ const MapaPage = () => {
       const [processosResult, testemunhasResult] = await Promise.all([
         fetchProcessos({
           page: 1,
-          limit: 100,
+          limit: 500, // Increased from 100 to show more data
           filters: debouncedProcessFilters
         }),
         fetchTestemunhas({
           page: 1,
-          limit: 100,
+          limit: 500, // Increased from 100 to show more data
           filters: debouncedTestemunhaFilters
         })
       ]);
@@ -219,6 +219,8 @@ const MapaPage = () => {
 
       setProcessos(processosResult.data);
       setTestemunhas(testemunhasResult.data);
+      setTotalProcessos(processosResult.total || 0);
+      setTotalTestemunhas(testemunhasResult.total || 0);
 
       const errorMsg = processosResult.error || testemunhasResult.error;
       if (errorMsg) {
@@ -375,8 +377,10 @@ const MapaPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-primary">{stats.totalProcessos}</div>
-              <p className="text-xs text-muted-foreground mt-1">Processos cadastrados</p>
+              <div className="text-3xl font-bold text-primary">{stats.totalProcessos.toLocaleString('pt-BR')}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Processos cadastrados {processos.length < stats.totalProcessos && `(exibindo ${processos.length})`}
+              </p>
             </CardContent>
           </Card>
 
@@ -388,8 +392,10 @@ const MapaPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-emerald-600">{stats.totalTestemunhas}</div>
-              <p className="text-xs text-muted-foreground mt-1">Testemunhas identificadas</p>
+              <div className="text-3xl font-bold text-emerald-600">{stats.totalTestemunhas.toLocaleString('pt-BR')}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Testemunhas identificadas {testemunhas.length < stats.totalTestemunhas && `(exibindo ${testemunhas.length})`}
+              </p>
             </CardContent>
           </Card>
 
