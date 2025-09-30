@@ -102,11 +102,11 @@ export async function fetchTestemunhas(params: {
     
     TestemunhasRequestSchema.parse(body);
 
-    // Use RPC com retry automático
+    // Use Edge Function com retry automático
     const result = await retryWithBackoff(async () => {
-      const { data, error } = await supabase.rpc(
+      const { data, error } = await supabase.functions.invoke(
         MAPA_TESTEMUNHAS_TESTEMUNHAS_FN,
-        body
+        { body }
       );
 
       if (error) {
@@ -160,11 +160,11 @@ export async function fetchProcessos(params: {
     
     ProcessosRequestSchema.parse(body);
 
-    // Use RPC com retry automático
+    // Use Edge Function com retry automático
     const result = await retryWithBackoff(async () => {
-      const { data, error } = await supabase.rpc(
+      const { data, error } = await supabase.functions.invoke(
         MAPA_TESTEMUNHAS_PROCESSOS_FN,
-        body
+        { body }
       );
 
       if (error) {
