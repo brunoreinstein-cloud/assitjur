@@ -176,16 +176,26 @@ export const useImportStore = create<ImportState>((set, get) => ({
   
   canProceedToNext: () => {
     const state = get();
+    const { currentStep, session, file, validationResult } = state;
     
-    switch (state.currentStep) {
+    switch (currentStep) {
       case 'upload':
-        return !!(state.session && state.file);
+        return !!(session && file);
       case 'validation':
-        return !!(state.validationResult && state.validationResult.summary.errors === 0);
-      case 'preview':
-        return !!(state.validationResult && state.validationResult.summary.valid > 0);
+        return !!validationResult?.normalizedData;
+      case 'preview': {
+        // Verificar se temos dados válidos para publicar
+        if (!validationResult?.normalizedData) return false;
+        
+        const hasProcessos = Array.isArray(validationResult.normalizedData.processos) && 
+                             validationResult.normalizedData.processos.length > 0;
+        const hasTestemunhas = Array.isArray(validationResult.normalizedData.testemunhas) &&
+                               validationResult.normalizedData.testemunhas.length > 0;
+        
+        return hasProcessos || hasTestemunhas;
+      }
       case 'publish':
-        return false; // Final step
+        return false; // última etapa
       default:
         return false;
     }
