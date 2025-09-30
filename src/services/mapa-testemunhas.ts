@@ -199,7 +199,19 @@ export async function fetchTestemunhas(params: {
         hasNextCursor: !!data.next_cursor
       });
 
-      return { data: data.items, total: data.total || 0 };
+      // Transform backend data to match frontend types
+      const transformedItems = data.items.map((item: any) => ({
+        ...item,
+        qtd_depoimentos: typeof item.qtd_depoimentos === 'string' 
+          ? parseInt(item.qtd_depoimentos, 10) || 0 
+          : item.qtd_depoimentos || 0,
+        foi_testemunha_em_ambos_polos: item.foi_testemunha_em_ambos_polos === true || item.foi_testemunha_em_ambos_polos === 'Sim',
+        ja_foi_reclamante: item.ja_foi_reclamante === true || item.ja_foi_reclamante === 'Sim',
+        participou_triangulacao: item.participou_triangulacao === true || item.participou_triangulacao === 'Sim',
+        participou_troca_favor: item.participou_troca_favor === true || item.participou_troca_favor === 'Sim',
+      })) as PorTestemunha[];
+
+      return { data: transformedItems, total: data.total || 0 };
     });
 
     DebugMode.log(`🎉 [${requestId}] fetchTestemunhas concluído com sucesso`);

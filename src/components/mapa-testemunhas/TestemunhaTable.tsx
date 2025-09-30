@@ -117,9 +117,9 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
               {columnVisibility.classificacao && (
                 <TableCell>
                   <Badge
-                    className={`text-xs ${getClassificacaoColor(testemunha.classificacao_estrategica)}`}
+                    className={`text-xs ${getClassificacaoColor(testemunha.classificacao || testemunha.classificacao_estrategica)}`}
                   >
-                    {testemunha.classificacao_estrategica || '—'}
+                    {testemunha.classificacao || testemunha.classificacao_estrategica || '—'}
                   </Badge>
                 </TableCell>
               )}

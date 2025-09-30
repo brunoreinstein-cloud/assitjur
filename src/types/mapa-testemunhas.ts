@@ -34,25 +34,26 @@ export type PorProcesso = {
 
 export type PorTestemunha = {
   nome_testemunha: string;
-  qtd_depoimentos: number | null;
-  cnjs_como_testemunha: string[] | null;
-  ja_foi_reclamante: boolean | null;
-  cnjs_como_reclamante: string[] | null;
-  foi_testemunha_ativo: boolean | null;
-  cnjs_ativo: string[] | null;
-  foi_testemunha_passivo: boolean | null;
-  cnjs_passivo: string[] | null;
-  foi_testemunha_em_ambos_polos: boolean | null;
-  participou_troca_favor: boolean | null;
-  cnjs_troca_favor: string[] | null;
-  participou_triangulacao: boolean | null;
-  cnjs_triangulacao: string[] | null;
-  e_prova_emprestada: boolean | null;
+  qtd_depoimentos: number;
+  foi_testemunha_em_ambos_polos: boolean;
+  ja_foi_reclamante: boolean;
+  participou_triangulacao: boolean;
+  participou_troca_favor: boolean;
   classificacao: string | null;
-  classificacao_estrategica: string | null;
-  org_id: string | null;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  // Legacy fields for backward compatibility
+  cnjs_como_testemunha?: string[] | null;
+  cnjs_como_reclamante?: string[] | null;
+  foi_testemunha_ativo?: boolean | null;
+  cnjs_ativo?: string[] | null;
+  foi_testemunha_passivo?: boolean | null;
+  cnjs_passivo?: string[] | null;
+  cnjs_troca_favor?: string[] | null;
+  cnjs_triangulacao?: string[] | null;
+  e_prova_emprestada?: boolean | null;
+  classificacao_estrategica?: string | null;
+  org_id?: string | null;
+  updated_at?: string;
 };
 
 export type ProcessoFilters = {

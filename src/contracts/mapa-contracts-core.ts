@@ -12,7 +12,7 @@ export const MAPA_TESTEMUNHAS_TESTEMUNHAS_FN = "mapa-testemunhas-testemunhas" as
 // Paginação padrão
 export const PaginacaoSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  limit: z.coerce.number().int().min(1).max(1000).default(20),
 });
 
 export type Paginacao = z.infer<typeof PaginacaoSchema>;
@@ -142,7 +142,7 @@ export function parseTestemunhasRequest(payload: unknown): TestemunhasRequest {
 export const ListaResponseSchema = z.object({
   items: z.array(z.unknown()),
   page: z.number().int().min(1),
-  limit: z.number().int().min(1).max(100),
+  limit: z.number().int().min(1).max(1000),
   total: z.number().int().nonnegative(),
   next_cursor: z.null().default(null),
   requestId: z.string(),
