@@ -49,6 +49,7 @@ import { ResultBlocks } from "@/features/testemunhas/ResultBlocks";
 import { LoadMoreButton } from "@/components/mapa-testemunhas/LoadMoreButton";
 import { ConnectionStatus } from "@/components/mapa-testemunhas/ConnectionStatus";
 import { DataState, DataStatus } from "@/components/ui/data-state";
+import { MapaErrorBoundary } from "@/components/mapa-testemunhas/MapaErrorBoundary";
 
 // Updated types to match mapa-testemunhas structure
 type Processo = PorProcesso;
@@ -510,4 +511,11 @@ const MapaPage = () => {
   );
 };
 
-export default MapaPage;
+// Wrap with error boundary for production-grade error handling
+const MapaPageWithErrorBoundary = () => (
+  <MapaErrorBoundary>
+    <MapaPage />
+  </MapaErrorBoundary>
+);
+
+export default MapaPageWithErrorBoundary;
