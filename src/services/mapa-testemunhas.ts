@@ -120,7 +120,7 @@ export async function fetchTestemunhas(params: {
   limit?: number;
   search?: string;
   filters?: TestemunhaFilters;
-}): Promise<{ data: PorTestemunha[]; total: number }> {
+}): Promise<{ data: PorTestemunha[]; total: number; error?: string }> {
   const requestId = Math.random().toString(36).substring(7);
   
   DebugMode.log(`🔍 [${requestId}] fetchTestemunhas iniciado`, {
@@ -173,12 +173,18 @@ export async function fetchTestemunhas(params: {
         throw new Error(`Erro ao buscar testemunhas: ${error.message}`);
       }
 
+      if (!data || !data.items) {
+        DebugMode.log(`✅ [${requestId}] Empty dataset (0 records) - this is valid, not an error`);
+        return { data: [], total: 0 };
+      }
+
       DebugMode.log(`✅ [${requestId}] Resposta recebida`, {
         hasData: !!data,
         dataKeys: data ? Object.keys(data) : [],
+        itemsCount: data.items?.length || 0,
       });
 
-      return data;
+      return { data: data.items, total: data.total || 0 };
     });
 
     DebugMode.log(`🎉 [${requestId}] fetchTestemunhas concluído com sucesso`);
@@ -186,7 +192,11 @@ export async function fetchTestemunhas(params: {
   } catch (error) {
     DebugMode.error(`💥 [${requestId}] Erro fatal ao buscar testemunhas:`, error);
     // Fallback para dados mock em caso de erro
-    return getMockTestemunhasData(params.page || 1, params.limit || 20);
+    const fallback = getMockTestemunhasData(params.page || 1, params.limit || 20);
+    return {
+      ...fallback,
+      error: error instanceof Error ? error.message : 'Erro desconhecido ao buscar testemunhas'
+    };
   }
 }
 
@@ -239,7 +249,7 @@ export async function fetchProcessos(params: {
   page?: number;
   limit?: number;
   filters?: ProcessoFilters;
-}): Promise<{ data: any[]; total: number }> {
+}): Promise<{ data: any[]; total: number; error?: string }> {
   const requestId = Math.random().toString(36).substring(7);
   
   DebugMode.log(`🔍 [${requestId}] fetchProcessos iniciado`, {
@@ -288,12 +298,18 @@ export async function fetchProcessos(params: {
         throw new Error(`Erro ao buscar processos: ${error.message}`);
       }
 
+      if (!data || !data.items) {
+        DebugMode.log(`✅ [${requestId}] Empty dataset (0 records) - this is valid, not an error`);
+        return { data: [], total: 0 };
+      }
+
       DebugMode.log(`✅ [${requestId}] Resposta recebida`, {
         hasData: !!data,
         dataKeys: data ? Object.keys(data) : [],
+        itemsCount: data.items?.length || 0,
       });
 
-      return data;
+      return { data: data.items, total: data.total || 0 };
     });
 
     DebugMode.log(`🎉 [${requestId}] fetchProcessos concluído com sucesso`);
@@ -301,6 +317,10 @@ export async function fetchProcessos(params: {
   } catch (error) {
     DebugMode.error(`💥 [${requestId}] Erro fatal ao buscar processos:`, error);
     // Fallback para dados mock em caso de erro
-    return getMockProcessosData(params.page || 1, params.limit || 20);
+    const fallback = getMockProcessosData(params.page || 1, params.limit || 20);
+    return {
+      ...fallback,
+      error: error instanceof Error ? error.message : 'Erro desconhecido ao buscar processos'
+    };
   }
 }

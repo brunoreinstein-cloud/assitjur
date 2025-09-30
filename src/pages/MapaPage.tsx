@@ -41,9 +41,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { fetchPorProcesso, fetchPorTestemunha } from "@/lib/supabase";
+import { fetchProcessos, fetchTestemunhas } from "@/services/mapa-testemunhas";
 import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
-import { normalizeMapaRequest } from "@/lib/normalizeMapaRequest";
 import { ChatBar } from "@/features/testemunhas/ChatBar";
 import { ResultBlocks } from "@/features/testemunhas/ResultBlocks";
 import { LoadMoreButton } from "@/components/mapa-testemunhas/LoadMoreButton";
@@ -201,22 +200,16 @@ const MapaPage = () => {
 
     try {
       const [processosResult, testemunhasResult] = await Promise.all([
-        fetchPorProcesso(
-          normalizeMapaRequest({
-            page: 1,
-            limit: 100,
-            filters: debouncedProcessFilters
-          }),
-          processoController.signal
-        ),
-        fetchPorTestemunha(
-          normalizeMapaRequest({
-            page: 1,
-            limit: 100,
-            filters: debouncedTestemunhaFilters
-          }),
-          testemunhaController.signal
-        )
+        fetchProcessos({
+          page: 1,
+          limit: 100,
+          filters: debouncedProcessFilters
+        }),
+        fetchTestemunhas({
+          page: 1,
+          limit: 100,
+          filters: debouncedTestemunhaFilters
+        })
       ]);
 
       if (processoController.signal.aborted || testemunhaController.signal.aborted) {
