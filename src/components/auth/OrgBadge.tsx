@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Building2, ChevronDown, Check, Settings, Loader2 } from "lucide-react";
-import { useOrganization } from "@/contexts/OrganizationContext";
+import { useMultiTenant } from "@/contexts/MultiTenantContext";
 import { useNavigate } from "react-router-dom";
 
 interface OrgBadgeProps {
@@ -24,7 +24,7 @@ export const OrgBadge = ({ onManageOrgs }: OrgBadgeProps) => {
     organizations, 
     loading, 
     switchOrganization 
-  } = useOrganization();
+  } = useMultiTenant();
 
   const handleOrgSelect = async (orgId: string) => {
     if (orgId === currentOrg?.id) return;

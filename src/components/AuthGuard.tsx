@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, UserRole } from '@/hooks/useAuth';
+import { useMultiTenantLoading } from '@/hooks/useMultiTenantLoading';
+import { MultiTenantLoadingScreen } from '@/components/core/MultiTenantLoadingScreen';
 import { Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -16,6 +18,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   redirectTo = '/login' 
 }) => {
   const { user, profile, loading } = useAuth();
+  const { isLoading: multiTenantLoading, isReady } = useMultiTenantLoading();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -56,7 +59,12 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
     }
   }, [user, profile, loading, requiredRole, redirectTo, navigate]);
 
-  // Show loading state
+  // Show multi-tenant loading screen while initializing
+  if (multiTenantLoading) {
+    return <MultiTenantLoadingScreen />;
+  }
+
+  // Show basic loading state for auth checks
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-subtle">
