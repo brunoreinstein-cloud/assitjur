@@ -50,6 +50,8 @@ import { LoadMoreButton } from "@/components/mapa-testemunhas/LoadMoreButton";
 import { ConnectionStatus } from "@/components/mapa-testemunhas/ConnectionStatus";
 import { DataState, DataStatus } from "@/components/ui/data-state";
 import { MapaErrorBoundary } from "@/components/mapa-testemunhas/MapaErrorBoundary";
+import { DebugToggle } from "@/components/mapa-testemunhas/DebugToggle";
+import { DebugMode } from "@/lib/debug-mode";
 
 // Updated types to match mapa-testemunhas structure
 type Processo = PorProcesso;
@@ -336,6 +338,7 @@ const MapaPage = () => {
                 <FileText className="h-4 w-4" aria-hidden="true" />
                 Importar Dados
               </Button>
+              <DebugToggle />
               <MaskPIISwitch />
               <ExportCsvButton 
                 data={activeTab === "processos" ? processos : testemunhas}

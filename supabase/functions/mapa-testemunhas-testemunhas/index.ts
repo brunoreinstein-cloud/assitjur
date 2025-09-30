@@ -74,9 +74,11 @@ serve('mapa-testemunhas-testemunhas', async (req) => {
   const from = (page - 1) * limit;
   const to = from + limit - 1;
   
-  // Query assistjur.por_testemunha_staging directly with org_id filter for multi-tenant isolation
+  // Query assistjur.por_testemunha_staging with schema() method for proper multi-tenant isolation
+  // @ts-ignore - schema() method exists but may not be in types
   let query = supabase
-    .from("assistjur.por_testemunha_staging")
+    .schema('assistjur')
+    .from('por_testemunha_staging')
     .select("*", { count: "exact" })
     .eq("org_id", profile.organization_id)
     .range(from, to);
