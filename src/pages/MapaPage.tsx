@@ -310,6 +310,11 @@ const MapaPage = () => {
               <h1 className="text-3xl font-bold flex items-center gap-3">
                 <Database className="h-8 w-8 text-primary" aria-hidden="true" />
                 Mapa de Testemunhas
+                {hasError && (
+                  <Badge variant="destructive" className="text-xs">
+                    Modo Fallback
+                  </Badge>
+                )}
               </h1>
               <p className="text-muted-foreground mt-1">
                 Análise estratégica de testemunhas e processos judiciais
@@ -324,7 +329,7 @@ const MapaPage = () => {
                 <Separator orientation="vertical" className="h-4" />
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4" aria-hidden="true" />
-                  <span>Dados em tempo real</span>
+                  <span>{hasError ? 'Dados mock' : 'Dados em tempo real'}</span>
                 </div>
               </div>
             </div>
