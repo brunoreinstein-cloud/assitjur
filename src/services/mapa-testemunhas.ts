@@ -161,27 +161,42 @@ export async function fetchTestemunhas(params: {
 
     // Use Edge Function com retry automático
     const result = await retryWithBackoff(async () => {
-      DebugMode.log(`🚀 [${requestId}] Chamando Edge Function: ${MAPA_TESTEMUNHAS_TESTEMUNHAS_FN}`);
+      DebugMode.log(`🚀 [${requestId}] ===== CHAMANDO EDGE FUNCTION =====`);
+      DebugMode.log(`🚀 [${requestId}] Function: ${MAPA_TESTEMUNHAS_TESTEMUNHAS_FN}`);
+      DebugMode.log(`🚀 [${requestId}] URL: ${supabase.functions.url}/${MAPA_TESTEMUNHAS_TESTEMUNHAS_FN}`);
+      DebugMode.log(`🚀 [${requestId}] Body:`, body);
+      DebugMode.log(`🚀 [${requestId}] Auth Token presente: ${!!sessionData.session.access_token}`);
       
+      const startTime = performance.now();
       const { data, error } = await supabase.functions.invoke(
         MAPA_TESTEMUNHAS_TESTEMUNHAS_FN,
         { body }
       );
+      const duration = performance.now() - startTime;
+
+      DebugMode.log(`⏱️ [${requestId}] Tempo de resposta: ${duration.toFixed(2)}ms`);
 
       if (error) {
-        DebugMode.error(`❌ [${requestId}] Erro na Edge Function:`, error);
+        DebugMode.error(`❌ [${requestId}] ===== ERRO NA EDGE FUNCTION =====`);
+        DebugMode.error(`❌ [${requestId}] Error object:`, error);
+        DebugMode.error(`❌ [${requestId}] Error message:`, error.message);
+        DebugMode.error(`❌ [${requestId}] Error context:`, error.context);
         throw new Error(`Erro ao buscar testemunhas: ${error.message}`);
       }
 
       if (!data || !data.items) {
+        DebugMode.log(`✅ [${requestId}] ===== DATASET VAZIO (VÁLIDO) =====`);
         DebugMode.log(`✅ [${requestId}] Empty dataset (0 records) - this is valid, not an error`);
         return { data: [], total: 0 };
       }
 
-      DebugMode.log(`✅ [${requestId}] Resposta recebida`, {
+      DebugMode.log(`✅ [${requestId}] ===== RESPOSTA RECEBIDA COM SUCESSO =====`);
+      DebugMode.log(`✅ [${requestId}] Data structure:`, {
         hasData: !!data,
         dataKeys: data ? Object.keys(data) : [],
         itemsCount: data.items?.length || 0,
+        total: data.total,
+        hasNextCursor: !!data.next_cursor
       });
 
       return { data: data.items, total: data.total || 0 };
@@ -286,27 +301,42 @@ export async function fetchProcessos(params: {
 
     // Use Edge Function com retry automático
     const result = await retryWithBackoff(async () => {
-      DebugMode.log(`🚀 [${requestId}] Chamando Edge Function: ${MAPA_TESTEMUNHAS_PROCESSOS_FN}`);
+      DebugMode.log(`🚀 [${requestId}] ===== CHAMANDO EDGE FUNCTION =====`);
+      DebugMode.log(`🚀 [${requestId}] Function: ${MAPA_TESTEMUNHAS_PROCESSOS_FN}`);
+      DebugMode.log(`🚀 [${requestId}] URL: ${supabase.functions.url}/${MAPA_TESTEMUNHAS_PROCESSOS_FN}`);
+      DebugMode.log(`🚀 [${requestId}] Body:`, body);
+      DebugMode.log(`🚀 [${requestId}] Auth Token presente: ${!!sessionData.session.access_token}`);
       
+      const startTime = performance.now();
       const { data, error } = await supabase.functions.invoke(
         MAPA_TESTEMUNHAS_PROCESSOS_FN,
         { body }
       );
+      const duration = performance.now() - startTime;
+
+      DebugMode.log(`⏱️ [${requestId}] Tempo de resposta: ${duration.toFixed(2)}ms`);
 
       if (error) {
-        DebugMode.error(`❌ [${requestId}] Erro na Edge Function:`, error);
+        DebugMode.error(`❌ [${requestId}] ===== ERRO NA EDGE FUNCTION =====`);
+        DebugMode.error(`❌ [${requestId}] Error object:`, error);
+        DebugMode.error(`❌ [${requestId}] Error message:`, error.message);
+        DebugMode.error(`❌ [${requestId}] Error context:`, error.context);
         throw new Error(`Erro ao buscar processos: ${error.message}`);
       }
 
       if (!data || !data.items) {
+        DebugMode.log(`✅ [${requestId}] ===== DATASET VAZIO (VÁLIDO) =====`);
         DebugMode.log(`✅ [${requestId}] Empty dataset (0 records) - this is valid, not an error`);
         return { data: [], total: 0 };
       }
 
-      DebugMode.log(`✅ [${requestId}] Resposta recebida`, {
+      DebugMode.log(`✅ [${requestId}] ===== RESPOSTA RECEBIDA COM SUCESSO =====`);
+      DebugMode.log(`✅ [${requestId}] Data structure:`, {
         hasData: !!data,
         dataKeys: data ? Object.keys(data) : [],
         itemsCount: data.items?.length || 0,
+        total: data.total,
+        hasNextCursor: !!data.next_cursor
       });
 
       return { data: data.items, total: data.total || 0 };

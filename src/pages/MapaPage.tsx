@@ -51,6 +51,7 @@ import { DataState, DataStatus } from "@/components/ui/data-state";
 import { MapaErrorBoundary } from "@/components/mapa-testemunhas/MapaErrorBoundary";
 import { DebugToggle } from "@/components/mapa-testemunhas/DebugToggle";
 import { DebugMode } from "@/lib/debug-mode";
+import { DiagnosticPanel } from "@/components/mapa-testemunhas/DiagnosticPanel";
 
 // Updated types to match mapa-testemunhas structure
 type Processo = PorProcesso;
@@ -360,6 +361,9 @@ const MapaPage = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Diagnostic Panel (DEV only) */}
+        <DiagnosticPanel />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

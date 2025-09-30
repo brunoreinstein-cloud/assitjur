@@ -2,9 +2,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
-import { Logger } from '@/lib/logger';
-
-const logger = new Logger('MapaErrorBoundary');
+import { logger } from '@/lib/logger';
 
 interface Props {
   children: ReactNode;
