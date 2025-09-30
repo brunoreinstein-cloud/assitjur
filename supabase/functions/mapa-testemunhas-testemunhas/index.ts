@@ -91,14 +91,23 @@ serve('mapa-testemunhas-testemunhas', async (req) => {
     return jsonError(500, "DB_ERROR", { message: error.message, requestId }, { ...ch, "x-request-id": requestId });
   }
 
-  const result = { items: data ?? [], page, limit, total: count ?? 0, next_cursor: null, requestId };
+  // 📊 Enhanced logging for diagnostics
+  const totalRecords = count ?? 0;
+  logger.info(`query executed: org_id=${profile.organization_id}, total=${totalRecords}, returned=${data?.length ?? 0}, page=${page}, limit=${limit}`);
+  
+  // ✅ Empty data is NOT an error - it's a valid state
+  if (totalRecords === 0) {
+    logger.info(`no data found: table may be empty for org_id=${profile.organization_id}`);
+  }
+
+  const result = { items: data ?? [], page, limit, total: totalRecords, next_cursor: null, requestId };
   const resultValidation = ListaResponseSchema.safeParse(result);
   if (!resultValidation.success) {
     logger.error(`response validation: ${resultValidation.error.message}`);
     return jsonError(500, "INCONSISTENT_RESPONSE", { issues: resultValidation.error.issues, expected: { items: [], page: 1, limit: 20, next_cursor: null, requestId }, requestId }, { ...ch, "x-request-id": requestId });
   }
 
-  logger.info(`success: ${result.items.length} items returned`);
+  logger.info(`success: ${result.items.length} items returned, total=${totalRecords}`);
   return json(200, result, { ...ch, "x-request-id": requestId });
 });
 

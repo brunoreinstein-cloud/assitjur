@@ -269,20 +269,24 @@ export const fetchPorProcesso = async (
     if (!response.ok) {
       const { error: err, detail, hint, example } = payload || {};
       const message = detail || hint || 'Verifique filtros e tente novamente.';
-      // HTTP error logged internally
+      console.error(`[${requestId}] HTTP ${response.status}: ${message}`);
       return { data: [], total: 0, error: message };
     }
 
-    const payloadTyped = payload as { data?: PorProcesso[]; count?: number; total?: number };
-    if (!payloadTyped?.data || payloadTyped.data.length === 0) {
-      // Empty dataset returned
+    // 🔧 CRITICAL FIX: Edge Function returns { items, total } but frontend expects { data, total }
+    const payloadTyped = payload as { items?: PorProcesso[]; data?: PorProcesso[]; count?: number; total?: number };
+    const items = payloadTyped.items || payloadTyped.data || [];
+    const total = payloadTyped.total ?? payloadTyped.count ?? 0;
+    
+    if (items.length === 0) {
+      console.log(`[${requestId}] ✅ Empty dataset (0 records) for org - this is valid, not an error`);
     } else {
-      // Processos fetched successfully
+      console.log(`[${requestId}] ✅ Successfully fetched ${items.length} processos`);
     }
 
     return {
-      data: payloadTyped.data || [],
-      total: payloadTyped.count || payloadTyped.total || 0
+      data: items,
+      total
     };
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
@@ -402,20 +406,24 @@ export const fetchPorTestemunha = async (
     if (!response.ok) {
       const { error: err, detail, hint, example } = payload || {};
       const message = detail || hint || 'Verifique filtros e tente novamente.';
-      // HTTP error logged internally
+      console.error(`[${requestId}] HTTP ${response.status}: ${message}`);
       return { data: [], total: 0, error: message };
     }
 
-    const payloadTyped = payload as { data?: PorTestemunha[]; count?: number; total?: number };
-    if (!payloadTyped?.data || payloadTyped.data.length === 0) {
-      // Empty dataset returned
+    // 🔧 CRITICAL FIX: Edge Function returns { items, total } but frontend expects { data, total }
+    const payloadTyped = payload as { items?: PorTestemunha[]; data?: PorTestemunha[]; count?: number; total?: number };
+    const items = payloadTyped.items || payloadTyped.data || [];
+    const total = payloadTyped.total ?? payloadTyped.count ?? 0;
+    
+    if (items.length === 0) {
+      console.log(`[${requestId}] ✅ Empty dataset (0 records) for org - this is valid, not an error`);
     } else {
-      // Testemunhas fetched successfully
+      console.log(`[${requestId}] ✅ Successfully fetched ${items.length} testemunhas`);
     }
 
     return {
-      data: payloadTyped.data || [],
-      total: payloadTyped.count || payloadTyped.total || 0
+      data: items,
+      total
     };
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
