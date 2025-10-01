@@ -40,8 +40,7 @@ export type PorTestemunha = {
   participou_triangulacao: boolean;
   participou_troca_favor: boolean;
   classificacao: string | null;
-  created_at?: string;
-  // Legacy fields for backward compatibility
+  classificacao_estrategica?: string | null;
   cnjs_como_testemunha?: string[] | null;
   cnjs_como_reclamante?: string[] | null;
   foi_testemunha_ativo?: boolean | null;
@@ -51,8 +50,8 @@ export type PorTestemunha = {
   cnjs_troca_favor?: string[] | null;
   cnjs_triangulacao?: string[] | null;
   e_prova_emprestada?: boolean | null;
-  classificacao_estrategica?: string | null;
   org_id?: string | null;
+  created_at?: string;
   updated_at?: string;
 };
 

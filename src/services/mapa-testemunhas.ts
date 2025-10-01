@@ -199,31 +199,50 @@ export async function fetchTestemunhas(params: {
         hasNextCursor: !!data.next_cursor
       });
 
-      // Transform backend data to match frontend types
-      const transformedItems = data.items.map((item: any) => ({
-        ...item,
-        nome_testemunha: item.nome_testemunha || item.nome || '',
-        qtd_depoimentos: typeof item.qtd_depoimentos === 'string' 
-          ? parseInt(item.qtd_depoimentos, 10) || 0 
-          : item.qtd_depoimentos || 0,
-        foi_testemunha_em_ambos_polos: item.foi_testemunha_em_ambos_polos === true || item.foi_testemunha_em_ambos_polos === 'Sim',
-        ja_foi_reclamante: item.ja_foi_reclamante === true || item.ja_foi_reclamante === 'Sim',
-        participou_triangulacao: item.participou_triangulacao === true || item.participou_triangulacao === 'Sim',
-        participou_troca_favor: item.participou_troca_favor === true || item.participou_troca_favor === 'Sim',
-        classificacao: item.classificacao || item.classificacao_estrategica || null,
-      })) as PorTestemunha[];
+      // Transform backend data (strings "Sim"/"Não" to booleans, parse arrays)
+      const transformedItems = data.items.map((item: any) => {
+        const parseArray = (val: any): string[] | null => {
+          if (!val) return null;
+          if (typeof val === 'string') {
+            try {
+              const parsed = JSON.parse(val.replace(/'/g, '"'));
+              return Array.isArray(parsed) ? parsed : null;
+            } catch {
+              return null;
+            }
+          }
+          return Array.isArray(val) ? val : null;
+        };
 
-      console.log(`[fetchTestemunhas] Transformed ${transformedItems.length} items, total: ${data.total}`, 
-        params.search ? `Search: "${params.search}"` : 'No search filter');
-      
-      // Log if FABIANO is in results
-      if (params.search && params.search.toUpperCase().includes('FABIANO')) {
-        const fabianoItems = transformedItems.filter(t => 
-          t.nome_testemunha?.toUpperCase().includes('FABIANO')
-        );
-        console.log(`[fetchTestemunhas] Found ${fabianoItems.length} items matching FABIANO:`, 
-          fabianoItems.map(f => ({ nome: f.nome_testemunha, qtd: f.qtd_depoimentos }))
-        );
+        return {
+          nome_testemunha: item.nome_testemunha || '',
+          qtd_depoimentos: typeof item.qtd_depoimentos === 'string' 
+            ? parseInt(item.qtd_depoimentos, 10) || 0 
+            : item.qtd_depoimentos || 0,
+          foi_testemunha_em_ambos_polos: item.foi_testemunha_em_ambos_polos === 'Sim' || item.foi_testemunha_em_ambos_polos === true,
+          ja_foi_reclamante: item.ja_foi_reclamante === 'Sim' || item.ja_foi_reclamante === true,
+          participou_triangulacao: item.participou_triangulacao === 'Sim' || item.participou_triangulacao === true,
+          participou_troca_favor: item.participou_troca_favor === 'Sim' || item.participou_troca_favor === true,
+          classificacao: item.classificacao || null,
+          classificacao_estrategica: item.classificacao_estrategica || null,
+          cnjs_como_testemunha: parseArray(item.cnjs_como_testemunha),
+          cnjs_como_reclamante: parseArray(item.cnjs_como_reclamante),
+          foi_testemunha_ativo: item.foi_testemunha_ativo === 'Sim' || item.foi_testemunha_ativo === true,
+          cnjs_ativo: parseArray(item.cnjs_ativo),
+          foi_testemunha_passivo: item.foi_testemunha_passivo === 'Sim' || item.foi_testemunha_passivo === true,
+          cnjs_passivo: parseArray(item.cnjs_passivo),
+          cnjs_troca_favor: parseArray(item.cnjs_troca_favor),
+          cnjs_triangulacao: parseArray(item.cnjs_triangulacao),
+          e_prova_emprestada: item.e_prova_emprestada === 'Sim' || item.e_prova_emprestada === true,
+          org_id: item.org_id || null,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+        } as PorTestemunha;
+      });
+
+      DebugMode.log(`✅ [${requestId}] Transformed ${transformedItems.length} items`);
+      if (transformedItems.length > 0) {
+        DebugMode.log(`✅ [${requestId}] Sample item:`, transformedItems[0]);
       }
 
       return { data: transformedItems, total: data.total || 0 };

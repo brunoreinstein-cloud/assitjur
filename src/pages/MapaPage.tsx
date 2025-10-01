@@ -222,18 +222,6 @@ const MapaPage = () => {
       setTestemunhas(testemunhasResult.data);
       setTotalProcessos(processosResult.total || 0);
       setTotalTestemunhas(testemunhasResult.total || 0);
-      
-      // Debug logging for FABIANO search
-      if (debouncedTestemunhaFilters.search?.toUpperCase().includes('FABIANO')) {
-        const fabianoResults = testemunhasResult.data.filter(t => 
-          t.nome_testemunha?.toUpperCase().includes('FABIANO')
-        );
-        console.log(`[MapaPage] Setting testemunhas with FABIANO search:`, {
-          totalResults: testemunhasResult.data.length,
-          fabianoMatches: fabianoResults.length,
-          fabianoNames: fabianoResults.map(f => f.nome_testemunha)
-        });
-      }
 
       const errorMsg = processosResult.error || testemunhasResult.error;
       if (errorMsg) {
