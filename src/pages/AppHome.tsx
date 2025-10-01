@@ -3,11 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Database, Search, BarChart3, Brain, ArrowRight, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 
 export default function AppHome() {
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   const features = [
     {
