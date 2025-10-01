@@ -161,13 +161,42 @@ const MapaPage = () => {
     }
   }, [user, loadViews]);
 
-  // URL synchronization with tabs and view mode
+  // URL synchronization with tabs, view mode, and filters
   useEffect(() => {
     const tab = searchParams.get('tab') as TabType;
     const view = searchParams.get('view');
+    const nome = searchParams.get('nome');
+    const cnj = searchParams.get('cnj');
+    const reclamante = searchParams.get('reclamante');
     
+    // Set active tab
     if (tab && (tab === 'processos' || tab === 'testemunhas') && tab !== activeTab) {
       setActiveTab(tab);
+    }
+    
+    // Apply filters from URL parameters
+    if (nome) {
+      setTestemunhaFilters({ search: decodeURIComponent(nome) });
+      // Clean URL after applying filter
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('nome');
+      setSearchParams(newParams, { replace: true });
+    }
+    
+    if (cnj) {
+      setProcessoFilters({ search: decodeURIComponent(cnj) });
+      // Clean URL after applying filter
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('cnj');
+      setSearchParams(newParams, { replace: true });
+    }
+    
+    if (reclamante) {
+      setProcessoFilters({ search: decodeURIComponent(reclamante) });
+      // Clean URL after applying filter
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('reclamante');
+      setSearchParams(newParams, { replace: true });
     }
     
     // If view=chat is present, scroll to chat section
@@ -177,7 +206,7 @@ const MapaPage = () => {
         chatElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
     }
-  }, [searchParams, activeTab, setActiveTab]);
+  }, [searchParams, activeTab, setActiveTab, setProcessoFilters, setTestemunhaFilters, setSearchParams]);
 
   const handleTabChange = (value: string) => {
     const newTab = value as TabType;
