@@ -167,29 +167,52 @@ export function useAssistente() {
 
       // Extract real response from OpenAI
       const aiResponse = data?.data || data?.content || '';
-      console.log('🔍 Raw AI Response:', aiResponse.substring(0, 200));
+      console.log('🔍 [FRONTEND] Raw AI Response type:', typeof aiResponse);
+      console.log('🔍 [FRONTEND] Response length:', aiResponse.length);
+      console.log('🔍 [FRONTEND] First 300 chars:', aiResponse.substring(0, 300));
       
       // Parse response with multiple fallback strategies
       let blocks: ResultBlock[] = [];
       
-      // Strategy 1: Direct JSON parse
+      // Strategy 1: Direct JSON parse (expecting {"blocks": [...]})
       try {
         const parsed = JSON.parse(aiResponse);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        console.log('✅ [FRONTEND] Parsed JSON, type:', typeof parsed);
+        
+        // Check if it's the new format {"blocks": [...]}
+        if (parsed.blocks && Array.isArray(parsed.blocks)) {
+          blocks = parsed.blocks;
+          console.log('✅ [FRONTEND] Extracted blocks array with', blocks.length, 'items');
+        } 
+        // Old format: direct array
+        else if (Array.isArray(parsed) && parsed.length > 0) {
           blocks = parsed;
-          console.log('✅ Parsed JSON array with', blocks.length, 'blocks');
+          console.log('✅ [FRONTEND] Direct array with', blocks.length, 'blocks');
+        }
+        // Single block object
+        else if (parsed.type) {
+          blocks = [parsed];
+          console.log('✅ [FRONTEND] Single block object');
+        }
+        else {
+          console.warn('⚠️ [FRONTEND] Parsed JSON but unexpected structure:', Object.keys(parsed));
         }
       } catch (e1) {
-        // Strategy 2: Extract JSON from mixed text
+        console.error('❌ [FRONTEND] JSON parse failed:', e1);
+        
+        // Strategy 2: Extract JSON object from mixed text
         try {
-          const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
+          const jsonMatch = aiResponse.match(/\{[\s\S]*"blocks"[\s\S]*\}/);
           if (jsonMatch) {
-            blocks = JSON.parse(jsonMatch[0]);
-            console.log('✅ Extracted JSON from text with', blocks.length, 'blocks');
+            const parsed = JSON.parse(jsonMatch[0]);
+            blocks = parsed.blocks || [];
+            console.log('✅ [FRONTEND] Extracted blocks from text:', blocks.length);
           }
         } catch (e2) {
+          console.error('❌ [FRONTEND] Extraction failed:', e2);
+          
           // Strategy 3: Use response as plain text
-          console.log('⚠️ Using plain text response');
+          console.log('⚠️ [FRONTEND] Falling back to plain text interpretation');
           blocks = [
             {
               type: 'executive',

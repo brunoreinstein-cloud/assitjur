@@ -22,7 +22,8 @@ const DEFAULT_TEMPERATURE = Number(Deno.env.get("OPENAI_TEMPERATURE") ?? 0.2);
 const MAX_MESSAGE_LENGTH = Number(Deno.env.get("OPENAI_MAX_MSG_LEN") ?? 2000);
 const MAX_TOKENS = Number(Deno.env.get("OPENAI_MAX_TOKENS") ?? 1500);
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-const OPENAI_TIMEOUT_MS = Number(Deno.env.get("OPENAI_TIMEOUT_MS") ?? 10_000);
+const OPENAI_TIMEOUT_MS = Number(Deno.env.get("OPENAI_TIMEOUT_MS") ?? 30_000); // Aumentado para 30s
+const MAX_RETRIES = 2;
 
 function withTimeout<T>(p: Promise<T>, ms: number) {
   return Promise.race([
@@ -44,16 +45,20 @@ async function openAIChat({
   model = DEFAULT_MODEL,
   temperature = DEFAULT_TEMPERATURE,
   max_tokens = MAX_TOKENS,
+  requestId,
 }: {
   system: string;
   user: string;
   model?: string;
   temperature?: number;
   max_tokens?: number;
+  requestId: string;
 }) {
   if (!OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY ausente");
   }
+
+  const log = createLogger(requestId);
 
   const body = {
     model,
@@ -65,23 +70,68 @@ async function openAIChat({
     response_format: { type: "json_object" }
   };
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${OPENAI_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
+  log.info(`Chamando OpenAI: model=${model}, max_tokens=${max_tokens}`);
+  const startTime = Date.now();
 
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`OpenAI error: ${res.status} ${errText}`);
+  let lastError: Error | null = null;
+  
+  // Retry logic
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      const elapsed = Date.now() - startTime;
+
+      if (!res.ok) {
+        const errText = await res.text();
+        log.error(`OpenAI erro ${res.status} (tentativa ${attempt + 1}): ${errText}`);
+        lastError = new Error(`OpenAI error: ${res.status} ${errText}`);
+        
+        // Retry on 5xx errors or rate limits
+        if ((res.status >= 500 || res.status === 429) && attempt < MAX_RETRIES) {
+          const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+          log.warn(`Aguardando ${delay}ms antes de retry...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        throw lastError;
+      }
+
+      const json = await res.json();
+      const content = json?.choices?.[0]?.message?.content ?? "";
+      
+      log.info(`OpenAI sucesso em ${elapsed}ms (tentativa ${attempt + 1}), chars=${content.length}`);
+      
+      // Validate JSON response
+      try {
+        JSON.parse(content);
+        log.info(`✅ Resposta é JSON válido`);
+      } catch {
+        log.warn(`⚠️ Resposta NÃO é JSON válido: ${content.substring(0, 100)}`);
+      }
+      
+      return content;
+      
+    } catch (err) {
+      lastError = err as Error;
+      log.error(`OpenAI tentativa ${attempt + 1} falhou: ${err.message}`);
+      
+      if (attempt < MAX_RETRIES) {
+        const delay = Math.pow(2, attempt) * 1000;
+        log.warn(`Aguardando ${delay}ms antes de retry...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
   }
 
-  const json = await res.json();
-  const content = json?.choices?.[0]?.message?.content ?? "";
-  return content;
+  throw lastError || new Error("OpenAI falhou após todas as tentativas");
 }
 
 /**
@@ -148,11 +198,15 @@ export async function handler(request: Request) {
       log.warn(`erro na consulta de prompts: ${spErr.message}`);
     }
     const systemPrompt = sysPromptRow?.content ?? getSystemPrompt(wantedName);
+    
+    log.info(`Executando análise: kind=${wantedName}, msg_len=${message.length}`);
 
     const completion = await withTimeout(
-      openAIChat({ system: systemPrompt, user: message }),
+      openAIChat({ system: systemPrompt, user: message, requestId }),
       OPENAI_TIMEOUT_MS,
     );
+
+    log.info(`Análise concluída: response_len=${completion.length}`);
 
     return json(200, { ok: true, data: completion, requestId }, { ...corsHeaders(request), "x-request-id": requestId });
   } catch (err) {
