@@ -1,10 +1,10 @@
 export const AUTH_CONFIG = {
   // Default redirect routes by user role
   DEFAULT_REDIRECTS: {
-    ADMIN: '/admin/dashboard',
-    ANALYST: '/dados/mapa', 
-    VIEWER: '/dados/mapa',
-    DEFAULT: '/dados/mapa'
+    ADMIN: '/',
+    ANALYST: '/', 
+    VIEWER: '/',
+    DEFAULT: '/'
   },
   
   // Feature flags
@@ -26,6 +26,7 @@ export const AUTH_CONFIG = {
   
   // Redirect validation
   ALLOWED_REDIRECT_PATHS: [
+    '/',
     '/dados/mapa',
     '/admin/dashboard',
     '/admin',

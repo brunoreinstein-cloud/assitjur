@@ -28,6 +28,7 @@ const SystemConfig = lazy(() => import("@/pages/admin/SystemConfig"));
 const Compliance = lazy(() => import("@/pages/admin/Compliance"));
 const MarketingCompliance = lazy(() => import("@/pages/admin/MarketingCompliance"));
 const DataRetention = lazy(() => import("@/pages/admin/DataRetention"));
+const AppHome = lazy(() => import('@/pages/AppHome'));
 const OpenAI = lazy(() => import("@/pages/admin/OpenAI"));
 const OpenAIKeys = lazy(() => import("@/pages/admin/openai/Keys"));
 const OpenAIModels = lazy(() => import("@/pages/admin/openai/Models"));
@@ -86,7 +87,7 @@ function AppRoutes() {
   return (
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<PublicHome />} />
+        <Route path="/home" element={<PublicHome />} />
         <Route path="/sobre" element={<About />} />
         <Route path="/beta" element={<Beta />} />
         <Route path="/login" element={<Login />} />
@@ -119,7 +120,8 @@ function AppRoutes() {
             </AuthGuard>
           }
         >
-          <Route path="/dashboard" element={<Navigate to="/mapa" replace />} />
+          <Route path="/" element={<AppHome />} />
+          <Route path="/dashboard" element={<Navigate to="/" replace />} />
           <Route path="/mapa" element={<MapaPage />} />
           <Route path="/mapa-testemunhas" element={<MapaPage />} />
           <Route path="/dados" element={<Navigate to="/mapa" replace />} />
