@@ -31,12 +31,23 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
   }, [setSelectedTestemunha, setIsDetailDrawerOpen]);
 
   const getClassificacaoColor = (classificacao: string | null) => {
-    switch (classificacao?.toLowerCase()) {
-      case 'alto risco': return 'bg-destructive text-destructive-foreground';
-      case 'médio risco': return 'bg-warning text-warning-foreground';
-      case 'baixo risco': return 'bg-success text-success-foreground';
-      default: return 'bg-muted text-muted-foreground';
+    const lower = classificacao?.toLowerCase() || '';
+    
+    // Handle values from database: "Alto", "Médio", "Comum", etc.
+    if (lower.includes('alto') || lower === 'alto risco') {
+      return 'bg-destructive text-destructive-foreground';
     }
+    if (lower.includes('médio') || lower.includes('medio') || lower === 'médio risco') {
+      return 'bg-warning text-warning-foreground';
+    }
+    if (lower.includes('baixo') || lower === 'baixo risco') {
+      return 'bg-success text-success-foreground';
+    }
+    // "Comum" or "Normal" should be neutral
+    if (lower === 'comum' || lower === 'normal') {
+      return 'bg-muted text-muted-foreground';
+    }
+    return 'bg-muted text-muted-foreground';
   };
 
   if (status !== "success") {

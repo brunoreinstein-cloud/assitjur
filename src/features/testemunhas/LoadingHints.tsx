@@ -45,7 +45,7 @@ export function LoadingHints() {
                 key={currentHintIndex}
                 className="text-sm text-foreground font-medium transition-opacity duration-200"
               >
-                {loadingHints[currentHintIndex]}
+                {loadingHints[currentHintIndex] || 'Carregando...'}
               </span>
             </div>
             
