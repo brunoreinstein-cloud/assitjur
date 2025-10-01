@@ -42,7 +42,7 @@ serve('mapa-testemunhas-testemunhas', async (req) => {
     filtros,
   } = validation.data;
 
-  // 🔍 DEBUG: Log detalhado dos filtros recebidos
+  // 🔍 DEBUG: Log detalhado dos filtros recebidos (v1.1)
   logger.info(`filtros recebidos: ${JSON.stringify(filtros, null, 2)}`);
   if (filtros.search || filtros.nome) {
     logger.info(`🎯 SEARCH/NOME DETECTADO: search="${filtros.search || ''}", nome="${filtros.nome || ''}"`);

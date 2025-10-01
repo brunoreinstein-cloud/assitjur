@@ -127,6 +127,7 @@ export default defineConfig(({ mode }) => {
     esbuild: {
       jsx: 'automatic',
       target: 'es2020',
+      tsconfigRaw: tsconfigVite, // Use isolated tsconfig to bypass project references
     },
     define: {
       global: 'globalThis',
@@ -146,14 +147,10 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id: string) {
+            // Simplified strategy to avoid circular dependencies
             if (id.includes('node_modules')) {
-              if (id.includes('react') || id.includes('lucide-react')) {
-                return 'vendor';
-              }
-            }
-            if (id.includes('/src/pages/')) {
-              const name = id.split('/src/pages/')[1].split('/')[0].split('.')[0];
-              return `page-${name}`;
+              // Keep all node_modules together to prevent circular refs
+              return 'vendor';
             }
           },
         },
