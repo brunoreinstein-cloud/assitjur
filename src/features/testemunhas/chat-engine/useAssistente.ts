@@ -15,6 +15,8 @@ export function useAssistente() {
     chatStatus,
     chatResult,
     agentOnline,
+    selectedProcesso,
+    selectedTestemunha,
     setChatStatus,
     setChatResult,
     addChatMessage,
@@ -139,11 +141,59 @@ export function useAssistente() {
     });
 
     try {
+      // Enriquecer payload com dados contextuais
+      const payload: any = {
+        message: input,
+        queryType: getQueryType(kind)
+      };
+
+      // Adicionar dados completos do item selecionado para análise contextual
+      if (kind === 'processo' && selectedProcesso) {
+        payload.context = {
+          type: 'processo',
+          data: {
+            cnj: selectedProcesso.cnj || selectedProcesso.numero_cnj,
+            reclamante: selectedProcesso.reclamante_nome,
+            reclamante_cpf: selectedProcesso.reclamante_cpf_mask,
+            reu: selectedProcesso.reu_nome,
+            status: selectedProcesso.status,
+            fase: selectedProcesso.fase,
+            uf: selectedProcesso.uf,
+            comarca: selectedProcesso.comarca,
+            tribunal: selectedProcesso.tribunal,
+            vara: selectedProcesso.vara,
+            data_audiencia: selectedProcesso.data_audiencia,
+            testemunhas_ativo: selectedProcesso.testemunhas_ativo,
+            testemunhas_passivo: selectedProcesso.testemunhas_passivo,
+            triangulacao_confirmada: selectedProcesso.triangulacao_confirmada,
+            troca_direta: selectedProcesso.troca_direta,
+            prova_emprestada: selectedProcesso.prova_emprestada,
+            classificacao_final: selectedProcesso.classificacao_final,
+            score_risco: selectedProcesso.score_risco,
+            observacoes: selectedProcesso.observacoes
+          }
+        };
+      } else if (kind === 'testemunha' && selectedTestemunha) {
+        payload.context = {
+          type: 'testemunha',
+          data: {
+            nome: selectedTestemunha.nome_testemunha,
+            cpf: selectedTestemunha.cpf_mask,
+            qtd_depoimentos: selectedTestemunha.qtd_depoimentos,
+            processos_cnj: selectedTestemunha.processos_cnj,
+            foi_testemunha_em_ambos_polos: selectedTestemunha.foi_testemunha_em_ambos_polos,
+            ja_foi_reclamante: selectedTestemunha.ja_foi_reclamante,
+            primeiro_depoimento: selectedTestemunha.primeiro_depoimento,
+            ultimo_depoimento: selectedTestemunha.ultimo_depoimento,
+            reclamantes_relacionados: selectedTestemunha.reclamantes_relacionados,
+            classificacao_final: selectedTestemunha.classificacao_final,
+            score_risco: selectedTestemunha.score_risco
+          }
+        };
+      }
+
       const { data, error } = await supabase.functions.invoke('chat-legal', {
-        body: {
-          message: input,
-          queryType: getQueryType(kind)
-        }
+        body: payload
       });
 
       if (error) {

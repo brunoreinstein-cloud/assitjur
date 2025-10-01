@@ -210,10 +210,18 @@ const MapaPage = () => {
     }
   }, [searchParams, activeTab, setActiveTab, setProcessoFilters, setTestemunhaFilters, setSearchParams]);
 
+  // Adicionar setters para limpar seleções
+  const setSelectedProcesso = useMapaTestemunhasStore(s => s.setSelectedProcesso);
+  const setSelectedTestemunha = useMapaTestemunhasStore(s => s.setSelectedTestemunha);
+
   const handleTabChange = (value: string) => {
     const newTab = value as TabType;
     setActiveTab(newTab);
     setSearchParams({ tab: newTab });
+    
+    // Limpar seleções ao trocar de aba
+    setSelectedProcesso(null);
+    setSelectedTestemunha(null);
   };
 
   // Load real data from Supabase with filter integration

@@ -67,6 +67,8 @@ export function ChatBar() {
     chatKind,
     chatStatus,
     agentOnline,
+    selectedProcesso,
+    selectedTestemunha,
     setChatInput,
     setChatKind,
     setSelectedProcesso,
@@ -181,6 +183,21 @@ export function ChatBar() {
     toast({ title: 'CNJ copiado', description: cnj });
   };
 
+  const handleClearSelection = () => {
+    setSelectedProcesso(null);
+    setSelectedTestemunha(null);
+    setChatInput('');
+    setInput('');
+  };
+
+  // Determinar qual item está selecionado
+  const selectedItem = selectedProcesso || selectedTestemunha;
+  const selectedLabel = selectedProcesso 
+    ? `Processo: ${selectedProcesso.cnj || selectedProcesso.numero_cnj}`
+    : selectedTestemunha
+    ? `Testemunha: ${selectedTestemunha.nome_testemunha}`
+    : null;
+
   const handleSubmit = async () => {
     if (!input.trim() || shouldBlockExecution) return;
     setShowSuggestions(false);
@@ -250,6 +267,27 @@ export function ChatBar() {
             </div>
           </AlertDescription>
         </Alert>
+      )}
+
+      {/* Badge de Seleção Contextual */}
+      {selectedItem && selectedLabel && (
+        <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-lg px-4 py-3 animate-in fade-in slide-in-from-top-2 duration-300">
+          <Badge variant="default" className="gap-1.5 text-xs">
+            {selectedProcesso && <FileText className="h-3 w-3" />}
+            {selectedTestemunha && <Users className="h-3 w-3" />}
+            Contexto Selecionado
+          </Badge>
+          <span className="text-sm font-medium text-foreground flex-1">{selectedLabel}</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearSelection}
+            className="h-7 px-2 hover:bg-destructive/10 gap-1.5"
+          >
+            <X className="h-3 w-3" />
+            <span className="text-xs">Limpar</span>
+          </Button>
+        </div>
       )}
 
       {/* Unified Search Header */}
@@ -495,7 +533,10 @@ export function ChatBar() {
           onClick={handleSubmit}
           disabled={!canExecute || chatStatus === 'loading'}
           size="lg"
-          className="gap-2 min-w-[160px] shadow-md hover:shadow-lg transition-all hover:scale-105"
+          className={cn(
+            "gap-2 min-w-[160px] shadow-md hover:shadow-lg transition-all hover:scale-105",
+            selectedItem && "bg-primary/90 hover:bg-primary ring-2 ring-primary/20"
+          )}
         >
           {chatStatus === 'loading' ? (
             <>
@@ -506,6 +547,11 @@ export function ChatBar() {
             <>
               <AlertCircle className="h-5 w-5" />
               Refinar busca
+            </>
+          ) : selectedItem ? (
+            <>
+              <Sparkles className="h-5 w-5" />
+              Análise Contextual
             </>
           ) : (
             <>
