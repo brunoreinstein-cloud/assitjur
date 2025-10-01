@@ -181,6 +181,10 @@ serve('search', async (req) => {
       if (processos.length > 0) {
         processos.forEach((p: any) => {
           const matchType = parsed.filters.cnj && p.cnj?.includes(parsed.filters.cnj) ? 'exact' : 'partial';
+          const confidence = calculateDataConfidence(p, ['cnj', 'reclamante', 'reclamada', 'status']);
+          
+          logger.info(`🔍 DEBUG Processo: cnj=${p.cnj}, status=${p.status}, classificacao=${p.classificacao}, confidence=${confidence}`, requestId);
+          
           results.push({
             id: p.cnj || `proc_${Math.random()}`,
             type: 'process',
@@ -192,7 +196,8 @@ serve('search', async (req) => {
               classificacao: p.classificacao || p.classificacao_estrategica || 'Normal',
               comarca: p.comarca,
               testemunhas: p.qtd_testemunhas || 0,
-              confidence: calculateDataConfidence(p, ['cnj', 'reclamante', 'reclamada', 'status']),
+              confidence: confidence,
+              _debug: { raw_status: p.status, raw_classificacao: p.classificacao }
             },
             score: calculateScore(matchType, 'process', {}),
           });
@@ -220,6 +225,9 @@ serve('search', async (req) => {
         testemunhas.forEach((t: any, idx: number) => {
           const bothPoles = t.foi_testemunha_em_ambos_polos === true;
           const qtdDepoimentos = t.qtd_depoimentos || 0;
+          const confidence = calculateDataConfidence(t, ['nome_testemunha', 'qtd_depoimentos']);
+          
+          logger.info(`🔍 DEBUG Testemunha: nome=${t.nome_testemunha}, qtd=${qtdDepoimentos}, classificacao=${t.classificacao}, confidence=${confidence}`, requestId);
           
           results.push({
             id: `w_${idx}`,
@@ -232,7 +240,8 @@ serve('search', async (req) => {
               depoimentos: qtdDepoimentos,
               ambosPoles: bothPoles,
               classificacao: t.classificacao || 'Normal',
-              confidence: calculateDataConfidence(t, ['nome_testemunha', 'qtd_depoimentos']),
+              confidence: confidence,
+              _debug: { raw_classificacao: t.classificacao, raw_qtd: t.qtd_depoimentos }
             },
             score: calculateScore('partial', 'witness', { bothPoles }),
           });
