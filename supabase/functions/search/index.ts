@@ -191,11 +191,11 @@ serve('search', async (req) => {
       }
     }
 
-    // Busca em testemunhas (via staging)
+    // Busca em testemunhas (via view canônica)
     if (scope === 'all' || scope === 'witness') {
       const witnessQuery = supa
-        .from('por_testemunha_staging')
-        .select('nome_testemunha, qtd_depoimentos, foi_testemunha_em_ambos_polos, classificacao')
+        .from('por_testemunha_view')
+        .select('nome_testemunha, qtd_depoimentos, foi_testemunha_em_ambos_polos, classificacao, cnjs_como_testemunha')
         .eq('org_id', organization_id)
         .ilike('nome_testemunha', `%${parsed.cleanQuery}%`)
         .limit(limit);
@@ -204,7 +204,7 @@ serve('search', async (req) => {
 
       if (testemunhas) {
         testemunhas.forEach((t, idx) => {
-          const bothPoles = t.foi_testemunha_em_ambos_polos === 'Sim';
+          const bothPoles = t.foi_testemunha_em_ambos_polos === true;
           results.push({
             id: `w_${idx}`,
             type: 'witness',
@@ -215,6 +215,7 @@ serve('search', async (req) => {
               depoimentos: t.qtd_depoimentos,
               ambosPoles: bothPoles,
               classificacao: t.classificacao,
+              cnjs: t.cnjs_como_testemunha,
             },
             score: calculateScore('partial', 'witness', { bothPoles }),
           });
@@ -222,11 +223,11 @@ serve('search', async (req) => {
       }
     }
 
-    // Busca em reclamantes (via staging)
+    // Busca em reclamantes (via view de processos)
     if (scope === 'all' || scope === 'claimant') {
       const claimantQuery = supa
-        .from('por_processo_staging')
-        .select('reclamante_limpo, cnj')
+        .from('por_processo_view')
+        .select('reclamante_limpo, cnj, reclamante_cpf_mask')
         .eq('org_id', organization_id)
         .ilike('reclamante_limpo', `%${parsed.cleanQuery}%`)
         .limit(limit);
@@ -249,7 +250,10 @@ serve('search', async (req) => {
             title: name,
             subtitle: 'Reclamante',
             highlights: [name],
-            meta: {},
+            meta: {
+              cpf: r.reclamante_cpf_mask,
+              cnj: r.cnj,
+            },
             score: calculateScore('partial', 'claimant', {}),
           });
         });
