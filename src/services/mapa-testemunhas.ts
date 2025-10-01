@@ -118,16 +118,17 @@ function getMockTestemunhasData(page: number, limit: number): { data: PorTestemu
 export async function fetchTestemunhas(params: {
   page?: number;
   limit?: number;
-  search?: string;
   filters?: TestemunhaFilters;
 }): Promise<{ data: PorTestemunha[]; total: number; error?: string }> {
   const requestId = Math.random().toString(36).substring(7);
   
+  const searchTerm = params.filters?.search || params.filters?.nome;
+  
   DebugMode.log(`🔍 [${requestId}] fetchTestemunhas iniciado`, {
     page: params.page,
     limit: params.limit,
-    search: params.search,
     filters: params.filters,
+    searchTerm: searchTerm,
     timestamp: new Date().toISOString(),
   });
 
@@ -143,10 +144,7 @@ export async function fetchTestemunhas(params: {
       hasToken: !!sessionData.session.access_token,
     });
 
-    const filtros = toSnakeCaseFilters({
-      ...(params.filters ?? {}),
-      ...(params.search ? { search: params.search } : {}),
-    });
+    const filtros = toSnakeCaseFilters(params.filters ?? {});
 
     const body = {
       paginacao: {
@@ -155,6 +153,15 @@ export async function fetchTestemunhas(params: {
       },
       filtros,
     } satisfies TestemunhasRequest;
+    
+    // 🔍 DEBUG ESPECÍFICO PARA SEARCH
+    if (searchTerm) {
+      console.log(`🎯 [${requestId}] SEARCH DETECTADO:`, {
+        searchTerm,
+        filtrosEnviados: body.filtros,
+        hasSearchInFiltros: 'search' in body.filtros || 'nome' in body.filtros
+      });
+    }
     
     DebugMode.log(`📦 [${requestId}] Payload preparado`, body);
     TestemunhasRequestSchema.parse(body);
