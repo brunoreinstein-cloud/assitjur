@@ -19,6 +19,12 @@ export interface SearchResponse {
   scope: SearchScope;
   results: SearchResult[];
   total: number;
+  isAmbiguous?: boolean;
+  ambiguityType?: 'generic_name' | 'multiple_matches';
+  suggestions?: {
+    message: string;
+    counts: Record<string, number>;
+  };
 }
 
 export interface SearchFilters {

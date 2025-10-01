@@ -165,6 +165,8 @@ export function ChatBar() {
 
   const isLoading = chatStatus === 'loading';
   const hasResults = searchResults && searchResults.results.length > 0;
+  const isAmbiguous = searchResults?.isAmbiguous || false;
+  const shouldBlockExecution = isAmbiguous && chatInput.length >= 2;
 
   return (
     <div className="space-y-4">
@@ -176,6 +178,24 @@ export function ChatBar() {
             <strong>Conteúdo assistivo.</strong> Revisão humana obrigatória. 
             Dados tratados conforme LGPD. 
             <a href="/privacy" className="underline ml-2">Política de Privacidade</a>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Ambiguity Banner */}
+      {isAmbiguous && searchResults?.suggestions && (
+        <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800">
+          <Filter className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <AlertDescription className="text-blue-800 dark:text-blue-300">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <strong>Múltiplos resultados encontrados.</strong>{' '}
+                {searchResults.suggestions.message}
+              </div>
+              <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                {searchResults.total} opções
+              </Badge>
+            </div>
           </AlertDescription>
         </Alert>
       )}
@@ -264,14 +284,20 @@ export function ChatBar() {
               {/* Submit Button */}
               <Button
                 onClick={handleSubmit}
-                disabled={!chatInput.trim() || isLoading || !agentOnline}
+                disabled={!chatInput.trim() || isLoading || !agentOnline || shouldBlockExecution}
                 className="absolute top-1 right-1 h-10 gap-1"
                 size="sm"
+                title={shouldBlockExecution ? 'Selecione uma opção específica antes de executar' : ''}
               >
                 {isLoading ? (
                   <>
                     <Loader2 className="h-3 w-3 animate-spin" />
                     Analisando...
+                  </>
+                ) : shouldBlockExecution ? (
+                  <>
+                    <Filter className="h-3 w-3" />
+                    Refinar busca
                   </>
                 ) : (
                   <>
@@ -298,20 +324,43 @@ export function ChatBar() {
 
                 {!isSearchLoading && hasResults && (
                   <>
+                    {/* Mensagem de orientação quando ambíguo */}
+                    {isAmbiguous && searchResults?.suggestions && (
+                      <div className="px-3 py-2 border-b bg-muted/50">
+                        <p className="text-xs font-medium text-foreground">
+                          {searchResults.suggestions.message}
+                        </p>
+                      </div>
+                    )}
+
                     {/* Agrupar por tipo */}
                     {['process', 'witness', 'claimant'].map((type) => {
                       const items = searchResults.results.filter((r: any) => r.type === type);
                       if (items.length === 0) return null;
 
                       const Icon = ENTITY_ICONS[type as SearchEntityType];
+                      const typeLabel = ENTITY_TYPE_LABELS[type as SearchEntityType];
 
                       return (
-                        <CommandGroup key={type} heading={ENTITY_TYPE_LABELS[type as SearchEntityType]}>
+                        <CommandGroup 
+                          key={type} 
+                          heading={
+                            <div className="flex items-center justify-between w-full pr-2">
+                              <span>{typeLabel}</span>
+                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                                {items.length}
+                              </Badge>
+                            </div>
+                          }
+                        >
                           {items.map((result: any) => (
                             <CommandItem
                               key={result.id}
                               onSelect={() => handleSelectResult(result)}
-                              className="flex items-start gap-3 py-3 cursor-pointer"
+                              className={cn(
+                                "flex items-start gap-3 py-3 cursor-pointer transition-colors",
+                                isAmbiguous && "hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                              )}
                             >
                               <div className="mt-0.5">
                                 <Icon className="h-4 w-4 text-muted-foreground" />
@@ -337,15 +386,25 @@ export function ChatBar() {
                                   <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
                                     {result.meta.status && <span>Status: {result.meta.status}</span>}
                                     {result.meta.comarca && <span>· {result.meta.comarca}</span>}
+                                    {result.meta.classificacao && (
+                                      <Badge variant="outline" className="text-[9px] px-1 py-0">
+                                        {result.meta.classificacao}
+                                      </Badge>
+                                    )}
                                   </div>
                                 )}
 
                                 {result.type === 'witness' && result.meta && (
-                                  <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
-                                    <span>{result.meta.depoimentos} depoimentos</span>
+                                  <div className="flex items-center gap-2 mt-1 text-[10px]">
+                                    <span className="text-muted-foreground">{result.meta.depoimentos} depoimentos</span>
                                     {result.meta.ambosPoles && (
+                                      <Badge variant="destructive" className="text-[9px] px-1 py-0">
+                                        ⚠ Ambos polos
+                                      </Badge>
+                                    )}
+                                    {result.meta.classificacao && (
                                       <Badge variant="outline" className="text-[9px] px-1 py-0">
-                                        Ambos polos
+                                        {result.meta.classificacao}
                                       </Badge>
                                     )}
                                   </div>
@@ -358,13 +417,19 @@ export function ChatBar() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="h-6 w-6 p-0"
+                                    className="h-6 w-6 p-0 hover:bg-muted"
                                     onClick={(e) => handleCopyCNJ(result.title, e)}
+                                    title="Copiar CNJ"
                                   >
                                     <Copy className="h-3 w-3" />
                                   </Button>
                                 )}
-                                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-6 w-6 p-0 hover:bg-muted"
+                                  title="Abrir detalhes"
+                                >
                                   <ExternalLink className="h-3 w-3" />
                                 </Button>
                               </div>

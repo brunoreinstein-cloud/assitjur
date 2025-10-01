@@ -4,6 +4,14 @@ import { getAuth } from '../_shared/auth.ts';
 import { json, jsonError } from '../_shared/http.ts';
 import { logger } from '../_shared/logger.ts';
 
+const ENTITY_TYPE_LABELS_MAP: Record<string, string> = {
+  process: 'Processos',
+  witness: 'Testemunhas',
+  claimant: 'Reclamantes',
+  lawyer: 'Advogados',
+  comarca: 'Comarcas',
+};
+
 interface SearchQuery {
   q: string;
   scope?: 'all' | 'process' | 'witness' | 'claimant' | 'lawyer' | 'comarca';
@@ -18,6 +26,21 @@ interface SearchResult {
   highlights: string[];
   meta: Record<string, any>;
   score: number;
+}
+
+interface SearchResponse {
+  query: string;
+  parsed: string;
+  filters: Record<string, any>;
+  scope: string;
+  results: SearchResult[];
+  total: number;
+  isAmbiguous?: boolean;
+  ambiguityType?: 'generic_name' | 'multiple_matches';
+  suggestions?: {
+    message: string;
+    counts: Record<string, number>;
+  };
 }
 
 // Parser de query inteligente
@@ -239,20 +262,55 @@ serve('search', async (req) => {
     // Limitar resultados finais
     const finalResults = results.slice(0, limit);
 
-    logger.info(`✅ Retornando ${finalResults.length} resultados`, requestId);
+    // Detectar ambiguidade
+    let isAmbiguous = false;
+    let ambiguityType: 'generic_name' | 'multiple_matches' | undefined;
+    let suggestions: { message: string; counts: Record<string, number> } | undefined;
 
-    return json(
-      200,
-      {
-        query: q,
-        parsed: parsed.cleanQuery,
-        filters: parsed.filters,
-        scope,
-        results: finalResults,
-        total: finalResults.length,
-      },
-      { ...ch, 'x-request-id': requestId }
-    );
+    // Critérios de ambiguidade
+    const hasMultipleWitnesses = finalResults.filter((r) => r.type === 'witness').length > 1;
+    const hasMultipleClaimants = finalResults.filter((r) => r.type === 'claimant').length > 1;
+    const isGenericQuery = parsed.cleanQuery.length > 0 && parsed.cleanQuery.split(' ').length <= 2 && !parsed.filters.cnj;
+    const totalResults = finalResults.length;
+
+    if (isGenericQuery && (hasMultipleWitnesses || hasMultipleClaimants) && totalResults >= 3) {
+      isAmbiguous = true;
+      ambiguityType = hasMultipleWitnesses || hasMultipleClaimants ? 'multiple_matches' : 'generic_name';
+      
+      const counts: Record<string, number> = {};
+      finalResults.forEach((r) => {
+        const label = ENTITY_TYPE_LABELS_MAP[r.type] || r.type;
+        counts[label] = (counts[label] || 0) + 1;
+      });
+
+      const countText = Object.entries(counts)
+        .map(([type, count]) => `${count} ${type.toLowerCase()}`)
+        .join(', ');
+
+      suggestions = {
+        message: `${totalResults} resultados encontrados (${countText}). Selecione uma opção ou refine sua busca.`,
+        counts,
+      };
+    }
+
+    logger.info(`✅ Retornando ${finalResults.length} resultados${isAmbiguous ? ' [AMBÍGUO]' : ''}`, requestId);
+
+    const response: SearchResponse = {
+      query: q,
+      parsed: parsed.cleanQuery,
+      filters: parsed.filters,
+      scope,
+      results: finalResults,
+      total: finalResults.length,
+    };
+
+    if (isAmbiguous) {
+      response.isAmbiguous = isAmbiguous;
+      response.ambiguityType = ambiguityType;
+      response.suggestions = suggestions;
+    }
+
+    return json(200, response, { ...ch, 'x-request-id': requestId });
   } catch (error) {
     logger.error(`❌ Erro na busca: ${error.message}`, requestId);
     return jsonError(500, error.message, { requestId }, { ...ch, 'x-request-id': requestId });
