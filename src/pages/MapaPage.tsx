@@ -45,6 +45,7 @@ import { fetchProcessos, fetchTestemunhas } from "@/services/mapa-testemunhas";
 import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
 import { ChatBar } from "@/features/testemunhas/ChatBar";
 import { ResultBlocks } from "@/features/testemunhas/ResultBlocks";
+import { LoadingHints } from "@/features/testemunhas/LoadingHints";
 import { LoadMoreButton } from "@/components/mapa-testemunhas/LoadMoreButton";
 import { ConnectionStatus } from "@/components/mapa-testemunhas/ConnectionStatus";
 import { DataState, DataStatus } from "@/components/ui/data-state";
