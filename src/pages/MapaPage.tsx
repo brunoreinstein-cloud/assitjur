@@ -123,19 +123,39 @@ const MapaPage = () => {
     });
   };
 
-  // KPIs calculation with useMemo - using real totals from API
+  // KPIs calculation with useMemo - using real totals from API with robust validation
   const stats: StatsData = useMemo(() => {
-    const processosAltoRisco = processos.filter(p => p.classificacao_final === "Risco Alto").length;
-    const testemunhasAmbosPolos = testemunhas.filter(t => t.foi_testemunha_em_ambos_polos === true).length;
-    const pct = (a: number, b: number) => b > 0 ? Math.round((a / b) * 100) : 0;
+    // Validar arrays e filtrar com fallback seguro
+    const processosValidos = Array.isArray(processos) ? processos : [];
+    const testemunhasValidas = Array.isArray(testemunhas) ? testemunhas : [];
+    
+    const processosAltoRisco = processosValidos.filter(p => 
+      p?.classificacao_final === "Risco Alto" || 
+      p?.classificacao_final === "Alto"
+    ).length;
+    
+    const testemunhasAmbosPolos = testemunhasValidas.filter(t => 
+      t?.foi_testemunha_em_ambos_polos === true
+    ).length;
+    
+    // Função robusta de cálculo de porcentagem
+    const pct = (a: number, b: number): number => {
+      if (!isFinite(a) || !isFinite(b) || b <= 0) return 0;
+      const result = Math.round((a / b) * 100);
+      return isFinite(result) ? result : 0;
+    };
+    
+    // Garantir que totais sejam números válidos
+    const totalP = isFinite(totalProcessos) && totalProcessos > 0 ? totalProcessos : processosValidos.length;
+    const totalT = isFinite(totalTestemunhas) && totalTestemunhas > 0 ? totalTestemunhas : testemunhasValidas.length;
     
     return { 
-      totalProcessos, 
-      totalTestemunhas, 
+      totalProcessos: totalP, 
+      totalTestemunhas: totalT, 
       processosAltoRisco, 
       testemunhasAmbosPolos,
-      pctProcAlto: pct(processosAltoRisco, totalProcessos), 
-      pctAmbos: pct(testemunhasAmbosPolos, totalTestemunhas) 
+      pctProcAlto: pct(processosAltoRisco, totalP), 
+      pctAmbos: pct(testemunhasAmbosPolos, totalT) 
     };
   }, [processos, testemunhas, totalProcessos, totalTestemunhas]);
 
@@ -255,10 +275,19 @@ const MapaPage = () => {
         return;
       }
 
-      setProcessos(processosResult.data);
-      setTestemunhas(testemunhasResult.data);
-      setTotalProcessos(processosResult.total || 0);
-      setTotalTestemunhas(testemunhasResult.total || 0);
+      // Validar e normalizar dados antes de atualizar estado
+      const processosData = Array.isArray(processosResult.data) ? processosResult.data : [];
+      const testemunhasData = Array.isArray(testemunhasResult.data) ? testemunhasResult.data : [];
+      
+      setProcessos(processosData);
+      setTestemunhas(testemunhasData);
+      
+      // Usar total da API ou length dos dados como fallback
+      const totalP = isFinite(processosResult.total) ? processosResult.total : processosData.length;
+      const totalT = isFinite(testemunhasResult.total) ? testemunhasResult.total : testemunhasData.length;
+      
+      setTotalProcessos(totalP);
+      setTotalTestemunhas(totalT);
 
       const errorMsg = processosResult.error || testemunhasResult.error;
       if (errorMsg) {

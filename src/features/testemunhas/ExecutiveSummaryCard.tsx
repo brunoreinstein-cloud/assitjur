@@ -41,6 +41,12 @@ export function ExecutiveSummaryCard({
   const { toast } = useToast();
   const [showAllCitations, setShowAllCitations] = useState(false);
   
+  // Validar e normalizar confiança para evitar NaN
+  const confiancaValida = typeof confianca === 'number' && !isNaN(confianca) && isFinite(confianca) 
+    ? Math.max(0, Math.min(1, confianca)) 
+    : 0;
+  const confiancaPct = Math.round(confiancaValida * 100);
+  
   const maxVisibleCitations = 3;
   const hasMoreCitations = citacoes.length > maxVisibleCitations;
   const visibleCitations = showAllCitations ? citacoes : citacoes.slice(0, maxVisibleCitations);
@@ -55,7 +61,7 @@ Status: ${status}
 Observações: ${observacoes}
 
 Risco: ${riscoNivel.toUpperCase()}
-Confiança: ${Math.round(confianca * 100)}%
+Confiança: ${confiancaPct}%
 ${alerta ? `Alerta: ${alerta}` : ''}
 
 Citações:
@@ -174,8 +180,8 @@ ${citacoes.map(c => `• ${c.label}`).join('\n')}`;
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Confiança</span>
               <div className="flex items-center gap-2">
-                <Progress value={confianca * 100} className="w-16 h-2" />
-                <span className="text-sm text-muted-foreground">{Math.round(confianca * 100)}%</span>
+                <Progress value={confiancaPct} className="w-16 h-2" />
+                <span className="text-sm text-muted-foreground">{confiancaPct}%</span>
               </div>
             </div>
           </div>

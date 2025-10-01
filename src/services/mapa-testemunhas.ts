@@ -383,7 +383,11 @@ export async function fetchProcessos(params: {
         hasNextCursor: !!data.next_cursor
       });
 
-      return { data: data.items, total: data.total || 0 };
+      // Validar e normalizar items
+      const items = Array.isArray(data.items) ? data.items : [];
+      const total = isFinite(data.total) ? data.total : items.length;
+
+      return { data: items, total };
     });
 
     DebugMode.log(`🎉 [${requestId}] fetchProcessos concluído com sucesso`);

@@ -47,6 +47,7 @@ export function useAssistente() {
           observacoes: 'Processo com potencial risco de triangulação detectado.',
           riscoNivel: 'alto' as const,
           confianca: 0.85,
+          confianca: 0.85,
           alerta: 'Testemunhas conectadas em múltiplos processos'
         },
         citations: [
@@ -265,10 +266,15 @@ export function useAssistente() {
             title: '📊 Resumo Executivo',
             icon: 'FileText',
             data: {
-              processo: input.match(/\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}/) ? input : 'Consulta iniciada',
-              classificacao: 'Normal',
-              score: 0,
-              observacoes: `Análise iniciada para: ${input.substring(0, 100)}${input.length > 100 ? '...' : ''}`
+              cnj: input.match(/\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}/) ? input : '0000000-00.0000.0.00.0000',
+              reclamante: 'Aguardando dados...',
+              reu: 'Aguardando dados...',
+              status: 'Processando',
+              observacoes: `Análise iniciada para: ${input.substring(0, 100)}${input.length > 100 ? '...' : ''}`,
+              riscoNivel: 'baixo' as const,
+              confianca: 0.5,
+              alerta: undefined,
+              citacoes: []
             }
           },
           {
