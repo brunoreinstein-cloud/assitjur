@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useNotifications } from '@/stores/useNotificationStore';
 import { getProjectRef } from '@/lib/supabaseClient';
 import { useMapaTestemunhasStore, QueryKind, ResultBlock } from '@/lib/store/mapa-testemunhas';
+import { normalizeStatus, normalizeClassificacao, normalizeRiscoNivel, calculateConfidence } from '@/lib/data-quality';
 
 export function useAssistente() {
   const { toast } = useToast();
@@ -267,12 +268,12 @@ export function useAssistente() {
             icon: 'FileText',
             data: {
               cnj: input.match(/\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}/) ? input : '0000000-00.0000.0.00.0000',
-              reclamante: 'Aguardando dados...',
-              reu: 'Aguardando dados...',
-              status: 'Processando',
-              observacoes: `Análise iniciada para: ${input.substring(0, 100)}${input.length > 100 ? '...' : ''}`,
-              riscoNivel: 'baixo' as const,
-              confianca: 0.5,
+              reclamante: selectedProcesso?.reclamante_nome || 'Aguardando dados...',
+              reu: selectedProcesso?.reu_nome || 'Aguardando dados...',
+              status: normalizeStatus(selectedProcesso?.status),
+              observacoes: selectedProcesso?.observacoes || `Análise iniciada para: ${input.substring(0, 100)}${input.length > 100 ? '...' : ''}`,
+              riscoNivel: normalizeRiscoNivel(selectedProcesso?.classificacao_final, selectedProcesso?.score_risco),
+              confianca: selectedProcesso ? calculateConfidence(selectedProcesso, ['cnj', 'reclamante_nome', 'reu_nome', 'status']) : 0.5,
               alerta: undefined,
               citacoes: []
             }

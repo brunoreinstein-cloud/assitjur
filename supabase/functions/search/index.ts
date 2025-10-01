@@ -88,6 +88,18 @@ function parseSearchQuery(query: string) {
   };
 }
 
+// Cálculo de confiança baseado na completude dos dados
+function calculateDataConfidence(data: any, requiredFields: string[]): number {
+  if (!data) return 0;
+  
+  const validFields = requiredFields.filter(field => {
+    const value = data[field];
+    return value !== null && value !== undefined && value !== '' && value !== 'nan';
+  });
+  
+  return validFields.length / requiredFields.length;
+}
+
 // Scoring unificado
 function calculateScore(
   matchType: 'exact' | 'partial' | 'fuzzy',
@@ -176,9 +188,11 @@ serve('search', async (req) => {
             subtitle: `${p.reclamante || 'N/A'} × ${p.reclamada || 'N/A'}`,
             highlights: [p.cnj || '', p.reclamante || '', p.reclamada || ''],
             meta: {
-              status: p.status,
-              classificacao: p.classificacao || p.classificacao_estrategica,
+              status: p.status || 'Em andamento',
+              classificacao: p.classificacao || p.classificacao_estrategica || 'Normal',
+              comarca: p.comarca,
               testemunhas: p.qtd_testemunhas || 0,
+              confidence: calculateDataConfidence(p, ['cnj', 'reclamante', 'reclamada', 'status']),
             },
             score: calculateScore(matchType, 'process', {}),
           });
@@ -214,9 +228,11 @@ serve('search', async (req) => {
             subtitle: `${qtdDepoimentos} depoimentos`,
             highlights: [t.nome_testemunha || ''],
             meta: {
+              status: 'Ativa',
               depoimentos: qtdDepoimentos,
               ambosPoles: bothPoles,
               classificacao: t.classificacao || 'Normal',
+              confidence: calculateDataConfidence(t, ['nome_testemunha', 'qtd_depoimentos']),
             },
             score: calculateScore('partial', 'witness', { bothPoles }),
           });
@@ -258,6 +274,8 @@ serve('search', async (req) => {
             highlights: [name],
             meta: {
               cnj: p.cnj || '',
+              status: 'Ativo',
+              confidence: calculateDataConfidence(p, ['reclamante']),
             },
             score: calculateScore('partial', 'claimant', {}),
           });

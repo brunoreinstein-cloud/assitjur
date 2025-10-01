@@ -223,12 +223,18 @@ export const UnifiedSearch = () => {
                               {/* Metadados específicos */}
                               {result.type === 'process' && result.meta && (
                                 <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
-                                  {result.meta.status && <span>Status: {result.meta.status}</span>}
+                                  <span>Status: {result.meta.status || 'Em andamento'}</span>
                                   {result.meta.comarca && <span>· {result.meta.comarca}</span>}
-                                  {result.meta.classificacao && (
-                                    <Badge variant="outline" className="text-[9px] px-1 py-0">
-                                      {result.meta.classificacao}
-                                    </Badge>
+                                  <Badge 
+                                    variant="outline" 
+                                    className="text-[9px] px-1 py-0"
+                                  >
+                                    {result.meta.classificacao || 'Normal'}
+                                  </Badge>
+                                  {result.meta.confidence !== undefined && (
+                                    <span className="text-[9px]">
+                                      · {Math.round(result.meta.confidence * 100)}% conf.
+                                    </span>
                                   )}
                                 </div>
                               )}
@@ -240,6 +246,14 @@ export const UnifiedSearch = () => {
                                     <Badge variant="outline" className="text-[9px] px-1 py-0">
                                       Ambos polos
                                     </Badge>
+                                  )}
+                                  <Badge variant="outline" className="text-[9px] px-1 py-0">
+                                    {result.meta.classificacao || 'Normal'}
+                                  </Badge>
+                                  {result.meta.confidence !== undefined && (
+                                    <span className="text-[9px]">
+                                      · {Math.round(result.meta.confidence * 100)}% conf.
+                                    </span>
                                   )}
                                 </div>
                               )}
