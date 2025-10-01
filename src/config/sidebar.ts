@@ -34,7 +34,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { 
         label: "Início", 
-        to: "/", 
+        to: "/dashboard", 
         icon: Home,
         description: "Visão geral"
       },

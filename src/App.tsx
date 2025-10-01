@@ -87,7 +87,7 @@ function AppRoutes() {
   return (
       <Routes>
         {/* Public routes */}
-        <Route path="/home" element={<PublicHome />} />
+        <Route path="/" element={<PublicHome />} />
         <Route path="/sobre" element={<About />} />
         <Route path="/beta" element={<Beta />} />
         <Route path="/login" element={<Login />} />
@@ -120,8 +120,7 @@ function AppRoutes() {
             </AuthGuard>
           }
         >
-          <Route path="/" element={<AppHome />} />
-          <Route path="/dashboard" element={<Navigate to="/" replace />} />
+          <Route path="/dashboard" element={<AppHome />} />
           <Route path="/mapa" element={<MapaPage />} />
           <Route path="/mapa-testemunhas" element={<MapaPage />} />
           <Route path="/dados" element={<Navigate to="/mapa" replace />} />
