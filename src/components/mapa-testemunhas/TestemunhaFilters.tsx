@@ -49,7 +49,11 @@ export function TestemunhaFilters() {
               id="search"
               placeholder="Nome da testemunha..."
               value={testemunhaFilters.search || ''}
-              onChange={(e) => updateFilter('search', e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                console.log('[TestemunhaFilters] Search input changed:', value);
+                updateFilter('search', value);
+              }}
             />
           </div>
 
