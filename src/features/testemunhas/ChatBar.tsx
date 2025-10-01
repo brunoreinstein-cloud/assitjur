@@ -135,77 +135,44 @@ export function ChatBar() {
   }, []);
 
   const handleSelectResult = (result: any) => {
-    console.log('🎯 handleSelectResult iniciado', {
-      resultType: result.type,
-      resultTitle: result.title,
-      processosCarregados: processos.length,
-      testemunhasCarregadas: testemunhas.length
-    });
-
     setShowSuggestions(false);
+    setInput(result.title);
+    setChatInput(result.title);
     
-    // Selecionar o item automaticamente para análise
+    // Auto-select and navigate based on type
     switch (result.type) {
       case 'process': {
-        console.log('🔍 Buscando processo:', result.title);
-        console.log('📊 Processos disponíveis:', processos.map(p => ({ 
-          cnj: p.cnj, 
-          numero_cnj: p.numero_cnj 
-        })));
-        
-        // Encontrar o processo nos dados
         const processo = processos.find(p => 
           p.cnj === result.title || p.numero_cnj === result.title
         );
         
         if (processo) {
-          console.log('✅ Processo encontrado:', processo);
           setSelectedProcesso(processo);
-          setChatInput(result.title);
-          setChatKind('processo');
-        } else {
-          console.warn('⚠️ Processo não encontrado nos dados carregados');
-          setChatInput(result.title);
-          setChatKind('processo');
-          toast.info('Carregando dados do processo...', { duration: 2000 });
+          toast({ title: "Processo selecionado", description: processo.cnj || processo.numero_cnj });
         }
-        navigate(`/mapa?tab=processos&cnj=${encodeURIComponent(result.title)}`, { replace: true });
+        setChatKind('processo');
+        navigate(`/mapa-testemunhas?tab=processos&cnj=${encodeURIComponent(result.title)}`);
         break;
       }
       case 'witness': {
-        console.log('🔍 Buscando testemunha:', result.title);
-        console.log('📊 Testemunhas disponíveis:', testemunhas.map(t => t.nome_testemunha));
-        
-        // Encontrar a testemunha nos dados
         const testemunha = testemunhas.find(t => 
           t.nome_testemunha?.toLowerCase() === result.title.toLowerCase()
         );
         
         if (testemunha) {
-          console.log('✅ Testemunha encontrada:', testemunha);
           setSelectedTestemunha(testemunha);
-          setChatInput(result.title);
-          setChatKind('testemunha');
-        } else {
-          console.warn('⚠️ Testemunha não encontrada nos dados carregados');
-          setChatInput(result.title);
-          setChatKind('testemunha');
-          toast.info('Carregando dados da testemunha...', { duration: 2000 });
+          toast({ title: "Testemunha selecionada", description: testemunha.nome_testemunha });
         }
-        navigate(`/mapa?tab=testemunhas&nome=${encodeURIComponent(result.title)}`, { replace: true });
+        setChatKind('testemunha');
+        navigate(`/mapa-testemunhas?tab=testemunhas&nome=${encodeURIComponent(result.title)}`);
         break;
       }
       case 'claimant': {
-        console.log('🔍 Selecionando reclamante:', result.title);
-        setChatInput(result.title);
         setChatKind('reclamante');
-        navigate(`/mapa?tab=processos&reclamante=${encodeURIComponent(result.title)}`, { replace: true });
+        navigate(`/mapa-testemunhas?tab=processos&reclamante=${encodeURIComponent(result.title)}`);
         break;
       }
     }
-    
-    // Manter o input com o item selecionado
-    setInput(result.title);
   };
 
   const handleCopyCNJ = (cnj: string, e: React.MouseEvent) => {
@@ -230,13 +197,16 @@ export function ChatBar() {
     : null;
 
   const handleSubmit = async () => {
-    if (!input.trim() || shouldBlockExecution) return;
+    if (!input.trim() || shouldBlockExecution || !agentOnline) return;
+    
     setShowSuggestions(false);
     setChatInput(input);
     
-    // Auto-detect query kind
-    const queryKind = selectedScope === 'process' ? 'processo' : 
-                      selectedScope === 'witness' ? 'testemunha' : 'reclamante';
+    // Smart query kind detection
+    const queryKind = chatKind || (
+      selectedScope === 'process' ? 'processo' : 
+      selectedScope === 'witness' ? 'testemunha' : 'reclamante'
+    );
     setChatKind(queryKind);
     
     await runAnalysis(input.trim(), queryKind);

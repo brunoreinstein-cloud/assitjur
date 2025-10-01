@@ -126,6 +126,11 @@ export function useAssistente() {
     }
 
     setChatStatus('loading');
+    
+    toast({
+      title: "Análise iniciada",
+      description: "Processando sua consulta...",
+    });
 
     // Add user message
     const userMessageId = addChatMessage({
@@ -141,51 +146,39 @@ export function useAssistente() {
     });
 
     try {
-      // Enriquecer payload com dados contextuais
+      // Smart context enrichment - automatically include selected item data
       const payload: any = {
         message: input,
         queryType: getQueryType(kind)
       };
 
-      // Adicionar dados completos do item selecionado para análise contextual
-      if (kind === 'processo' && selectedProcesso) {
+      // Auto-detect and enrich context
+      if (selectedProcesso && (kind === 'processo' || input.match(/\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}/))) {
         payload.context = {
           type: 'processo',
           data: {
             cnj: selectedProcesso.cnj || selectedProcesso.numero_cnj,
             reclamante: selectedProcesso.reclamante_nome,
-            reclamante_cpf: selectedProcesso.reclamante_cpf_mask,
             reu: selectedProcesso.reu_nome,
             status: selectedProcesso.status,
             fase: selectedProcesso.fase,
             uf: selectedProcesso.uf,
             comarca: selectedProcesso.comarca,
-            tribunal: selectedProcesso.tribunal,
-            vara: selectedProcesso.vara,
-            data_audiencia: selectedProcesso.data_audiencia,
             testemunhas_ativo: selectedProcesso.testemunhas_ativo,
             testemunhas_passivo: selectedProcesso.testemunhas_passivo,
-            triangulacao_confirmada: selectedProcesso.triangulacao_confirmada,
-            troca_direta: selectedProcesso.troca_direta,
-            prova_emprestada: selectedProcesso.prova_emprestada,
             classificacao_final: selectedProcesso.classificacao_final,
             score_risco: selectedProcesso.score_risco,
-            observacoes: selectedProcesso.observacoes
           }
         };
-      } else if (kind === 'testemunha' && selectedTestemunha) {
+      } else if (selectedTestemunha && kind === 'testemunha') {
         payload.context = {
           type: 'testemunha',
           data: {
             nome: selectedTestemunha.nome_testemunha,
-            cpf: selectedTestemunha.cpf_mask,
             qtd_depoimentos: selectedTestemunha.qtd_depoimentos,
             processos_cnj: selectedTestemunha.processos_cnj,
             foi_testemunha_em_ambos_polos: selectedTestemunha.foi_testemunha_em_ambos_polos,
             ja_foi_reclamante: selectedTestemunha.ja_foi_reclamante,
-            primeiro_depoimento: selectedTestemunha.primeiro_depoimento,
-            ultimo_depoimento: selectedTestemunha.ultimo_depoimento,
-            reclamantes_relacionados: selectedTestemunha.reclamantes_relacionados,
             classificacao_final: selectedTestemunha.classificacao_final,
             score_risco: selectedTestemunha.score_risco
           }

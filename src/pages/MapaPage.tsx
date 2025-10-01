@@ -86,9 +86,6 @@ const MapaPage = () => {
   const processoFilters = useMapaTestemunhasStore(selectProcessoFilters);
   const testemunhaFilters = useMapaTestemunhasStore(selectTestemunhaFilters);
 
-  const debouncedProcessFilters = useDebounce(processoFilters, 400);
-  const debouncedTestemunhaFilters = useDebounce(testemunhaFilters, 400);
-
   const processoAbortRef = useRef<AbortController | null>(null);
   const testemunhaAbortRef = useRef<AbortController | null>(null);
   
@@ -165,82 +162,62 @@ const MapaPage = () => {
     }
   }, [user, loadViews]);
 
-  // URL synchronization with tabs, view mode, and filters
+  // Simplified URL synchronization - URL as single source of truth
   useEffect(() => {
     const tab = searchParams.get('tab') as TabType;
-    const view = searchParams.get('view');
     const nome = searchParams.get('nome');
     const cnj = searchParams.get('cnj');
     const reclamante = searchParams.get('reclamante');
     
-    console.log('🔄 URL params detectados:', { tab, view, nome, cnj, reclamante });
-    
-    // Set active tab
+    // Set active tab from URL
     if (tab && (tab === 'processos' || tab === 'testemunhas') && tab !== activeTab) {
-      console.log('📑 Mudando aba para:', tab);
       setActiveTab(tab);
     }
     
-    // Apply filters from URL parameters and trigger selection (only if data is loaded)
+    // Apply filters and selections when data is available
     if (nome && testemunhas.length > 0) {
-      console.log('🔍 Aplicando filtro de nome:', nome);
-      setTestemunhaFilters({ search: decodeURIComponent(nome) });
+      const decodedNome = decodeURIComponent(nome);
+      setTestemunhaFilters({ search: decodedNome });
       
-      // Buscar testemunha nos dados carregados
       const testemunha = testemunhas.find(t => 
-        t.nome_testemunha?.toLowerCase() === decodeURIComponent(nome).toLowerCase()
+        t.nome_testemunha?.toLowerCase() === decodedNome.toLowerCase()
       );
       if (testemunha) {
-        console.log('✅ Testemunha encontrada após filtro:', testemunha);
         setSelectedTestemunha(testemunha);
-      } else {
-        console.warn('⚠️ Testemunha não encontrada após aplicar filtro');
+        toast({ title: "Testemunha selecionada", description: testemunha.nome_testemunha });
       }
       
-      // Clean URL after applying filter
+      // Clean URL
       const newParams = new URLSearchParams(searchParams);
       newParams.delete('nome');
       setSearchParams(newParams, { replace: true });
     }
     
     if (cnj && processos.length > 0) {
-      console.log('🔍 Aplicando filtro de CNJ:', cnj);
-      setProcessoFilters({ search: decodeURIComponent(cnj) });
+      const decodedCNJ = decodeURIComponent(cnj);
+      setProcessoFilters({ search: decodedCNJ });
       
-      // Buscar processo nos dados carregados
       const processo = processos.find(p => 
-        p.cnj === decodeURIComponent(cnj) || p.numero_cnj === decodeURIComponent(cnj)
+        p.cnj === decodedCNJ || p.numero_cnj === decodedCNJ
       );
       if (processo) {
-        console.log('✅ Processo encontrado após filtro:', processo);
         setSelectedProcesso(processo);
-      } else {
-        console.warn('⚠️ Processo não encontrado após aplicar filtro');
+        toast({ title: "Processo selecionado", description: processo.cnj || processo.numero_cnj });
       }
       
-      // Clean URL after applying filter
+      // Clean URL
       const newParams = new URLSearchParams(searchParams);
       newParams.delete('cnj');
       setSearchParams(newParams, { replace: true });
     }
     
     if (reclamante) {
-      console.log('🔍 Aplicando filtro de reclamante:', reclamante);
       setProcessoFilters({ search: decodeURIComponent(reclamante) });
-      // Clean URL after applying filter
       const newParams = new URLSearchParams(searchParams);
       newParams.delete('reclamante');
       setSearchParams(newParams, { replace: true });
     }
-    
-    // If view=chat is present, scroll to chat section
-    if (view === 'chat') {
-      setTimeout(() => {
-        const chatElement = document.getElementById('chat-assistant-section');
-        chatElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-    }
-  }, [searchParams, activeTab, setActiveTab, setProcessoFilters, setTestemunhaFilters, setSearchParams, processos, testemunhas, setSelectedProcesso, setSelectedTestemunha]);
+  }, [searchParams, activeTab, processos.length, testemunhas.length]);
 
   const handleTabChange = (value: string) => {
     const newTab = value as TabType;
@@ -252,10 +229,11 @@ const MapaPage = () => {
     setSelectedTestemunha(null);
   };
 
-  // Load real data from Supabase with filter integration
+  // Simplified data loading with single source
   const loadData = useCallback(async () => {
     if (!user) return;
 
+    // Cancel previous requests
     processoAbortRef.current?.abort();
     testemunhaAbortRef.current?.abort();
 
@@ -269,28 +247,13 @@ const MapaPage = () => {
 
     try {
       const [processosResult, testemunhasResult] = await Promise.all([
-        fetchProcessos({
-          page: 1,
-          limit: 100,
-          filters: debouncedProcessFilters
-        }),
-        fetchTestemunhas({
-          page: 1,
-          limit: 100,
-          filters: debouncedTestemunhaFilters
-        })
+        fetchProcessos({ page: 1, limit: 100, filters: processoFilters }),
+        fetchTestemunhas({ page: 1, limit: 100, filters: testemunhaFilters })
       ]);
 
       if (processoController.signal.aborted || testemunhaController.signal.aborted) {
         return;
       }
-
-      console.log('📦 Dados recebidos das edge functions:', {
-        processos: processosResult.data.length,
-        testemunhas: testemunhasResult.data.length,
-        totalProcessos: processosResult.total,
-        totalTestemunhas: testemunhasResult.total
-      });
 
       setProcessos(processosResult.data);
       setTestemunhas(testemunhasResult.data);
@@ -299,36 +262,24 @@ const MapaPage = () => {
 
       const errorMsg = processosResult.error || testemunhasResult.error;
       if (errorMsg) {
-        setError(true, `Erro ao conectar com servidor: ${errorMsg}`);
+        setError(true, `Erro ao conectar: ${errorMsg}`);
         toast({
           title: "Falha ao conectar",
-          description: `Erro de validação ou conexão: ${errorMsg}. Verifique os filtros e tente novamente.`,
+          description: errorMsg,
           variant: "destructive",
         });
-      } else {
-        if (isFirstLoad) {
-          setLastUpdate(new Date());
-          setIsFirstLoad(false);
-        }
-
-        console.log('✅ Dados armazenados no store com sucesso:', {
-          processos: processosResult.data.length,
-          testemunhas: testemunhasResult.data.length
-        });
+      } else if (isFirstLoad) {
+        setLastUpdate(new Date());
+        setIsFirstLoad(false);
       }
     } catch (error) {
-      if ((error as any)?.name === 'AbortError') {
-        return;
-      }
-      console.error('Erro ao carregar dados:', error);
-      const message = error instanceof Error
-        ? `Erro de conexão: ${error.message}`
-        : 'Erro interno. Verifique sua conexão e filtros.';
+      if ((error as any)?.name === 'AbortError') return;
+      
+      const message = error instanceof Error ? error.message : 'Erro ao carregar dados';
       setError(true, message);
-
       toast({
         title: "Falha na conexão",
-        description: `${message} Se o problema persistir, os dados mock serão exibidos.`,
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -336,18 +287,7 @@ const MapaPage = () => {
         setIsLoading(false);
       }
     }
-  }, [
-    user,
-    debouncedProcessFilters,
-    debouncedTestemunhaFilters,
-    setProcessos,
-    setTestemunhas,
-    setIsLoading,
-    setError,
-    setLastUpdate,
-    isFirstLoad,
-    toast
-  ]);
+  }, [user, processoFilters, testemunhaFilters, isFirstLoad]);
 
   useEffect(() => {
     loadData();
