@@ -165,16 +165,35 @@ export function useAssistente() {
         throw error;
       }
 
-      // Generate structured blocks from response
-      const mockBlocks = generateMockBlocks(kind, input);
+      // Extract real response from OpenAI
+      const aiResponse = data?.data || '';
+      
+      // Parse response or use as-is
+      let blocks: ResultBlock[];
+      try {
+        // Try to parse as JSON if response is structured
+        const parsed = JSON.parse(aiResponse);
+        blocks = Array.isArray(parsed) ? parsed : [
+          {
+            type: 'executive',
+            title: '📌 Análise',
+            icon: 'Sparkles',
+            data: { content: aiResponse }
+          }
+        ];
+      } catch {
+        // Use mock structure with real content
+        blocks = generateMockBlocks(kind, input);
+        blocks[0].data = { ...blocks[0].data, observacoes: aiResponse };
+      }
 
-      // Update assistant message with blocks
+      // Update assistant message with real data
       updateChatMessage(assistantMessageId, {
-        content: data.content || 'Análise concluída com sucesso.',
-        blocks: mockBlocks
+        content: aiResponse || 'Análise concluída com sucesso.',
+        blocks
       });
 
-      setChatResult(mockBlocks);
+      setChatResult(blocks);
       setChatStatus('success');
 
       toast({

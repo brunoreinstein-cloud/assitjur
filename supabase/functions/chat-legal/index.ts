@@ -140,8 +140,8 @@ export async function handler(request: Request) {
       .from("prompts")
       .select("content")
       .eq("org_id", organization_id)
-      .eq("type", "SYSTEM")
-      .eq("name", wantedName)
+      .eq("template_type", "SYSTEM")
+      .eq("label", wantedName)
       .maybeSingle();
 
     if (spErr) {
