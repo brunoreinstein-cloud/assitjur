@@ -69,6 +69,10 @@ export function ChatBar() {
     agentOnline,
     setChatInput,
     setChatKind,
+    setSelectedProcesso,
+    setSelectedTestemunha,
+    processos,
+    testemunhas,
   } = useMapaTestemunhasStore();
 
   const { runAnalysis } = useAssistente();
@@ -130,19 +134,45 @@ export function ChatBar() {
 
   const handleSelectResult = (result: any) => {
     setShowSuggestions(false);
-    setInput('');
-
+    
+    // Selecionar o item automaticamente para análise
     switch (result.type) {
-      case 'process':
+      case 'process': {
+        // Encontrar o processo nos dados
+        const processo = processos.find(p => 
+          p.cnj === result.title || p.numero_cnj === result.title
+        );
+        if (processo) {
+          setSelectedProcesso(processo);
+          setChatInput(result.title);
+          setChatKind('processo');
+        }
         navigate(`/mapa?tab=processos&cnj=${encodeURIComponent(result.title)}`);
         break;
-      case 'witness':
+      }
+      case 'witness': {
+        // Encontrar a testemunha nos dados
+        const testemunha = testemunhas.find(t => 
+          t.nome_testemunha?.toLowerCase() === result.title.toLowerCase()
+        );
+        if (testemunha) {
+          setSelectedTestemunha(testemunha);
+          setChatInput(result.title);
+          setChatKind('testemunha');
+        }
         navigate(`/mapa?tab=testemunhas&nome=${encodeURIComponent(result.title)}`);
         break;
-      case 'claimant':
+      }
+      case 'claimant': {
+        setChatInput(result.title);
+        setChatKind('reclamante');
         navigate(`/mapa?tab=processos&reclamante=${encodeURIComponent(result.title)}`);
         break;
+      }
     }
+    
+    // Manter o input com o item selecionado
+    setInput(result.title);
   };
 
   const handleCopyCNJ = (cnj: string, e: React.MouseEvent) => {
