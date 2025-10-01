@@ -16,6 +16,7 @@ import { DebugMode } from '@/lib/debug-mode';
 
 /**
  * Converte filtros em camelCase para snake_case aceito pela API
+ * Remove valores vazios, undefined e null
  */
 function toSnakeCaseFilters(
   filters: TestemunhaFilters | ProcessoFilters | undefined
@@ -31,10 +32,17 @@ function toSnakeCaseFilters(
   };
 
   return Object.fromEntries(
-    Object.entries(filters ?? {}).map(([key, value]) => [
-      map[key] ?? key,
-      value,
-    ])
+    Object.entries(filters ?? {})
+      .filter(([_, value]) => {
+        // Remove undefined, null, e strings vazias
+        if (value === undefined || value === null) return false;
+        if (typeof value === 'string' && value.trim() === '') return false;
+        return true;
+      })
+      .map(([key, value]) => [
+        map[key] ?? key,
+        value,
+      ])
   );
 }
 

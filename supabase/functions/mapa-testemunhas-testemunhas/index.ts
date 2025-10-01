@@ -42,6 +42,12 @@ serve('mapa-testemunhas-testemunhas', async (req) => {
     filtros,
   } = validation.data;
 
+  // 🔍 DEBUG: Log detalhado dos filtros recebidos
+  logger.info(`filtros recebidos:`, JSON.stringify(filtros, null, 2));
+  if (filtros.search || filtros.nome) {
+    logger.info(`🎯 SEARCH/NOME DETECTADO: search="${filtros.search || ''}", nome="${filtros.nome || ''}"`);
+  }
+
   const authHeader = req.headers.get("authorization") ?? "";
   if (!authHeader.startsWith("Bearer ")) {
     return jsonError(401, "UNAUTHORIZED", { requestId }, { ...ch, "x-request-id": requestId });
@@ -71,6 +77,10 @@ serve('mapa-testemunhas-testemunhas', async (req) => {
     return jsonError(401, "UNAUTHORIZED", { requestId }, { ...ch, "x-request-id": requestId });
   }
 
+  // 🔍 DEBUG: Log dos parâmetros enviados para o RPC
+  logger.info(`🚀 chamando RPC com: org_id=${profile.organization_id}, page=${page}, limit=${limit}`);
+  logger.info(`🚀 p_filters sendo enviado:`, JSON.stringify(filtros, null, 2));
+  
   // Use RPC function to access assistjur schema data with proper security
   const { data: rpcResult, error } = await supabase.rpc('rpc_get_assistjur_testemunhas', {
     p_org_id: profile.organization_id,
