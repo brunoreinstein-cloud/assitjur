@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Database, Search, BarChart3, Brain } from "lucide-react";
+import { Sparkles, Database, Search, BarChart3, Brain, Settings2, Zap } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -51,6 +51,27 @@ export function AgentsPreview() {
       status: "Em Breve",
       statusColor: "bg-primary/20 text-primary border-primary/30",
     },
+    {
+      icon: Settings2,
+      title: "Assistentes Personalizados",
+      description:
+        "Encomende um assistente desenvolvido sob medida para a sua maior dor. Customizamos de acordo com a necessidade do seu time ou escritório.",
+      examples: [
+        "Relatórios de processos trabalhistas e cíveis",
+        "Relatórios para escritórios no formato exigido por clientes externos",
+        "Preenchimento automatizado de formulários (ex.: solicitação de seguro garantia)"
+      ],
+      status: "Consulte-nos",
+      statusColor: "bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30",
+    },
+    {
+      icon: Zap,
+      title: "Assistentes Plug & Play",
+      description:
+        "Assistentes já prontos para facilitar etapas estratégicas do trabalho jurídico. A plataforma está em fase beta, com lançamento inicial e uso para clientes exclusivos da Bianca Reinstein Consultoria.",
+      status: "Em Breve",
+      statusColor: "bg-primary/20 text-primary border-primary/30",
+    },
   ];
 
   const [api, setApi] = React.useState<CarouselApi>();
@@ -74,42 +95,9 @@ export function AgentsPreview() {
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Catálogo de Assistentes
             </h2>
-            <div className="text-xl text-muted-foreground max-w-4xl mx-auto text-left space-y-8">
-              <div>
-                <h3 className="text-2xl font-semibold mb-2 flex items-center gap-2">
-                  <span role="img" aria-label="diamante">🔹</span>
-                  Assistentes Personalizados
-                </h3>
-                <p>
-                  Encomende um assistente desenvolvido sob medida para a sua maior dor.
-                </p>
-                <p>
-                  Customizamos de acordo com a necessidade do seu time ou escritório.
-                </p>
-                <h4 className="text-xl font-semibold mt-4">Exemplos já criados:</h4>
-                <ul className="list-disc pl-6 space-y-1">
-                  <li>Relatórios de processos trabalhistas e cíveis</li>
-                  <li>
-                    Relatórios para escritórios no formato exigido por clientes externos
-                  </li>
-                  <li>
-                    Preenchimento automatizado de formulários (ex.: solicitação de seguro garantia)
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-2xl font-semibold mb-2 flex items-center gap-2">
-                  <span role="img" aria-label="diamante">🔹</span>
-                  Assistentes Plug &amp; Play
-                </h3>
-                <p>
-                  Assistentes já prontos para facilitar etapas estratégicas do trabalho jurídico.
-                </p>
-                <p>
-                  A plataforma está em fase beta, com lançamento inicial e uso para clientes exclusivos da Bianca Reinstein Consultoria.
-                </p>
-              </div>
-            </div>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Soluções inteligentes personalizadas e plug & play para transformar seu trabalho jurídico
+            </p>
           </div>
 
           {/* Mobile Carousel */}
@@ -142,10 +130,20 @@ export function AgentsPreview() {
                         </CardTitle>
                       </CardHeader>
 
-                      <CardContent className="text-center">
+                      <CardContent className="text-center space-y-3">
                         <p className="text-muted-foreground text-sm leading-relaxed">
                           {agent.description}
                         </p>
+                        {agent.examples && (
+                          <div className="text-left pt-2">
+                            <p className="text-xs font-semibold text-foreground mb-2">Exemplos já criados:</p>
+                            <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                              {agent.examples.map((example, i) => (
+                                <li key={i}>{example}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   </CarouselItem>
@@ -198,10 +196,20 @@ export function AgentsPreview() {
                   </CardTitle>
                 </CardHeader>
 
-                <CardContent className="text-center">
+                <CardContent className="text-center space-y-3">
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     {agent.description}
                   </p>
+                  {agent.examples && (
+                    <div className="text-left pt-2">
+                      <p className="text-xs font-semibold text-foreground mb-2">Exemplos já criados:</p>
+                      <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                        {agent.examples.map((example, i) => (
+                          <li key={i}>{example}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
