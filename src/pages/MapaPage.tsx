@@ -107,6 +107,8 @@ const MapaPage = () => {
   const loadViews = useMapaTestemunhasStore(s => s.loadViews);
   const setProcessoFilters = useMapaTestemunhasStore(s => s.setProcessoFilters);
   const setTestemunhaFilters = useMapaTestemunhasStore(s => s.setTestemunhaFilters);
+  const setSelectedProcesso = useMapaTestemunhasStore(s => s.setSelectedProcesso);
+  const setSelectedTestemunha = useMapaTestemunhasStore(s => s.setSelectedTestemunha);
 
   // Stable lastUpdate state
   const [isFirstLoad, setIsFirstLoad] = useState(true);
@@ -239,10 +241,6 @@ const MapaPage = () => {
       }, 100);
     }
   }, [searchParams, activeTab, setActiveTab, setProcessoFilters, setTestemunhaFilters, setSearchParams, processos, testemunhas, setSelectedProcesso, setSelectedTestemunha]);
-
-  // Adicionar setters para limpar seleções
-  const setSelectedProcesso = useMapaTestemunhasStore(s => s.setSelectedProcesso);
-  const setSelectedTestemunha = useMapaTestemunhasStore(s => s.setSelectedTestemunha);
 
   const handleTabChange = (value: string) => {
     const newTab = value as TabType;
