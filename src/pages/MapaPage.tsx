@@ -171,14 +171,32 @@ const MapaPage = () => {
     const cnj = searchParams.get('cnj');
     const reclamante = searchParams.get('reclamante');
     
+    console.log('🔄 URL params detectados:', { tab, view, nome, cnj, reclamante });
+    
     // Set active tab
     if (tab && (tab === 'processos' || tab === 'testemunhas') && tab !== activeTab) {
+      console.log('📑 Mudando aba para:', tab);
       setActiveTab(tab);
     }
     
-    // Apply filters from URL parameters
+    // Apply filters from URL parameters and trigger selection
     if (nome) {
+      console.log('🔍 Aplicando filtro de nome:', nome);
       setTestemunhaFilters({ search: decodeURIComponent(nome) });
+      
+      // Aguardar dados carregarem para fazer seleção
+      setTimeout(() => {
+        const testemunha = testemunhas.find(t => 
+          t.nome_testemunha?.toLowerCase() === decodeURIComponent(nome).toLowerCase()
+        );
+        if (testemunha) {
+          console.log('✅ Testemunha encontrada após filtro:', testemunha);
+          setSelectedTestemunha(testemunha);
+        } else {
+          console.warn('⚠️ Testemunha não encontrada após aplicar filtro');
+        }
+      }, 1000);
+      
       // Clean URL after applying filter
       const newParams = new URLSearchParams(searchParams);
       newParams.delete('nome');
@@ -186,7 +204,22 @@ const MapaPage = () => {
     }
     
     if (cnj) {
+      console.log('🔍 Aplicando filtro de CNJ:', cnj);
       setProcessoFilters({ search: decodeURIComponent(cnj) });
+      
+      // Aguardar dados carregarem para fazer seleção
+      setTimeout(() => {
+        const processo = processos.find(p => 
+          p.cnj === decodeURIComponent(cnj) || p.numero_cnj === decodeURIComponent(cnj)
+        );
+        if (processo) {
+          console.log('✅ Processo encontrado após filtro:', processo);
+          setSelectedProcesso(processo);
+        } else {
+          console.warn('⚠️ Processo não encontrado após aplicar filtro');
+        }
+      }, 1000);
+      
       // Clean URL after applying filter
       const newParams = new URLSearchParams(searchParams);
       newParams.delete('cnj');
@@ -194,6 +227,7 @@ const MapaPage = () => {
     }
     
     if (reclamante) {
+      console.log('🔍 Aplicando filtro de reclamante:', reclamante);
       setProcessoFilters({ search: decodeURIComponent(reclamante) });
       // Clean URL after applying filter
       const newParams = new URLSearchParams(searchParams);
@@ -208,7 +242,7 @@ const MapaPage = () => {
         chatElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
     }
-  }, [searchParams, activeTab, setActiveTab, setProcessoFilters, setTestemunhaFilters, setSearchParams]);
+  }, [searchParams, activeTab, setActiveTab, setProcessoFilters, setTestemunhaFilters, setSearchParams, processos, testemunhas, setSelectedProcesso, setSelectedTestemunha]);
 
   // Adicionar setters para limpar seleções
   const setSelectedProcesso = useMapaTestemunhasStore(s => s.setSelectedProcesso);
@@ -257,6 +291,13 @@ const MapaPage = () => {
         return;
       }
 
+      console.log('📦 Dados recebidos das edge functions:', {
+        processos: processosResult.data.length,
+        testemunhas: testemunhasResult.data.length,
+        totalProcessos: processosResult.total,
+        totalTestemunhas: testemunhasResult.total
+      });
+
       setProcessos(processosResult.data);
       setTestemunhas(testemunhasResult.data);
       setTotalProcessos(processosResult.total || 0);
@@ -276,7 +317,7 @@ const MapaPage = () => {
           setIsFirstLoad(false);
         }
 
-        console.log('Data loaded successfully:', {
+        console.log('✅ Dados armazenados no store com sucesso:', {
           processos: processosResult.data.length,
           testemunhas: testemunhasResult.data.length
         });

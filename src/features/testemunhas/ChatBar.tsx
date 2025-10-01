@@ -135,40 +135,71 @@ export function ChatBar() {
   }, []);
 
   const handleSelectResult = (result: any) => {
+    console.log('🎯 handleSelectResult iniciado', {
+      resultType: result.type,
+      resultTitle: result.title,
+      processosCarregados: processos.length,
+      testemunhasCarregadas: testemunhas.length
+    });
+
     setShowSuggestions(false);
     
     // Selecionar o item automaticamente para análise
     switch (result.type) {
       case 'process': {
+        console.log('🔍 Buscando processo:', result.title);
+        console.log('📊 Processos disponíveis:', processos.map(p => ({ 
+          cnj: p.cnj, 
+          numero_cnj: p.numero_cnj 
+        })));
+        
         // Encontrar o processo nos dados
         const processo = processos.find(p => 
           p.cnj === result.title || p.numero_cnj === result.title
         );
+        
         if (processo) {
+          console.log('✅ Processo encontrado:', processo);
           setSelectedProcesso(processo);
           setChatInput(result.title);
           setChatKind('processo');
+        } else {
+          console.warn('⚠️ Processo não encontrado nos dados carregados');
+          // Ainda definir os filtros para carregar os dados
+          setChatInput(result.title);
+          setChatKind('processo');
         }
-        navigate(`/mapa?tab=processos&cnj=${encodeURIComponent(result.title)}`);
+        navigate(`/mapa?tab=processos&cnj=${encodeURIComponent(result.title)}`, { replace: true });
         break;
       }
       case 'witness': {
+        console.log('🔍 Buscando testemunha:', result.title);
+        console.log('📊 Testemunhas disponíveis:', testemunhas.map(t => t.nome_testemunha));
+        
         // Encontrar a testemunha nos dados
         const testemunha = testemunhas.find(t => 
           t.nome_testemunha?.toLowerCase() === result.title.toLowerCase()
         );
+        
         if (testemunha) {
+          console.log('✅ Testemunha encontrada:', testemunha);
           setSelectedTestemunha(testemunha);
           setChatInput(result.title);
           setChatKind('testemunha');
+        } else {
+          console.warn('⚠️ Testemunha não encontrada nos dados carregados');
+          // Ainda definir os filtros para carregar os dados
+          setChatInput(result.title);
+          setChatKind('testemunha');
         }
-        navigate(`/mapa?tab=testemunhas&nome=${encodeURIComponent(result.title)}`);
+        navigate(`/mapa?tab=testemunhas&nome=${encodeURIComponent(result.title)}`, { replace: true });
         break;
       }
       case 'claimant': {
+        console.log('🔍 Selecionando reclamante:', result.title);
         setChatInput(result.title);
         setChatKind('reclamante');
-        navigate(`/mapa?tab=processos&reclamante=${encodeURIComponent(result.title)}`);
+        navigate(`/mapa?tab=processos&reclamante=${encodeURIComponent(result.title)}`, { replace: true });
         break;
       }
     }
