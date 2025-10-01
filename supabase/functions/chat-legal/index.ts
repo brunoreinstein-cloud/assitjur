@@ -57,12 +57,12 @@ async function openAIChat({
 
   const body = {
     model,
-    temperature,
-    max_tokens,
+    max_completion_tokens: max_tokens,
     messages: [
       { role: "system", content: system },
       { role: "user", content: user },
     ],
+    response_format: { type: "json_object" }
   };
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
