@@ -16,7 +16,7 @@ import { AuthErrorBoundary } from '@/components/core/AuthErrorBoundary';
 import AuthGuard from "@/components/AuthGuard";
 import { AppLayout } from "@/components/navigation/AppLayout";
 import { ErrorBoundary } from "@/components/core/ErrorBoundary";
-import { FooterLegal } from "@/components/common/FooterLegal";
+
 
 // Admin pages (lazy loaded)
 const Dashboard = lazy(() => import("@/pages/admin/Dashboard"));
@@ -214,7 +214,6 @@ const App = () => (
                                 <AppRoutes />
                               </Suspense>
                             </main>
-                            <FooterLegal />
                           </div>
                         </OrganizationErrorBoundary>
                       </MultiTenantProvider>
