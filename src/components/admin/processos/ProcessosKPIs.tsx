@@ -1,6 +1,4 @@
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   FileText, 
@@ -9,6 +7,7 @@ import {
   AlertTriangle, 
   AlertCircle 
 } from 'lucide-react';
+import { KPICard } from '@/components/ui/kpi-card';
 import { ProcessoRow, ProcessoFiltersState } from '@/types/processos-explorer';
 
 interface ProcessosKPIsProps {
@@ -40,14 +39,14 @@ export function ProcessosKPIs({ data, filters, onFilterApply }: ProcessosKPIsPro
     (p.score_risco && p.score_risco >= 80)
   ).length;
 
-  const kpis = [
+  // Agrupar KPIs em blocos semânticos: Volume e Risco
+  const volumeKPIs = [
     {
       key: 'total',
-      label: 'Total',
+      label: 'Total de Processos',
       value: total,
       icon: FileText,
-      variant: 'default' as const,
-      className: '',
+      variant: 'volume' as const,
       filter: () => onFilterApply({
         search: '',
         testemunha: '',
@@ -62,15 +61,13 @@ export function ProcessosKPIs({ data, filters, onFilterApply }: ProcessosKPIsPro
     },
     {
       key: 'com-testemunhas',
-      label: 'Com Testemunhas Ativas',
+      label: 'Com Testemunhas',
       value: comTestemunhasAtivas,
       icon: Users,
-      variant: 'secondary' as const,
-      className: '',
+      variant: 'volume' as const,
       filter: () => onFilterApply({ 
         ...filters,
-        // Aplicar filtro para mostrar apenas processos com testemunhas ativas > 0
-        search: filters.search // Mantém busca atual mas vamos implementar lógica específica
+        search: filters.search
       })
     },
     {
@@ -78,37 +75,36 @@ export function ProcessosKPIs({ data, filters, onFilterApply }: ProcessosKPIsPro
       label: 'Sem Testemunhas',
       value: semTestemunhas,
       icon: UserMinus,
-      variant: 'outline' as const,
-      className: '',
+      variant: 'default' as const,
       filter: () => onFilterApply({ 
         ...filters,
-        // Aplicar filtro para mostrar apenas processos sem testemunhas
         search: filters.search
       })
     },
+  ];
+
+  const riscoKPIs = [
     {
       key: 'a-validar',
-      label: 'A validar',
+      label: 'A Validar',
       value: aValidar,
       icon: AlertTriangle,
-      variant: 'secondary' as const,
-      className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
+      variant: 'warning' as const,
       filter: () => onFilterApply({ 
         ...filters,
         classificacao: []
       })
-    }
+    },
   ];
 
-  // Só mostrar Risco Alto se houver dados
+  // Só mostrar Risco Alto se houver dados > 0
   if (riscoAlto > 0) {
-    kpis.push({
+    riscoKPIs.push({
       key: 'risco-alto',
-      label: 'Risco alto',
+      label: 'Risco Alto',
       value: riscoAlto,
       icon: AlertCircle,
-      variant: 'outline' as const,
-      className: 'bg-red-100 text-red-800 hover:bg-red-200',
+      variant: 'risk' as const,
       filter: () => onFilterApply({ 
         ...filters,
         classificacao: ['Alto'],
@@ -120,31 +116,46 @@ export function ProcessosKPIs({ data, filters, onFilterApply }: ProcessosKPIsPro
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground mr-2">
-            Resumo:
-          </span>
-          {kpis.map((kpi) => {
-            const Icon = kpi.icon;
-            return (
-              <Button
-                key={kpi.key}
-                variant="ghost"
-                size="sm"
-                onClick={kpi.filter}
-                className={`h-8 px-3 gap-1.5 hover:bg-muted ${kpi.className || ''}`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                <span className="font-medium">{kpi.label}</span>
-                <Badge 
+        <div className="space-y-4">
+          {/* Bloco Volume */}
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Volume
+            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              {volumeKPIs.map((kpi) => (
+                <KPICard
+                  key={kpi.key}
+                  label={kpi.label}
+                  value={kpi.value}
+                  icon={kpi.icon}
                   variant={kpi.variant}
-                  className="ml-1 h-5 px-1.5 text-xs font-mono"
-                >
-                  {kpi.value}
-                </Badge>
-              </Button>
-            );
-          })}
+                  onClick={kpi.filter}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Bloco Risco - só aparece se houver items */}
+          {riscoKPIs.length > 0 && (
+            <div className="space-y-2 pt-2 border-t">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Risco
+              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                {riscoKPIs.map((kpi) => (
+                  <KPICard
+                    key={kpi.key}
+                    label={kpi.label}
+                    value={kpi.value}
+                    icon={kpi.icon}
+                    variant={kpi.variant}
+                    onClick={kpi.filter}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

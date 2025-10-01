@@ -87,12 +87,12 @@ export function ChatBar() {
     showSuggestions && debouncedQuery.length >= 2
   );
 
-  // Placeholder rotation
+  // Placeholders educativos com exemplos práticos
   const placeholders = [
-    'Digite um nome... Ex: Fabiano Celestino',
+    'Digite um nome... Ex: João Silva',
     'Busque por CNJ... Ex: 0001234-56.2024.5.02.0001',
-    'Use operadores... Ex: uf:RS comarca:POA',
-    'Filtros avançados... Ex: risco:alto w:joão',
+    'Use operadores... Ex: risco:alto uf:RS',
+    'Filtros avançados... Ex: depoimentos:>3 comarca:POA',
   ];
 
   useEffect(() => {
@@ -348,20 +348,23 @@ export function ChatBar() {
           </div>
         </div>
 
-        {/* Scope Badges */}
+        {/* Scope Badges com ícones */}
         <div className="flex items-center gap-2 flex-wrap">
-          {SCOPE_CHIPS.map((chip) => (
-            <Button
-              key={chip.scope}
-              variant={selectedScope === chip.scope ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedScope(chip.scope)}
-              className="gap-2 transition-all hover:scale-105"
-            >
-              <chip.icon className="h-3.5 w-3.5" />
-              {chip.label}
-            </Button>
-          ))}
+          {SCOPE_CHIPS.map((chip) => {
+            const ChipIcon = chip.icon;
+            return (
+              <Button
+                key={chip.scope}
+                variant={selectedScope === chip.scope ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedScope(chip.scope)}
+                className="gap-2 h-8 transition-all hover:scale-105"
+              >
+                <ChipIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
+                {chip.label}
+              </Button>
+            );
+          })}
         </div>
       </div>
 
@@ -565,29 +568,29 @@ export function ChatBar() {
           disabled={!canExecute || chatStatus === 'loading'}
           size="lg"
           className={cn(
-            "gap-2 min-w-[160px] shadow-md hover:shadow-lg transition-all hover:scale-105",
+            "gap-2 min-w-[180px] shadow-md hover:shadow-lg transition-all hover:scale-105 font-semibold",
             selectedItem && "bg-primary/90 hover:bg-primary ring-2 ring-primary/20"
           )}
         >
           {chatStatus === 'loading' ? (
             <>
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Analisando...
+              <Loader2 className="h-5 w-5 animate-spin" strokeWidth={2} />
+              <span>Analisando dados...</span>
             </>
           ) : shouldBlockExecution ? (
             <>
-              <AlertCircle className="h-5 w-5" />
-              Refinar busca
+              <AlertCircle className="h-5 w-5" strokeWidth={2} />
+              <span>Refinar busca</span>
             </>
           ) : selectedItem ? (
             <>
-              <Sparkles className="h-5 w-5" />
-              Análise Contextual
+              <Sparkles className="h-5 w-5" strokeWidth={2} />
+              <span>⚡ Análise Contextual</span>
             </>
           ) : (
             <>
-              <Sparkles className="h-5 w-5" />
-              Executar Análise
+              <Sparkles className="h-5 w-5" strokeWidth={2} />
+              <span>⚡ Executar Análise</span>
             </>
           )}
         </Button>

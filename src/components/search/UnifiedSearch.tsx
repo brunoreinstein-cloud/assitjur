@@ -106,10 +106,10 @@ export const UnifiedSearch = () => {
   };
 
   const scopeChips = [
-    { value: 'all' as SearchScope, label: 'Todos' },
-    { value: 'process' as SearchScope, label: 'Processos' },
-    { value: 'witness' as SearchScope, label: 'Testemunhas' },
-    { value: 'claimant' as SearchScope, label: 'Reclamantes' },
+    { value: 'all' as SearchScope, label: 'Tudo', icon: Search },
+    { value: 'process' as SearchScope, label: 'Processos', icon: FileText },
+    { value: 'witness' as SearchScope, label: 'Testemunhas', icon: Users },
+    { value: 'claimant' as SearchScope, label: 'Reclamantes', icon: Users },
   ];
 
   return (
@@ -129,25 +129,29 @@ export const UnifiedSearch = () => {
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput
           ref={inputRef}
-          placeholder="Busque por nome, CNJ, CPF/CNPJ, advogado, comarca..."
+          placeholder="Digite nome, CNJ, CPF... Ex: risco:alto João da Silva"
           value={searchQuery}
           onValueChange={setSearchQuery}
         />
 
-        {/* Chips de escopo */}
+        {/* Chips de escopo com ícones */}
         {searchQuery && (
           <div className="flex gap-2 px-3 py-2 border-b">
-            {scopeChips.map((chip) => (
-              <Button
-                key={chip.value}
-                variant={scope === chip.value ? 'default' : 'outline'}
-                size="sm"
-                className="h-6 text-xs"
-                onClick={() => setScope(chip.value)}
-              >
-                {chip.label}
-              </Button>
-            ))}
+            {scopeChips.map((chip) => {
+              const ChipIcon = chip.icon;
+              return (
+                <Button
+                  key={chip.value}
+                  variant={scope === chip.value ? 'default' : 'outline'}
+                  size="sm"
+                  className="h-7 text-xs gap-1.5"
+                  onClick={() => setScope(chip.value)}
+                >
+                  <ChipIcon className="h-3 w-3" strokeWidth={1.5} />
+                  {chip.label}
+                </Button>
+              );
+            })}
           </div>
         )}
 
@@ -280,14 +284,18 @@ export const UnifiedSearch = () => {
           )}
 
           {!searchQuery && (
-            <div className="py-6 px-3 text-center text-sm text-muted-foreground">
-              <p className="mb-2">Digite para buscar em processos, testemunhas e reclamantes</p>
-              <div className="flex flex-wrap justify-center gap-2 mt-3">
-                <code className="bg-muted px-2 py-1 rounded text-xs">p: processo</code>
-                <code className="bg-muted px-2 py-1 rounded text-xs">w: testemunha</code>
-                <code className="bg-muted px-2 py-1 rounded text-xs">r: reclamante</code>
-                <code className="bg-muted px-2 py-1 rounded text-xs">uf:RS</code>
+            <div className="py-6 px-3 text-center text-sm text-muted-foreground space-y-3">
+              <p className="font-medium">Busca inteligente com operadores</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <code className="bg-muted px-2 py-1 rounded text-xs font-mono">risco:alto João Silva</code>
+                <code className="bg-muted px-2 py-1 rounded text-xs font-mono">depoimentos:&gt;3</code>
+                <code className="bg-muted px-2 py-1 rounded text-xs font-mono">uf:RS comarca:POA</code>
               </div>
+              <p className="text-xs">
+                Use prefixos: <code className="bg-muted px-1 rounded">p:</code> processo,{' '}
+                <code className="bg-muted px-1 rounded">w:</code> testemunha,{' '}
+                <code className="bg-muted px-1 rounded">r:</code> reclamante
+              </p>
             </div>
           )}
         </CommandList>

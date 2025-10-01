@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Eye, Edit, Trash2 } from "lucide-react";
 import { PorTestemunha } from "@/types/mapa-testemunhas";
 import { ArrayField } from "@/components/mapa-testemunhas/ArrayField";
-import { BooleanIcon } from "@/components/mapa-testemunhas/BooleanIcon";
+import { BooleanBadge } from "@/components/ui/boolean-badge";
+import { ClassificationChip } from "@/components/ui/classification-chip";
 import { useMapaTestemunhasStore, selectColumnVisibility } from "@/lib/store/mapa-testemunhas";
 import { applyPIIMask } from "@/utils/pii-mask";
 import { DataState, DataStatus } from "@/components/ui/data-state";
@@ -29,26 +30,6 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
     setSelectedTestemunha(testemunha);
     setIsDetailDrawerOpen(true);
   }, [setSelectedTestemunha, setIsDetailDrawerOpen]);
-
-  const getClassificacaoColor = (classificacao: string | null) => {
-    const lower = classificacao?.toLowerCase() || '';
-    
-    // Handle values from database: "Alto", "Médio", "Comum", etc.
-    if (lower.includes('alto') || lower === 'alto risco') {
-      return 'bg-destructive text-destructive-foreground';
-    }
-    if (lower.includes('médio') || lower.includes('medio') || lower === 'médio risco') {
-      return 'bg-warning text-warning-foreground';
-    }
-    if (lower.includes('baixo') || lower === 'baixo risco') {
-      return 'bg-success text-success-foreground';
-    }
-    // "Comum" or "Normal" should be neutral
-    if (lower === 'comum' || lower === 'normal') {
-      return 'bg-muted text-muted-foreground';
-    }
-    return 'bg-muted text-muted-foreground';
-  };
 
   if (status !== "success") {
     return <DataState status={status} onRetry={onRetry} />;
@@ -93,7 +74,7 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
         </TableHeader>
         <TableBody>
           {data.map((testemunha) => (
-            <TableRow key={testemunha.nome_testemunha} className="hover:bg-muted/20">
+            <TableRow key={testemunha.nome_testemunha} className="group hover:bg-muted/20">
               {columnVisibility.nome && (
                 <TableCell className="font-medium max-w-[200px] truncate" title={testemunha.nome_testemunha}>
                   {applyPIIMask(testemunha.nome_testemunha, isPiiMasked)}
@@ -108,12 +89,18 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
               )}
               {columnVisibility.ambosPolos && (
                 <TableCell className="text-center">
-                  <BooleanIcon value={testemunha.foi_testemunha_em_ambos_polos} />
+                  <BooleanBadge 
+                    value={testemunha.foi_testemunha_em_ambos_polos}
+                    size="sm"
+                  />
                 </TableCell>
               )}
               {columnVisibility.jaReclamante && (
                 <TableCell className="text-center">
-                  <BooleanIcon value={testemunha.ja_foi_reclamante} />
+                  <BooleanBadge 
+                    value={testemunha.ja_foi_reclamante}
+                    size="sm"
+                  />
                 </TableCell>
               )}
               {columnVisibility.cnjs && (
@@ -127,38 +114,43 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
               )}
               {columnVisibility.classificacao && (
                 <TableCell>
-                  <Badge
-                    className={`text-xs ${getClassificacaoColor(testemunha.classificacao || testemunha.classificacao_estrategica)}`}
-                  >
-                    {testemunha.classificacao || testemunha.classificacao_estrategica || '—'}
-                  </Badge>
+                  <ClassificationChip 
+                    value={testemunha.classificacao || testemunha.classificacao_estrategica}
+                    size="sm"
+                  />
                 </TableCell>
               )}
               {columnVisibility.acoes && (
                 <TableCell>
                   <div className="flex items-center justify-center gap-1">
+                    {/* Eye: Primário (mais visível) */}
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleViewDetail(testemunha)}
-                      className="h-8 w-8 p-0"
+                      className="h-8 w-8 p-0 text-primary hover:bg-primary/10 hover:text-primary"
+                      title="Visualizar detalhes"
                     >
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-4 w-4" strokeWidth={2} />
                     </Button>
+                    {/* Edit: Secundário (menor) */}
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0"
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground hover:bg-muted"
+                      title="Editar"
                     >
-                      <Edit className="h-4 w-4" />
+                      <Edit className="h-3.5 w-3.5" strokeWidth={1.5} />
                     </Button>
+                    {/* Trash: Apenas visível em hover */}
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/10 hover:text-destructive transition-opacity"
                       onClick={() => requestDelete(testemunha)}
+                      title="Excluir"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5" strokeWidth={1.5} />
                     </Button>
                   </div>
                 </TableCell>
