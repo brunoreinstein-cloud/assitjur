@@ -134,13 +134,13 @@ export function ChatBar() {
 
     switch (result.type) {
       case 'process':
-        navigate(`/dados/mapa?tab=por-processo&cnj=${encodeURIComponent(result.title)}`);
+        navigate(`/mapa?tab=processos&cnj=${encodeURIComponent(result.title)}`);
         break;
       case 'witness':
-        navigate(`/dados/mapa?tab=por-testemunha&nome=${encodeURIComponent(result.title)}`);
+        navigate(`/mapa?tab=testemunhas&nome=${encodeURIComponent(result.title)}`);
         break;
       case 'claimant':
-        navigate(`/dados/mapa?tab=por-processo&reclamante=${encodeURIComponent(result.title)}`);
+        navigate(`/mapa?tab=processos&reclamante=${encodeURIComponent(result.title)}`);
         break;
     }
   };
