@@ -105,6 +105,8 @@ const MapaPage = () => {
   const setError = useMapaTestemunhasStore(s => s.setError);
   const setIsImportModalOpen = useMapaTestemunhasStore(s => s.setIsImportModalOpen);
   const loadViews = useMapaTestemunhasStore(s => s.loadViews);
+  const setProcessoFilters = useMapaTestemunhasStore(s => s.setProcessoFilters);
+  const setTestemunhaFilters = useMapaTestemunhasStore(s => s.setTestemunhaFilters);
 
   // Stable lastUpdate state
   const [isFirstLoad, setIsFirstLoad] = useState(true);
