@@ -233,12 +233,26 @@ export function useAssistente() {
             title: '🔍 Análise Detalhada',
             icon: 'Search',
             data: {
-              informacoes_disponiveis: `Consulta: ${input}`,
-              analise: 'Aguardando processamento completo pelo sistema. Por favor, tente novamente.',
-              recomendacoes: [
-                'Verificar se os dados estão disponíveis no sistema',
-                'Confirmar formato da consulta (CNJ, nome, etc)',
-                'Aguardar alguns instantes e tentar novamente'
+              secoes: [
+                {
+                  titulo: 'Informações Disponíveis',
+                  conteudo: `Consulta realizada: ${input}`,
+                  evidencias: []
+                },
+                {
+                  titulo: 'Análise',
+                  conteudo: 'Aguardando processamento completo pelo sistema. Por favor, tente novamente em alguns instantes.',
+                  evidencias: []
+                },
+                {
+                  titulo: 'Recomendações',
+                  conteudo: 'Ações sugeridas:',
+                  evidencias: [
+                    'Verificar se os dados estão disponíveis no sistema',
+                    'Confirmar formato da consulta (CNJ, nome, etc)',
+                    'Aguardar alguns instantes e tentar novamente'
+                  ]
+                }
               ]
             }
           }

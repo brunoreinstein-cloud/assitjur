@@ -44,10 +44,13 @@ export function AnalysisAccordion({ secoes, textoOriginal }: AnalysisAccordionPr
     }
   };
 
+  // Validação de segurança: garantir que secoes é um array válido
+  const secoesValidas = Array.isArray(secoes) ? secoes : [];
+
   return (
     <div className="space-y-4">
       <Accordion type="multiple" className="w-full">
-        {secoes.map((secao, index) => (
+        {secoesValidas.map((secao, index) => (
           <AccordionItem key={index} value={`secao-${index}`}>
             <AccordionTrigger className="text-left">
               <div className="flex items-center gap-2">
