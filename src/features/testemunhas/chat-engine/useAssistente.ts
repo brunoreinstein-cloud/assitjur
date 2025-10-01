@@ -166,30 +166,47 @@ export function useAssistente() {
       }
 
       // Extract real response from OpenAI
-      const aiResponse = data?.data || '';
+      const aiResponse = data?.data || data?.content || '';
+      console.log('🔍 Raw AI Response:', aiResponse.substring(0, 200));
       
-      // Parse response or use as-is
-      let blocks: ResultBlock[];
+      // Parse response with multiple fallback strategies
+      let blocks: ResultBlock[] = [];
+      
+      // Strategy 1: Direct JSON parse
       try {
-        // Try to parse as JSON if response is structured
         const parsed = JSON.parse(aiResponse);
-        blocks = Array.isArray(parsed) ? parsed : [
-          {
-            type: 'executive',
-            title: '📌 Análise',
-            icon: 'Sparkles',
-            data: { content: aiResponse }
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          blocks = parsed;
+          console.log('✅ Parsed JSON array with', blocks.length, 'blocks');
+        }
+      } catch (e1) {
+        // Strategy 2: Extract JSON from mixed text
+        try {
+          const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
+          if (jsonMatch) {
+            blocks = JSON.parse(jsonMatch[0]);
+            console.log('✅ Extracted JSON from text with', blocks.length, 'blocks');
           }
-        ];
-      } catch {
-        // Use mock structure with real content
-        blocks = generateMockBlocks(kind, input);
-        blocks[0].data = { ...blocks[0].data, observacoes: aiResponse };
+        } catch (e2) {
+          // Strategy 3: Use response as plain text
+          console.log('⚠️ Using plain text response');
+          blocks = [
+            {
+              type: 'executive',
+              title: '📊 Análise',
+              icon: 'FileText',
+              data: {
+                processo: input,
+                observacoes: aiResponse || 'Análise em processamento'
+              }
+            }
+          ];
+        }
       }
 
       // Update assistant message with real data
       updateChatMessage(assistantMessageId, {
-        content: aiResponse || 'Análise concluída com sucesso.',
+        content: blocks.length > 0 ? 'Análise concluída' : aiResponse,
         blocks
       });
 
