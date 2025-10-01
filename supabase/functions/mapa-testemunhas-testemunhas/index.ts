@@ -43,7 +43,7 @@ serve('mapa-testemunhas-testemunhas', async (req) => {
   } = validation.data;
 
   // 🔍 DEBUG: Log detalhado dos filtros recebidos
-  logger.info(`filtros recebidos:`, JSON.stringify(filtros, null, 2));
+  logger.info(`filtros recebidos: ${JSON.stringify(filtros, null, 2)}`);
   if (filtros.search || filtros.nome) {
     logger.info(`🎯 SEARCH/NOME DETECTADO: search="${filtros.search || ''}", nome="${filtros.nome || ''}"`);
   }
@@ -79,7 +79,7 @@ serve('mapa-testemunhas-testemunhas', async (req) => {
 
   // 🔍 DEBUG: Log dos parâmetros enviados para o RPC
   logger.info(`🚀 chamando RPC com: org_id=${profile.organization_id}, page=${page}, limit=${limit}`);
-  logger.info(`🚀 p_filters sendo enviado:`, JSON.stringify(filtros, null, 2));
+  logger.info(`🚀 p_filters sendo enviado: ${JSON.stringify(filtros, null, 2)}`);
   
   // Use RPC function to access assistjur schema data with proper security
   const { data: rpcResult, error } = await supabase.rpc('rpc_get_assistjur_testemunhas', {
