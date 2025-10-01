@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
 import {
   Command,
   CommandEmpty,
@@ -13,10 +12,8 @@ import {
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
-  Scale,
   Users,
   User,
-  Zap,
   Loader2,
   AlertTriangle,
   CheckCircle,
@@ -24,10 +21,15 @@ import {
   FileText,
   MapPin,
   Copy,
-  Filter,
   ExternalLink,
+  Search,
+  X,
+  Info,
+  Sparkles,
+  AlertCircle,
+  Keyboard,
 } from 'lucide-react';
-import { useMapaTestemunhasStore, QueryKind } from '@/lib/store/mapa-testemunhas';
+import { useMapaTestemunhasStore } from '@/lib/store/mapa-testemunhas';
 import { useAssistente } from '@/features/testemunhas/chat-engine/useAssistente';
 import { useUnifiedSearch } from '@/hooks/useUnifiedSearch';
 import { useNavigate } from 'react-router-dom';
@@ -36,10 +38,11 @@ import { cn } from '@/lib/utils';
 import type { SearchEntityType } from '@/types/search';
 import { ENTITY_TYPE_LABELS, ENTITY_TYPE_COLORS } from '@/types/search';
 
-const QUERY_CHIPS = [
-  { kind: 'processo' as const, label: 'Por Processo', icon: Scale },
-  { kind: 'testemunha' as const, label: 'Por Testemunha', icon: Users },
-  { kind: 'reclamante' as const, label: 'Por Reclamante', icon: User },
+const SCOPE_CHIPS = [
+  { scope: 'all' as const, label: 'Tudo', icon: Search },
+  { scope: 'process' as const, label: 'Processos', icon: FileText },
+  { scope: 'witness' as const, label: 'Testemunhas', icon: Users },
+  { scope: 'claimant' as const, label: 'Reclamantes', icon: User },
 ];
 
 const ENTITY_ICONS: Record<SearchEntityType, any> = {
@@ -50,87 +53,84 @@ const ENTITY_ICONS: Record<SearchEntityType, any> = {
   comarca: MapPin,
 };
 
-const SEARCH_PLACEHOLDERS: Record<QueryKind, string> = {
-  processo: 'Busque por CNJ, comarca, reclamante... Ex.: 0001234-56.2024.5.02.0001, uf:RS',
-  testemunha: 'Busque por nome de testemunha... Ex.: Fabiano Celestino, w:joão santos',
-  reclamante: 'Busque por reclamante... Ex.: r:maria silva, uf:RS risco:alto',
-};
-
 export function ChatBar() {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isCNJDetected, setIsCNJDetected] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [selectedScope, setSelectedScope] = useState<'all' | 'process' | 'witness' | 'claimant'>('all');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedScope, setSelectedScope] = useState<'all' | 'process' | 'witness' | 'claimant'>('witness');
+  const [input, setInput] = useState('');
+  const [lgpdDismissed, setLgpdDismissed] = useState(false);
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const {
     chatKind,
-    chatInput,
     chatStatus,
     agentOnline,
-    setChatKind,
     setChatInput,
-    isPiiMasked,
+    setChatKind,
   } = useMapaTestemunhasStore();
 
   const { runAnalysis } = useAssistente();
 
-  // Busca unificada
-  const { data: searchResults, isLoading: isSearchLoading } = useUnifiedSearch(
-    chatInput,
+  // Busca unificada com debounce
+  const debouncedQuery = input;
+  const { data: searchData, isLoading: isSearching } = useUnifiedSearch(
+    debouncedQuery,
     selectedScope,
-    isSearchOpen && chatInput.length >= 2
+    showSuggestions && debouncedQuery.length >= 2
   );
 
-  // Auto-detect CNJ pattern and set to processo mode
+  // Placeholder rotation
+  const placeholders = [
+    'Digite um nome... Ex: Fabiano Celestino',
+    'Busque por CNJ... Ex: 0001234-56.2024.5.02.0001',
+    'Use operadores... Ex: uf:RS comarca:POA',
+    'Filtros avançados... Ex: risco:alto w:joão',
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentPlaceholder = placeholders[placeholderIndex];
+
+  // Auto-detect CNJ pattern
   useEffect(() => {
     const cnjPattern = /\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4}/;
-    const hasCNJ = cnjPattern.test(chatInput);
-    setIsCNJDetected(hasCNJ);
-
-    if (hasCNJ && chatKind !== 'processo') {
-      setChatKind('processo');
+    if (cnjPattern.test(input)) {
       setSelectedScope('process');
+      setChatKind('processo');
     }
-  }, [chatInput, chatKind, setChatKind]);
+  }, [input, setChatKind]);
 
-  // Abrir sugestões quando há input
+  // Show suggestions when typing
   useEffect(() => {
-    if (chatInput.length >= 2) {
-      setIsSearchOpen(true);
+    if (input.length >= 2) {
+      setShowSuggestions(true);
     } else {
-      setIsSearchOpen(false);
+      setShowSuggestions(false);
     }
-  }, [chatInput]);
+  }, [input]);
 
-  // Focus input on Ctrl+K or '/' key press and clear on Esc
+  // Keyboard shortcuts
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.key === 'k' && e.ctrlKey) || (e.key === '/' && !e.ctrlKey && !e.altKey && !e.metaKey)) {
-        const activeElement = document.activeElement;
-        if (activeElement?.tagName !== 'INPUT' && activeElement?.tagName !== 'TEXTAREA') {
-          e.preventDefault();
-          inputRef.current?.focus();
-          setIsSearchOpen(true);
-        }
-      } else if (e.key === 'Escape') {
-        const activeElement = document.activeElement;
-        if (activeElement === inputRef.current) {
-          setChatInput('');
-          setIsSearchOpen(false);
-          inputRef.current?.blur();
-        }
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'k' && e.ctrlKey) {
+        e.preventDefault();
+        inputRef.current?.focus();
       }
     };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [setChatInput]);
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, []);
 
   const handleSelectResult = (result: any) => {
-    setIsSearchOpen(false);
-    setChatInput('');
+    setShowSuggestions(false);
+    setInput('');
 
     switch (result.type) {
       case 'process':
@@ -152,160 +152,147 @@ export function ChatBar() {
   };
 
   const handleSubmit = async () => {
-    setIsSearchOpen(false);
-    await runAnalysis(chatInput.trim(), chatKind);
+    if (!input.trim() || shouldBlockExecution) return;
+    setShowSuggestions(false);
+    setChatInput(input);
+    
+    // Auto-detect query kind
+    const queryKind = selectedScope === 'process' ? 'processo' : 
+                      selectedScope === 'witness' ? 'testemunha' : 'reclamante';
+    setChatKind(queryKind);
+    
+    await runAnalysis(input.trim(), queryKind);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && e.ctrlKey) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       handleSubmit();
     }
   };
 
-  const isLoading = chatStatus === 'loading';
-  const hasResults = searchResults && searchResults.results.length > 0;
-  const isAmbiguous = searchResults?.isAmbiguous || false;
-  const shouldBlockExecution = isAmbiguous && chatInput.length >= 2;
+  const hasResults = searchData && searchData.results.length > 0;
+  const isAmbiguous = searchData?.isAmbiguous || false;
+  const shouldBlockExecution = isAmbiguous && input.length >= 2;
+  const canExecute = input.trim().length > 0 && !shouldBlockExecution && agentOnline;
 
   return (
-    <div className="space-y-4">
+    <div className="w-full mx-auto max-w-7xl p-6 space-y-6">
       {/* LGPD Notice */}
-      {!isPiiMasked && (
-        <Alert className="bg-amber-50 border-amber-200">
-          <AlertTriangle className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-amber-800">
-            <strong>Conteúdo assistivo.</strong> Revisão humana obrigatória. 
-            Dados tratados conforme LGPD. 
-            <a href="/privacy" className="underline ml-2">Política de Privacidade</a>
+      {!lgpdDismissed && (
+        <Alert className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20">
+          <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-500" />
+          <AlertDescription className="flex items-center justify-between gap-4">
+            <span className="text-sm text-yellow-800 dark:text-yellow-200">
+              <strong className="font-semibold">Conteúdo assistivo.</strong> Revisão humana obrigatória. Dados tratados conforme LGPD.{' '}
+              <a href="/privacy" className="underline hover:no-underline">
+                Política de Privacidade
+              </a>
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLgpdDismissed(true)}
+              className="shrink-0 hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </AlertDescription>
         </Alert>
       )}
 
       {/* Ambiguity Banner */}
-      {isAmbiguous && searchResults?.suggestions && (
-        <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800">
-          <Filter className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          <AlertDescription className="text-blue-800 dark:text-blue-300">
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <strong>Múltiplos resultados encontrados.</strong>{' '}
-                {searchResults.suggestions.message}
+      {isAmbiguous && searchData?.suggestions && (
+        <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 animate-in fade-in slide-in-from-top-2 duration-300">
+          <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <AlertDescription>
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                {searchData.suggestions.message}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(searchData.suggestions.counts).map(([type, count]) => (
+                  <Badge key={type} variant="secondary" className="text-xs">
+                    {type}: {count}
+                  </Badge>
+                ))}
               </div>
-              <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                {searchResults.total} opções
-              </Badge>
             </div>
           </AlertDescription>
         </Alert>
       )}
 
-      {/* Query Type Chips */}
-      <div className="flex flex-wrap gap-2">
-        {QUERY_CHIPS.map(({ kind, label, icon: Icon }) => (
-          <Button
-            key={kind}
-            variant={chatKind === kind ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => {
-              setChatKind(kind);
-              // Sincronizar scope de busca com tipo de query
-              setSelectedScope(
-                kind === 'processo' ? 'process' : kind === 'testemunha' ? 'witness' : 'claimant'
-              );
-            }}
-            className="h-8"
-            disabled={isLoading}
-          >
-            <Icon className="h-3 w-3 mr-1" />
-            {label}
-          </Button>
-        ))}
-
-        {/* Chips de escopo (aparecem com resultados) */}
-        {hasResults && (
-          <>
-            <Separator orientation="vertical" className="h-6 mx-1" />
-            {[
-              { value: 'all' as const, label: 'Todos' },
-              { value: 'process' as const, label: 'Processos' },
-              { value: 'witness' as const, label: 'Testemunhas' },
-              { value: 'claimant' as const, label: 'Reclamantes' },
-            ].map((chip) => (
-              <Button
-                key={chip.value}
-                variant={selectedScope === chip.value ? 'default' : 'ghost'}
-                size="sm"
-                className="h-6 text-xs px-2"
-                onClick={() => setSelectedScope(chip.value)}
-              >
-                {chip.label}
-              </Button>
-            ))}
-          </>
-        )}
-
-        {/* Agent Status */}
-        <div className="flex items-center gap-2 ml-auto">
-          <div className="flex items-center gap-1">
-            {agentOnline ? (
-              <CheckCircle className="h-3 w-3 text-status-success" />
-            ) : (
-              <AlertOctagon className="h-3 w-3 text-status-warning" />
-            )}
-            <span className="text-xs text-muted-foreground">{agentOnline ? 'Online' : 'Manutenção'}</span>
+      {/* Unified Search Header */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Search className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold">Busca Inteligente Unificada</h2>
+              <p className="text-sm text-muted-foreground">
+                Pesquise por processo, testemunha ou reclamante em um único lugar
+              </p>
+            </div>
           </div>
+
+          {/* Agent Status */}
+          <div className="flex items-center gap-2">
+            {agentOnline ? (
+              <><CheckCircle className="h-4 w-4 text-green-500" />
+              <span className="text-sm text-muted-foreground">Online</span></>
+            ) : (
+              <><AlertOctagon className="h-4 w-4 text-orange-500" />
+              <span className="text-sm text-muted-foreground">Manutenção</span></>
+            )}
+          </div>
+        </div>
+
+        {/* Scope Badges */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {SCOPE_CHIPS.map((chip) => (
+            <Button
+              key={chip.scope}
+              variant={selectedScope === chip.scope ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedScope(chip.scope)}
+              className="gap-2 transition-all hover:scale-105"
+            >
+              <chip.icon className="h-3.5 w-3.5" />
+              {chip.label}
+            </Button>
+          ))}
         </div>
       </div>
 
-      {/* Input Area com Autosuggest */}
+      {/* Enhanced Search Input */}
       <div className="relative">
-        <Popover open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+        <Popover open={showSuggestions} onOpenChange={setShowSuggestions}>
           <PopoverTrigger asChild>
-            <div className="relative">
-              <Input
-                ref={inputRef}
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onFocus={() => chatInput.length >= 2 && setIsSearchOpen(true)}
-                placeholder={SEARCH_PLACEHOLDERS[chatKind]}
-                className="h-12 pr-32"
-                disabled={isLoading}
-              />
-
-              {/* CNJ Detection Badge */}
-              {isCNJDetected && (
-                <Badge variant="secondary" className="absolute top-2 right-24 text-xs">
-                  CNJ detectado
-                </Badge>
-              )}
-
-              {/* Submit Button */}
-              <Button
-                onClick={handleSubmit}
-                disabled={!chatInput.trim() || isLoading || !agentOnline || shouldBlockExecution}
-                className="absolute top-1 right-1 h-10 gap-1"
-                size="sm"
-                title={shouldBlockExecution ? 'Selecione uma opção específica antes de executar' : ''}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    Analisando...
-                  </>
-                ) : shouldBlockExecution ? (
-                  <>
-                    <Filter className="h-3 w-3" />
-                    Refinar busca
-                  </>
-                ) : (
-                  <>
-                    <Zap className="h-3 w-3" />
-                    Executar
-                  </>
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/10 rounded-lg blur-sm group-hover:blur-md transition-all opacity-0 group-hover:opacity-100" />
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none z-10" />
+                <Input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={currentPlaceholder}
+                  className="pl-12 pr-12 h-14 text-base border-2 focus:border-primary/50 transition-all shadow-sm hover:shadow-md"
+                />
+                {input && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setInput('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 p-0 rounded-full hover:bg-destructive/10"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 )}
-              </Button>
+              </div>
             </div>
           </PopoverTrigger>
 
@@ -316,26 +303,24 @@ export function ChatBar() {
           >
             <Command>
               <CommandList>
-                {isSearchLoading && (
+                {isSearching && (
                   <div className="flex items-center justify-center py-6">
                     <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                   </div>
                 )}
 
-                {!isSearchLoading && hasResults && (
+                {!isSearching && hasResults && (
                   <>
-                    {/* Mensagem de orientação quando ambíguo */}
-                    {isAmbiguous && searchResults?.suggestions && (
+                    {isAmbiguous && searchData?.suggestions && (
                       <div className="px-3 py-2 border-b bg-muted/50">
                         <p className="text-xs font-medium text-foreground">
-                          {searchResults.suggestions.message}
+                          {searchData.suggestions.message}
                         </p>
                       </div>
                     )}
 
-                    {/* Agrupar por tipo */}
                     {['process', 'witness', 'claimant'].map((type) => {
-                      const items = searchResults.results.filter((r: any) => r.type === type);
+                      const items = searchData.results.filter((r: any) => r.type === type);
                       if (items.length === 0) return null;
 
                       const Icon = ENTITY_ICONS[type as SearchEntityType];
@@ -381,7 +366,6 @@ export function ChatBar() {
                                   <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>
                                 )}
 
-                                {/* Metadados */}
                                 {result.type === 'process' && result.meta && (
                                   <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
                                     {result.meta.status && <span>Status: {result.meta.status}</span>}
@@ -411,7 +395,6 @@ export function ChatBar() {
                                 )}
                               </div>
 
-                              {/* Ações rápidas */}
                               <div className="flex items-center gap-1">
                                 {result.type === 'process' && (
                                   <Button
@@ -441,7 +424,7 @@ export function ChatBar() {
                   </>
                 )}
 
-                {!isSearchLoading && !hasResults && chatInput.length >= 2 && (
+                {!isSearching && !hasResults && input.length >= 2 && (
                   <CommandEmpty>
                     <div className="text-center py-6">
                       <p className="text-sm text-muted-foreground">Nenhum resultado encontrado.</p>
@@ -459,26 +442,48 @@ export function ChatBar() {
         </Popover>
       </div>
 
-      {/* Keyboard Shortcuts */}
-      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1">
-          <kbd className="px-1 py-0.5 text-xs font-mono bg-muted border rounded">Ctrl</kbd>
-          <span>+</span>
-          <kbd className="px-1 py-0.5 text-xs font-mono bg-muted border rounded">K</kbd>
-          <span>ou</span>
-          <kbd className="px-1 py-0.5 text-xs font-mono bg-muted border rounded">/</kbd>
-          <span>foco</span>
-        </span>
-        <span className="flex items-center gap-1">
-          <kbd className="px-1 py-0.5 text-xs font-mono bg-muted border rounded">Ctrl</kbd>
-          <span>+</span>
-          <kbd className="px-1 py-0.5 text-xs font-mono bg-muted border rounded">Enter</kbd>
-          <span>executar análise IA</span>
-        </span>
-        <span className="flex items-center gap-1">
-          <kbd className="px-1 py-0.5 text-xs font-mono bg-muted border rounded">Esc</kbd>
-          <span>limpar</span>
-        </span>
+      {/* Enhanced Action Bar */}
+      <div className="flex items-center justify-between gap-4 pt-2">
+        <div className="flex-1 flex items-center gap-3">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-lg">
+            <Keyboard className="h-3.5 w-3.5" />
+            <span>
+              <kbd className="px-1.5 py-0.5 text-xs rounded bg-background shadow-sm">Ctrl</kbd>
+              <span className="mx-1">+</span>
+              <kbd className="px-1.5 py-0.5 text-xs rounded bg-background shadow-sm">K</kbd>
+            </span>
+          </div>
+          {input.length > 0 && (
+            <div className="text-xs text-muted-foreground flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2 duration-300">
+              <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+              {debouncedQuery.length >= 2 ? `${searchData?.total || 0} resultados` : 'Digite para buscar'}
+            </div>
+          )}
+        </div>
+
+        <Button
+          onClick={handleSubmit}
+          disabled={!canExecute || chatStatus === 'loading'}
+          size="lg"
+          className="gap-2 min-w-[160px] shadow-md hover:shadow-lg transition-all hover:scale-105"
+        >
+          {chatStatus === 'loading' ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Analisando...
+            </>
+          ) : shouldBlockExecution ? (
+            <>
+              <AlertCircle className="h-5 w-5" />
+              Refinar busca
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-5 w-5" />
+              Executar Análise
+            </>
+          )}
+        </Button>
       </div>
     </div>
   );
