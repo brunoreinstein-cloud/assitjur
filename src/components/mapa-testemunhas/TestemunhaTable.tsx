@@ -50,16 +50,6 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
     return 'bg-muted text-muted-foreground';
   };
 
-  // Debug: log data when search contains FABIANO
-  useEffect(() => {
-    if (data && data.length > 0) {
-      const fabiano = data.find(t => t.nome_testemunha?.toUpperCase().includes('FABIANO'));
-      if (fabiano) {
-        console.log('[TestemunhaTable] FABIANO found in table data:', fabiano);
-      }
-    }
-  }, [data]);
-
   if (status !== "success") {
     return <DataState status={status} onRetry={onRetry} />;
   }

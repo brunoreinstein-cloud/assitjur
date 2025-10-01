@@ -200,32 +200,31 @@ export async function fetchTestemunhas(params: {
       });
 
       // Transform backend data to match frontend types
-      const transformedItems = data.items.map((item: any) => {
-        const transformed = {
-          ...item,
-          nome_testemunha: item.nome_testemunha || item.nome || '',
-          qtd_depoimentos: typeof item.qtd_depoimentos === 'string' 
-            ? parseInt(item.qtd_depoimentos, 10) || 0 
-            : item.qtd_depoimentos || 0,
-          foi_testemunha_em_ambos_polos: item.foi_testemunha_em_ambos_polos === true || item.foi_testemunha_em_ambos_polos === 'Sim',
-          ja_foi_reclamante: item.ja_foi_reclamante === true || item.ja_foi_reclamante === 'Sim',
-          participou_triangulacao: item.participou_triangulacao === true || item.participou_triangulacao === 'Sim',
-          participou_troca_favor: item.participou_troca_favor === true || item.participou_troca_favor === 'Sim',
-          classificacao: item.classificacao || item.classificacao_estrategica || null,
-        };
-        
-        // Debug specific witness search
-        if (params.search && transformed.nome_testemunha.toUpperCase().includes('FABIANO')) {
-          console.log('[DEBUG] Witness found matching FABIANO:', {
-            nome: transformed.nome_testemunha,
-            qtd: transformed.qtd_depoimentos,
-            classificacao: transformed.classificacao,
-            ja_foi_reclamante: transformed.ja_foi_reclamante
-          });
-        }
-        
-        return transformed;
-      }) as PorTestemunha[];
+      const transformedItems = data.items.map((item: any) => ({
+        ...item,
+        nome_testemunha: item.nome_testemunha || item.nome || '',
+        qtd_depoimentos: typeof item.qtd_depoimentos === 'string' 
+          ? parseInt(item.qtd_depoimentos, 10) || 0 
+          : item.qtd_depoimentos || 0,
+        foi_testemunha_em_ambos_polos: item.foi_testemunha_em_ambos_polos === true || item.foi_testemunha_em_ambos_polos === 'Sim',
+        ja_foi_reclamante: item.ja_foi_reclamante === true || item.ja_foi_reclamante === 'Sim',
+        participou_triangulacao: item.participou_triangulacao === true || item.participou_triangulacao === 'Sim',
+        participou_troca_favor: item.participou_troca_favor === true || item.participou_troca_favor === 'Sim',
+        classificacao: item.classificacao || item.classificacao_estrategica || null,
+      })) as PorTestemunha[];
+
+      console.log(`[fetchTestemunhas] Transformed ${transformedItems.length} items, total: ${data.total}`, 
+        params.search ? `Search: "${params.search}"` : 'No search filter');
+      
+      // Log if FABIANO is in results
+      if (params.search && params.search.toUpperCase().includes('FABIANO')) {
+        const fabianoItems = transformedItems.filter(t => 
+          t.nome_testemunha?.toUpperCase().includes('FABIANO')
+        );
+        console.log(`[fetchTestemunhas] Found ${fabianoItems.length} items matching FABIANO:`, 
+          fabianoItems.map(f => ({ nome: f.nome_testemunha, qtd: f.qtd_depoimentos }))
+        );
+      }
 
       return { data: transformedItems, total: data.total || 0 };
     });
