@@ -29,7 +29,7 @@ export function LoadingHints() {
   }, [nextHint]);
 
   return (
-    <div className="flex gap-4 animate-in fade-in duration-300">
+    <div className="flex gap-4 animate-fade-in">
       {/* Avatar */}
       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
         <Bot className="h-4 w-4 text-primary animate-pulse" />
@@ -43,7 +43,7 @@ export function LoadingHints() {
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
               <span 
                 key={currentHintIndex}
-                className="text-sm text-foreground font-medium animate-in fade-in duration-200"
+                className="text-sm text-foreground font-medium transition-opacity duration-200"
               >
                 {loadingHints[currentHintIndex]}
               </span>
