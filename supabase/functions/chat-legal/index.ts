@@ -199,14 +199,15 @@ export async function handler(request: Request) {
     }
     const systemPrompt = sysPromptRow?.content ?? getSystemPrompt(wantedName);
     
-    log.info(`Executando análise: kind=${wantedName}, msg_len=${message.length}`);
+    log.info(`📥 Input: kind=${wantedName}, msg_len=${message.length}, preview="${message.substring(0, 100)}..."`);
+    log.info(`📋 System prompt length: ${systemPrompt.length} chars`);
 
     const completion = await withTimeout(
       openAIChat({ system: systemPrompt, user: message, requestId }),
       OPENAI_TIMEOUT_MS,
     );
 
-    log.info(`Análise concluída: response_len=${completion.length}`);
+    log.info(`📤 Response: len=${completion.length}, preview="${completion.substring(0, 200)}..."`);
 
     return json(200, { ok: true, data: completion, requestId }, { ...corsHeaders(request), "x-request-id": requestId });
   } catch (err) {

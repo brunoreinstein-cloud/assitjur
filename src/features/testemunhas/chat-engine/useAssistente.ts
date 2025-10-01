@@ -210,21 +210,40 @@ export function useAssistente() {
           }
         } catch (e2) {
           console.error('❌ [FRONTEND] Extraction failed:', e2);
-          
-          // Strategy 3: Use response as plain text
-          console.log('⚠️ [FRONTEND] Falling back to plain text interpretation');
-          blocks = [
-            {
-              type: 'executive',
-              title: '📊 Análise',
-              icon: 'FileText',
-              data: {
-                processo: input,
-                observacoes: aiResponse || 'Análise em processamento'
-              }
-            }
-          ];
         }
+      }
+
+      // FALLBACK: Se não há blocos após todas as tentativas, gerar blocos básicos
+      if (!blocks || blocks.length === 0) {
+        console.log('🔧 [FRONTEND] Gerando fallback blocks para input:', input);
+        blocks = [
+          {
+            type: 'executive',
+            title: '📊 Resumo Executivo',
+            icon: 'FileText',
+            data: {
+              processo: input.match(/\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}/) ? input : 'Consulta iniciada',
+              classificacao: 'Normal',
+              score: 0,
+              observacoes: `Análise iniciada para: ${input.substring(0, 100)}${input.length > 100 ? '...' : ''}`
+            }
+          },
+          {
+            type: 'details',
+            title: '🔍 Análise Detalhada',
+            icon: 'Search',
+            data: {
+              informacoes_disponiveis: `Consulta: ${input}`,
+              analise: 'Aguardando processamento completo pelo sistema. Por favor, tente novamente.',
+              recomendacoes: [
+                'Verificar se os dados estão disponíveis no sistema',
+                'Confirmar formato da consulta (CNJ, nome, etc)',
+                'Aguardar alguns instantes e tentar novamente'
+              ]
+            }
+          }
+        ];
+        console.log('✅ [FRONTEND] Fallback blocks gerados:', blocks.length);
       }
 
       // Update assistant message with real data
