@@ -75,4 +75,7 @@ verify_jwt = true
 [functions.evaluate_flags]
 verify_jwt = true
 
+[functions.search]
+verify_jwt = true
+
 import_map = ""
