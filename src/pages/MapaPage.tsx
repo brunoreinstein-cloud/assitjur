@@ -179,23 +179,21 @@ const MapaPage = () => {
       setActiveTab(tab);
     }
     
-    // Apply filters from URL parameters and trigger selection
-    if (nome) {
+    // Apply filters from URL parameters and trigger selection (only if data is loaded)
+    if (nome && testemunhas.length > 0) {
       console.log('🔍 Aplicando filtro de nome:', nome);
       setTestemunhaFilters({ search: decodeURIComponent(nome) });
       
-      // Aguardar dados carregarem para fazer seleção
-      setTimeout(() => {
-        const testemunha = testemunhas.find(t => 
-          t.nome_testemunha?.toLowerCase() === decodeURIComponent(nome).toLowerCase()
-        );
-        if (testemunha) {
-          console.log('✅ Testemunha encontrada após filtro:', testemunha);
-          setSelectedTestemunha(testemunha);
-        } else {
-          console.warn('⚠️ Testemunha não encontrada após aplicar filtro');
-        }
-      }, 1000);
+      // Buscar testemunha nos dados carregados
+      const testemunha = testemunhas.find(t => 
+        t.nome_testemunha?.toLowerCase() === decodeURIComponent(nome).toLowerCase()
+      );
+      if (testemunha) {
+        console.log('✅ Testemunha encontrada após filtro:', testemunha);
+        setSelectedTestemunha(testemunha);
+      } else {
+        console.warn('⚠️ Testemunha não encontrada após aplicar filtro');
+      }
       
       // Clean URL after applying filter
       const newParams = new URLSearchParams(searchParams);
@@ -203,22 +201,20 @@ const MapaPage = () => {
       setSearchParams(newParams, { replace: true });
     }
     
-    if (cnj) {
+    if (cnj && processos.length > 0) {
       console.log('🔍 Aplicando filtro de CNJ:', cnj);
       setProcessoFilters({ search: decodeURIComponent(cnj) });
       
-      // Aguardar dados carregarem para fazer seleção
-      setTimeout(() => {
-        const processo = processos.find(p => 
-          p.cnj === decodeURIComponent(cnj) || p.numero_cnj === decodeURIComponent(cnj)
-        );
-        if (processo) {
-          console.log('✅ Processo encontrado após filtro:', processo);
-          setSelectedProcesso(processo);
-        } else {
-          console.warn('⚠️ Processo não encontrado após aplicar filtro');
-        }
-      }, 1000);
+      // Buscar processo nos dados carregados
+      const processo = processos.find(p => 
+        p.cnj === decodeURIComponent(cnj) || p.numero_cnj === decodeURIComponent(cnj)
+      );
+      if (processo) {
+        console.log('✅ Processo encontrado após filtro:', processo);
+        setSelectedProcesso(processo);
+      } else {
+        console.warn('⚠️ Processo não encontrado após aplicar filtro');
+      }
       
       // Clean URL after applying filter
       const newParams = new URLSearchParams(searchParams);

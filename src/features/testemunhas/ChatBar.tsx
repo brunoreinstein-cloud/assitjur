@@ -165,9 +165,9 @@ export function ChatBar() {
           setChatKind('processo');
         } else {
           console.warn('⚠️ Processo não encontrado nos dados carregados');
-          // Ainda definir os filtros para carregar os dados
           setChatInput(result.title);
           setChatKind('processo');
+          toast.info('Carregando dados do processo...', { duration: 2000 });
         }
         navigate(`/mapa?tab=processos&cnj=${encodeURIComponent(result.title)}`, { replace: true });
         break;
@@ -188,9 +188,9 @@ export function ChatBar() {
           setChatKind('testemunha');
         } else {
           console.warn('⚠️ Testemunha não encontrada nos dados carregados');
-          // Ainda definir os filtros para carregar os dados
           setChatInput(result.title);
           setChatKind('testemunha');
+          toast.info('Carregando dados da testemunha...', { duration: 2000 });
         }
         navigate(`/mapa?tab=testemunhas&nome=${encodeURIComponent(result.title)}`, { replace: true });
         break;

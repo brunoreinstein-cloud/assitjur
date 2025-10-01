@@ -147,49 +147,38 @@ serve('search', async (req) => {
 
     const results: SearchResult[] = [];
 
-    // Busca em processos (se scope permitir)
+    // Busca em processos (via RPC - mesma fonte que as tabelas)
     if (scope === 'all' || scope === 'process' || parsed.filters.type === 'process') {
-      const processQuery = supa
-        .from('processos')
-        .select('id, cnj, cnj_normalizado, reclamante_nome, reu_nome, comarca, status, fase, classificacao_final')
-        .eq('org_id', organization_id)
-        .is('deleted_at', null)
-        .limit(limit);
-
-      if (parsed.filters.cnj) {
-        processQuery.ilike('cnj_normalizado', `%${parsed.filters.cnj}%`);
-      } else if (parsed.cleanQuery) {
-        processQuery.or(
-          `cnj.ilike.%${parsed.cleanQuery}%,reclamante_nome.ilike.%${parsed.cleanQuery}%,reu_nome.ilike.%${parsed.cleanQuery}%`
-        );
-      }
-
-      if (parsed.filters.uf) {
-        processQuery.ilike('comarca', `%${parsed.filters.uf}%`);
-      }
-
-      const { data: processos, error: processError } = await processQuery;
+      const { data: rpcResult, error: processError } = await supa.rpc('rpc_get_assistjur_processos', {
+        p_org_id: organization_id,
+        p_filters: { 
+          search: parsed.cleanQuery,
+          classificacao: parsed.filters.risco ? [parsed.filters.risco] : undefined
+        },
+        p_page: 1,
+        p_limit: limit
+      });
 
       if (processError) {
         logger.error(`❌ Erro ao buscar processos: ${processError.message}`, requestId);
       }
 
-      logger.info(`📊 Processos encontrados: ${processos?.length || 0}`, requestId);
+      const processos = rpcResult?.[0]?.data || [];
+      logger.info(`📊 Processos encontrados via RPC: ${processos.length}`, requestId);
 
-      if (processos && processos.length > 0) {
-        processos.forEach((p) => {
-          const matchType = parsed.filters.cnj && p.cnj_normalizado?.includes(parsed.filters.cnj) ? 'exact' : 'partial';
+      if (processos.length > 0) {
+        processos.forEach((p: any) => {
+          const matchType = parsed.filters.cnj && p.cnj?.includes(parsed.filters.cnj) ? 'exact' : 'partial';
           results.push({
-            id: p.id,
+            id: p.cnj || `proc_${Math.random()}`,
             type: 'process',
             title: p.cnj || 'CNJ não disponível',
-            subtitle: `${p.reclamante_nome || 'N/A'} × ${p.reu_nome || 'N/A'}`,
-            highlights: [p.cnj_normalizado || '', p.reclamante_nome || '', p.reu_nome || ''],
+            subtitle: `${p.reclamante || 'N/A'} × ${p.reclamada || 'N/A'}`,
+            highlights: [p.cnj || '', p.reclamante || '', p.reclamada || ''],
             meta: {
               status: p.status,
-              fase: p.fase,
-              comarca: p.comarca,
-              classificacao: p.classificacao_final,
+              classificacao: p.classificacao || p.classificacao_estrategica,
+              testemunhas: p.qtd_testemunhas || 0,
             },
             score: calculateScore(matchType, 'process', {}),
           });
