@@ -197,28 +197,26 @@ serve('search', async (req) => {
       }
     }
 
-    // Busca em testemunhas (via tabela staging)
+    // Busca em testemunhas (via RPC)
     if (scope === 'all' || scope === 'witness') {
-      const witnessQuery = supa
-        .schema('assistjur')
-        .from('por_testemunha_staging')
-        .select('nome_testemunha, qtd_depoimentos, foi_testemunha_em_ambos_polos, classificacao')
-        .eq('org_id', organization_id)
-        .ilike('nome_testemunha', `%${parsed.cleanQuery}%`)
-        .limit(limit);
-
-      const { data: testemunhas, error: witnessError } = await witnessQuery;
+      const { data: rpcResult, error: witnessError } = await supa.rpc('rpc_get_assistjur_testemunhas', {
+        p_org_id: organization_id,
+        p_filters: { search: parsed.cleanQuery },
+        p_page: 1,
+        p_limit: limit
+      });
 
       if (witnessError) {
         logger.error(`❌ Erro ao buscar testemunhas: ${witnessError.message}`, requestId);
       }
 
-      logger.info(`📊 Testemunhas encontradas: ${testemunhas?.length || 0}`, requestId);
+      const testemunhas = rpcResult?.[0]?.data || [];
+      logger.info(`📊 Testemunhas encontradas: ${testemunhas.length}`, requestId);
 
-      if (testemunhas && testemunhas.length > 0) {
-        testemunhas.forEach((t, idx) => {
-          const bothPoles = t.foi_testemunha_em_ambos_polos === 'Sim';
-          const qtdDepoimentos = typeof t.qtd_depoimentos === 'string' ? parseInt(t.qtd_depoimentos) || 0 : t.qtd_depoimentos || 0;
+      if (testemunhas.length > 0) {
+        testemunhas.forEach((t: any, idx: number) => {
+          const bothPoles = t.foi_testemunha_em_ambos_polos === true;
+          const qtdDepoimentos = t.qtd_depoimentos || 0;
           
           results.push({
             id: `w_${idx}`,
@@ -237,43 +235,40 @@ serve('search', async (req) => {
       }
     }
 
-    // Busca em reclamantes (via tabela staging de processos)
+    // Busca em reclamantes (via RPC de processos)
     if (scope === 'all' || scope === 'claimant') {
-      const claimantQuery = supa
-        .schema('assistjur')
-        .from('por_processo_staging')
-        .select('reclamante_limpo, cnj, reclamante_cpf')
-        .eq('org_id', organization_id)
-        .ilike('reclamante_limpo', `%${parsed.cleanQuery}%`)
-        .limit(limit);
-
-      const { data: reclamantes, error: claimantError } = await claimantQuery;
+      const { data: rpcResult, error: claimantError } = await supa.rpc('rpc_get_assistjur_processos', {
+        p_org_id: organization_id,
+        p_filters: { search: parsed.cleanQuery },
+        p_page: 1,
+        p_limit: limit
+      });
 
       if (claimantError) {
         logger.error(`❌ Erro ao buscar reclamantes: ${claimantError.message}`, requestId);
       }
 
-      logger.info(`📊 Reclamantes encontrados: ${reclamantes?.length || 0}`, requestId);
+      const processos = rpcResult?.[0]?.data || [];
+      logger.info(`📊 Processos para reclamantes encontrados: ${processos.length}`, requestId);
 
-      if (reclamantes && reclamantes.length > 0) {
+      if (processos.length > 0) {
         const uniqueClaimants = new Map<string, any>();
-        reclamantes.forEach((r) => {
-          const name = r.reclamante_limpo;
+        processos.forEach((p: any) => {
+          const name = p.reclamante;
           if (name && !uniqueClaimants.has(name)) {
-            uniqueClaimants.set(name, r);
+            uniqueClaimants.set(name, p);
           }
         });
 
-        uniqueClaimants.forEach((r, name) => {
+        uniqueClaimants.forEach((p: any, name: string) => {
           results.push({
-            id: `r_${name}`,
+            id: `c_${name}`,
             type: 'claimant',
             title: name,
             subtitle: 'Reclamante',
             highlights: [name],
             meta: {
-              cpf: r.reclamante_cpf || '',
-              cnj: r.cnj || '',
+              cnj: p.cnj || '',
             },
             score: calculateScore('partial', 'claimant', {}),
           });

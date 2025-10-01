@@ -56,7 +56,7 @@ const ENTITY_ICONS: Record<SearchEntityType, any> = {
 export function ChatBar() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedScope, setSelectedScope] = useState<'all' | 'process' | 'witness' | 'claimant'>('witness');
+  const [selectedScope, setSelectedScope] = useState<'all' | 'process' | 'witness' | 'claimant'>('all');
   const [input, setInput] = useState('');
   const [lgpdDismissed, setLgpdDismissed] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
