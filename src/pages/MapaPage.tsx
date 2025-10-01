@@ -210,6 +210,7 @@ const MapaPage = () => {
         fetchTestemunhas({
           page: 1,
           limit: 100,
+          search: debouncedTestemunhaFilters.search,
           filters: debouncedTestemunhaFilters
         })
       ]);

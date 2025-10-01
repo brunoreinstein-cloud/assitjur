@@ -200,60 +200,30 @@ export async function fetchTestemunhas(params: {
       });
 
       // Transform backend data - data already comes correctly typed from RPC
-      const transformedItems = data.items.map((item: any) => {
-        const transformed = {
-          nome_testemunha: item.nome_testemunha || '',
-          qtd_depoimentos: Number(item.qtd_depoimentos) || 0,
-          foi_testemunha_em_ambos_polos: Boolean(item.foi_testemunha_em_ambos_polos),
-          ja_foi_reclamante: Boolean(item.ja_foi_reclamante),
-          participou_triangulacao: Boolean(item.participou_triangulacao),
-          participou_troca_favor: Boolean(item.participou_troca_favor),
-          classificacao: item.classificacao || null,
-          classificacao_estrategica: item.classificacao_estrategica || null,
-          cnjs_como_testemunha: item.cnjs_como_testemunha || null,
-          cnjs_como_reclamante: item.cnjs_como_reclamante || null,
-          foi_testemunha_ativo: Boolean(item.foi_testemunha_ativo),
-          cnjs_ativo: item.cnjs_ativo || null,
-          foi_testemunha_passivo: Boolean(item.foi_testemunha_passivo),
-          cnjs_passivo: item.cnjs_passivo || null,
-          cnjs_troca_favor: item.cnjs_troca_favor || null,
-          cnjs_triangulacao: item.cnjs_triangulacao || null,
-          e_prova_emprestada: Boolean(item.e_prova_emprestada),
-          org_id: item.org_id || null,
-          created_at: item.created_at,
-          updated_at: item.updated_at,
-        } as PorTestemunha;
-
-        // 🔍 DEBUG ESPECÍFICO PARA FABIANO
-        if (item.nome_testemunha?.toUpperCase().includes('FABIANO')) {
-          console.log(`🎯 [${requestId}] FABIANO DETECTADO:`, {
-            original: item,
-            transformed: transformed,
-            search: params.search
-          });
-        }
-
-        return transformed;
-      });
+      const transformedItems = data.items.map((item: any) => ({
+        nome_testemunha: item.nome_testemunha || '',
+        qtd_depoimentos: Number(item.qtd_depoimentos) || 0,
+        foi_testemunha_em_ambos_polos: Boolean(item.foi_testemunha_em_ambos_polos),
+        ja_foi_reclamante: Boolean(item.ja_foi_reclamante),
+        participou_triangulacao: Boolean(item.participou_triangulacao),
+        participou_troca_favor: Boolean(item.participou_troca_favor),
+        classificacao: item.classificacao || null,
+        classificacao_estrategica: item.classificacao_estrategica || null,
+        cnjs_como_testemunha: item.cnjs_como_testemunha || null,
+        cnjs_como_reclamante: item.cnjs_como_reclamante || null,
+        foi_testemunha_ativo: Boolean(item.foi_testemunha_ativo),
+        cnjs_ativo: item.cnjs_ativo || null,
+        foi_testemunha_passivo: Boolean(item.foi_testemunha_passivo),
+        cnjs_passivo: item.cnjs_passivo || null,
+        cnjs_troca_favor: item.cnjs_troca_favor || null,
+        cnjs_triangulacao: item.cnjs_triangulacao || null,
+        e_prova_emprestada: Boolean(item.e_prova_emprestada),
+        org_id: item.org_id || null,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+      } as PorTestemunha));
 
       DebugMode.log(`✅ [${requestId}] Transformed ${transformedItems.length} items`);
-      
-      // Contar quantos FÁBIANOs existem no resultado
-      const fabianoCount = transformedItems.filter(t => 
-        t.nome_testemunha?.toUpperCase().includes('FABIANO')
-      ).length;
-      
-      if (fabianoCount > 0 || params.search?.toUpperCase().includes('FABIANO')) {
-        console.log(`🔍 [${requestId}] FABIANO SEARCH RESULT:`, {
-          totalItems: transformedItems.length,
-          fabianoMatches: fabianoCount,
-          searchTerm: params.search,
-          fabianoNames: transformedItems
-            .filter(t => t.nome_testemunha?.toUpperCase().includes('FABIANO'))
-            .map(t => t.nome_testemunha)
-        });
-      }
-      
       if (transformedItems.length > 0) {
         DebugMode.log(`✅ [${requestId}] Sample item:`, transformedItems[0]);
       }
