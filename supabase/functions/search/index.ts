@@ -168,9 +168,15 @@ serve('search', async (req) => {
         processQuery.ilike('comarca', `%${parsed.filters.uf}%`);
       }
 
-      const { data: processos } = await processQuery;
+      const { data: processos, error: processError } = await processQuery;
 
-      if (processos) {
+      if (processError) {
+        logger.error(`❌ Erro ao buscar processos: ${processError.message}`, requestId);
+      }
+
+      logger.info(`📊 Processos encontrados: ${processos?.length || 0}`, requestId);
+
+      if (processos && processos.length > 0) {
         processos.forEach((p) => {
           const matchType = parsed.filters.cnj && p.cnj_normalizado?.includes(parsed.filters.cnj) ? 'exact' : 'partial';
           results.push({
@@ -191,31 +197,39 @@ serve('search', async (req) => {
       }
     }
 
-    // Busca em testemunhas (via view canônica)
+    // Busca em testemunhas (via tabela staging)
     if (scope === 'all' || scope === 'witness') {
       const witnessQuery = supa
-        .from('por_testemunha_view')
-        .select('nome_testemunha, qtd_depoimentos, foi_testemunha_em_ambos_polos, classificacao, cnjs_como_testemunha')
+        .schema('assistjur')
+        .from('por_testemunha_staging')
+        .select('nome_testemunha, qtd_depoimentos, foi_testemunha_em_ambos_polos, classificacao')
         .eq('org_id', organization_id)
         .ilike('nome_testemunha', `%${parsed.cleanQuery}%`)
         .limit(limit);
 
-      const { data: testemunhas } = await witnessQuery;
+      const { data: testemunhas, error: witnessError } = await witnessQuery;
 
-      if (testemunhas) {
+      if (witnessError) {
+        logger.error(`❌ Erro ao buscar testemunhas: ${witnessError.message}`, requestId);
+      }
+
+      logger.info(`📊 Testemunhas encontradas: ${testemunhas?.length || 0}`, requestId);
+
+      if (testemunhas && testemunhas.length > 0) {
         testemunhas.forEach((t, idx) => {
-          const bothPoles = t.foi_testemunha_em_ambos_polos === true;
+          const bothPoles = t.foi_testemunha_em_ambos_polos === 'Sim';
+          const qtdDepoimentos = typeof t.qtd_depoimentos === 'string' ? parseInt(t.qtd_depoimentos) || 0 : t.qtd_depoimentos || 0;
+          
           results.push({
             id: `w_${idx}`,
             type: 'witness',
             title: t.nome_testemunha || 'Nome não disponível',
-            subtitle: `${t.qtd_depoimentos || 0} depoimentos`,
+            subtitle: `${qtdDepoimentos} depoimentos`,
             highlights: [t.nome_testemunha || ''],
             meta: {
-              depoimentos: t.qtd_depoimentos,
+              depoimentos: qtdDepoimentos,
               ambosPoles: bothPoles,
-              classificacao: t.classificacao,
-              cnjs: t.cnjs_como_testemunha,
+              classificacao: t.classificacao || 'Normal',
             },
             score: calculateScore('partial', 'witness', { bothPoles }),
           });
@@ -223,18 +237,25 @@ serve('search', async (req) => {
       }
     }
 
-    // Busca em reclamantes (via view de processos)
+    // Busca em reclamantes (via tabela staging de processos)
     if (scope === 'all' || scope === 'claimant') {
       const claimantQuery = supa
-        .from('por_processo_view')
-        .select('reclamante_limpo, cnj, reclamante_cpf_mask')
+        .schema('assistjur')
+        .from('por_processo_staging')
+        .select('reclamante_limpo, cnj, reclamante_cpf')
         .eq('org_id', organization_id)
         .ilike('reclamante_limpo', `%${parsed.cleanQuery}%`)
         .limit(limit);
 
-      const { data: reclamantes } = await claimantQuery;
+      const { data: reclamantes, error: claimantError } = await claimantQuery;
 
-      if (reclamantes) {
+      if (claimantError) {
+        logger.error(`❌ Erro ao buscar reclamantes: ${claimantError.message}`, requestId);
+      }
+
+      logger.info(`📊 Reclamantes encontrados: ${reclamantes?.length || 0}`, requestId);
+
+      if (reclamantes && reclamantes.length > 0) {
         const uniqueClaimants = new Map<string, any>();
         reclamantes.forEach((r) => {
           const name = r.reclamante_limpo;
@@ -251,8 +272,8 @@ serve('search', async (req) => {
             subtitle: 'Reclamante',
             highlights: [name],
             meta: {
-              cpf: r.reclamante_cpf_mask,
-              cnj: r.cnj,
+              cpf: r.reclamante_cpf || '',
+              cnj: r.cnj || '',
             },
             score: calculateScore('partial', 'claimant', {}),
           });
