@@ -2557,6 +2557,30 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_profile_with_roles: {
+        Args: { _user_id: string }
+        Returns: {
+          avatar_url: string
+          created_at: string
+          data_access_level: Database["public"]["Enums"]["data_access_level"]
+          email: string
+          email_notifications: Json
+          full_name: string
+          id: string
+          is_active: boolean
+          job_title: string
+          language: string
+          last_login_at: string
+          organization_id: string
+          phone: string
+          roles: Json
+          terms_accepted_at: string
+          theme_preference: string
+          timezone: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
       get_user_role: {
         Args: { _org_id: string; _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
