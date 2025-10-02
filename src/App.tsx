@@ -16,6 +16,7 @@ import { AuthErrorBoundary } from '@/components/core/AuthErrorBoundary';
 import AuthGuard from "@/components/AuthGuard";
 import { AppLayout } from "@/components/navigation/AppLayout";
 import { ErrorBoundary } from "@/components/core/ErrorBoundary";
+import { ProductionOptimizer } from "@/components/production/ProductionOptimizer";
 
 
 // Admin pages (lazy loaded)
@@ -199,6 +200,7 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <ErrorBoundary>
+    <ProductionOptimizer />
     <MotionConfig reducedMotion="user" transition={DEFAULT_TRANSITION}>
       <QueryClientProvider client={queryClient}>
         <ServiceHealthProvider>
