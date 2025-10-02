@@ -38,6 +38,18 @@ export function ExecutiveSummaryCard({
   alerta,
   citacoes
 }: ExecutiveSummaryCardProps) {
+  // Debug log para validar props recebidas
+  console.log('📊 [ExecutiveSummaryCard] Props recebidas:', {
+    cnj,
+    status,
+    observacoes,
+    riscoNivel,
+    confianca: typeof confianca === 'number' ? `${confianca}%` : confianca,
+    hasObservacoes: !!observacoes && observacoes !== 'Sem observações registradas',
+    hasStatus: !!status && status !== 'Não informado',
+    isDefaultData: status === 'Não informado' && observacoes === 'Sem observações registradas'
+  });
+  
   const { toast } = useToast();
   const [showAllCitations, setShowAllCitations] = useState(false);
   

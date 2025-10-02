@@ -88,54 +88,39 @@ function parseSearchQuery(query: string) {
   };
 }
 
-// Inferir status inteligente baseado em campos disponíveis
+// SINCRONIZADO COM: src/lib/data-quality.ts - inferirStatus()
+// IMPORTANTE: Manter manualmente sincronizado após alterações
 function inferirStatus(p: any): { status: string; inferido: boolean } {
-  // Usar situacao ou categoria como base
-  const baseStatus = p.situacao || p.categoria;
+  // Se tem situacao/categoria explícita, usar
+  if (p.situacao) return { status: p.situacao, inferido: false };
+  if (p.categoria) return { status: p.categoria, inferido: false };
   
-  // Se já tiver status definido, usar ele
-  if (baseStatus && baseStatus !== 'null' && baseStatus.trim() !== '') {
-    return { status: baseStatus, inferido: false };
-  }
+  // Inferir por classificacao_final
+  const classif = (p.classificacao_final || '').toLowerCase();
+  if (classif.includes('descartar')) return { status: 'Arquivado', inferido: true };
+  if (classif.includes('conhecer')) return { status: 'Aguardando movimentação', inferido: true };
   
-  // Inferir baseado em classificacao_final
-  if (p.classificacao_final) {
-    const classif = String(p.classificacao_final).toUpperCase();
-    if (classif.includes('DESCARTAR') || classif.includes('ARQUIVADO')) {
-      return { status: 'Arquivado', inferido: true };
-    }
-    if (classif.includes('SUSPEITA') || classif.includes('ALTO')) {
-      return { status: 'Em análise', inferido: true };
-    }
-  }
-  
-  // Inferir baseado em quantidade de movimentos
-  const movimentos = p.quantidade_movimentos || 0;
-  const documentos = p.quantidade_documentos || 0;
-  
-  if (movimentos > 10 || documentos > 5) {
-    return { status: 'Ativo', inferido: true };
-  }
-  
-  if (movimentos === 0 && documentos === 0) {
-    return { status: 'Aguardando movimentação', inferido: true };
-  }
+  // Inferir por quantidade de movimentos/documentos
+  const movs = p.quantidade_movimentos || 0;
+  const docs = p.quantidade_documentos || 0;
+  if (movs === 0 && docs === 0) return { status: 'Aguardando distribuição', inferido: true };
+  if (movs > 10) return { status: 'Em fase instrutória', inferido: true };
   
   return { status: 'Em andamento', inferido: true };
 }
 
-// Normalizar classificação (remover colchetes, capitalizar)
+// SINCRONIZADO COM: src/lib/data-quality.ts - normalizarClassificacao()
+// IMPORTANTE: Manter manualmente sincronizado após alterações
 function normalizarClassificacao(classificacao: any): string {
   if (!classificacao) return 'Normal';
   
-  let texto = String(classificacao)
-    .replace(/[\[\]]/g, '') // Remove colchetes
-    .trim();
+  let normalized = String(classificacao)
+    .replace(/[\[\]]/g, '')  // Remove colchetes
+    .trim()
+    .toLowerCase();
   
   // Capitalizar primeira letra
-  texto = texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
-  
-  return texto || 'Normal';
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
 
 // Cálculo de confiança baseado na completude dos dados REAIS

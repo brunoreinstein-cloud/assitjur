@@ -119,14 +119,18 @@ export function ResultBlocks({ blocks }: ResultBlocksProps) {
               return (
                 <ExecutiveSummaryCard
                   key={index}
-                  cnj={block.data.cnj}
-                  reclamante={block.data.reclamante}
-                  reu={block.data.reu}
-                  status={block.data.status}
-                  observacoes={block.data.observacoes}
-                  riscoNivel={block.data.riscoNivel}
-                  confianca={block.data.confianca}
-                  alerta={block.data.alerta}
+                  cnj={block.data?.cnj || block.data?.processo || 'N/A'}
+                  reclamante={block.data?.reclamante || block.data?.reclamada || 'Não informado'}
+                  reu={block.data?.reu || block.data?.reclamada || 'Não informado'}
+                  status={block.data?.status || block.meta?.status || 'Não informado'}
+                  observacoes={block.data?.observacoes || 'Análise contextual em progresso'}
+                  riscoNivel={(block.data?.riscoNivel || block.meta?.riscoNivel || 'baixo') as 'baixo' | 'medio' | 'alto' | 'critico'}
+                  confianca={
+                    typeof block.data?.confianca === 'number' ? block.data.confianca :
+                    typeof block.meta?.confidence === 'number' ? Math.round(block.meta.confidence * 100) :
+                    typeof block.data?.score === 'number' ? block.data.score : 0
+                  }
+                  alerta={block.data?.alerta}
                   citacoes={block.citations?.map(citation => ({
                     label: citation.ref,
                     onClick: () => {

@@ -213,20 +213,29 @@ export async function handler(request: Request) {
     }
     let systemPrompt = sysPromptRow?.content ?? getSystemPrompt(wantedName);
     
-    // Enriquecer prompt com contexto se disponível
+    // Enriquecer prompt com contexto se disponível - OBRIGATÓRIO
     if (context?.meta) {
+      const { status, classificacao, riscoNivel, confidence } = context.meta;
+      const confidencePercent = Math.round((confidence || 0) * 100);
+      
       const metaInfo = `
 
-## CONTEXTO ENRIQUECIDO DO ${context.type.toUpperCase()}
-Status: ${context.meta.status || 'N/A'} ${context.meta.statusInferido ? '[INFERIDO]' : ''}
-Classificação: ${context.meta.classificacao || 'N/A'}
-Nível de Risco: ${(context.meta.riscoNivel || 'N/A').toUpperCase()}
-Confiança dos Dados: ${context.meta.confidence ? Math.round(context.meta.confidence * 100) + '%' : 'N/A'}
+## CONTEXTO ENRIQUECIDO - DADOS REAIS OBRIGATÓRIOS
+Status Atual: "${status}"
+Classificação: "${classificacao}"
+Nível de Risco: "${riscoNivel}"
+Confiança dos Dados: ${confidencePercent}%
 
-**INSTRUÇÃO CRÍTICA**: Use ESTES DADOS REAIS acima para gerar o bloco executivo. NÃO gere fallbacks genéricos quando dados reais estão disponíveis.`;
+**INSTRUÇÕES CRÍTICAS PARA O BLOCO EXECUTIVE**:
+1. Campo "status" DEVE ser EXATAMENTE: "${status}"
+2. Campo "observacoes" DEVE conter análise contextual detalhada (não use "Não informado" ou "N/A")
+3. Campo "riscoNivel" DEVE ser EXATAMENTE: "${riscoNivel}"
+4. Campo "confianca" DEVE ser EXATAMENTE: ${confidencePercent}
+
+NÃO use valores genéricos. Use OBRIGATORIAMENTE os valores reais acima no JSON de resposta.`;
       
       systemPrompt += metaInfo;
-      log.info(`📊 Contexto enriquecido adicionado: status=${context.meta.status}, classificacao=${context.meta.classificacao}, risco=${context.meta.riscoNivel}`);
+      log.info(`📊 Contexto enriquecido adicionado: status=${status}, classificacao=${classificacao}, risco=${riscoNivel}`, requestId);
     }
     
     log.info(`📥 Input: kind=${wantedName}, msg_len=${message.length}, preview="${message.substring(0, 100)}..."`);
