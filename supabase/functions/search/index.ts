@@ -88,13 +88,63 @@ function parseSearchQuery(query: string) {
   };
 }
 
-// Cálculo de confiança baseado na completude dos dados
+// Inferir status inteligente baseado em campos disponíveis
+function inferirStatus(p: any): { status: string; inferido: boolean } {
+  // Usar situacao ou categoria como base
+  const baseStatus = p.situacao || p.categoria;
+  
+  // Se já tiver status definido, usar ele
+  if (baseStatus && baseStatus !== 'null' && baseStatus.trim() !== '') {
+    return { status: baseStatus, inferido: false };
+  }
+  
+  // Inferir baseado em classificacao_final
+  if (p.classificacao_final) {
+    const classif = String(p.classificacao_final).toUpperCase();
+    if (classif.includes('DESCARTAR') || classif.includes('ARQUIVADO')) {
+      return { status: 'Arquivado', inferido: true };
+    }
+    if (classif.includes('SUSPEITA') || classif.includes('ALTO')) {
+      return { status: 'Em análise', inferido: true };
+    }
+  }
+  
+  // Inferir baseado em quantidade de movimentos
+  const movimentos = p.quantidade_movimentos || 0;
+  const documentos = p.quantidade_documentos || 0;
+  
+  if (movimentos > 10 || documentos > 5) {
+    return { status: 'Ativo', inferido: true };
+  }
+  
+  if (movimentos === 0 && documentos === 0) {
+    return { status: 'Aguardando movimentação', inferido: true };
+  }
+  
+  return { status: 'Em andamento', inferido: true };
+}
+
+// Normalizar classificação (remover colchetes, capitalizar)
+function normalizarClassificacao(classificacao: any): string {
+  if (!classificacao) return 'Normal';
+  
+  let texto = String(classificacao)
+    .replace(/[\[\]]/g, '') // Remove colchetes
+    .trim();
+  
+  // Capitalizar primeira letra
+  texto = texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+  
+  return texto || 'Normal';
+}
+
+// Cálculo de confiança baseado na completude dos dados REAIS
 function calculateDataConfidence(data: any, requiredFields: string[]): number {
   if (!data) return 0;
   
   const validFields = requiredFields.filter(field => {
     const value = data[field];
-    return value !== null && value !== undefined && value !== '' && value !== 'nan';
+    return value !== null && value !== undefined && value !== '' && value !== 'nan' && value !== 'null';
   });
   
   return validFields.length / requiredFields.length;
@@ -181,9 +231,25 @@ serve('search', async (req) => {
       if (processos.length > 0) {
         processos.forEach((p: any) => {
           const matchType = parsed.filters.cnj && p.cnj?.includes(parsed.filters.cnj) ? 'exact' : 'partial';
-          const confidence = calculateDataConfidence(p, ['cnj', 'reclamante', 'reclamada', 'status']);
           
-          logger.info(`🔍 DEBUG Processo: cnj=${p.cnj}, status=${p.status}, classificacao=${p.classificacao}, confidence=${confidence}`, requestId);
+          // Inferir status inteligente
+          const { status, inferido } = inferirStatus(p);
+          
+          // Normalizar classificação
+          const classificacaoNormalizada = normalizarClassificacao(
+            p.classificacao || p.classificacao_estrategica || p.insight_estrategico
+          );
+          
+          // Calcular confiança com campos REAIS da tabela
+          const confidence = calculateDataConfidence(p, [
+            'cnj', 
+            'reclamante', 
+            'reclamada', 
+            'classificacao',
+            'insight_estrategico'
+          ]);
+          
+          logger.info(`🔍 Processo: cnj=${p.cnj}, status=${status}${inferido ? ' [INFERIDO]' : ''}, classificacao=${classificacaoNormalizada}, confidence=${Math.round(confidence * 100)}%`, requestId);
           
           results.push({
             id: p.cnj || `proc_${Math.random()}`,
@@ -192,12 +258,12 @@ serve('search', async (req) => {
             subtitle: `${p.reclamante || 'N/A'} × ${p.reclamada || 'N/A'}`,
             highlights: [p.cnj || '', p.reclamante || '', p.reclamada || ''],
             meta: {
-              status: p.status || 'Em andamento',
-              classificacao: p.classificacao || p.classificacao_estrategica || 'Normal',
+              status,
+              statusInferido: inferido,
+              classificacao: classificacaoNormalizada,
               comarca: p.comarca,
               testemunhas: p.qtd_testemunhas || 0,
-              confidence: confidence,
-              _debug: { raw_status: p.status, raw_classificacao: p.classificacao }
+              confidence,
             },
             score: calculateScore(matchType, 'process', {}),
           });
@@ -225,9 +291,10 @@ serve('search', async (req) => {
         testemunhas.forEach((t: any, idx: number) => {
           const bothPoles = t.foi_testemunha_em_ambos_polos === true;
           const qtdDepoimentos = t.qtd_depoimentos || 0;
-          const confidence = calculateDataConfidence(t, ['nome_testemunha', 'qtd_depoimentos']);
+          const classificacaoNormalizada = normalizarClassificacao(t.classificacao);
+          const confidence = calculateDataConfidence(t, ['nome_testemunha', 'qtd_depoimentos', 'classificacao']);
           
-          logger.info(`🔍 DEBUG Testemunha: nome=${t.nome_testemunha}, qtd=${qtdDepoimentos}, classificacao=${t.classificacao}, confidence=${confidence}`, requestId);
+          logger.info(`🔍 Testemunha: nome=${t.nome_testemunha}, qtd=${qtdDepoimentos}, classificacao=${classificacaoNormalizada}, confidence=${Math.round(confidence * 100)}%`, requestId);
           
           results.push({
             id: `w_${idx}`,
@@ -239,9 +306,8 @@ serve('search', async (req) => {
               status: 'Ativa',
               depoimentos: qtdDepoimentos,
               ambosPoles: bothPoles,
-              classificacao: t.classificacao || 'Normal',
-              confidence: confidence,
-              _debug: { raw_classificacao: t.classificacao, raw_qtd: t.qtd_depoimentos }
+              classificacao: classificacaoNormalizada,
+              confidence,
             },
             score: calculateScore('partial', 'witness', { bothPoles }),
           });

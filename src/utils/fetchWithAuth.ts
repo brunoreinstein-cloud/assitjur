@@ -57,18 +57,33 @@ export async function fetchWithAuth(url: string, init?: RequestInit) {
   }
 
   let refreshAttempted = false;
-  if (response && (response.status === 401 || response.status === 403) && !refreshAttempted) {
+  if (response && (response.status === 401 || response.status === 403 || response.status === 400) && !refreshAttempted) {
     refreshAttempted = true;
     try {
       const { data: refreshed, error } = await supabase.auth.refreshSession();
-      if (!error && refreshed.session) {
+      if (error) {
+        // Se refresh falhou com erro 400/401, sessão expirada - limpar e redirecionar
+        if (error.message?.includes('refresh_token') || error.status === 400) {
+          console.warn('⚠️ Refresh token inválido, limpando sessão...');
+          await supabase.auth.signOut();
+          window.location.href = '/login?session_expired=1';
+          return {
+            ok: false,
+            status: 401,
+            requestId,
+            error: 'session_expired',
+            details: 'Sessão expirada, faça login novamente'
+          };
+        }
+        if (AuthErrorHandler.isAuthError(error)) {
+          AuthErrorHandler.handleAuthError(error);
+        }
+      } else if (refreshed.session) {
         headers.set('Authorization', `Bearer ${refreshed.session.access_token}`);
         await execute();
-      } else if (error && AuthErrorHandler.isAuthError(error)) {
-        AuthErrorHandler.handleAuthError(error);
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error('❌ Erro ao renovar sessão:', err);
     }
   }
 

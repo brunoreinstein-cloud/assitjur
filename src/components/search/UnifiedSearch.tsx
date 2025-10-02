@@ -224,6 +224,14 @@ export const UnifiedSearch = () => {
                               {result.type === 'process' && result.meta && (
                                 <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
                                   <span>Status: {result.meta.status || 'Em andamento'}</span>
+                                  {result.meta.statusInferido && (
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-[9px] px-1 py-0 bg-muted/50"
+                                    >
+                                      Inferido
+                                    </Badge>
+                                  )}
                                   {result.meta.comarca && <span>· {result.meta.comarca}</span>}
                                   <Badge 
                                     variant="outline" 
