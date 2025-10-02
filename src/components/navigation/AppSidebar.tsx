@@ -41,7 +41,7 @@ export function AppSidebar() {
   const { open, setOpen, openMobile, setOpenMobile, isMobile, state } = useSidebar();
   const location = useLocation();
   const { setOpen: setConsentOpen } = useConsent();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const { canAccess, getPermissionTooltip, hasAnyPermissionInGroup, userRole } = usePermissions();
   const { toast } = useToast();
 
