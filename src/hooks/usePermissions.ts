@@ -2,12 +2,17 @@ import { useAuth } from '@/hooks/useAuth';
 import { NavItem } from '@/config/sidebar';
 
 export function usePermissions() {
-  const { user, hasRole, isAdmin } = useAuth();
+  const { user, hasRole, isAdmin, isSuperAdmin } = useAuth();
 
   // Permission mapping based on user roles and specific permissions
   const canAccess = (item: NavItem): boolean => {
     // If no permission required, allow access
     if (!item.permission) {
+      return true;
+    }
+
+    // Super admin has access to everything
+    if (isSuperAdmin) {
       return true;
     }
 
@@ -54,6 +59,7 @@ export function usePermissions() {
     hasAnyPermissionInGroup,
     user,
     isAdmin,
+    isSuperAdmin,
     userRole: user?.user_metadata?.role || 'VIEWER'
   };
 }

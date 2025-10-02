@@ -41,10 +41,10 @@ export class OrganizationService {
       const userId = await getCachedUser();
       
       const { data, error } = await supabase
-        .from('profiles')
+        .from('members')
         .select(`
           role,
-          organization_id,
+          org_id,
           organizations!inner (
             id,
             name,
@@ -56,7 +56,7 @@ export class OrganizationService {
           )
         `)
         .eq('user_id', userId)
-        .eq('is_active', true)
+        .eq('status', 'active')
         .eq('organizations.is_active', true);
 
       if (error) {
@@ -88,11 +88,11 @@ export class OrganizationService {
       const userId = await getCachedUser();
       
       const { data, error } = await supabase
-        .from('profiles')
+        .from('members')
         .select('role')
         .eq('user_id', userId)
-        .eq('organization_id', orgId)
-        .eq('is_active', true)
+        .eq('org_id', orgId)
+        .eq('status', 'active')
         .single();
 
       if (error || !data) {
@@ -170,10 +170,10 @@ export class OrganizationService {
         supabase.rpc('get_processos_with_access_control', { org_uuid: orgId }),
         supabase.rpc('get_pessoas_with_access_control', { org_uuid: orgId }),
         supabase
-          .from('profiles')
+          .from('members')
           .select('id', { count: 'exact' })
-          .eq('organization_id', orgId)
-          .eq('is_active', true)
+          .eq('org_id', orgId)
+          .eq('status', 'active')
       ]);
 
       return {

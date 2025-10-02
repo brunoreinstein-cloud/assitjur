@@ -10,6 +10,13 @@ import { logError, logWarn } from '@/lib/logger';
 
 export type UserRole = 'ADMIN' | 'ANALYST' | 'VIEWER';
 
+export interface SuperAdminInfo {
+  is_super_admin: boolean;
+  email: string;
+  granted_at: string;
+  last_access_at?: string | null;
+}
+
 export interface UserProfile {
   id: string;
   user_id: string;
@@ -26,6 +33,7 @@ export interface UserProfile {
   two_factor_secret?: string | null;
   two_factor_backup_code?: string | null;
   plan?: string;
+  is_super_admin?: boolean;
 }
 
 interface AuthContextType {
@@ -33,6 +41,7 @@ interface AuthContextType {
   profile: UserProfile | null;
   session: Session | null;
   loading: boolean;
+  isSuperAdmin: boolean;
   /**
    * Realiza login por e-mail e senha.
    * @param email E-mail do usuário
@@ -70,6 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   // Enable session monitoring for authenticated users
   const { inactivityTimeoutMinutes: inactivity } = getEnv();
@@ -79,6 +89,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     preemptiveRefresh: 10, // Refresh 10 minutes before expiry
     inactivityTimeout: inactivity
   });
+
+  const checkSuperAdmin = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .rpc('get_super_admin_info', { _user_id: userId });
+
+      if (error) {
+        logError('Error checking super admin status', { error: error.message || error }, 'useAuth');
+        return false;
+      }
+
+      return data && data.length > 0 && data[0].is_super_admin === true;
+    } catch (error) {
+      logError('Error checking super admin in catch', { error }, 'useAuth');
+      return false;
+    }
+  };
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -91,6 +118,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         logError('Error fetching profile', { error: error.message || error }, 'useAuth');
         return null;
+      }
+
+      // Check if user is super admin
+      if (data) {
+        const superAdminStatus = await checkSuperAdmin(userId);
+        setIsSuperAdmin(superAdminStatus);
+        return {
+          ...data,
+          is_super_admin: superAdminStatus
+        };
       }
       
       return data;
@@ -436,6 +473,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setProfile(null);
       setSession(null);
+      setIsSuperAdmin(false);
       sessionStorage.removeItem('mfa_verified');
     } catch (error) {
       logError('Error signing out', { error }, 'useAuth');
@@ -467,6 +505,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     profile,
     session,
     loading,
+    isSuperAdmin,
     signIn,
     signUp,
     signOut,
