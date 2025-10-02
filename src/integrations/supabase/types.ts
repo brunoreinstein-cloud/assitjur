@@ -974,39 +974,57 @@ export type Database = {
       }
       organizations: {
         Row: {
+          allow_concurrent_sessions: boolean | null
+          cnpj: string | null
           code: string
           created_at: string
           domain: string | null
           export_limit: string | null
           id: string
           is_active: boolean
+          logo_url: string | null
           name: string
+          primary_color: string | null
           require_2fa: boolean | null
           retention_months: number | null
+          secondary_color: string | null
+          session_timeout_minutes: number | null
           updated_at: string
         }
         Insert: {
+          allow_concurrent_sessions?: boolean | null
+          cnpj?: string | null
           code: string
           created_at?: string
           domain?: string | null
           export_limit?: string | null
           id?: string
           is_active?: boolean
+          logo_url?: string | null
           name: string
+          primary_color?: string | null
           require_2fa?: boolean | null
           retention_months?: number | null
+          secondary_color?: string | null
+          session_timeout_minutes?: number | null
           updated_at?: string
         }
         Update: {
+          allow_concurrent_sessions?: boolean | null
+          cnpj?: string | null
           code?: string
           created_at?: string
           domain?: string | null
           export_limit?: string | null
           id?: string
           is_active?: boolean
+          logo_url?: string | null
           name?: string
+          primary_color?: string | null
           require_2fa?: boolean | null
           retention_months?: number | null
+          secondary_color?: string | null
+          session_timeout_minutes?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -1189,47 +1207,71 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           data_access_level:
             | Database["public"]["Enums"]["data_access_level"]
             | null
           email: string
+          email_notifications: Json | null
+          full_name: string | null
           id: string
           is_active: boolean
+          job_title: string | null
+          language: string | null
           last_login_at: string | null
           organization_id: string | null
+          phone: string | null
           role: Database["public"]["Enums"]["user_role"]
           terms_accepted_at: string | null
+          theme_preference: string | null
+          timezone: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           data_access_level?:
             | Database["public"]["Enums"]["data_access_level"]
             | null
           email: string
+          email_notifications?: Json | null
+          full_name?: string | null
           id?: string
           is_active?: boolean
+          job_title?: string | null
+          language?: string | null
           last_login_at?: string | null
           organization_id?: string | null
+          phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           terms_accepted_at?: string | null
+          theme_preference?: string | null
+          timezone?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           data_access_level?:
             | Database["public"]["Enums"]["data_access_level"]
             | null
           email?: string
+          email_notifications?: Json | null
+          full_name?: string | null
           id?: string
           is_active?: boolean
+          job_title?: string | null
+          language?: string | null
           last_login_at?: string | null
           organization_id?: string | null
+          phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           terms_accepted_at?: string | null
+          theme_preference?: string | null
+          timezone?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -1946,17 +1988,25 @@ export type Database = {
           user_uuid: string
         }
         Returns: {
+          avatar_url: string | null
           created_at: string
           data_access_level:
             | Database["public"]["Enums"]["data_access_level"]
             | null
           email: string
+          email_notifications: Json | null
+          full_name: string | null
           id: string
           is_active: boolean
+          job_title: string | null
+          language: string | null
           last_login_at: string | null
           organization_id: string | null
+          phone: string | null
           role: Database["public"]["Enums"]["user_role"]
           terms_accepted_at: string | null
+          theme_preference: string | null
+          timezone: string | null
           updated_at: string
           user_id: string
         }
@@ -2008,17 +2058,25 @@ export type Database = {
       get_current_user_profile: {
         Args: Record<PropertyKey, never>
         Returns: {
+          avatar_url: string | null
           created_at: string
           data_access_level:
             | Database["public"]["Enums"]["data_access_level"]
             | null
           email: string
+          email_notifications: Json | null
+          full_name: string | null
           id: string
           is_active: boolean
+          job_title: string | null
+          language: string | null
           last_login_at: string | null
           organization_id: string | null
+          phone: string | null
           role: Database["public"]["Enums"]["user_role"]
           terms_accepted_at: string | null
+          theme_preference: string | null
+          timezone: string | null
           updated_at: string
           user_id: string
         }

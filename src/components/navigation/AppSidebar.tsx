@@ -239,14 +239,20 @@ export function AppSidebar() {
             </DropdownMenuTrigger>
             
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                <User className="h-4 w-4" />
-                <span>Perfil</span>
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <NavLink to="/profile" className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  <span>Meu Perfil</span>
+                </NavLink>
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                <UserCog className="h-4 w-4" />
-                <span>Configurações</span>
-              </DropdownMenuItem>
+              {isAdmin && (
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <NavLink to="/settings" className="flex items-center gap-2">
+                    <UserCog className="h-4 w-4" />
+                    <span>Configurações</span>
+                  </NavLink>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem 
                 onClick={handleSignOut}

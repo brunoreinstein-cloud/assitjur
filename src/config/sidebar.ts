@@ -112,9 +112,9 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       { 
         label: "Configurações", 
-        to: "/admin/config", 
+        to: "/settings", 
         icon: Settings,
-        description: "Configurações do sistema",
+        description: "Configurações da organização",
         permission: "canManageSettings"
       },
     ]

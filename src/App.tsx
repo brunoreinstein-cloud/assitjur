@@ -41,6 +41,10 @@ const BaseRedirect = lazy(() => import("@/pages/admin/base/index"));
 const BaseLayout = lazy(() => import("@/pages/admin/base/BaseLayout"));
 const ProcessosTable = lazy(() => import("@/pages/admin/base/ProcessosTable"));
 const TestemunhasTable = lazy(() => import("@/pages/admin/base/TestemunhasTable"));
+
+// Profile and Settings pages
+const Profile = lazy(() => import("@/pages/Profile"));
+const SettingsPage = lazy(() => import("@/pages/settings/SettingsPage"));
 import { ServiceHealthProvider } from "@/hooks/useServiceHealth";
 import { StatusBanner } from "@/components/common/StatusBanner";
 import SessionExpiredModal from "@/components/auth/SessionExpiredModal";
@@ -164,6 +168,10 @@ function AppRoutes() {
             }
           />
           <Route path="/account/2fa" element={<TwoFactorSetup />} />
+          
+          {/* Profile and Settings routes */}
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
