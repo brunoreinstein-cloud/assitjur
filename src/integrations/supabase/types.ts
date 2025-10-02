@@ -2480,6 +2480,25 @@ export type Database = {
           month: string
         }[]
       }
+      get_audit_trail: {
+        Args: {
+          p_end_date?: string
+          p_limit?: number
+          p_resource?: string
+          p_resource_id?: string
+          p_start_date?: string
+        }
+        Returns: {
+          action: string
+          change_summary: Json
+          created_at: string
+          id: string
+          legal_basis: string
+          resource: string
+          resource_id: string
+          user_email: string
+        }[]
+      }
       get_beta_signups_secure: {
         Args: { p_limit?: number; p_offset?: number }
         Returns: {
