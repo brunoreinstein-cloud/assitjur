@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useNotifications } from '@/stores/useNotificationStore';
 import { getProjectRef } from '@/lib/supabaseClient';
 import { useMapaTestemunhasStore, QueryKind, ResultBlock } from '@/lib/store/mapa-testemunhas';
-import { normalizeStatus, normalizeClassificacao, normalizeRiscoNivel, calculateConfidence } from '@/lib/data-quality';
+import { normalizeStatus, normalizeClassificacao, normalizeRiscoNivel, calculateConfidence, inferirStatus, normalizarClassificacao } from '@/lib/data-quality';
 
 export function useAssistente() {
   const { toast } = useToast();
@@ -154,22 +154,42 @@ export function useAssistente() {
         queryType: getQueryType(kind)
       };
 
-      // Auto-detect and enrich context
+      // Auto-detect and enrich context with meta data
       if (selectedProcesso && (kind === 'processo' || input.match(/\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}/))) {
+        const statusInferido = inferirStatus(selectedProcesso);
+        const classificacaoNormalizada = normalizarClassificacao(selectedProcesso.classificacao_final);
+        const riscoNivel = normalizeRiscoNivel(
+          selectedProcesso.classificacao_final,
+          selectedProcesso.score_risco,
+          selectedProcesso.insight_estrategico
+        );
+        const confidence = calculateConfidence(selectedProcesso, ['cnj', 'reclamante_nome', 'reu_nome', 'status', 'classificacao_final']);
+        
         payload.context = {
           type: 'processo',
           data: {
             cnj: selectedProcesso.cnj || selectedProcesso.numero_cnj,
             reclamante: selectedProcesso.reclamante_nome,
             reu: selectedProcesso.reu_nome,
-            status: selectedProcesso.status,
+            status: statusInferido.status,
+            statusInferido: statusInferido.inferido,
             fase: selectedProcesso.fase,
             uf: selectedProcesso.uf,
             comarca: selectedProcesso.comarca,
             testemunhas_ativo: selectedProcesso.testemunhas_ativo,
             testemunhas_passivo: selectedProcesso.testemunhas_passivo,
+            classificacao: classificacaoNormalizada,
             classificacao_final: selectedProcesso.classificacao_final,
             score_risco: selectedProcesso.score_risco,
+            insight_estrategico: selectedProcesso.insight_estrategico,
+            riscoNivel: riscoNivel
+          },
+          meta: {
+            status: statusInferido.status,
+            statusInferido: statusInferido.inferido,
+            classificacao: classificacaoNormalizada,
+            riscoNivel: riscoNivel,
+            confidence: confidence
           }
         };
       } else if (selectedTestemunha && kind === 'testemunha') {

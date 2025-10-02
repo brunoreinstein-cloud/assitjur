@@ -52,12 +52,51 @@ export function normalizeClassificacao(classificacao: string | null | undefined)
 }
 
 /**
- * Normaliza nível de risco baseado em classificação
+ * Infere status inteligente do processo baseado em múltiplos campos
+ */
+export function inferirStatus(p: any): { status: string; inferido: boolean } {
+  // Se tem situacao/categoria explícita, usar
+  if (p.situacao) return { status: p.situacao, inferido: false };
+  if (p.categoria) return { status: p.categoria, inferido: false };
+  
+  // Inferir por classificacao_final
+  const classif = (p.classificacao_final || '').toLowerCase();
+  if (classif.includes('descartar')) return { status: 'Arquivado', inferido: true };
+  if (classif.includes('conhecer')) return { status: 'Aguardando movimentação', inferido: true };
+  
+  // Inferir por quantidade de movimentos/documentos
+  const movs = p.quantidade_movimentos || 0;
+  const docs = p.quantidade_documentos || 0;
+  if (movs === 0 && docs === 0) return { status: 'Aguardando distribuição', inferido: true };
+  if (movs > 10) return { status: 'Em fase instrutória', inferido: true };
+  
+  return { status: 'Em andamento', inferido: true };
+}
+
+/**
+ * Normaliza classificação removendo colchetes e capitalizando
+ */
+export function normalizarClassificacao(classificacao: any): string {
+  if (!classificacao) return 'Normal';
+  
+  let normalized = String(classificacao)
+    .replace(/[\[\]]/g, '')  // Remove colchetes
+    .trim()
+    .toLowerCase();
+  
+  // Capitalizar primeira letra
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+/**
+ * Normaliza nível de risco baseado em classificação e insight estratégico
  */
 export function normalizeRiscoNivel(
   classificacao?: string | null,
-  scoreRisco?: number | null
+  scoreRisco?: number | null,
+  insightEstrategico?: string | null
 ): 'baixo' | 'medio' | 'alto' | 'critico' {
+  // Prioridade 1: Score numérico
   if (scoreRisco !== null && scoreRisco !== undefined) {
     if (scoreRisco >= 85) return 'critico';
     if (scoreRisco >= 70) return 'alto';
@@ -65,9 +104,19 @@ export function normalizeRiscoNivel(
     return 'baixo';
   }
   
+  // Prioridade 2: Insight estratégico
+  if (insightEstrategico) {
+    const insight = insightEstrategico.toLowerCase();
+    if (insight.includes('triangulação') || insight.includes('troca de favor')) return 'critico';
+    if (insight.includes('já foi testemunha') || insight.includes('ambos polos')) return 'alto';
+    if (insight.includes('prova emprestada')) return 'medio';
+  }
+  
+  // Prioridade 3: Classificação textual
   const classif = normalizeClassificacao(classificacao).toLowerCase();
   if (classif.includes('crítico') || classif.includes('alto')) return 'alto';
   if (classif.includes('médio') || classif.includes('medio')) return 'medio';
+  
   return 'baixo';
 }
 

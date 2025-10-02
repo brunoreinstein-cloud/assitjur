@@ -165,6 +165,17 @@ export async function handler(request: Request) {
     const ChatLegalRequestSchema = z.object({
       message: z.string().min(1).max(MAX_MESSAGE_LENGTH),
       promptName: z.string().optional(),
+      context: z.object({
+        type: z.enum(['processo', 'testemunha']),
+        data: z.record(z.any()),
+        meta: z.object({
+          status: z.string().optional(),
+          statusInferido: z.boolean().optional(),
+          classificacao: z.string().optional(),
+          riscoNivel: z.enum(['baixo', 'medio', 'alto', 'critico']).optional(),
+          confidence: z.number().optional()
+        }).optional()
+      }).optional()
     });
     const validation = ChatLegalRequestSchema.safeParse(payload);
     if (!validation.success) {
@@ -176,7 +187,7 @@ export async function handler(request: Request) {
         { ...corsHeaders(request), "x-request-id": requestId },
       );
     }
-    const { message, promptName } = validation.data;
+    const { message, promptName, context } = validation.data;
 
     const ip = request.headers.get("x-forwarded-for") || "unknown";
     const rlKey = `${ip}:${organization_id}:${user.id}:chat-legal`;
@@ -197,7 +208,23 @@ export async function handler(request: Request) {
     if (spErr) {
       log.warn(`erro na consulta de prompts: ${spErr.message}`);
     }
-    const systemPrompt = sysPromptRow?.content ?? getSystemPrompt(wantedName);
+    let systemPrompt = sysPromptRow?.content ?? getSystemPrompt(wantedName);
+    
+    // Enriquecer prompt com contexto se disponível
+    if (context?.meta) {
+      const metaInfo = `
+
+## CONTEXTO ENRIQUECIDO DO ${context.type.toUpperCase()}
+Status: ${context.meta.status || 'N/A'} ${context.meta.statusInferido ? '[INFERIDO]' : ''}
+Classificação: ${context.meta.classificacao || 'N/A'}
+Nível de Risco: ${(context.meta.riscoNivel || 'N/A').toUpperCase()}
+Confiança dos Dados: ${context.meta.confidence ? Math.round(context.meta.confidence * 100) + '%' : 'N/A'}
+
+**INSTRUÇÃO CRÍTICA**: Use ESTES DADOS REAIS acima para gerar o bloco executivo. NÃO gere fallbacks genéricos quando dados reais estão disponíveis.`;
+      
+      systemPrompt += metaInfo;
+      log.info(`📊 Contexto enriquecido adicionado: status=${context.meta.status}, classificacao=${context.meta.classificacao}, risco=${context.meta.riscoNivel}`);
+    }
     
     log.info(`📥 Input: kind=${wantedName}, msg_len=${message.length}, preview="${message.substring(0, 100)}..."`);
     log.info(`📋 System prompt length: ${systemPrompt.length} chars`);
