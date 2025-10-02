@@ -3,6 +3,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { 
   Users, 
   Scale,
@@ -11,7 +14,11 @@ import {
   Database,
   TrendingUp,
   Calendar,
-  Clock
+  Clock,
+  Filter,
+  X,
+  Info,
+  Settings
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { 
@@ -29,8 +36,7 @@ import {
 } from "@/lib/store/mapa-testemunhas";
 import { ProcessoTable } from "@/components/mapa-testemunhas/ProcessoTable";
 import { TestemunhaTable } from "@/components/mapa-testemunhas/TestemunhaTable";
-import { ProcessoFilters } from "@/components/mapa-testemunhas/ProcessoFilters";
-import { TestemunhaFilters } from "@/components/mapa-testemunhas/TestemunhaFilters";
+import { FilterDrawer } from "@/components/mapa-testemunhas/FilterDrawer";
 import { ColumnVisibilityMenu } from "@/components/mapa-testemunhas/ColumnVisibilityMenu";
 import { VisualizationSelector } from "@/components/mapa-testemunhas/VisualizationSelector";
 import { DetailDrawer } from "@/components/mapa-testemunhas/DetailDrawer";
@@ -88,6 +94,10 @@ const MapaPage = () => {
 
   const processoAbortRef = useRef<AbortController | null>(null);
   const testemunhaAbortRef = useRef<AbortController | null>(null);
+  
+  // Filter drawer state
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [isDiagnosticOpen, setIsDiagnosticOpen] = useState(false);
   
   // Chat selectors
   const chatResult = useMapaTestemunhasStore(s => s.chatResult);
@@ -326,6 +336,57 @@ const MapaPage = () => {
     };
   }, [loadData]);
 
+  // Ctrl+F shortcut to open filter drawer
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        setIsFilterDrawerOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Helper to render active filter chips
+  const getActiveFilterChips = () => {
+    const filters = activeTab === 'processos' ? processoFilters : testemunhaFilters;
+    const entries = Object.entries(filters);
+    
+    if (entries.length === 0) return null;
+
+    const handleRemoveFilter = (key: string) => {
+      if (activeTab === 'processos') {
+        const newFilters = { ...processoFilters };
+        delete newFilters[key as keyof typeof processoFilters];
+        setProcessoFilters(newFilters);
+      } else {
+        const newFilters = { ...testemunhaFilters };
+        delete newFilters[key as keyof typeof testemunhaFilters];
+        setTestemunhaFilters(newFilters);
+      }
+    };
+
+    return (
+      <div className="flex flex-wrap gap-2 items-center">
+        <span className="text-sm text-muted-foreground">Filtros ativos:</span>
+        {entries.map(([key, value]) => (
+          <Badge key={key} variant="secondary" className="gap-1">
+            <span className="text-xs">{key}: {String(value)}</span>
+            <button
+              onClick={() => handleRemoveFilter(key)}
+              className="ml-1 hover:bg-secondary-foreground/10 rounded-full p-0.5"
+              aria-label={`Remover filtro ${key}`}
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        ))}
+      </div>
+    );
+  };
+
   // Show loading during auth check
   if (loading) {
     return (
@@ -383,6 +444,27 @@ const MapaPage = () => {
                 <FileText className="h-4 w-4" aria-hidden="true" />
                 Importar Dados
               </Button>
+              {DebugMode.isEnabled() && (
+                <Sheet open={isDiagnosticOpen} onOpenChange={setIsDiagnosticOpen}>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Settings className="h-4 w-4" />
+                      Diagnóstico
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-[400px]">
+                    <SheetHeader>
+                      <SheetTitle>Diagnóstico do Sistema</SheetTitle>
+                      <SheetDescription>
+                        Ferramentas de desenvolvimento e diagnóstico
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="mt-6">
+                      <DiagnosticPanel />
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              )}
               <DebugToggle />
               <MaskPIISwitch />
               <ExportCsvButton 
@@ -408,85 +490,118 @@ const MapaPage = () => {
           </Card>
         )}
 
-        {/* Diagnostic Panel (DEV only) */}
-        <DiagnosticPanel />
-
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="rounded-2xl border-border/50 hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Scale className="h-4 w-4 text-primary" aria-hidden="true" />
-                Total de Processos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-primary">{stats.totalProcessos.toLocaleString('pt-BR')}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Processos cadastrados {processos.length < stats.totalProcessos && `(exibindo ${processos.length})`}
-              </p>
-            </CardContent>
-          </Card>
+        <TooltipProvider>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Card className="rounded-2xl border-border/50 hover:shadow-md transition-shadow cursor-help">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Scale className="h-4 w-4 text-primary" aria-hidden="true" />
+                      Total de Processos
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-primary">{stats.totalProcessos.toLocaleString('pt-BR')}</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Processos cadastrados {processos.length < stats.totalProcessos && `(exibindo ${processos.length})`}
+                    </p>
+                  </CardContent>
+                </Card>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Total de processos jurídicos cadastrados no sistema</p>
+              </TooltipContent>
+            </Tooltip>
 
-          <Card className="rounded-2xl border-border/50 hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Users className="h-4 w-4 text-emerald-600" aria-hidden="true" />
-                Total de Testemunhas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-emerald-600">{stats.totalTestemunhas.toLocaleString('pt-BR')}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Testemunhas identificadas {testemunhas.length < stats.totalTestemunhas && `(exibindo ${testemunhas.length})`}
-              </p>
-            </CardContent>
-          </Card>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Card className="rounded-2xl border-border/50 hover:shadow-md transition-shadow cursor-help">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Users className="h-4 w-4 text-emerald-600" aria-hidden="true" />
+                      Total de Testemunhas
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-emerald-600">{stats.totalTestemunhas.toLocaleString('pt-BR')}</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Testemunhas identificadas {testemunhas.length < stats.totalTestemunhas && `(exibindo ${testemunhas.length})`}
+                    </p>
+                  </CardContent>
+                </Card>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Total de testemunhas únicas identificadas em todos os processos</p>
+              </TooltipContent>
+            </Tooltip>
 
-          <Card className="rounded-2xl border-border/50 hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-destructive" aria-hidden="true" />
-                Processos Alto Risco
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <div className="text-3xl font-bold text-destructive">{stats.processosAltoRisco}</div>
-                <Badge variant="destructive" className="text-xs">
-                  {stats.pctProcAlto}%
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Requerem atenção especial</p>
-            </CardContent>
-          </Card>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Card className="rounded-2xl border-border/50 hover:shadow-md transition-shadow cursor-help">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-destructive" aria-hidden="true" />
+                      Processos de Alto Risco
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-2">
+                      <div className="text-3xl font-bold text-destructive">{stats.processosAltoRisco}</div>
+                      <Badge variant="destructive" className="text-xs">
+                        {stats.pctProcAlto}%
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Requerem atenção especial</p>
+                  </CardContent>
+                </Card>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Processos classificados como alto risco que necessitam atenção imediata</p>
+              </TooltipContent>
+            </Tooltip>
 
-          <Card className="rounded-2xl border-border/50 hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-orange-500" aria-hidden="true" />
-                Ambos os Polos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <div className="text-3xl font-bold text-orange-600">{stats.testemunhasAmbosPolos}</div>
-                <Badge variant="secondary" className="text-xs">
-                  {stats.pctAmbos}%
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Testemunhas em ambos os polos</p>
-            </CardContent>
-          </Card>
-        </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Card className="rounded-2xl border-border/50 hover:shadow-md transition-shadow cursor-help">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-orange-500" aria-hidden="true" />
+                      Atua nos Dois Polos
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-2">
+                      <div className="text-3xl font-bold text-orange-600">{stats.testemunhasAmbosPolos}</div>
+                      <Badge variant="secondary" className="text-xs">
+                        {stats.pctAmbos}%
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Testemunhas em ambos os polos</p>
+                  </CardContent>
+                </Card>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Testemunhas que participaram tanto como testemunha da reclamante quanto da ré</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
 
         {/* Chat Assistant Section */}
         <div id="chat-assistant-section" className="mb-8 space-y-6">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Assistente de Análise</h2>
-            <Badge variant="outline" className="text-xs">
-              IA Assistiva • LGPD Compliant
-            </Badge>
+            <Alert className="inline-flex items-center gap-2 py-2 px-3 w-auto border-violet-200 bg-violet-50">
+              <Info className="h-4 w-4 text-violet-600" />
+              <AlertDescription className="text-xs text-violet-900">
+                IA Assistiva LGPD Compliant.{' '}
+                <a href="/privacidade" className="underline font-medium hover:text-violet-700">
+                  Saiba mais
+                </a>
+              </AlertDescription>
+            </Alert>
           </div>
           
           <ChatBar />
@@ -531,7 +646,23 @@ const MapaPage = () => {
                 dataCount={processos.length}
                 dataType="processos"
               />
-              <ProcessoFilters />
+              
+              {/* Filter Button + Active Chips */}
+              <div className="flex flex-col gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsFilterDrawerOpen(true)}
+                  className="w-full sm:w-auto gap-2"
+                >
+                  <Filter className="h-4 w-4" />
+                  Filtros Avançados
+                  <kbd className="ml-auto hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
+                    <span className="text-xs">⌘</span>F
+                  </kbd>
+                </Button>
+                {getActiveFilterChips()}
+              </div>
+
               {processoStatus !== 'success' ? (
                 <DataState status={processoStatus} onRetry={loadData} />
               ) : (
@@ -548,7 +679,23 @@ const MapaPage = () => {
                 dataCount={testemunhas.length}
                 dataType="testemunhas"
               />
-              <TestemunhaFilters />
+              
+              {/* Filter Button + Active Chips */}
+              <div className="flex flex-col gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsFilterDrawerOpen(true)}
+                  className="w-full sm:w-auto gap-2"
+                >
+                  <Filter className="h-4 w-4" />
+                  Filtros Avançados
+                  <kbd className="ml-auto hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
+                    <span className="text-xs">⌘</span>F
+                  </kbd>
+                </Button>
+                {getActiveFilterChips()}
+              </div>
+
               {testemunhaStatus !== 'success' ? (
                 <DataState status={testemunhaStatus} onRetry={loadData} />
               ) : (
@@ -561,6 +708,7 @@ const MapaPage = () => {
         {/* Modals and Drawers */}
         <DetailDrawer />
         <ImportModal />
+        <FilterDrawer open={isFilterDrawerOpen} onOpenChange={setIsFilterDrawerOpen} />
       </div>
     </div>
   );

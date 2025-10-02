@@ -14,10 +14,6 @@ export function DiagnosticPanel() {
   const [diagnostics, setDiagnostics] = useState<Record<string, EdgeFunctionDiagnostics> | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
-  // Only show in development
-  if (import.meta.env.PROD) {
-    return null;
-  }
 
   const handleRunDiagnostics = async () => {
     setIsRunning(true);

@@ -5,9 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { RiskBadge } from '@/components/RiskBadge';
 import { KeyValue } from '@/features/testemunhas/KeyValue';
-import { Sparkles, Copy, FileDown, Braces, TrendingUp, Link, ChevronDown, ChevronUp } from 'lucide-react';
+import { Sparkles, Copy, FileDown, Braces, TrendingUp, Link, ChevronDown, ChevronUp, MoreVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface CitationItem {
   label: string;
@@ -140,35 +146,32 @@ ${citacoes.map(c => `• ${c.label}`).join('\n')}`;
             Resumo Executivo
           </CardTitle>
           
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCopy}
-              className="h-8 w-8 p-0"
-              aria-label="Copiar resumo"
-            >
-              <Copy className="h-3 w-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleExportPDF}
-              className="h-8 w-8 p-0"
-              aria-label="Exportar PDF"
-            >
-              <FileDown className="h-3 w-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleExportJSON}
-              className="h-8 w-8 p-0"
-              aria-label="Exportar JSON"
-            >
-              <Braces className="h-3 w-3" />
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                aria-label="Ações do resumo"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleCopy}>
+                <Copy className="h-4 w-4 mr-2" />
+                Copiar resumo
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportPDF}>
+                <FileDown className="h-4 w-4 mr-2" />
+                Exportar PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportJSON}>
+                <Braces className="h-4 w-4 mr-2" />
+                Exportar JSON
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardHeader>
       
