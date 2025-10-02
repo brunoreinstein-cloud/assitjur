@@ -1686,6 +1686,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_profile_role_usage_audit"
+            referencedColumns: ["id"]
+          },
         ]
       }
       stg_processos: {
@@ -2190,16 +2197,14 @@ export type Database = {
       }
       v_profile_role_usage_audit: {
         Row: {
-          current_member_role: Database["public"]["Enums"]["user_role"] | null
-          deprecated_profile_role:
-            | Database["public"]["Enums"]["user_role"]
-            | null
+          created_at: string | null
           email: string | null
-          member_status: string | null
-          member_updated: string | null
-          migration_status: string | null
+          id: string | null
+          is_active: boolean | null
+          last_login_at: string | null
+          org_name: string | null
           organization_id: string | null
-          profile_updated: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
           user_id: string | null
         }
         Relationships: [
