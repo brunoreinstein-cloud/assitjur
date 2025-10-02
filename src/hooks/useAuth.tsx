@@ -21,7 +21,7 @@ export interface UserProfile {
   id: string;
   user_id: string;
   email: string;
-  role: UserRole;
+  roles: Array<{ org_id: string; role: UserRole }>; // ✅ Source of truth from members
   organization_id?: string;
   is_active: boolean;
   terms_accepted_at?: string | null;
@@ -109,11 +109,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string) => {
     try {
+      // ✅ Use new RPC to fetch profile with roles from members
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle(); // Use maybeSingle() to avoid coercion errors
+        .rpc('get_user_profile_with_roles', { _user_id: userId })
+        .maybeSingle();
 
       if (error) {
         logError('Error fetching profile', { error: error.message || error }, 'useAuth');
@@ -126,11 +125,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsSuperAdmin(superAdminStatus);
         return {
           ...data,
+          roles: data.roles || [],
           is_super_admin: superAdminStatus
-        };
+        } as UserProfile;
       }
       
-      return data;
+      return data as UserProfile | null;
     } catch (error) {
       logError('Error fetching profile in catch', { error }, 'useAuth');
       return null;
@@ -493,12 +493,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const hasRole = (role: UserRole): boolean => {
-    // Use profile.role as fallback during migration
-    return profile?.role === role;
+    if (!profile || !profile.organization_id) return false;
+    
+    // ✅ Use roles array from members as source of truth
+    const orgRole = profile.roles?.find(r => r.org_id === profile.organization_id);
+    return orgRole?.role === role;
   };
 
-  // Use profile.role as fallback during migration
-  const isAdmin = profile?.role === 'ADMIN';
+  const isAdmin = profile?.roles?.some(
+    r => r.org_id === profile.organization_id && r.role === 'ADMIN'
+  ) ?? false;
 
   const value: AuthContextType = {
     user,

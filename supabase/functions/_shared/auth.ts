@@ -22,17 +22,26 @@ export async function getAuth(req: Request) {
   const { data: { user }, error } = await supa.auth.getUser();
   if (error || !user) return { user: null, supa, error: "unauthorized" } as const;
 
-  // Get user profile with correct column names
+  // Get user profile organization
   const { data: profile } = await supa
     .from("profiles")
-    .select("organization_id, role")
+    .select("organization_id")
     .eq("user_id", user.id)
+    .single();
+
+  // Get role from members table (source of truth)
+  const { data: memberRole } = await supa
+    .from("members")
+    .select("role")
+    .eq("user_id", user.id)
+    .eq("org_id", profile?.organization_id)
+    .eq("status", "active")
     .single();
 
   return {
     user,
     organization_id: profile?.organization_id ?? null,
-    role: profile?.role ?? null,
+    role: memberRole?.role ?? null,
     supa
   } as const;
 }
