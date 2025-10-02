@@ -686,6 +686,56 @@ export type Database = {
         }
         Relationships: []
       }
+      members: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          data_access_level: Database["public"]["Enums"]["data_access_level"]
+          id: string
+          invited_at: string | null
+          invited_by: string | null
+          org_id: string
+          role: Database["public"]["Enums"]["user_role"]
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          data_access_level?: Database["public"]["Enums"]["data_access_level"]
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          org_id: string
+          role: Database["public"]["Enums"]["user_role"]
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          data_access_level?: Database["public"]["Enums"]["data_access_level"]
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          org_id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "members_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memberships: {
         Row: {
           created_at: string | null
@@ -1082,6 +1132,54 @@ export type Database = {
           },
         ]
       }
+      plan_catalog: {
+        Row: {
+          created_at: string
+          description: string | null
+          features: Json
+          id: string
+          included_admins: number
+          included_analysts: number
+          included_viewers: number
+          is_active: boolean
+          key: string
+          limits: Json
+          name: string
+          price_cents: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          features?: Json
+          id?: string
+          included_admins?: number
+          included_analysts?: number
+          included_viewers?: number
+          is_active?: boolean
+          key: string
+          limits?: Json
+          name: string
+          price_cents: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          features?: Json
+          id?: string
+          included_admins?: number
+          included_analysts?: number
+          included_viewers?: number
+          is_active?: boolean
+          key?: string
+          limits?: Json
+          name?: string
+          price_cents?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       processos: {
         Row: {
           advogados_ativo: string[] | null
@@ -1468,6 +1566,50 @@ export type Database = {
         }
         Relationships: []
       }
+      seats: {
+        Row: {
+          created_at: string
+          extra_admins: number
+          extra_analysts: number
+          extra_viewers: number
+          included_admins: number
+          included_analysts: number
+          included_viewers: number
+          org_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          extra_admins?: number
+          extra_analysts?: number
+          extra_viewers?: number
+          included_admins?: number
+          included_analysts?: number
+          included_viewers?: number
+          org_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          extra_admins?: number
+          extra_analysts?: number
+          extra_viewers?: number
+          included_admins?: number
+          included_analysts?: number
+          included_viewers?: number
+          org_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seats_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sessions: {
         Row: {
           created_at: string | null
@@ -1567,6 +1709,7 @@ export type Database = {
           customer_id: string
           id: number
           plan: string | null
+          plan_key: string | null
           started_at: string
           status: string
         }
@@ -1575,6 +1718,7 @@ export type Database = {
           customer_id: string
           id?: never
           plan?: string | null
+          plan_key?: string | null
           started_at: string
           status: string
         }
@@ -1583,10 +1727,19 @@ export type Database = {
           customer_id?: string
           id?: never
           plan?: string | null
+          plan_key?: string | null
           started_at?: string
           status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_plan_key_fkey"
+            columns: ["plan_key"]
+            isOneToOne: false
+            referencedRelation: "plan_catalog"
+            referencedColumns: ["key"]
+          },
+        ]
       }
       system_parameters: {
         Row: {
@@ -1947,6 +2100,13 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: boolean
       }
+      can_add_member: {
+        Args: {
+          _org_id: string
+          _role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: boolean
+      }
       check_api_rate_limit: {
         Args: {
           endpoint_name: string
@@ -2114,6 +2274,10 @@ export type Database = {
           total_invoices: number
           total_revenue: number
         }[]
+      }
+      get_member_role: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: Database["public"]["Enums"]["user_role"]
       }
       get_mrr_by_month_secure: {
         Args: Record<PropertyKey, never>
@@ -2347,6 +2511,14 @@ export type Database = {
       }
       has_financial_access: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      has_member_role: {
+        Args: {
+          _org_id: string
+          _role: Database["public"]["Enums"]["user_role"]
+          _user_id: string
+        }
         Returns: boolean
       }
       has_role: {
