@@ -96,6 +96,9 @@ const MapaPage = () => {
 
   const processoAbortRef = useRef<AbortController | null>(null);
   const testemunhaAbortRef = useRef<AbortController | null>(null);
+  const isLoadingRef = useRef(false);
+  const isFirstLoadRef = useRef(true);
+  const hasAppliedUrlParams = useRef(false);
   
   // Filter drawer state
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
@@ -119,8 +122,7 @@ const MapaPage = () => {
   const setSelectedProcesso = useMapaTestemunhasStore(s => s.setSelectedProcesso);
   const setSelectedTestemunha = useMapaTestemunhasStore(s => s.setSelectedTestemunha);
 
-  // Stable lastUpdate state
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
+  // Stable state
   const [totalProcessos, setTotalProcessos] = useState(0);
   const [totalTestemunhas, setTotalTestemunhas] = useState(0);
 
@@ -194,8 +196,10 @@ const MapaPage = () => {
     }
   }, [user, loadViews]);
 
-  // Simplified URL synchronization - URL as single source of truth
+  // URL synchronization - runs only once on mount
   useEffect(() => {
+    if (hasAppliedUrlParams.current) return;
+    
     const tab = searchParams.get('tab') as TabType;
     const nome = searchParams.get('nome');
     const cnj = searchParams.get('cnj');
@@ -206,64 +210,74 @@ const MapaPage = () => {
       setActiveTab(tab);
     }
     
-    // Apply filters and selections when data is available
-    if (nome && testemunhas.length > 0) {
-      const decodedNome = decodeURIComponent(nome);
-      setTestemunhaFilters({ search: decodedNome });
-      
-      const testemunha = testemunhas.find(t => 
-        t.nome_testemunha?.toLowerCase() === decodedNome.toLowerCase()
-      );
-      if (testemunha) {
-        setSelectedTestemunha(testemunha);
-        toast({ title: "Testemunha selecionada", description: testemunha.nome_testemunha });
-      }
-      
-      // Clean URL
-      const newParams = new URLSearchParams(searchParams);
-      newParams.delete('nome');
-      setSearchParams(newParams, { replace: true });
+    // Apply URL params as initial filters (before first load)
+    if (nome) {
+      setTestemunhaFilters({ search: decodeURIComponent(nome) });
     }
     
-    if (cnj && processos.length > 0) {
-      const decodedCNJ = decodeURIComponent(cnj);
-      setProcessoFilters({ search: decodedCNJ });
-      
-      const processo = processos.find(p => 
-        p.cnj === decodedCNJ || p.numero_cnj === decodedCNJ
-      );
-      if (processo) {
-        setSelectedProcesso(processo);
-        toast({ title: "Processo selecionado", description: processo.cnj || processo.numero_cnj });
-      }
-      
-      // Clean URL
-      const newParams = new URLSearchParams(searchParams);
-      newParams.delete('cnj');
-      setSearchParams(newParams, { replace: true });
+    if (cnj) {
+      setProcessoFilters({ search: decodeURIComponent(cnj) });
     }
     
     if (reclamante) {
       setProcessoFilters({ search: decodeURIComponent(reclamante) });
+    }
+    
+    // Mark as applied and clean URL
+    if (nome || cnj || reclamante) {
+      hasAppliedUrlParams.current = true;
       const newParams = new URLSearchParams(searchParams);
+      newParams.delete('nome');
+      newParams.delete('cnj');
       newParams.delete('reclamante');
       setSearchParams(newParams, { replace: true });
     }
-  }, [searchParams, activeTab, processos.length, testemunhas.length]);
+  }, []);
+  
+  // Separate effect for data-dependent selections (runs after data loads)
+  useEffect(() => {
+    if (!hasAppliedUrlParams.current || isLoadingRef.current) return;
+    if (processos.length === 0 && testemunhas.length === 0) return;
+    
+    // Check if we have a search filter that matches loaded data
+    if (testemunhaFilters.search && testemunhas.length > 0) {
+      const testemunha = testemunhas.find(t => 
+        t.nome_testemunha?.toLowerCase() === testemunhaFilters.search?.toLowerCase()
+      );
+      if (testemunha && !useMapaTestemunhasStore.getState().selectedTestemunha) {
+        setSelectedTestemunha(testemunha);
+        toast({ title: "Testemunha selecionada", description: testemunha.nome_testemunha });
+      }
+    }
+    
+    if (processoFilters.search && processos.length > 0) {
+      const processo = processos.find(p => 
+        p.cnj === processoFilters.search || p.numero_cnj === processoFilters.search
+      );
+      if (processo && !useMapaTestemunhasStore.getState().selectedProcesso) {
+        setSelectedProcesso(processo);
+        toast({ title: "Processo selecionado", description: processo.cnj || processo.numero_cnj });
+      }
+    }
+  }, [processos.length, testemunhas.length]);
 
   const handleTabChange = (value: string) => {
     const newTab = value as TabType;
     setActiveTab(newTab);
-    setSearchParams({ tab: newTab });
+    setSearchParams({ tab: newTab }, { replace: true });
     
     // Limpar seleções ao trocar de aba
     setSelectedProcesso(null);
     setSelectedTestemunha(null);
   };
 
-  // Simplified data loading with single source
+  // Debounced filters to prevent excessive calls
+  const debouncedProcessoFilters = useDebounce(processoFilters, 300);
+  const debouncedTestemunhaFilters = useDebounce(testemunhaFilters, 300);
+
+  // Stable data loading function - no deps on changing state
   const loadData = useCallback(async () => {
-    if (!user) return;
+    if (!user || isLoadingRef.current) return;
 
     // Cancel previous requests
     processoAbortRef.current?.abort();
@@ -274,13 +288,17 @@ const MapaPage = () => {
     processoAbortRef.current = processoController;
     testemunhaAbortRef.current = testemunhaController;
 
+    isLoadingRef.current = true;
     setIsLoading(true);
     setError(false);
 
     try {
+      const currentProcessoFilters = useMapaTestemunhasStore.getState().processoFilters;
+      const currentTestemunhaFilters = useMapaTestemunhasStore.getState().testemunhaFilters;
+      
       const [processosResult, testemunhasResult] = await Promise.all([
-        fetchProcessos({ page: 1, limit: 100, filters: processoFilters }),
-        fetchTestemunhas({ page: 1, limit: 100, filters: testemunhaFilters })
+        fetchProcessos({ page: 1, limit: 100, filters: currentProcessoFilters }),
+        fetchTestemunhas({ page: 1, limit: 100, filters: currentTestemunhaFilters })
       ]);
 
       if (processoController.signal.aborted || testemunhaController.signal.aborted) {
@@ -309,9 +327,9 @@ const MapaPage = () => {
           description: errorMsg,
           variant: "destructive",
         });
-      } else if (isFirstLoad) {
+      } else if (isFirstLoadRef.current) {
         setLastUpdate(new Date());
-        setIsFirstLoad(false);
+        isFirstLoadRef.current = false;
       }
     } catch (error) {
       if ((error as any)?.name === 'AbortError') return;
@@ -325,18 +343,29 @@ const MapaPage = () => {
       });
     } finally {
       if (!processoController.signal.aborted && !testemunhaController.signal.aborted) {
+        isLoadingRef.current = false;
         setIsLoading(false);
       }
     }
-  }, [user, processoFilters, testemunhaFilters, isFirstLoad]);
+  }, [user]);
 
+  // Initial load on mount
   useEffect(() => {
-    loadData();
+    if (user) {
+      loadData();
+    }
     return () => {
       processoAbortRef.current?.abort();
       testemunhaAbortRef.current?.abort();
     };
-  }, [loadData]);
+  }, [user, loadData]);
+  
+  // Reload only when debounced filters change (after initial load)
+  useEffect(() => {
+    if (!isFirstLoadRef.current && user) {
+      loadData();
+    }
+  }, [debouncedProcessoFilters, debouncedTestemunhaFilters, loadData]);
 
   // Ctrl+F shortcut to open filter drawer
   useEffect(() => {

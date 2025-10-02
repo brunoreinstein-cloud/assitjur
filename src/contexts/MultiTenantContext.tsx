@@ -34,9 +34,12 @@ export const MultiTenantProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [loading, setLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
+  const isLoadingOrgsRef = React.useRef(false);
 
   // Sequential initialization: Auth (0-30%) → Profile (30-60%) → Organizations (60-100%)
   useEffect(() => {
+    if (isInitialized) return;
+    
     if (authLoading) {
       setLoadingProgress(10);
       return;
@@ -56,11 +59,17 @@ export const MultiTenantProvider: React.FC<{ children: React.ReactNode }> = ({ c
       return;
     }
 
-    setLoadingProgress(60);
-    loadOrganizations();
-  }, [profile, authLoading, user]);
+    if (!isLoadingOrgsRef.current) {
+      setLoadingProgress(60);
+      loadOrganizations();
+    }
+  }, [profile, authLoading, user, isInitialized]);
 
-  const loadOrganizations = async () => {
+  const loadOrganizations = React.useCallback(async () => {
+    if (isLoadingOrgsRef.current || isInitialized) return;
+    
+    isLoadingOrgsRef.current = true;
+    
     try {
       setLoading(true);
       setLoadingProgress(70);
@@ -121,12 +130,13 @@ export const MultiTenantProvider: React.FC<{ children: React.ReactNode }> = ({ c
       
       setIsInitialized(true);
     } finally {
+      isLoadingOrgsRef.current = false;
       setLoading(false);
       setLoadingProgress(100);
     }
-  };
+  }, [isInitialized, profile?.organization_id, queryClient]);
 
-  const switchOrganization = async (orgId: string) => {
+  const switchOrganization = React.useCallback(async (orgId: string) => {
     try {
       const targetOrg = organizations.find(org => org.id === orgId);
       if (!targetOrg) {
@@ -145,13 +155,15 @@ export const MultiTenantProvider: React.FC<{ children: React.ReactNode }> = ({ c
       logError('Failed to switch organization', { error, orgId }, 'MultiTenantContext');
       toast.error('Erro ao trocar organização');
     }
-  };
+  }, [organizations, queryClient]);
 
-  const refreshOrganizations = async () => {
+  const refreshOrganizations = React.useCallback(async () => {
     // Clear cache and reload
     queryClient.removeQueries({ queryKey: ['organizations'] });
+    isLoadingOrgsRef.current = false;
+    setIsInitialized(false);
     await loadOrganizations();
-  };
+  }, [queryClient, loadOrganizations]);
 
   const value: MultiTenantContextType = {
     currentOrg,
