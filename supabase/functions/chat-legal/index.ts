@@ -188,6 +188,9 @@ export async function handler(request: Request) {
       );
     }
     const { message, promptName, context } = validation.data;
+    
+    // Log context recebido para debug
+    log.info(`📦 Context recebido: type=${context?.type || 'none'}, hasMeta=${!!context?.meta}, meta=${JSON.stringify(context?.meta || {})}`);
 
     const ip = request.headers.get("x-forwarded-for") || "unknown";
     const rlKey = `${ip}:${organization_id}:${user.id}:chat-legal`;

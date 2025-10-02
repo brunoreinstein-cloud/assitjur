@@ -193,6 +193,18 @@ export function useAssistente() {
           }
         };
       } else if (selectedTestemunha && kind === 'testemunha') {
+        const classificacaoNormalizada = normalizarClassificacao(selectedTestemunha.classificacao_final);
+        const riscoNivel = normalizeRiscoNivel(
+          selectedTestemunha.classificacao_final,
+          selectedTestemunha.score_risco,
+          null
+        );
+        const confidence = calculateConfidence(selectedTestemunha, [
+          'nome_testemunha',
+          'qtd_depoimentos',
+          'classificacao_final'
+        ]);
+        
         payload.context = {
           type: 'testemunha',
           data: {
@@ -201,11 +213,29 @@ export function useAssistente() {
             processos_cnj: selectedTestemunha.processos_cnj,
             foi_testemunha_em_ambos_polos: selectedTestemunha.foi_testemunha_em_ambos_polos,
             ja_foi_reclamante: selectedTestemunha.ja_foi_reclamante,
-            classificacao_final: selectedTestemunha.classificacao_final,
+            classificacao_final: classificacaoNormalizada,
             score_risco: selectedTestemunha.score_risco
+          },
+          meta: {
+            status: selectedTestemunha.foi_testemunha_em_ambos_polos ? 'Ativo em ambos polos' : 'Normal',
+            statusInferido: false,
+            classificacao: classificacaoNormalizada,
+            riscoNivel: riscoNivel,
+            confidence: confidence
           }
         };
       }
+
+      // Log payload detalhado para debug
+      console.log('🚀 [PAYLOAD] Enviando para chat-legal:', {
+        message: payload.message,
+        queryType: payload.queryType,
+        hasContext: !!payload.context,
+        contextType: payload.context?.type,
+        hasMeta: !!payload.context?.meta,
+        meta: payload.context?.meta,
+        dataKeys: payload.context?.data ? Object.keys(payload.context.data) : []
+      });
 
       const { data, error } = await supabase.functions.invoke('chat-legal', {
         body: payload
