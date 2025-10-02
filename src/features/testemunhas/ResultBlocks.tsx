@@ -119,15 +119,43 @@ export function ResultBlocks({ blocks }: ResultBlocksProps) {
               return (
                 <ExecutiveSummaryCard
                   key={index}
-                  cnj={block.data?.cnj || block.data?.processo || 'N/A'}
-                  reclamante={block.data?.reclamante || block.data?.reclamada || 'Não informado'}
-                  reu={block.data?.reu || block.data?.reclamada || 'Não informado'}
-                  status={block.data?.status || block.meta?.status || 'Não informado'}
-                  observacoes={block.data?.observacoes || 'Análise contextual em progresso'}
-                  riscoNivel={(block.data?.riscoNivel || block.meta?.riscoNivel || 'baixo') as 'baixo' | 'medio' | 'alto' | 'critico'}
+                  cnj={
+                    block.data?.cnj || 
+                    block.data?.processo || 
+                    (block.context?.type === 'testemunha' ? 'N/A' : 'N/A')
+                  }
+                  reclamante={
+                    block.data?.reclamante || 
+                    block.context?.data?.nome || 
+                    block.data?.reclamada || 
+                    'Não informado'
+                  }
+                  reu={
+                    block.data?.reu || 
+                    block.data?.reclamada || 
+                    (block.context?.type === 'testemunha' ? 'N/A' : 'Não informado')
+                  }
+                  status={
+                    block.data?.status || 
+                    block.meta?.status || 
+                    block.context?.meta?.status || 
+                    'Não informado'
+                  }
+                  observacoes={
+                    block.data?.observacoes || 
+                    block.meta?.observacoes ||
+                    'Análise contextual em progresso'
+                  }
+                  riscoNivel={
+                    (block.data?.riscoNivel || 
+                     block.meta?.riscoNivel || 
+                     block.context?.meta?.riscoNivel || 
+                     'baixo') as 'baixo' | 'medio' | 'alto' | 'critico'
+                  }
                   confianca={
                     typeof block.data?.confianca === 'number' ? block.data.confianca :
                     typeof block.meta?.confidence === 'number' ? Math.round(block.meta.confidence * 100) :
+                    typeof block.context?.meta?.confidence === 'number' ? Math.round(block.context.meta.confidence * 100) :
                     typeof block.data?.score === 'number' ? block.data.score : 0
                   }
                   alerta={block.data?.alerta}

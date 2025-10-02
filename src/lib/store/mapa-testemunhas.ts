@@ -19,6 +19,18 @@ export interface ResultBlock {
   icon: string;
   data: any;
   citations?: Citation[];
+  meta?: {
+    status?: string;
+    classificacao?: string;
+    riscoNivel?: string;
+    confidence?: number;
+    observacoes?: string;
+  };
+  context?: {
+    type?: 'processo' | 'testemunha';
+    data?: any;
+    meta?: any;
+  };
 }
 
 export interface Message {

@@ -360,13 +360,20 @@ export function useAssistente() {
         console.log('✅ [FRONTEND] Fallback blocks gerados:', blocks.length);
       }
 
+      // CORREÇÃO: Enriquecer os blocos com o contexto e meta originais antes de setar
+      const enrichedBlocks = blocks.map((block: any) => ({
+        ...block,
+        context: payload.context, // Adicionar contexto original do payload
+        meta: payload.context?.meta // Adicionar meta enriquecido
+      }));
+
       // Update assistant message with real data
       updateChatMessage(assistantMessageId, {
-        content: blocks.length > 0 ? 'Análise concluída' : aiResponse,
-        blocks
+        content: enrichedBlocks.length > 0 ? 'Análise concluída' : aiResponse,
+        blocks: enrichedBlocks
       });
 
-      setChatResult(blocks);
+      setChatResult(enrichedBlocks);
       setChatStatus('success');
 
       toast({

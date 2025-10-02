@@ -237,6 +237,24 @@ NÃO use valores genéricos. Use OBRIGATORIAMENTE os valores reais acima no JSON
       systemPrompt += metaInfo;
       log.info(`📊 Contexto enriquecido adicionado: status=${status}, classificacao=${classificacao}, risco=${riscoNivel}`, requestId);
     }
+
+    // CORREÇÃO: Adicionar instruções específicas para contexto de testemunha
+    if (context?.type === 'testemunha' && context?.data?.nome) {
+      const testemunhaInfo = `
+
+## DADOS DA TESTEMUNHA ANALISADA
+Nome: "${context.data.nome}"
+Quantidade de Depoimentos: ${context.data.qtd_depoimentos || 0}
+
+**INSTRUÇÕES OBRIGATÓRIAS PARA TESTEMUNHAS**:
+- Campo "reclamante" do bloco executive DEVE ser EXATAMENTE: "${context.data.nome}"
+- Campo "reu" do bloco executive DEVE ser EXATAMENTE: "N/A"
+- Campo "cnj" do bloco executive DEVE ser EXATAMENTE: "N/A"
+- Campo "processo" do bloco executive DEVE ser: "Análise de Testemunha: ${context.data.nome}"`;
+      
+      systemPrompt += testemunhaInfo;
+      log.info(`👤 Contexto de testemunha adicionado: nome=${context.data.nome}`, requestId);
+    }
     
     log.info(`📥 Input: kind=${wantedName}, msg_len=${message.length}, preview="${message.substring(0, 100)}..."`);
     log.info(`📋 System prompt length: ${systemPrompt.length} chars`);
