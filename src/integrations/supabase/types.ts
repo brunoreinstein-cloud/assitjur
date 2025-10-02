@@ -2688,7 +2688,7 @@ export type Database = {
         Returns: undefined
       }
       log_super_admin_action: {
-        Args: { p_action: string; p_metadata?: Json; p_target_org_id?: string }
+        Args: { p_action: string; p_metadata?: Json; p_target_org_id: string }
         Returns: undefined
       }
       log_user_action: {
