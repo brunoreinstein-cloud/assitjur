@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_rate_limits: {
+        Row: {
+          blocked_until: string | null
+          created_at: string | null
+          endpoint: string
+          id: string
+          request_count: number | null
+          user_id: string
+          window_start: string | null
+        }
+        Insert: {
+          blocked_until?: string | null
+          created_at?: string | null
+          endpoint: string
+          id?: string
+          request_count?: number | null
+          user_id: string
+          window_start?: string | null
+        }
+        Update: {
+          blocked_until?: string | null
+          created_at?: string | null
+          endpoint?: string
+          id?: string
+          request_count?: number | null
+          user_id?: string
+          window_start?: string | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string | null
@@ -1875,12 +1905,16 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: boolean
       }
-      check_financial_access: {
-        Args: Record<PropertyKey, never>
+      check_api_rate_limit: {
+        Args: {
+          endpoint_name: string
+          max_requests?: number
+          window_minutes?: number
+        }
         Returns: boolean
       }
-      check_rate_limit: {
-        Args: { p_key: string; p_limit?: number; p_window_ms?: number }
+      check_financial_access: {
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
       cleanup_old_data: {
@@ -2403,7 +2437,7 @@ export type Database = {
         Returns: Json
       }
       safe_fn: {
-        Args: { p_user_id: string }
+        Args: Record<PropertyKey, never> | { p_user_id: string }
         Returns: undefined
       }
       sanitize_input: {
@@ -2469,6 +2503,18 @@ export type Database = {
       validate_org_access: {
         Args: Record<PropertyKey, never> | { target_org_id: string }
         Returns: boolean
+      }
+      validate_org_id: {
+        Args: { input_org_id: string }
+        Returns: string
+      }
+      validate_pagination: {
+        Args: { page: number; page_limit: number }
+        Returns: {
+          validated_limit: number
+          validated_offset: number
+          validated_page: number
+        }[]
       }
       validate_security_fixes: {
         Args: Record<PropertyKey, never>
