@@ -455,9 +455,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const hasRole = (role: UserRole): boolean => {
+    // Use profile.role as fallback during migration
     return profile?.role === role;
   };
 
+  // Use profile.role as fallback during migration
   const isAdmin = profile?.role === 'ADMIN';
 
   const value: AuthContextType = {

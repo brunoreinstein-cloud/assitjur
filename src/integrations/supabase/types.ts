@@ -1631,6 +1631,68 @@ export type Database = {
         }
         Relationships: []
       }
+      user_mfa_status: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_verified_at: string | null
+          mfa_enabled: boolean
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_verified_at?: string | null
+          mfa_enabled?: boolean
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_verified_at?: string | null
+          mfa_enabled?: boolean
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          organization_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          organization_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          organization_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_sessions: {
         Row: {
           created_at: string | null
@@ -2167,6 +2229,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_role: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       gtrgm_compress: {
         Args: { "": unknown }
         Returns: unknown
@@ -2189,6 +2255,14 @@ export type Database = {
       }
       has_financial_access: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          _org_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
         Returns: boolean
       }
       is_admin_simple: {
@@ -2255,6 +2329,10 @@ export type Database = {
       mask_name: {
         Args: { name_value: string }
         Returns: string
+      }
+      requires_mfa_verification: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       rpc_cleanup_derived_data: {
         Args: { p_org_id: string }
@@ -2414,6 +2492,7 @@ export type Database = {
       }
     }
     Enums: {
+      app_role: "ADMIN" | "ANALYST" | "VIEWER"
       data_access_level: "FULL" | "MASKED" | "NONE"
       user_role: "ADMIN" | "ANALYST" | "VIEWER"
     }
@@ -2543,6 +2622,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["ADMIN", "ANALYST", "VIEWER"],
       data_access_level: ["FULL", "MASKED", "NONE"],
       user_role: ["ADMIN", "ANALYST", "VIEWER"],
     },
