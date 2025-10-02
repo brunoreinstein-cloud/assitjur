@@ -113,13 +113,58 @@ do seu projeto Supabase para builds que acessam um backend de verdade.
 
 Outras variáveis `VITE_*` usadas pelo projeto podem ser adicionadas conforme necessário.
 
-### Como configurar ENV no Lovable
+---
 
-No [Lovable](https://lovable.so), acesse **Settings → Environment Variables** e
-defina as mesmas variáveis `VITE_*` usadas localmente (por exemplo,
-`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_PUBLIC_SITE_URL`).
-Use exatamente os mesmos nomes com o prefixo `VITE_` para que o build funcione
-corretamente.
+## 🚀 Deploy no Lovable
+
+Este projeto é otimizado para deploy no [Lovable](https://lovable.app/), uma plataforma de deploy estático.
+
+### Requisitos
+- **Node:** 20.x (ou superior, compatível com npm 10)
+- **npm:** 10.x
+- **Output:** `dist/` (Vite build padrão)
+- **Tipo:** SPA estática com fallback 404.html
+
+### Configurar ENV no Lovable
+
+No [Lovable](https://lovable.app/), acesse **Settings → Environment Variables** e adicione:
+
+#### Obrigatórias
+```
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGc...sua-chave-anon
+VITE_PUBLIC_SITE_URL=https://seu-site.lovable.app
+```
+
+#### Opcionais (recomendadas)
+```
+VITE_SENTRY_DSN=
+VITE_INACTIVITY_TIMEOUT_MINUTES=30
+VITE_FEATURE_FLAGS_REFRESH_INTERVAL=60000
+VITE_FEATURE_FLAGS_CACHE_TTL=300000
+VITE_MAINTENANCE=false
+VITE_ALLOWED_ORIGINS=https://seu-site.lovable.app
+```
+
+**Importante:** Use exatamente os mesmos nomes com o prefixo `VITE_` para que o build funcione corretamente.
+
+### Deploy
+
+1. Clique em **Publish** no Lovable (botão superior direito)
+2. Aguarde o build automático
+3. Acesse sua URL: `https://seu-site.lovable.app`
+
+### Validação Pós-Deploy
+
+```bash
+# Teste rotas profundas (SPA fallback)
+curl -I https://seu-site.lovable.app/mapa
+
+# Verifique 404.html
+curl https://seu-site.lovable.app/404.html
+```
+
+Para troubleshooting completo, consulte [LOVABLE_DEPLOY.md](./LOVABLE_DEPLOY.md).
 
 ### CORS nas Edge Functions
 
