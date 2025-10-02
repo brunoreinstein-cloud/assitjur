@@ -1741,6 +1741,51 @@ export type Database = {
           },
         ]
       }
+      super_admins: {
+        Row: {
+          access_reason: string | null
+          created_at: string
+          email: string
+          granted_at: string
+          granted_by: string | null
+          id: string
+          ip_allowlist: string[] | null
+          is_active: boolean
+          last_access_at: string | null
+          require_mfa: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_reason?: string | null
+          created_at?: string
+          email: string
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          ip_allowlist?: string[] | null
+          is_active?: boolean
+          last_access_at?: string | null
+          require_mfa?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_reason?: string | null
+          created_at?: string
+          email?: string
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          ip_allowlist?: string[] | null
+          is_active?: boolean
+          last_access_at?: string | null
+          require_mfa?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       system_parameters: {
         Row: {
           description: string | null
@@ -2481,6 +2526,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_super_admin_info: {
+        Args: { _user_id: string }
+        Returns: {
+          email: string
+          granted_at: string
+          is_super_admin: boolean
+          last_access_at: string
+        }[]
+      }
       get_user_org_safe: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -2541,6 +2595,10 @@ export type Database = {
         Args: { check_org_id: string }
         Returns: boolean
       }
+      is_super_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       log_audit: {
         Args: {
           p_action: string
@@ -2575,6 +2633,10 @@ export type Database = {
           p_record_count?: number
           p_table_name: string
         }
+        Returns: undefined
+      }
+      log_super_admin_action: {
+        Args: { p_action: string; p_metadata?: Json; p_target_org_id?: string }
         Returns: undefined
       }
       log_user_action: {
