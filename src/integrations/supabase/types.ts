@@ -44,6 +44,57 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_log_immutable: {
+        Row: {
+          action: string
+          after_hash: string | null
+          before_hash: string | null
+          change_summary: Json | null
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          legal_basis: string | null
+          org_id: string
+          resource: string
+          resource_id: string | null
+          session_id: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          after_hash?: string | null
+          before_hash?: string | null
+          change_summary?: Json | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          legal_basis?: string | null
+          org_id: string
+          resource: string
+          resource_id?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          after_hash?: string | null
+          before_hash?: string | null
+          change_summary?: Json | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          legal_basis?: string | null
+          org_id?: string
+          resource?: string
+          resource_id?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string | null
@@ -1127,8 +1178,10 @@ export type Database = {
       pessoas: {
         Row: {
           apelidos: string[] | null
+          cpf_encrypted: string | null
           cpf_mask: string | null
           created_at: string | null
+          email_encrypted: string | null
           id: string
           nome_civil: string
           org_id: string
@@ -1136,8 +1189,10 @@ export type Database = {
         }
         Insert: {
           apelidos?: string[] | null
+          cpf_encrypted?: string | null
           cpf_mask?: string | null
           created_at?: string | null
+          email_encrypted?: string | null
           id?: string
           nome_civil: string
           org_id: string
@@ -1145,8 +1200,10 @@ export type Database = {
         }
         Update: {
           apelidos?: string[] | null
+          cpf_encrypted?: string | null
           cpf_mask?: string | null
           created_at?: string | null
+          email_encrypted?: string | null
           id?: string
           nome_civil?: string
           org_id?: string
@@ -1222,6 +1279,7 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           data_audiencia: string | null
+          data_encryption_version: number | null
           deleted_at: string | null
           deleted_by: string | null
           fase: string | null
@@ -1230,6 +1288,7 @@ export type Database = {
           observacoes: string | null
           org_id: string
           prova_emprestada: boolean | null
+          reclamante_cpf_encrypted: string | null
           reclamante_cpf_mask: string | null
           reclamante_foi_testemunha: boolean | null
           reclamante_nome: string | null
@@ -1257,6 +1316,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           data_audiencia?: string | null
+          data_encryption_version?: number | null
           deleted_at?: string | null
           deleted_by?: string | null
           fase?: string | null
@@ -1265,6 +1325,7 @@ export type Database = {
           observacoes?: string | null
           org_id: string
           prova_emprestada?: boolean | null
+          reclamante_cpf_encrypted?: string | null
           reclamante_cpf_mask?: string | null
           reclamante_foi_testemunha?: boolean | null
           reclamante_nome?: string | null
@@ -1292,6 +1353,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           data_audiencia?: string | null
+          data_encryption_version?: number | null
           deleted_at?: string | null
           deleted_by?: string | null
           fase?: string | null
@@ -1300,6 +1362,7 @@ export type Database = {
           observacoes?: string | null
           org_id?: string
           prova_emprestada?: boolean | null
+          reclamante_cpf_encrypted?: string | null
           reclamante_cpf_mask?: string | null
           reclamante_foi_testemunha?: boolean | null
           reclamante_nome?: string | null
@@ -2195,6 +2258,65 @@ export type Database = {
         }
         Relationships: []
       }
+      v_processos_with_pii: {
+        Row: {
+          cnj: string | null
+          cnj_normalizado: string | null
+          comarca: string | null
+          created_at: string | null
+          fase: string | null
+          id: string | null
+          org_id: string | null
+          reclamante_cpf: string | null
+          reclamante_nome: string | null
+          reu_nome: string | null
+          status: string | null
+          tribunal: string | null
+          updated_at: string | null
+          vara: string | null
+        }
+        Insert: {
+          cnj?: string | null
+          cnj_normalizado?: string | null
+          comarca?: string | null
+          created_at?: string | null
+          fase?: string | null
+          id?: string | null
+          org_id?: string | null
+          reclamante_cpf?: never
+          reclamante_nome?: string | null
+          reu_nome?: string | null
+          status?: string | null
+          tribunal?: string | null
+          updated_at?: string | null
+          vara?: string | null
+        }
+        Update: {
+          cnj?: string | null
+          cnj_normalizado?: string | null
+          comarca?: string | null
+          created_at?: string | null
+          fase?: string | null
+          id?: string | null
+          org_id?: string | null
+          reclamante_cpf?: never
+          reclamante_nome?: string | null
+          reu_nome?: string | null
+          status?: string | null
+          tribunal?: string | null
+          updated_at?: string | null
+          vara?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "processos_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_profile_role_usage_audit: {
         Row: {
           created_at: string | null
@@ -2250,6 +2372,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_data_retention_compliance: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          compliance_status: string
+          old_records_count: number
+          oldest_record_date: string
+          retention_months: number
+          table_name: string
+        }[]
+      }
       check_financial_access: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -2277,6 +2409,14 @@ export type Database = {
       debug_super_admin_status: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      decrypt_pii: {
+        Args: { encrypted_data: string; key_name?: string }
+        Returns: string
+      }
+      encrypt_pii: {
+        Args: { data: string; key_name?: string }
+        Returns: string
       }
       enhanced_log_user_action: {
         Args: {
@@ -2726,6 +2866,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      hash_sensitive_data: {
+        Args: { data: Json }
+        Returns: string
+      }
       is_admin_simple: {
         Args: { check_user_id: string }
         Returns: boolean
@@ -2778,6 +2922,15 @@ export type Database = {
           p_metadata?: Json
           p_org_id: string
           p_record_count?: number
+          p_table_name: string
+        }
+        Returns: undefined
+      }
+      log_sensitive_data_access: {
+        Args: {
+          p_access_type: string
+          p_fields_accessed: string[]
+          p_record_ids: string[]
           p_table_name: string
         }
         Returns: undefined
