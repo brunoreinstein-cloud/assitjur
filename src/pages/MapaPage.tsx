@@ -59,6 +59,8 @@ import { MapaErrorBoundary } from "@/components/mapa-testemunhas/MapaErrorBounda
 import { DebugToggle } from "@/components/mapa-testemunhas/DebugToggle";
 import { DebugMode } from "@/lib/debug-mode";
 import { DiagnosticPanel } from "@/components/mapa-testemunhas/DiagnosticPanel";
+import { DensitySelector } from "@/components/mapa-testemunhas/DensitySelector";
+import { ContextBreadcrumb } from "@/components/mapa-testemunhas/ContextBreadcrumb";
 
 // Updated types to match mapa-testemunhas structure
 type Processo = PorProcesso;
@@ -406,6 +408,7 @@ const MapaPage = () => {
       {/* Header */}
       <div className="border-b border-border/50 bg-card">
         <div className="container mx-auto px-6 py-6">
+          <ContextBreadcrumb />
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="text-3xl font-bold flex items-center gap-3">
@@ -435,6 +438,7 @@ const MapaPage = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <DensitySelector />
               <Button
                 variant="outline"
                 onClick={() => setIsImportModalOpen(true)}

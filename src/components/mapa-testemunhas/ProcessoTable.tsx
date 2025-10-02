@@ -10,17 +10,21 @@ import { applyPIIMask } from "@/utils/pii-mask";
 import { RiskBadge } from "@/components/RiskBadge";
 import { useUndoDelete } from "@/hooks/useUndoDelete";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
+import { tokens } from "@/components/ui/design-tokens";
+import { cn } from "@/lib/utils";
 
 interface ProcessoTableProps {
   data: PorProcesso[];
 }
 
 export function ProcessoTable({ data }: ProcessoTableProps) {
-  const { setSelectedProcesso, setIsDetailDrawerOpen, isPiiMasked, removeProcesso, restoreProcesso } = useMapaTestemunhasStore();
+  const { setSelectedProcesso, setIsDetailDrawerOpen, isPiiMasked, removeProcesso, restoreProcesso, density } = useMapaTestemunhasStore();
   const columnVisibility = useMapaTestemunhasStore(selectColumnVisibility).processos;
   const { remove } = useUndoDelete<PorProcesso>('Processo');
   const [toDelete, setToDelete] = useState<PorProcesso | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  
+  const densityClasses = tokens.density[density];
 
   const handleViewDetail = (processo: PorProcesso) => {
     setSelectedProcesso(processo);
@@ -87,52 +91,52 @@ export function ProcessoTable({ data }: ProcessoTableProps) {
         </TableHeader>
         <TableBody>
           {data.map((processo) => (
-            <TableRow key={processo.cnj} className="hover:bg-muted/20">
+            <TableRow key={processo.cnj} className={cn("hover:bg-muted/20", densityClasses.row)}>
               {columnVisibility.cnj && (
-                <TableCell className="font-mono text-sm">
+                <TableCell className={cn("font-mono", densityClasses.cell, densityClasses.text)}>
                   {applyPIIMask(processo.cnj, isPiiMasked)}
                 </TableCell>
               )}
               {columnVisibility.uf && (
-                <TableCell>
-                  <Badge variant="outline" className="text-xs">
+                <TableCell className={densityClasses.cell}>
+                  <Badge variant="outline" className={densityClasses.badge}>
                     {processo.uf}
                   </Badge>
                 </TableCell>
               )}
               {columnVisibility.comarca && (
-                <TableCell className="max-w-[150px] truncate" title={processo.comarca || ''}>
+                <TableCell className={cn("max-w-[150px] truncate", densityClasses.cell, densityClasses.text)} title={processo.comarca || ''}>
                   {applyPIIMask(processo.comarca, isPiiMasked) || '—'}
                 </TableCell>
               )}
               {columnVisibility.fase && (
-                <TableCell>
-                  <Badge variant="secondary" className="text-xs">
+                <TableCell className={densityClasses.cell}>
+                  <Badge variant="secondary" className={densityClasses.badge}>
                     {processo.fase || '—'}
                   </Badge>
                 </TableCell>
               )}
               {columnVisibility.status && (
-                <TableCell>
-                  <Badge className={`text-xs ${getStatusColor(processo.status)}`}>
+                <TableCell className={densityClasses.cell}>
+                  <Badge className={cn(densityClasses.badge, getStatusColor(processo.status))}>
                     {processo.status || '—'}
                   </Badge>
                 </TableCell>
               )}
               {columnVisibility.reclamante && (
-                <TableCell className="max-w-[180px] truncate" title={processo.reclamante_limpo || ''}>
+                <TableCell className={cn("max-w-[180px] truncate", densityClasses.cell, densityClasses.text)} title={processo.reclamante_limpo || ''}>
                   {applyPIIMask(processo.reclamante_limpo, isPiiMasked) || '—'}
                 </TableCell>
               )}
               {columnVisibility.qtdDepos && (
-                <TableCell className="text-center">
+                <TableCell className={cn("text-center", densityClasses.cell)}>
                   {processo.qtd_total_depos_unicos ? (
                     <RiskBadge score={processo.qtd_total_depos_unicos} />
                   ) : '—'}
                 </TableCell>
               )}
               {columnVisibility.testemunhas && (
-                <TableCell>
+                <TableCell className={densityClasses.cell}>
                   <ArrayField
                     items={processo.testemunhas_ativo_limpo}
                     maxVisible={2}
@@ -141,40 +145,40 @@ export function ProcessoTable({ data }: ProcessoTableProps) {
                 </TableCell>
               )}
               {columnVisibility.classificacao && (
-                <TableCell>
+                <TableCell className={densityClasses.cell}>
                   <Badge
                     variant={processo.classificacao_final === 'ALTO RISCO' ? 'destructive' : 'secondary'}
-                    className="text-xs"
+                    className={densityClasses.badge}
                   >
                     {processo.classificacao_final || '—'}
                   </Badge>
                 </TableCell>
               )}
               {columnVisibility.acoes && (
-                <TableCell>
+                <TableCell className={densityClasses.cell}>
                   <div className="flex items-center justify-center gap-1">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleViewDetail(processo)}
-                      className="h-8 w-8 p-0"
+                      className={cn("p-0", densityClasses.button)}
                     >
-                      <Eye className="h-4 w-4" />
+                      <Eye className={densityClasses.icon} />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0"
+                      className={cn("p-0", densityClasses.button)}
                     >
-                      <Edit className="h-4 w-4" />
+                      <Edit className={densityClasses.icon} />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      className={cn("p-0 text-destructive hover:text-destructive", densityClasses.button)}
                       onClick={() => requestDelete(processo)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className={densityClasses.icon} />
                     </Button>
                   </div>
                 </TableCell>

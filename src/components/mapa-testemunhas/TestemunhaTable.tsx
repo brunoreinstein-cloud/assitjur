@@ -12,6 +12,8 @@ import { applyPIIMask } from "@/utils/pii-mask";
 import { DataState, DataStatus } from "@/components/ui/data-state";
 import { useUndoDelete } from "@/hooks/useUndoDelete";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
+import { tokens } from "@/components/ui/design-tokens";
+import { cn } from "@/lib/utils";
 
 interface TestemunhaTableProps {
   data: PorTestemunha[];
@@ -20,11 +22,13 @@ interface TestemunhaTableProps {
 }
 
 export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps) {
-  const { setSelectedTestemunha, setIsDetailDrawerOpen, isPiiMasked, removeTestemunha, restoreTestemunha } = useMapaTestemunhasStore();
+  const { setSelectedTestemunha, setIsDetailDrawerOpen, isPiiMasked, removeTestemunha, restoreTestemunha, density } = useMapaTestemunhasStore();
   const columnVisibility = useMapaTestemunhasStore(selectColumnVisibility).testemunhas;
   const { remove } = useUndoDelete<PorTestemunha>('Testemunha');
   const [toDelete, setToDelete] = useState<PorTestemunha | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  
+  const densityClasses = tokens.density[density];
 
   const handleViewDetail = useCallback((testemunha: PorTestemunha) => {
     setSelectedTestemunha(testemunha);
@@ -74,21 +78,21 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
         </TableHeader>
         <TableBody>
           {data.map((testemunha) => (
-            <TableRow key={testemunha.nome_testemunha} className="group hover:bg-muted/20">
+            <TableRow key={testemunha.nome_testemunha} className={cn("group hover:bg-muted/20", densityClasses.row)}>
               {columnVisibility.nome && (
-                <TableCell className="font-medium max-w-[200px] truncate" title={testemunha.nome_testemunha}>
+                <TableCell className={cn("font-medium max-w-[200px] truncate", densityClasses.cell, densityClasses.text)} title={testemunha.nome_testemunha}>
                   {applyPIIMask(testemunha.nome_testemunha, isPiiMasked)}
                 </TableCell>
               )}
               {columnVisibility.qtdDepo && (
-                <TableCell className="text-center">
-                  <Badge variant="secondary" className="text-xs">
+                <TableCell className={cn("text-center", densityClasses.cell)}>
+                  <Badge variant="secondary" className={densityClasses.badge}>
                     {testemunha.qtd_depoimentos || 0}
                   </Badge>
                 </TableCell>
               )}
               {columnVisibility.ambosPolos && (
-                <TableCell className="text-center">
+                <TableCell className={cn("text-center", densityClasses.cell)}>
                   <BooleanBadge 
                     value={testemunha.foi_testemunha_em_ambos_polos}
                     size="sm"
@@ -96,7 +100,7 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
                 </TableCell>
               )}
               {columnVisibility.jaReclamante && (
-                <TableCell className="text-center">
+                <TableCell className={cn("text-center", densityClasses.cell)}>
                   <BooleanBadge 
                     value={testemunha.ja_foi_reclamante}
                     size="sm"
@@ -104,7 +108,7 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
                 </TableCell>
               )}
               {columnVisibility.cnjs && (
-                <TableCell>
+                <TableCell className={densityClasses.cell}>
                   <ArrayField
                     items={testemunha.cnjs_como_testemunha}
                     maxVisible={2}
@@ -113,7 +117,7 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
                 </TableCell>
               )}
               {columnVisibility.classificacao && (
-                <TableCell>
+                <TableCell className={densityClasses.cell}>
                   <ClassificationChip 
                     value={testemunha.classificacao || testemunha.classificacao_estrategica}
                     size="sm"
@@ -121,36 +125,36 @@ export function TestemunhaTable({ data, status, onRetry }: TestemunhaTableProps)
                 </TableCell>
               )}
               {columnVisibility.acoes && (
-                <TableCell>
+                <TableCell className={densityClasses.cell}>
                   <div className="flex items-center justify-center gap-1">
                     {/* Eye: Primário (mais visível) */}
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleViewDetail(testemunha)}
-                      className="h-8 w-8 p-0 text-primary hover:bg-primary/10 hover:text-primary"
+                      className={cn("p-0 text-primary hover:bg-primary/10 hover:text-primary", densityClasses.button)}
                       title="Visualizar detalhes"
                     >
-                      <Eye className="h-4 w-4" strokeWidth={2} />
+                      <Eye className={densityClasses.icon} strokeWidth={2} />
                     </Button>
                     {/* Edit: Secundário (menor) */}
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground hover:bg-muted"
+                      className={cn("p-0 text-muted-foreground hover:text-foreground hover:bg-muted", densityClasses.button)}
                       title="Editar"
                     >
-                      <Edit className="h-3.5 w-3.5" strokeWidth={1.5} />
+                      <Edit className={densityClasses.icon} strokeWidth={1.5} />
                     </Button>
                     {/* Trash: Apenas visível em hover */}
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/10 hover:text-destructive transition-opacity"
+                      className={cn("p-0 opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/10 hover:text-destructive transition-opacity", densityClasses.button)}
                       onClick={() => requestDelete(testemunha)}
                       title="Excluir"
                     >
-                      <Trash2 className="h-3.5 w-3.5" strokeWidth={1.5} />
+                      <Trash2 className={densityClasses.icon} strokeWidth={1.5} />
                     </Button>
                   </div>
                 </TableCell>

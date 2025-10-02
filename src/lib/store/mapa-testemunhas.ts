@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { PorProcesso, PorTestemunha, ProcessoFilters, TestemunhaFilters } from '@/types/mapa-testemunhas';
+import type { Density } from '@/components/ui/design-tokens';
 
 // Chat-related types
 export type QueryKind = 'processo' | 'testemunha' | 'reclamante';
@@ -52,6 +53,11 @@ type TabType = 'processos' | 'testemunhas';
 interface ErrorState {
   hasError: boolean;
   message?: string;
+}
+
+interface NavigationItem {
+  label: string;
+  path: string;
 }
 
 interface MapaTestemunhasStore {
@@ -113,6 +119,10 @@ interface MapaTestemunhasStore {
   loadingHints: string[];
   currentHintIndex: number;
   
+  // Density & Navigation
+  density: Density;
+  navigationHistory: NavigationItem[];
+  
   // Actions
   setActiveTab: (tab: TabType) => void;
   setProcessos: (processos: Processo[]) => void;
@@ -155,6 +165,12 @@ interface MapaTestemunhasStore {
   setChatResult: (result: ResultBlock[] | null) => void;
   resetChat: () => void;
   nextHint: () => void;
+  
+  // Density & Navigation Actions
+  setDensity: (density: Density) => void;
+  pushNavigation: (item: NavigationItem) => void;
+  popNavigation: (toIndex: number) => void;
+  clearNavigation: () => void;
 }
 
 const LOADING_HINTS = [
@@ -225,6 +241,10 @@ export const useMapaTestemunhasStore = create<MapaTestemunhasStore>((set, get) =
   chatResult: null,
   loadingHints: LOADING_HINTS,
   currentHintIndex: 0,
+
+  // Density & Navigation initial state
+  density: 'comfortable',
+  navigationHistory: [{ label: 'Mapa de Testemunhas', path: '/mapa-testemunhas' }],
 
   // Actions
   setActiveTab: (tab) => set({ activeTab: tab }),
@@ -400,7 +420,25 @@ export const useMapaTestemunhasStore = create<MapaTestemunhasStore>((set, get) =
 
   nextHint: () => set((state) => ({
     currentHintIndex: (state.currentHintIndex + 1) % state.loadingHints.length
-  }))
+  })),
+
+  // Density & Navigation Actions
+  setDensity: (density) => set({ density }),
+  
+  pushNavigation: (item) => set((state) => {
+    // Evitar duplicatas consecutivas
+    const last = state.navigationHistory[state.navigationHistory.length - 1];
+    if (last?.path === item.path) return {};
+    return { navigationHistory: [...state.navigationHistory, item] };
+  }),
+  
+  popNavigation: (toIndex) => set((state) => ({
+    navigationHistory: state.navigationHistory.slice(0, toIndex + 1)
+  })),
+  
+  clearNavigation: () => set({
+    navigationHistory: [{ label: 'Mapa de Testemunhas', path: '/mapa-testemunhas' }]
+  })
 }));
 
 // Selectors for optimized re-rendering
