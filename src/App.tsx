@@ -48,6 +48,7 @@ import FeatureFlagGuard from "@/components/FeatureFlagGuard";
 import { MaintenanceBanner } from "@/components/common/MaintenanceBanner";
 import { useMaintenance } from "@/hooks/useMaintenance";
 import { FeatureFlagProvider } from "@/hooks/useFeatureFlag";
+import { HelpWidget } from "@/components/help/HelpWidget";
 
 const MapaPage = lazy(() => import("@/pages/MapaPage"));
 const PublicHome = lazy(() => import("@/pages/PublicHome"));
@@ -212,6 +213,7 @@ const App = () => (
                                 <AppRoutes />
                               </Suspense>
                             </main>
+                            <HelpWidget />
                           </div>
                         </OrganizationErrorBoundary>
                       </MultiTenantProvider>

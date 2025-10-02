@@ -154,3 +154,26 @@ All colors MUST be HSL. Professional navy/blue theme for trust and authority.
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Shimmer effect for skeletons */
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted) / 0.5) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  /* Row hover effect for tables */
+  .table-row-hover {
+    @apply hover:bg-muted/50 transition-colors cursor-pointer;
+  }
+
+  /* Focus visible for accessibility */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+}

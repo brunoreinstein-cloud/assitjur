@@ -1,0 +1,56 @@
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
+
+interface PageTransitionProps {
+  children: React.ReactNode;
+}
+
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    y: 20,
+  },
+  enter: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.3,
+      ease: [0.4, 0, 0.2, 1],
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -20,
+    transition: {
+      duration: 0.2,
+      ease: [0.4, 0, 0.2, 1],
+    },
+  },
+};
+
+export function PageTransition({ children }: PageTransitionProps) {
+  const location = useLocation();
+  
+  // Respect user's motion preferences
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (prefersReducedMotion) {
+    return <>{children}</>;
+  }
+
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={location.pathname}
+        variants={pageVariants}
+        initial="initial"
+        animate="enter"
+        exit="exit"
+        className="w-full h-full"
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  );
+}
