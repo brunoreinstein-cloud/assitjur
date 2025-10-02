@@ -2561,6 +2561,10 @@ export type Database = {
         Args: { _org_id: string; _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_user_role_in_org: {
+        Args: { org_uuid: string; user_uuid: string }
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
       gtrgm_compress: {
         Args: { "": unknown }
         Returns: unknown
@@ -2607,6 +2611,10 @@ export type Database = {
       }
       is_admin_user: {
         Args: { check_user_id: string }
+        Returns: boolean
+      }
+      is_member_of_org: {
+        Args: { org_uuid: string; user_uuid: string }
         Returns: boolean
       }
       is_org_admin_simple: {
