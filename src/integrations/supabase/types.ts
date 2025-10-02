@@ -2224,6 +2224,20 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_all_orgs_summary: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          is_active: boolean
+          last_activity: string
+          org_code: string
+          org_id: string
+          org_name: string
+          total_members: number
+          total_pessoas: number
+          total_processos: number
+        }[]
+      }
       get_arpa_by_month_secure: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -2299,6 +2313,10 @@ export type Database = {
         Returns: Json
       }
       get_financial_security_status: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_global_metrics: {
         Args: Record<PropertyKey, never>
         Returns: Json
       }

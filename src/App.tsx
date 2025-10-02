@@ -21,6 +21,7 @@ import { ErrorBoundary } from "@/components/core/ErrorBoundary";
 // Admin pages (lazy loaded)
 const Dashboard = lazy(() => import("@/pages/admin/Dashboard"));
 const Analytics = lazy(() => import("@/pages/admin/Analytics"));
+const SuperAdminDashboard = lazy(() => import("@/pages/super-admin/Dashboard"));
 const ImportBase = lazy(() => import("@/pages/admin/ImportBase"));
 const Versions = lazy(() => import("@/pages/admin/Versions"));
 const Organization = lazy(() => import("@/pages/admin/Organization"));
@@ -132,6 +133,10 @@ function AppRoutes() {
           {/* Redirect deprecated chat route to mapa-testemunhas */}
           <Route path="/chat" element={<Navigate to="/mapa-testemunhas?view=chat" replace />} />
           <Route path="/app/chat" element={<Navigate to="/mapa-testemunhas?view=chat" replace />} />
+
+          {/* Super Admin routes */}
+          <Route path="/super-admin" element={<SuperAdminDashboard />} />
+          <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
 
           {/* Admin routes */}
           <Route path="/admin" element={<Dashboard />} />
