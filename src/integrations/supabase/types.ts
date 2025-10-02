@@ -2127,6 +2127,30 @@ export type Database = {
         }
         Relationships: []
       }
+      v_profile_role_usage_audit: {
+        Row: {
+          current_member_role: Database["public"]["Enums"]["user_role"] | null
+          deprecated_profile_role:
+            | Database["public"]["Enums"]["user_role"]
+            | null
+          email: string | null
+          member_status: string | null
+          member_updated: string | null
+          migration_status: string | null
+          organization_id: string | null
+          profile_updated: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_invitation: {
@@ -2187,34 +2211,12 @@ export type Database = {
       }
       ensure_user_profile: {
         Args: {
-          org_id?: string
+          org_id: string
           user_email: string
-          user_role?: Database["public"]["Enums"]["user_role"]
+          user_role: Database["public"]["Enums"]["user_role"]
           user_uuid: string
         }
-        Returns: {
-          avatar_url: string | null
-          created_at: string
-          data_access_level:
-            | Database["public"]["Enums"]["data_access_level"]
-            | null
-          email: string
-          email_notifications: Json | null
-          full_name: string | null
-          id: string
-          is_active: boolean
-          job_title: string | null
-          language: string | null
-          last_login_at: string | null
-          organization_id: string | null
-          phone: string | null
-          role: Database["public"]["Enums"]["user_role"]
-          terms_accepted_at: string | null
-          theme_preference: string | null
-          timezone: string | null
-          updated_at: string
-          user_id: string
-        }
+        Returns: Json
       }
       execute_retention_cleanup: {
         Args: { p_policy_id: string }
@@ -2856,6 +2858,14 @@ export type Database = {
           validated_limit: number
           validated_offset: number
           validated_page: number
+        }[]
+      }
+      validate_role_migration: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          check_name: string
+          details: Json
+          status: string
         }[]
       }
       validate_security_fixes: {
