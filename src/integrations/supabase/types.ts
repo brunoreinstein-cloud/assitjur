@@ -800,6 +800,36 @@ export type Database = {
           },
         ]
       }
+      mfa_verifications: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          user_agent: string | null
+          user_id: string
+          verified_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id: string
+          verified_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string
+          verified_at?: string
+        }
+        Relationships: []
+      }
       openai_keys: {
         Row: {
           alias: string
@@ -1747,6 +1777,45 @@ export type Database = {
           },
         ]
       }
+      super_admin_audit: {
+        Row: {
+          action: string
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          performed_at: string
+          performed_by: string
+          reason: string
+          target_org_id: string | null
+          target_user_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          performed_at?: string
+          performed_by: string
+          reason: string
+          target_org_id?: string | null
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          performed_at?: string
+          performed_by?: string
+          reason?: string
+          target_org_id?: string | null
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       super_admins: {
         Row: {
           access_reason: string | null
@@ -1759,6 +1828,7 @@ export type Database = {
           is_active: boolean
           last_access_at: string | null
           require_mfa: boolean
+          session_expires_at: string | null
           updated_at: string
           user_id: string
         }
@@ -1773,6 +1843,7 @@ export type Database = {
           is_active?: boolean
           last_access_at?: string | null
           require_mfa?: boolean
+          session_expires_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1787,6 +1858,7 @@ export type Database = {
           is_active?: boolean
           last_access_at?: string | null
           require_mfa?: boolean
+          session_expires_at?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -2100,27 +2172,10 @@ export type Database = {
       }
     }
     Views: {
-      v_arpa_by_month: {
-        Row: {
-          arpa: number | null
-          month: string | null
-        }
-        Relationships: []
-      }
-      v_burn_runway: {
-        Row: {
-          cogs: number | null
-          month: string | null
-          net_cash_flow: number | null
-          opex: number | null
-          revenue: number | null
-        }
-        Relationships: []
-      }
       v_gross_margin: {
         Row: {
           cogs: number | null
-          gm_pct: number | null
+          gross_margin: number | null
           month: string | null
           revenue: number | null
         }
@@ -2193,6 +2248,14 @@ export type Database = {
       check_financial_access: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      check_recent_mfa_verification: {
+        Args: { p_user_id?: string }
+        Returns: boolean
+      }
+      cleanup_expired_mfa_verifications: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       cleanup_old_data: {
         Args: Record<PropertyKey, never>
@@ -2715,12 +2778,20 @@ export type Database = {
         Returns: undefined
       }
       log_super_admin_action: {
-        Args: {
-          p_action: string
-          p_metadata?: Json
-          p_reason: string
-          p_target_user_id: string
-        }
+        Args:
+          | {
+              p_action: string
+              p_metadata?: Json
+              p_reason: string
+              p_target_user_id: string
+            }
+          | {
+              p_action: string
+              p_metadata?: Json
+              p_reason?: string
+              p_target_org_id?: string
+              p_target_user_id?: string
+            }
         Returns: undefined
       }
       log_user_action: {
@@ -2738,6 +2809,14 @@ export type Database = {
       }
       mask_name: {
         Args: { name_value: string }
+        Returns: string
+      }
+      register_mfa_verification: {
+        Args: {
+          p_ip_address?: unknown
+          p_user_agent?: string
+          p_user_id?: string
+        }
         Returns: string
       }
       requires_mfa_verification: {
