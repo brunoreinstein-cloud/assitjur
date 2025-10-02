@@ -249,7 +249,7 @@ export function AppSidebar() {
                 <DropdownMenuItem asChild className="cursor-pointer">
                   <NavLink to="/settings" className="flex items-center gap-2">
                     <UserCog className="h-4 w-4" />
-                    <span>Configurações</span>
+                    <span>Configurações da Organização</span>
                   </NavLink>
                 </DropdownMenuItem>
               )}

@@ -26,9 +26,9 @@ export default function SettingsPage() {
   return (
     <div className="container mx-auto p-6 max-w-6xl">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Configurações da Organização</h1>
         <p className="text-muted-foreground mt-2">
-          Gerencie as configurações e preferências da organização
+          Gerencie as configurações e preferências da organização (visível apenas para administradores)
         </p>
       </div>
 

@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { User, Mail, Phone, Briefcase } from 'lucide-react';
+import { User, Mail, Phone, Briefcase, Globe, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AvatarUpload } from './AvatarUpload';
 import { useProfile } from '@/hooks/useProfile';
 import { personalInfoSchema, type PersonalInfo } from '@/lib/validation-schemas';
@@ -17,6 +18,8 @@ export function PersonalInfoTab() {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isDirty },
   } = useForm<PersonalInfo>({
     resolver: zodResolver(personalInfoSchema),
@@ -25,8 +28,13 @@ export function PersonalInfoTab() {
       email: profile?.email || '',
       phone: profile?.phone || '',
       job_title: profile?.job_title || '',
+      language: profile?.language || 'pt-BR',
+      timezone: profile?.timezone || 'America/Sao_Paulo',
     },
   });
+
+  const language = watch('language');
+  const timezone = watch('timezone');
 
   const onSubmit = async (data: PersonalInfo) => {
     setIsSubmitting(true);
@@ -133,6 +141,55 @@ export function PersonalInfoTab() {
             {errors.job_title && (
               <p className="text-sm text-destructive">{errors.job_title.message}</p>
             )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="language">Idioma</Label>
+              <div className="relative">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" />
+                <Select
+                  value={language}
+                  onValueChange={(value) => setValue('language', value as 'pt-BR' | 'en-US' | 'es-ES', { shouldDirty: true })}
+                >
+                  <SelectTrigger className="pl-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pt-BR">Português (Brasil)</SelectItem>
+                    <SelectItem value="en-US">English (US)</SelectItem>
+                    <SelectItem value="es-ES">Español</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {errors.language && (
+                <p className="text-sm text-destructive">{errors.language.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="timezone">Fuso Horário</Label>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" />
+                <Select
+                  value={timezone}
+                  onValueChange={(value) => setValue('timezone', value, { shouldDirty: true })}
+                >
+                  <SelectTrigger className="pl-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="America/Sao_Paulo">São Paulo (UTC-3)</SelectItem>
+                    <SelectItem value="America/New_York">Nova York (UTC-5)</SelectItem>
+                    <SelectItem value="Europe/London">Londres (UTC+0)</SelectItem>
+                    <SelectItem value="Asia/Tokyo">Tóquio (UTC+9)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {errors.timezone && (
+                <p className="text-sm text-destructive">{errors.timezone.message}</p>
+              )}
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-4">

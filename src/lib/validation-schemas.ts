@@ -12,6 +12,8 @@ export const personalInfoSchema = z.object({
     .optional()
     .or(z.literal('')),
   job_title: z.string().max(100, 'Cargo muito longo').optional().or(z.literal('')),
+  language: z.enum(['pt-BR', 'en-US', 'es-ES']),
+  timezone: z.string().min(1, 'Selecione um fuso horário'),
 });
 
 export const preferencesSchema = z.object({
