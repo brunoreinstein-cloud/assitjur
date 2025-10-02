@@ -2206,6 +2206,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string[]
       }
+      debug_super_admin_status: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       enhanced_log_user_action: {
         Args: {
           action_type: string
@@ -2237,7 +2241,6 @@ export type Database = {
         Returns: {
           created_at: string
           is_active: boolean
-          last_activity: string
           org_code: string
           org_id: string
           org_name: string
