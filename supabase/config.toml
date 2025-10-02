@@ -78,4 +78,13 @@ verify_jwt = true
 [functions.search]
 verify_jwt = true
 
+[functions.super-admin-reset-password]
+verify_jwt = true
+
+[functions.super-admin-transfer-user]
+verify_jwt = true
+
+[functions.super-admin-manage-org]
+verify_jwt = true
+
 import_map = ""

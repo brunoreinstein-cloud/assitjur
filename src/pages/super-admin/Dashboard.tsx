@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GlobalMetrics } from '@/components/super-admin/GlobalMetrics';
 import { OrgList } from '@/components/super-admin/OrgList';
-import { Shield, Activity } from 'lucide-react';
+import { Shield, Activity, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -40,16 +41,22 @@ export default function SuperAdminDashboard() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
-          <Shield className="w-6 h-6 text-primary" />
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
+            <Shield className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">Super Admin Dashboard</h1>
+            <p className="text-muted-foreground">
+              Visão global de todas as organizações do sistema
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-3xl font-bold">Super Admin Dashboard</h1>
-          <p className="text-muted-foreground">
-            Visão global de todas as organizações do sistema
-          </p>
-        </div>
+        <Button onClick={() => navigate('/super-admin/users')} className="gap-2">
+          <Users className="h-4 w-4" />
+          Gerenciar Usuários
+        </Button>
       </div>
 
       {/* Global Metrics */}

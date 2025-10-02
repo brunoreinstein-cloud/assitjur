@@ -1319,6 +1319,8 @@ export type Database = {
           language: string | null
           last_login_at: string | null
           organization_id: string | null
+          password_reset_at: string | null
+          password_reset_by: string | null
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
           terms_accepted_at: string | null
@@ -1342,6 +1344,8 @@ export type Database = {
           language?: string | null
           last_login_at?: string | null
           organization_id?: string | null
+          password_reset_at?: string | null
+          password_reset_by?: string | null
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           terms_accepted_at?: string | null
@@ -1365,6 +1369,8 @@ export type Database = {
           language?: string | null
           last_login_at?: string | null
           organization_id?: string | null
+          password_reset_at?: string | null
+          password_reset_by?: string | null
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           terms_accepted_at?: string | null
@@ -2240,6 +2246,22 @@ export type Database = {
           total_processos: number
         }[]
       }
+      get_all_users_summary: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          data_access_level: Database["public"]["Enums"]["data_access_level"]
+          email: string
+          full_name: string
+          is_active: boolean
+          last_login_at: string
+          member_status: string
+          organization_id: string
+          organization_name: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }[]
+      }
       get_arpa_by_month_secure: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -2293,6 +2315,8 @@ export type Database = {
           language: string | null
           last_login_at: string | null
           organization_id: string | null
+          password_reset_at: string | null
+          password_reset_by: string | null
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
           terms_accepted_at: string | null
@@ -2688,7 +2712,12 @@ export type Database = {
         Returns: undefined
       }
       log_super_admin_action: {
-        Args: { p_action: string; p_metadata?: Json; p_target_org_id: string }
+        Args: {
+          p_action: string
+          p_metadata?: Json
+          p_reason: string
+          p_target_user_id: string
+        }
         Returns: undefined
       }
       log_user_action: {

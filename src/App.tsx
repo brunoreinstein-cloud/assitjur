@@ -22,6 +22,7 @@ import { ErrorBoundary } from "@/components/core/ErrorBoundary";
 const Dashboard = lazy(() => import("@/pages/admin/Dashboard"));
 const Analytics = lazy(() => import("@/pages/admin/Analytics"));
 const SuperAdminDashboard = lazy(() => import("@/pages/super-admin/Dashboard"));
+const UserManagement = lazy(() => import("@/pages/super-admin/UserManagement"));
 const ImportBase = lazy(() => import("@/pages/admin/ImportBase"));
 const Versions = lazy(() => import("@/pages/admin/Versions"));
 const Organization = lazy(() => import("@/pages/admin/Organization"));
@@ -137,6 +138,7 @@ function AppRoutes() {
           {/* Super Admin routes */}
           <Route path="/super-admin" element={<SuperAdminDashboard />} />
           <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
+          <Route path="/super-admin/users" element={<UserManagement />} />
 
           {/* Admin routes */}
           <Route path="/admin" element={<Dashboard />} />
