@@ -239,7 +239,7 @@ export function DetailDrawer() {
               <div className="space-y-4">
                 <h3 className="font-semibold">CNJs como Testemunha</h3>
                 <ArrayField 
-                  items={selectedTestemunha.cnjs_como_testemunha} 
+                  items={selectedTestemunha.cnjs_como_testemunha ?? null} 
                   maxVisible={5}
                   isPiiMasked={isPiiMasked}
                 />
@@ -248,7 +248,7 @@ export function DetailDrawer() {
               <div className="space-y-4">
                 <h3 className="font-semibold">CNJs como Reclamante</h3>
                 <ArrayField 
-                  items={selectedTestemunha.cnjs_como_reclamante} 
+                  items={selectedTestemunha.cnjs_como_reclamante ?? null} 
                   maxVisible={5}
                   isPiiMasked={isPiiMasked}
                 />
@@ -259,11 +259,11 @@ export function DetailDrawer() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <DetailField 
                   label="Classificação" 
-                  value={selectedTestemunha.classificacao} 
+                  value={selectedTestemunha.classificacao ?? null} 
                 />
                 <DetailField 
                   label="Classificação Estratégica" 
-                  value={selectedTestemunha.classificacao_estrategica} 
+                  value={selectedTestemunha.classificacao_estrategica ?? null} 
                 />
               </div>
             </div>
