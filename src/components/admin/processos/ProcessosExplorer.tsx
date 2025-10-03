@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, memo } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,9 +13,7 @@ import { ProcessoDetailDrawer } from '@/components/admin/processos/ProcessoDetai
 import { ExportManager } from '@/components/admin/processos/ExportManager';
 import { ProcessosKPIs } from '@/components/admin/processos/ProcessosKPIs';
 import { ProcessoRow, ProcessoQuery, ProcessoFiltersState, VersionInfo } from '@/types/processos-explorer';
-import type { ProcessoFilters } from '@/types/mapa-testemunhas';
 import { Skeleton } from '@/components/ui/skeleton';
-import { applyPIIMask } from '@/utils/pii-mask';
 
 interface ProcessosExplorerProps {
   className?: string;
@@ -132,25 +130,28 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   });
 
   // Fetch processos data
-  const fetchProcessos = async (pageParam: number) => {
+  const fetchProcessos = async (pageNum: number) => {
     if (!profile?.organization_id) throw new Error('No organization');
-
-    const queryParams = buildQuery;
     
-    const { data, error } = await supabase
+    const { data, error, count } = await supabase
       .from('assistjur.por_processo_view')
       .select('*', { count: 'exact' })
       .eq('org_id', profile.organization_id!)
-      .range(page * limit, (page + 1) * limit - 1)
+      .range((pageNum - 1) * limit, pageNum * limit - 1)
       .order('numero', { ascending: false });
     
     if (error) throw error;
+    
+    if (count !== null) setTotalCount(count);
+    return data || [];
   };
 
   const loadInitial = async () => {
     setIsInitialLoading(true);
     try {
-      await fetchProcessos(1);
+      const data = await fetchProcessos(1);
+      setItems(data);
+      setPage(1);
     } catch (err) {
       setError(err as Error);
     } finally {
@@ -180,7 +181,10 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
     if (items.length >= totalCount) return;
     setIsLoadingMore(true);
     try {
-      await fetchProcessos(page + 1);
+      const nextPage = page + 1;
+      const data = await fetchProcessos(nextPage);
+      setItems(prev => [...prev, ...data]);
+      setPage(nextPage);
     } catch (err) {
       setError(err as Error);
     } finally {

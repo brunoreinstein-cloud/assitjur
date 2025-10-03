@@ -4,8 +4,6 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Send, FileText, User, TrendingUp, Upload, Loader2 } from "lucide-react"
-import { RiskBadge } from "@/components/RiskBadge"
-import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/hooks/useAuth"
 import { ErrorHandler, withErrorHandling, isValidOrgId } from "@/lib/error-handling"
@@ -27,7 +25,6 @@ export function ChatInterface({ onUploadClick, hasData }: ChatInterfaceProps) {
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
-  const { toast } = useToast()
   const { user, profile } = useAuth()
 
   const queryTypes = [

@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { CleanupProgress } from "@/components/admin/CleanupProgress";
-import { withErrorHandling, ErrorHandler, isValidOrgId } from "@/lib/error-handling";
+import { withErrorHandling, isValidOrgId } from "@/lib/error-handling";
 
 interface CleanupModalProps {
   open: boolean;
@@ -86,7 +86,7 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
   const [loading, setLoading] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [step, setStep] = useState<'preview' | 'confirm' | 'running'>('preview');
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {

@@ -22,7 +22,7 @@ export function UploadWizard({ onComplete, onCancel }: UploadWizardProps) {
   const [step, setStep] = useState(1)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [fileName, setFileName] = useState("")
-  const [validationResults, setValidationResults] = useState({
+  const [validationResults] = useState({
     totalRows: 1247,
     validRows: 1223,
     errors: 24,
