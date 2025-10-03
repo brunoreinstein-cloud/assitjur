@@ -18,7 +18,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   redirectTo = '/login' 
 }) => {
   const { user, profile, loading } = useAuth();
-  const { isLoading: multiTenantLoading, isReady } = useMultiTenantLoading();
+  const { isLoading: multiTenantLoading } = useMultiTenantLoading();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,7 +47,8 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
       }
 
       // Role requirement not met
-      if (requiredRole && profile.role !== requiredRole) {
+      const currentRole = profile.roles?.find(r => r.org_id === profile.organization_id)?.role;
+      if (requiredRole && currentRole !== requiredRole) {
         toast({
           variant: "destructive",
           title: "Acesso restrito",
@@ -77,7 +78,8 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   }
 
   // Not authenticated or insufficient role
-  if (!user || !profile || !profile.is_active || (requiredRole && profile.role !== requiredRole)) {
+  const currentRole = profile?.roles?.find(r => r.org_id === profile.organization_id)?.role;
+  if (!user || !profile || !profile.is_active || (requiredRole && currentRole !== requiredRole)) {
     return null; // Let useEffect handle the redirect
   }
 

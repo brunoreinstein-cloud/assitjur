@@ -104,7 +104,7 @@ export function ProcessosKPIs({ data, filters, onFilterApply }: ProcessosKPIsPro
       label: 'Risco Alto',
       value: riscoAlto,
       icon: AlertCircle,
-      variant: 'risk' as const,
+      variant: 'warning' as const,
       filter: () => onFilterApply({ 
         ...filters,
         classificacao: ['Alto'],
