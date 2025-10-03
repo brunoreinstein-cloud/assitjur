@@ -94,6 +94,8 @@ const tsconfigVite = {
     noEmit: true,
     jsx: "react-jsx",
     strict: false,
+    noUnusedLocals: false,
+    noUnusedParameters: false,
     paths: {
       "@/*": ["./src/*"],
       "@components/*": ["./src/components/*"],
