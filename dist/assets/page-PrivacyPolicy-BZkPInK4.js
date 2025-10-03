@@ -1,0 +1,61 @@
+import{j as n}from"./vendor-DjGBFEeb.js";import"./page-Login-BicjLTnC.js";import"./page-About-C9AEn_cr.js";const e=`<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Política de Privacidade - AssistJur.IA</title>
+  </head>
+  <body
+    style="
+      font-family:
+        -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto,
+        sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    "
+  >
+    <div style="background: white; padding: 2rem; border-radius: 8px">
+      <h1>Política de Privacidade - AssistJur.IA</h1>
+      <p><strong>Última atualização:</strong> 18 de setembro de 2025</p>
+
+      <h2>1. Coleta de Dados</h2>
+      <p>
+        Coletamos apenas os dados necessários para fornecer nossos serviços de
+        análise jurídica.
+      </p>
+
+      <h2>2. Uso dos Dados</h2>
+      <p>
+        Os dados são utilizados exclusivamente para análises processuais e
+        melhorias da plataforma.
+      </p>
+
+      <h2>3. Compartilhamento de Dados</h2>
+      <p>
+        Não compartilhamos dados pessoais com terceiros, exceto quando exigido
+        por lei.
+      </p>
+
+      <h2>4. Segurança</h2>
+      <p>
+        Implementamos medidas de segurança técnicas e organizacionais para
+        proteger seus dados.
+      </p>
+
+      <h2>5. Seus Direitos</h2>
+      <p>
+        Você tem direito de acesso, correção, exclusão e portabilidade dos seus
+        dados pessoais.
+      </p>
+
+      <h2>6. Contato</h2>
+      <p>
+        Para questões sobre privacidade, entre em contato através do site
+        oficial.
+      </p>
+    </div>
+  </body>
+</html>
+`;function t(){return n.jsx("div",{dangerouslySetInnerHTML:{__html:e}})}export{t as default};
