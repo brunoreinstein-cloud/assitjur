@@ -3133,7 +3133,7 @@ export type Database = {
         Returns: Json
       }
       validate_org_access: {
-        Args: Record<PropertyKey, never> | { target_org_id: string }
+        Args: { target_org_id: string }
         Returns: boolean
       }
       validate_org_id: {
