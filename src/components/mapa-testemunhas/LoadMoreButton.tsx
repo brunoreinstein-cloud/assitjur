@@ -8,11 +8,11 @@ interface LoadMoreButtonProps {
   label: string;
 }
 
-export const LoadMoreButton = ({ 
-  isLoading, 
-  hasMore, 
-  onLoadMore, 
-  label 
+export const LoadMoreButton = ({
+  isLoading,
+  hasMore,
+  onLoadMore,
+  label,
 }: LoadMoreButtonProps) => {
   if (!hasMore) return null;
 

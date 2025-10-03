@@ -1,6 +1,6 @@
-import { ReportGenerator } from '@/components/reports/ReportGenerator';
-import { mockReportData } from '@/lib/mock-data/report-sample';
-import { AppLayout } from '@/components/navigation/AppLayout';
+import { ReportGenerator } from "@/components/reports/ReportGenerator";
+import { mockReportData } from "@/lib/mock-data/report-sample";
+import { AppLayout } from "@/components/navigation/AppLayout";
 
 function ReportDemo() {
   return (
@@ -10,14 +10,13 @@ function ReportDemo() {
           <div>
             <h1 className="text-3xl font-bold">Relatório Conclusivo</h1>
             <p className="text-muted-foreground mt-1">
-              Template para geração de relatórios conclusivos de análise de padrões
+              Template para geração de relatórios conclusivos de análise de
+              padrões
             </p>
           </div>
         </div>
-        
-        <ReportGenerator 
-          mockData={mockReportData}
-        />
+
+        <ReportGenerator mockData={mockReportData} />
       </div>
     </AppLayout>
   );

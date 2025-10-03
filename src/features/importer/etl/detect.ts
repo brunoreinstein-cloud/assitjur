@@ -1,18 +1,25 @@
-import Papa from 'papaparse';
-import type { DetectedSheet, SheetModel } from '@/lib/importer/types';
+import Papa from "papaparse";
+import type { DetectedSheet, SheetModel } from "@/lib/importer/types";
 
 /**
  * Detecta a estrutura de um arquivo CSV ou Excel
  */
-export async function detectFileStructure(file: File): Promise<DetectedSheet[]> {
+export async function detectFileStructure(
+  file: File,
+): Promise<DetectedSheet[]> {
   const fileType = file.type;
-  
-  if (fileType === 'text/csv' || file.name.endsWith('.csv')) {
+
+  if (fileType === "text/csv" || file.name.endsWith(".csv")) {
     return detectCsvStructure(file);
-  } else if (fileType.includes('spreadsheet') || file.name.match(/\.(xlsx?|xls)$/i)) {
+  } else if (
+    fileType.includes("spreadsheet") ||
+    file.name.match(/\.(xlsx?|xls)$/i)
+  ) {
     return detectExcelStructure(file);
   } else {
-    throw new Error('Formato de arquivo não suportado. Use CSV ou Excel (.xlsx, .xls)');
+    throw new Error(
+      "Formato de arquivo não suportado. Use CSV ou Excel (.xlsx, .xls)",
+    );
   }
 }
 
@@ -28,14 +35,14 @@ async function detectCsvStructure(file: File): Promise<DetectedSheet[]> {
       complete: (results) => {
         try {
           if (results.errors.length > 0) {
-            console.warn('CSV parsing warnings:', results.errors);
+            console.warn("CSV parsing warnings:", results.errors);
           }
 
           const headers = results.meta.fields || [];
           const data = results.data as any[];
-          
+
           if (headers.length === 0) {
-            throw new Error('Nenhuma coluna foi detectada no arquivo CSV');
+            throw new Error("Nenhuma coluna foi detectada no arquivo CSV");
           }
 
           const sheet: DetectedSheet = {
@@ -44,7 +51,7 @@ async function detectCsvStructure(file: File): Promise<DetectedSheet[]> {
             rows: data.length,
             model: detectSheetModel(headers),
             hasListColumn: detectListColumn(headers),
-            sampleData: data.slice(0, 5)
+            sampleData: data.slice(0, 5),
           };
 
           resolve([sheet]);
@@ -54,7 +61,7 @@ async function detectCsvStructure(file: File): Promise<DetectedSheet[]> {
       },
       error: (error) => {
         reject(new Error(`Erro ao analisar CSV: ${error.message}`));
-      }
+      },
     });
   });
 }
@@ -63,32 +70,50 @@ async function detectCsvStructure(file: File): Promise<DetectedSheet[]> {
  * Lista de nomes de abas que devem ser ignoradas automaticamente
  */
 const IGNORED_SHEET_NAMES = [
-  'dicionario', 'dictionary', 'docs', 'documentação', 'documentacao', 
-  'info', 'instructions', 'instrucoes', 'readme', 'help', 'ajuda',
-  'template', 'exemplo', 'sample', 'metadata', 'config', 'configuracao'
+  "dicionario",
+  "dictionary",
+  "docs",
+  "documentação",
+  "documentacao",
+  "info",
+  "instructions",
+  "instrucoes",
+  "readme",
+  "help",
+  "ajuda",
+  "template",
+  "exemplo",
+  "sample",
+  "metadata",
+  "config",
+  "configuracao",
 ];
 
 /**
  * Verifica se uma aba deve ser ignorada automaticamente
  */
-function shouldIgnoreSheet(sheetName: string, headers: string[], dataRows: any[]): boolean {
+function shouldIgnoreSheet(
+  sheetName: string,
+  headers: string[],
+  dataRows: any[],
+): boolean {
   const normalizedName = sheetName.toLowerCase().trim();
-  
+
   // Ignora abas com nomes conhecidos de documentação
-  if (IGNORED_SHEET_NAMES.some(ignored => normalizedName.includes(ignored))) {
+  if (IGNORED_SHEET_NAMES.some((ignored) => normalizedName.includes(ignored))) {
     return true;
   }
-  
+
   // Ignora abas com muito poucos dados (menos de 2 linhas de dados)
   if (dataRows.length < 2) {
     return true;
   }
-  
+
   // Ignora abas com muito poucas colunas (menos de 3 colunas)
   if (headers.length < 3) {
     return true;
   }
-  
+
   return false;
 }
 
@@ -96,41 +121,48 @@ function shouldIgnoreSheet(sheetName: string, headers: string[], dataRows: any[]
  * Detecta estrutura de arquivo Excel
  */
 async function detectExcelStructure(file: File): Promise<DetectedSheet[]> {
-  const XLSX = await import('xlsx');
+  const XLSX = await import("xlsx");
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
+
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        
+        const workbook = XLSX.read(data, { type: "array" });
+
         const sheets: DetectedSheet[] = [];
         const ignoredSheets: string[] = [];
-        
-        workbook.SheetNames.forEach(sheetName => {
+
+        workbook.SheetNames.forEach((sheetName) => {
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-          
+
           if (jsonData.length === 0) {
             return;
           }
-          
+
           const headers = (jsonData[0] as string[]).filter(Boolean);
-          const dataRows = jsonData.slice(1).filter((row: any) => 
-            row && row.some((cell: any) => cell !== null && cell !== undefined && cell !== '')
-          );
-          
+          const dataRows = jsonData
+            .slice(1)
+            .filter(
+              (row: any) =>
+                row &&
+                row.some(
+                  (cell: any) =>
+                    cell !== null && cell !== undefined && cell !== "",
+                ),
+            );
+
           if (headers.length === 0) {
             return;
           }
-          
+
           // Verifica se a aba deve ser ignorada automaticamente
           if (shouldIgnoreSheet(sheetName, headers, dataRows)) {
             ignoredSheets.push(sheetName);
             return;
           }
-          
+
           const sheet: DetectedSheet = {
             name: sheetName,
             headers,
@@ -143,26 +175,32 @@ async function detectExcelStructure(file: File): Promise<DetectedSheet[]> {
                 obj[header] = row[index] || null;
               });
               return obj;
-            })
+            }),
           };
-          
+
           sheets.push(sheet);
         });
-        
+
         if (sheets.length === 0) {
-          throw new Error('Nenhuma aba com dados válidos foi encontrada. Todas as abas foram ignoradas ou estão vazias.');
+          throw new Error(
+            "Nenhuma aba com dados válidos foi encontrada. Todas as abas foram ignoradas ou estão vazias.",
+          );
         }
-        
+
         resolve(sheets);
       } catch (error) {
-        reject(new Error(`Erro ao analisar Excel: ${error instanceof Error ? error.message : 'Erro desconhecido'}`));
+        reject(
+          new Error(
+            `Erro ao analisar Excel: ${error instanceof Error ? error.message : "Erro desconhecido"}`,
+          ),
+        );
       }
     };
-    
+
     reader.onerror = () => {
-      reject(new Error('Erro ao ler arquivo'));
+      reject(new Error("Erro ao ler arquivo"));
     };
-    
+
     reader.readAsArrayBuffer(file);
   });
 }
@@ -171,90 +209,110 @@ async function detectExcelStructure(file: File): Promise<DetectedSheet[]> {
  * Detecta o modelo da aba baseado nos cabeçalhos
  */
 function detectSheetModel(headers: string[]): SheetModel {
-  const normalizedHeaders = headers.map(h => h.toLowerCase().trim());
-  
+  const normalizedHeaders = headers.map((h) => h.toLowerCase().trim());
+
   // Strong indicators for "testemunha" model
   const strongTestemunhaIndicators = [
-    'nome_testemunha',
-    'cnjs_como_testemunha',
-    'qtd_depoimentos',
-    'quantidade_depoimentos'
+    "nome_testemunha",
+    "cnjs_como_testemunha",
+    "qtd_depoimentos",
+    "quantidade_depoimentos",
   ];
-  
+
   // Weak indicators for "testemunha" model
   const weakTestemunhaIndicators = [
-    'testemunha',
-    'depoimentos',
-    'como_testemunha'
+    "testemunha",
+    "depoimentos",
+    "como_testemunha",
   ];
-  
-  // Strong indicators for "processo" model  
+
+  // Strong indicators for "processo" model
   const strongProcessoIndicators = [
-    'reclamante_nome',
-    'reu_nome',
-    'advogados_ativo',
-    'advogados_passivo',
-    'todas_testemunhas',
-    'testemunhas_todas'
+    "reclamante_nome",
+    "reu_nome",
+    "advogados_ativo",
+    "advogados_passivo",
+    "todas_testemunhas",
+    "testemunhas_todas",
   ];
-  
+
   // Weak indicators for "processo" model
   const weakProcessoIndicators = [
-    'reclamante',
-    'reu',
-    'advogado',
-    'comarca',
-    'tribunal',
-    'vara',
-    'fase',
-    'status'
+    "reclamante",
+    "reu",
+    "advogado",
+    "comarca",
+    "tribunal",
+    "vara",
+    "fase",
+    "status",
   ];
-  
+
   // Calculate scores with weights
-  const strongTestemunhaScore = strongTestemunhaIndicators.reduce((score, indicator) => 
-    normalizedHeaders.some(h => h.includes(indicator)) ? score + 3 : score, 0
+  const strongTestemunhaScore = strongTestemunhaIndicators.reduce(
+    (score, indicator) =>
+      normalizedHeaders.some((h) => h.includes(indicator)) ? score + 3 : score,
+    0,
   );
-  
-  const weakTestemunhaScore = weakTestemunhaIndicators.reduce((score, indicator) => 
-    normalizedHeaders.some(h => h.includes(indicator)) ? score + 1 : score, 0
+
+  const weakTestemunhaScore = weakTestemunhaIndicators.reduce(
+    (score, indicator) =>
+      normalizedHeaders.some((h) => h.includes(indicator)) ? score + 1 : score,
+    0,
   );
-  
-  const strongProcessoScore = strongProcessoIndicators.reduce((score, indicator) => 
-    normalizedHeaders.some(h => h.includes(indicator)) ? score + 3 : score, 0
+
+  const strongProcessoScore = strongProcessoIndicators.reduce(
+    (score, indicator) =>
+      normalizedHeaders.some((h) => h.includes(indicator)) ? score + 3 : score,
+    0,
   );
-  
-  const weakProcessoScore = weakProcessoIndicators.reduce((score, indicator) => 
-    normalizedHeaders.some(h => h.includes(indicator)) ? score + 1 : score, 0
+
+  const weakProcessoScore = weakProcessoIndicators.reduce(
+    (score, indicator) =>
+      normalizedHeaders.some((h) => h.includes(indicator)) ? score + 1 : score,
+    0,
   );
-  
+
   const totalTestemunhaScore = strongTestemunhaScore + weakTestemunhaScore;
   const totalProcessoScore = strongProcessoScore + weakProcessoScore;
-  
+
   // Must have CNJ for any model
-  const hasCNJ = normalizedHeaders.some(h => 
-    h.includes('cnj') || h.includes('numero_processo') || h.includes('processo')
+  const hasCNJ = normalizedHeaders.some(
+    (h) =>
+      h.includes("cnj") ||
+      h.includes("numero_processo") ||
+      h.includes("processo"),
   );
-  
+
   if (!hasCNJ) {
-    return 'ambiguous';
+    return "ambiguous";
   }
-  
+
   // If we have strong indicators, prefer them
-  if (strongTestemunhaScore > 0 && strongTestemunhaScore >= strongProcessoScore) {
-    return 'testemunha';
-  } else if (strongProcessoScore > 0 && strongProcessoScore > strongTestemunhaScore) {
-    return 'processo';
+  if (
+    strongTestemunhaScore > 0 &&
+    strongTestemunhaScore >= strongProcessoScore
+  ) {
+    return "testemunha";
+  } else if (
+    strongProcessoScore > 0 &&
+    strongProcessoScore > strongTestemunhaScore
+  ) {
+    return "processo";
   }
-  
+
   // Fall back to total scores with lower threshold
   if (totalTestemunhaScore > totalProcessoScore && totalTestemunhaScore >= 1) {
-    return 'testemunha';
-  } else if (totalProcessoScore > totalTestemunhaScore && totalProcessoScore >= 1) {
-    return 'processo';
-  } 
-  
+    return "testemunha";
+  } else if (
+    totalProcessoScore > totalTestemunhaScore &&
+    totalProcessoScore >= 1
+  ) {
+    return "processo";
+  }
+
   // Default fallback - if we have CNJ but can't determine type, assume processo
-  return 'processo';
+  return "processo";
 }
 
 /**
@@ -262,16 +320,16 @@ function detectSheetModel(headers: string[]): SheetModel {
  */
 function detectListColumn(headers: string[]): boolean {
   const listIndicators = [
-    'cnjs_como_testemunha',
-    'todas_testemunhas',
-    'testemunhas_todas',
-    'advogados_ativo',
-    'advogados_passivo'
+    "cnjs_como_testemunha",
+    "todas_testemunhas",
+    "testemunhas_todas",
+    "advogados_ativo",
+    "advogados_passivo",
   ];
-  
-  return headers.some(header => 
-    listIndicators.some(indicator => 
-      header.toLowerCase().includes(indicator.toLowerCase())
-    )
+
+  return headers.some((header) =>
+    listIndicators.some((indicator) =>
+      header.toLowerCase().includes(indicator.toLowerCase()),
+    ),
   );
 }

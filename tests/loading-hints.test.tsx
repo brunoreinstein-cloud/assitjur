@@ -2,21 +2,21 @@
  * @vitest-environment jsdom
  */
 
-import { render } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { LoadingHints } from '@/features/testemunhas/LoadingHints';
-import { useMapaTestemunhasStore } from '@/lib/store/mapa-testemunhas';
+import { render } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { LoadingHints } from "@/features/testemunhas/LoadingHints";
+import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
 
 // Utility to set default store state for tests
 const setupStore = (nextHint: () => void) => {
   useMapaTestemunhasStore.setState({
-    loadingHints: ['hint1', 'hint2'],
+    loadingHints: ["hint1", "hint2"],
     currentHintIndex: 0,
     nextHint,
   });
 };
 
-describe('LoadingHints interval behavior', () => {
+describe("LoadingHints interval behavior", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -25,7 +25,7 @@ describe('LoadingHints interval behavior', () => {
     vi.useRealTimers();
   });
 
-  it('clears existing intervals before creating new ones and on unmount', () => {
+  it("clears existing intervals before creating new ones and on unmount", () => {
     const firstNextHint = vi.fn();
     setupStore(firstNextHint);
 
@@ -51,4 +51,3 @@ describe('LoadingHints interval behavior', () => {
     expect(secondNextHint).toHaveBeenCalledTimes(1);
   });
 });
-

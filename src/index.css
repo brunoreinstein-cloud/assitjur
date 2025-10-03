@@ -9,23 +9,23 @@ All colors MUST be HSL. Professional navy/blue theme for trust and authority.
 @layer base {
   :root {
     /* Brand Colors - Based on AssistJur.IA Identity */
-    --brand-primary: hsl(258, 69%, 52%);    /* #6E40FF - Violeta tech */
+    --brand-primary: hsl(258, 69%, 52%); /* #6E40FF - Violeta tech */
     --brand-primary-hover: hsl(258, 69%, 47%);
     --brand-primary-muted: hsl(258, 40%, 85%);
-    
-    --brand-accent: hsl(45, 93%, 58%);      /* #B89A29 - Gold highlights */
+
+    --brand-accent: hsl(45, 93%, 58%); /* #B89A29 - Gold highlights */
     --brand-accent-hover: hsl(45, 93%, 53%);
     --brand-accent-muted: hsl(45, 60%, 90%);
-    
-    --brand-ink: hsl(0, 0%, 17%);           /* #2B2B2B - Títulos */
-    --brand-muted: hsl(0, 0%, 40%);          /* #666 - Texto auxiliar */
-    --brand-bg: hsl(0, 0%, 98%);            /* #FAFAFA - Fundos */
-    
+
+    --brand-ink: hsl(0, 0%, 17%); /* #2B2B2B - Títulos */
+    --brand-muted: hsl(0, 0%, 40%); /* #666 - Texto auxiliar */
+    --brand-bg: hsl(0, 0%, 98%); /* #FAFAFA - Fundos */
+
     /* Status Colors - WCAG AA Compliant */
-    --status-critical: hsl(0, 84%, 48%);     /* Crítico - Alto contraste */
-    --status-warning: hsl(38, 92%, 45%);     /* Atenção - Âmbar */
-    --status-info: hsl(221, 83%, 53%);       /* Observação - Azul */
-    --status-success: hsl(142, 76%, 36%);    /* Sucesso - Verde */
+    --status-critical: hsl(0, 84%, 48%); /* Crítico - Alto contraste */
+    --status-warning: hsl(38, 92%, 45%); /* Atenção - Âmbar */
+    --status-info: hsl(221, 83%, 53%); /* Observação - Azul */
+    --status-success: hsl(142, 76%, 36%); /* Sucesso - Verde */
     /* AssistJur.IA Brand Colors */
     --background: 0 0% 100%;
     --foreground: 0 0% 17%; /* Cinza Chumbo #2C2C2C */
@@ -61,11 +61,11 @@ All colors MUST be HSL. Professional navy/blue theme for trust and authority.
     --success: 142 76% 36%;
     --success-foreground: 0 0% 98%;
     --success-light: 142 45% 90%;
-    
-    --warning: 43 89% 55%;  
+
+    --warning: 43 89% 55%;
     --warning-foreground: 0 0% 15%;
     --warning-light: 43 60% 92%;
-    
+
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 98%;
     --destructive-light: 0 45% 95%;
@@ -76,11 +76,27 @@ All colors MUST be HSL. Professional navy/blue theme for trust and authority.
     --ring: 257 42% 51%;
 
     /* Gradients for Premium Feel */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
-    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(50 31% 43%));
-    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--primary-light))
+    );
+    --gradient-accent: linear-gradient(
+      135deg,
+      hsl(var(--accent)),
+      hsl(50 31% 43%)
+    );
+    --gradient-subtle: linear-gradient(
+      180deg,
+      hsl(var(--background)),
+      hsl(var(--muted))
+    );
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(0 0% 98%));
-    --gradient-glow: radial-gradient(circle at 50% 0%, hsl(var(--primary-glow) / 0.1), transparent 70%);
+    --gradient-glow: radial-gradient(
+      circle at 50% 0%,
+      hsl(var(--primary-glow) / 0.1),
+      transparent 70%
+    );
 
     /* Shadows for Depth */
     --shadow-sm: 0 1px 2px 0 hsl(0 0% 17% / 0.05);

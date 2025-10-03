@@ -1,7 +1,7 @@
-import { useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Undo2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Undo2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface DeleteOptions<T> {
   key: string; // unique identifier

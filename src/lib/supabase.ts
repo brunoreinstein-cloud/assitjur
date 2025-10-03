@@ -1,8 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import {
-  PorProcesso,
-  PorTestemunha,
-} from "@/types/mapa-testemunhas";
+import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
 
 // Mock data for offline functionality
 const mockProcessos: PorProcesso[] = [
@@ -27,14 +24,21 @@ const mockProcessos: PorProcesso[] = [
     cnjs_troca_direta: [],
     triangulacao_confirmada: true,
     desenho_triangulacao: "Ana Lima → João Pereira → Beatriz Nunes",
-    cnjs_triangulacao: ["0009876-12.2023.5.04.0002", "0012345-00.2022.5.02.0003"],
+    cnjs_triangulacao: [
+      "0009876-12.2023.5.04.0002",
+      "0012345-00.2022.5.02.0003",
+    ],
     testemunha_do_reclamante_ja_foi_testemunha_antes: true,
     qtd_total_depos_unicos: 2,
-    cnjs_depos_unicos: ["0009876-12.2023.5.04.0002", "0012345-00.2022.5.02.0003"],
+    cnjs_depos_unicos: [
+      "0009876-12.2023.5.04.0002",
+      "0012345-00.2022.5.02.0003",
+    ],
     contem_prova_emprestada: true,
     testemunhas_prova_emprestada: ["João Pereira"],
     classificacao_final: "Risco Médio",
-    insight_estrategico: "Atenção especial à testemunha João Pereira que aparece em múltiplos processos.",
+    insight_estrategico:
+      "Atenção especial à testemunha João Pereira que aparece em múltiplos processos.",
     org_id: "org-1",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -67,7 +71,8 @@ const mockProcessos: PorProcesso[] = [
     contem_prova_emprestada: false,
     testemunhas_prova_emprestada: [],
     classificacao_final: "Risco Alto",
-    insight_estrategico: "Troca direta confirmada entre reclamante e testemunha de processo anterior.",
+    insight_estrategico:
+      "Troca direta confirmada entre reclamante e testemunha de processo anterior.",
     org_id: "org-1",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -111,7 +116,11 @@ const mockTestemunhas: PorTestemunha[] = [
   {
     nome_testemunha: "João Pereira",
     qtd_depoimentos: 4,
-    cnjs_como_testemunha: ["0001234-56.2024.5.01.0001", "0009876-12.2023.5.04.0002", "0012345-00.2022.5.02.0003"],
+    cnjs_como_testemunha: [
+      "0001234-56.2024.5.01.0001",
+      "0009876-12.2023.5.04.0002",
+      "0012345-00.2022.5.02.0003",
+    ],
     ja_foi_reclamante: false,
     cnjs_como_reclamante: [],
     foi_testemunha_ativo: true,
@@ -122,7 +131,10 @@ const mockTestemunhas: PorTestemunha[] = [
     participou_troca_favor: false,
     cnjs_troca_favor: [],
     participou_triangulacao: true,
-    cnjs_triangulacao: ["0001234-56.2024.5.01.0001", "0009876-12.2023.5.04.0002"],
+    cnjs_triangulacao: [
+      "0001234-56.2024.5.01.0001",
+      "0009876-12.2023.5.04.0002",
+    ],
     e_prova_emprestada: true,
     classificacao: "Testemunha Recorrente",
     classificacao_estrategica: "Atenção",
@@ -155,7 +167,10 @@ const mockTestemunhas: PorTestemunha[] = [
   {
     nome_testemunha: "Rafael Gomes",
     qtd_depoimentos: 6,
-    cnjs_como_testemunha: ["0009876-12.2023.5.04.0002", "0012345-00.2022.5.02.0003"],
+    cnjs_como_testemunha: [
+      "0009876-12.2023.5.04.0002",
+      "0012345-00.2022.5.02.0003",
+    ],
     ja_foi_reclamante: false,
     cnjs_como_reclamante: [],
     foi_testemunha_ativo: true,

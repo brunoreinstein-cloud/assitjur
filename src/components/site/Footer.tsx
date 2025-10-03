@@ -19,16 +19,19 @@ export function Footer() {
             <BrandLogo size="md" className="h-10 w-auto" />
             <span className="sr-only">AssistJur.IA</span>
           </div>
-          
+
           <div className="text-center mb-10">
             <p className="text-aj-text-high/90 font-medium text-lg">
-              AssistJur.IA — Gestão do contencioso com inovação e olhar estratégico, 
-              desenvolvido por Bianca Reinstein Consultoria.
+              AssistJur.IA — Gestão do contencioso com inovação e olhar
+              estratégico, desenvolvido por Bianca Reinstein Consultoria.
             </p>
           </div>
 
           {/* Links Institucionais */}
-          <nav className="flex flex-wrap justify-center gap-6 mb-10" aria-label="Links institucionais">
+          <nav
+            className="flex flex-wrap justify-center gap-6 mb-10"
+            aria-label="Links institucionais"
+          >
             <button
               onClick={() => setOpen(true)}
               className="text-sm text-aj-text-high/80 hover:text-aj-text-high transition-colors underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aj-color-gold focus-visible:ring-offset-2"
@@ -91,9 +94,9 @@ export function Footer() {
                   Aviso legal:
                 </p>
                 <p className="text-aj-text-high/70 text-sm leading-relaxed">
-                  O AssistJur.IA oferece suporte em inteligência artificial, mas 
-                  exige sempre a supervisão de um advogado. Não substitui a análise 
-                  humana, nem dispensa a validação nos autos.
+                  O AssistJur.IA oferece suporte em inteligência artificial, mas
+                  exige sempre a supervisão de um advogado. Não substitui a
+                  análise humana, nem dispensa a validação nos autos.
                 </p>
               </div>
             </div>
@@ -102,8 +105,8 @@ export function Footer() {
           {/* Copyright */}
           <div className="text-center">
             <p className="text-aj-text-high/60 text-xs">
-              © 2025 AssistJur.IA — Desenvolvido por Bianca Reinstein Consultoria. 
-              Todos os direitos reservados.
+              © 2025 AssistJur.IA — Desenvolvido por Bianca Reinstein
+              Consultoria. Todos os direitos reservados.
             </p>
           </div>
         </div>

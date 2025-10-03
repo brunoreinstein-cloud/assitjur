@@ -6,8 +6,10 @@ const isDate = (s: string) => {
   return !isNaN(d.valueOf());
 };
 
-export const MAPA_TESTEMUNHAS_PROCESSOS_FN = "mapa-testemunhas-processos" as const;
-export const MAPA_TESTEMUNHAS_TESTEMUNHAS_FN = "mapa-testemunhas-testemunhas" as const;
+export const MAPA_TESTEMUNHAS_PROCESSOS_FN =
+  "mapa-testemunhas-processos" as const;
+export const MAPA_TESTEMUNHAS_TESTEMUNHAS_FN =
+  "mapa-testemunhas-testemunhas" as const;
 
 // Paginação padrão
 export const PaginacaoSchema = z.object({
@@ -58,7 +60,8 @@ const ProcessosFiltroSchema = z
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "qtd_depoimentos_min deve ser menor ou igual a qtd_depoimentos_max",
+        message:
+          "qtd_depoimentos_min deve ser menor ou igual a qtd_depoimentos_max",
         path: ["qtd_depoimentos_min"],
       });
     }
@@ -118,7 +121,8 @@ const TestemunhasFiltroSchema = z
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "qtd_depoimentos_min deve ser menor ou igual a qtd_depoimentos_max",
+        message:
+          "qtd_depoimentos_min deve ser menor ou igual a qtd_depoimentos_max",
         path: ["qtd_depoimentos_min"],
       });
     }

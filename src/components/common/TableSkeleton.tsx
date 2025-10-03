@@ -2,9 +2,9 @@ import { memo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const TableSkeleton = memo(({ rows = 5 }: { rows?: number }) => (
-  <div 
-    className="border border-border rounded-lg" 
-    role="status" 
+  <div
+    className="border border-border rounded-lg"
+    role="status"
     aria-label="Carregando tabela"
   >
     {/* Header */}
@@ -20,7 +20,7 @@ export const TableSkeleton = memo(({ rows = 5 }: { rows?: number }) => (
         <Skeleton className="h-4 w-24" />
       </div>
     </div>
-    
+
     {/* Rows */}
     <div>
       {Array.from({ length: rows }, (_, i) => (
@@ -41,5 +41,4 @@ export const TableSkeleton = memo(({ rows = 5 }: { rows?: number }) => (
   </div>
 ));
 
-TableSkeleton.displayName = 'TableSkeleton';
-
+TableSkeleton.displayName = "TableSkeleton";

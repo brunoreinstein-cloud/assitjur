@@ -9,7 +9,8 @@ export const tokens = {
   },
   states: {
     hover: "transition-colors hover:bg-muted",
-    focus: "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+    focus:
+      "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
     disabled: "opacity-50 pointer-events-none cursor-not-allowed",
   },
   density: {

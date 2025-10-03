@@ -1,8 +1,8 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { BrandLogo } from '@/components/brand/BrandLogo';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 
 export function BetaHeader() {
   const navigate = useNavigate();
@@ -22,12 +22,16 @@ export function BetaHeader() {
 
           {/* Navigation */}
           <div className="flex items-center space-x-4">
-            <Button 
+            <Button
               variant="ghost"
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
               className="flex items-center space-x-2"
             >
-              <ArrowLeft className="w-4 h-4" aria-hidden="true" focusable="false" />
+              <ArrowLeft
+                className="w-4 h-4"
+                aria-hidden="true"
+                focusable="false"
+              />
               <span>Voltar</span>
             </Button>
           </div>

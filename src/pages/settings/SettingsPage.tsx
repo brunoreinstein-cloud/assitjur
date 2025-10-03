@@ -1,10 +1,10 @@
-import { Navigate } from 'react-router-dom';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building, Users, Shield, Plug, Bell, Palette } from 'lucide-react';
-import { GeneralTab } from '@/components/settings/GeneralTab';
-import { AppearanceTab } from '@/components/settings/AppearanceTab';
-import { usePermissions } from '@/hooks/usePermissions';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Navigate } from "react-router-dom";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Building, Users, Shield, Plug, Bell, Palette } from "lucide-react";
+import { GeneralTab } from "@/components/settings/GeneralTab";
+import { AppearanceTab } from "@/components/settings/AppearanceTab";
+import { usePermissions } from "@/hooks/usePermissions";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SettingsPage() {
   const { isAdmin, userRole } = usePermissions();
@@ -26,9 +26,12 @@ export default function SettingsPage() {
   return (
     <div className="container mx-auto p-6 max-w-6xl">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Configurações da Organização</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Configurações da Organização
+        </h1>
         <p className="text-muted-foreground mt-2">
-          Gerencie as configurações e preferências da organização (visível apenas para administradores)
+          Gerencie as configurações e preferências da organização (visível
+          apenas para administradores)
         </p>
       </div>
 
@@ -69,7 +72,14 @@ export default function SettingsPage() {
             <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">Gestão de Usuários</h3>
             <p className="text-sm text-muted-foreground">
-              Acesse <a href="/admin/organization" className="text-primary hover:underline">Organização</a> para gerenciar usuários
+              Acesse{" "}
+              <a
+                href="/admin/organization"
+                className="text-primary hover:underline"
+              >
+                Organização
+              </a>{" "}
+              para gerenciar usuários
             </p>
           </div>
         </TabsContent>
@@ -77,10 +87,10 @@ export default function SettingsPage() {
         <TabsContent value="security">
           <div className="text-center py-12">
             <Shield className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Configurações de Segurança</h3>
-            <p className="text-sm text-muted-foreground">
-              Em desenvolvimento
-            </p>
+            <h3 className="text-lg font-semibold mb-2">
+              Configurações de Segurança
+            </h3>
+            <p className="text-sm text-muted-foreground">Em desenvolvimento</p>
           </div>
         </TabsContent>
 
@@ -89,7 +99,11 @@ export default function SettingsPage() {
             <Plug className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">Integrações</h3>
             <p className="text-sm text-muted-foreground">
-              Acesse <a href="/admin/config" className="text-primary hover:underline">Configurações do Sistema</a> para gerenciar integrações
+              Acesse{" "}
+              <a href="/admin/config" className="text-primary hover:underline">
+                Configurações do Sistema
+              </a>{" "}
+              para gerenciar integrações
             </p>
           </div>
         </TabsContent>
@@ -97,10 +111,10 @@ export default function SettingsPage() {
         <TabsContent value="notifications">
           <div className="text-center py-12">
             <Bell className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Notificações do Sistema</h3>
-            <p className="text-sm text-muted-foreground">
-              Em desenvolvimento
-            </p>
+            <h3 className="text-lg font-semibold mb-2">
+              Notificações do Sistema
+            </h3>
+            <p className="text-sm text-muted-foreground">Em desenvolvimento</p>
           </div>
         </TabsContent>
 

@@ -12,8 +12,8 @@ import { useNavigate } from "react-router-dom";
 
 export function ContextBreadcrumb() {
   const navigate = useNavigate();
-  const navigationHistory = useMapaTestemunhasStore(s => s.navigationHistory);
-  const popNavigation = useMapaTestemunhasStore(s => s.popNavigation);
+  const navigationHistory = useMapaTestemunhasStore((s) => s.navigationHistory);
+  const popNavigation = useMapaTestemunhasStore((s) => s.popNavigation);
 
   const handleNavigate = (index: number) => {
     const item = navigationHistory[index];
@@ -40,11 +40,11 @@ export function ContextBreadcrumb() {
             <span>Início</span>
           </BreadcrumbLink>
         </BreadcrumbItem>
-        
+
         {navigationHistory.slice(1).map((item, index) => {
           const isLast = index === navigationHistory.length - 2;
           const actualIndex = index + 1;
-          
+
           return (
             <div key={actualIndex} className="flex items-center">
               <BreadcrumbSeparator />

@@ -1,10 +1,11 @@
-import React, { useEffect, useRef } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { useMapaTestemunhasStore } from '@/lib/store/mapa-testemunhas';
-import { Bot, Loader2 } from 'lucide-react';
+import React, { useEffect, useRef } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
+import { Bot, Loader2 } from "lucide-react";
 
 export function LoadingHints() {
-  const { loadingHints, currentHintIndex, nextHint } = useMapaTestemunhasStore();
+  const { loadingHints, currentHintIndex, nextHint } =
+    useMapaTestemunhasStore();
 
   // Store interval reference to allow proper cleanup
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -41,14 +42,14 @@ export function LoadingHints() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              <span 
+              <span
                 key={currentHintIndex}
                 className="text-sm text-foreground font-medium transition-opacity duration-200"
               >
-                {loadingHints[currentHintIndex] || 'Carregando...'}
+                {loadingHints[currentHintIndex] || "Carregando..."}
               </span>
             </div>
-            
+
             <div className="mt-3 flex gap-1">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div
@@ -56,7 +57,7 @@ export function LoadingHints() {
                   className="h-1 w-8 rounded-full bg-primary/20 animate-pulse"
                   style={{
                     animationDelay: `${i * 0.2}s`,
-                    animationDuration: '1s'
+                    animationDuration: "1s",
                   }}
                 />
               ))}

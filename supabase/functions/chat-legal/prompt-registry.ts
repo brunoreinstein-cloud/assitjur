@@ -45,7 +45,7 @@ REGRAS CRÍTICAS:
 
 export function getSystemPrompt(name?: string) {
   switch (name) {
-    case 'System: Mapa de Testemunhas - v1':
+    case "System: Mapa de Testemunhas - v1":
     default:
       return PromptRegistry.witnessSystemV1;
   }

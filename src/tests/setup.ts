@@ -1,14 +1,14 @@
-import '@testing-library/jest-dom';
-import * as matchers from '@testing-library/jest-dom/matchers';
-import { afterEach, expect, vi } from 'vitest';
-import { cleanup } from '@testing-library/react';
-import { TextEncoder, TextDecoder } from 'util';
+import "@testing-library/jest-dom";
+import * as matchers from "@testing-library/jest-dom/matchers";
+import { afterEach, expect, vi } from "vitest";
+import { cleanup } from "@testing-library/react";
+import { TextEncoder, TextDecoder } from "util";
 
 // Extend Vitest's expect with jest-dom matchers
 expect.extend(matchers);
 
 // Polyfill window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: (query: string) => ({
     matches: false,

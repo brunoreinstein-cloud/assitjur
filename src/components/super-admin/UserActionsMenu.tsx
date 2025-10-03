@@ -1,6 +1,12 @@
-import { useState } from 'react';
-import { MoreVertical, KeyRound, Building2, UserX, UserCheck } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState } from "react";
+import {
+  MoreVertical,
+  KeyRound,
+  Building2,
+  UserX,
+  UserCheck,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,9 +14,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { ResetPasswordDialog } from './ResetPasswordDialog';
-import { TransferUserDialog } from './TransferUserDialog';
+} from "@/components/ui/dropdown-menu";
+import { ResetPasswordDialog } from "./ResetPasswordDialog";
+import { TransferUserDialog } from "./TransferUserDialog";
 
 interface UserActionsMenuProps {
   user: {
@@ -38,19 +44,19 @@ export function UserActionsMenu({ user, onSuccess }: UserActionsMenuProps) {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Ações do Usuário</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          
+
           <DropdownMenuItem onClick={() => setResetPasswordOpen(true)}>
             <KeyRound className="mr-2 h-4 w-4" />
             Resetar Senha
           </DropdownMenuItem>
-          
+
           <DropdownMenuItem onClick={() => setTransferUserOpen(true)}>
             <Building2 className="mr-2 h-4 w-4" />
             Transferir Organização
           </DropdownMenuItem>
-          
+
           <DropdownMenuSeparator />
-          
+
           <DropdownMenuItem disabled>
             {user.is_active ? (
               <>

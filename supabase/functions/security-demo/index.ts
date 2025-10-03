@@ -1,4 +1,4 @@
-import { serve } from '../_shared/observability.ts';
+import { serve } from "../_shared/observability.ts";
 import { z } from "npm:zod@4.1.3";
 
 export async function handler(req: Request): Promise<Response> {
@@ -6,7 +6,8 @@ export async function handler(req: Request): Promise<Response> {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  const token = req.headers.get("authorization")?.replace("Bearer ", "") ?? null;
+  const token =
+    req.headers.get("authorization")?.replace("Bearer ", "") ?? null;
   if (!(await validateJWT(token))) {
     return createSecureErrorResponse("unauthorized", 401);
   }
@@ -32,15 +33,15 @@ export async function handler(req: Request): Promise<Response> {
   try {
     const result = await withTimeout(
       Promise.resolve({ message: `hello ${data.name}` }),
-      1000
+      1000,
     );
     return new Response(JSON.stringify(result), {
       status: 200,
-      headers: corsHeaders
+      headers: corsHeaders,
     });
   } catch {
     return createSecureErrorResponse("timeout", 504);
   }
 }
 
-serve('security-demo', handler);
+serve("security-demo", handler);

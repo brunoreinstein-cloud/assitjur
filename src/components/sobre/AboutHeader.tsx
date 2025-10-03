@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { BrandLogo } from '@/components/brand/BrandLogo';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 
 interface AboutHeaderProps {
   onOpenBetaModal?: () => void;
@@ -16,26 +16,33 @@ export function AboutHeader({ onOpenBetaModal }: AboutHeaderProps) {
       setIsScrolled(window.scrollY > 10);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: "smooth" });
     }
   };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled ? 'bg-background/95 backdrop-blur-md border-b' : 'bg-transparent'
-    }`}>
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? "bg-background/95 backdrop-blur-md border-b"
+          : "bg-transparent"
+      }`}
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <button onClick={() => navigate('/')} className="flex items-center transition-transform duration-200 hover:scale-105">
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center transition-transform duration-200 hover:scale-105"
+            >
               <BrandLogo size="lg" className="md:h-12" />
             </button>
           </div>
@@ -43,25 +50,25 @@ export function AboutHeader({ onOpenBetaModal }: AboutHeaderProps) {
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Início
             </button>
             <button
-              onClick={() => navigate('/sobre')}
+              onClick={() => navigate("/sobre")}
               className="text-foreground font-medium"
             >
               Sobre
             </button>
             <button
-              onClick={() => scrollToSection('seguranca')}
+              onClick={() => scrollToSection("seguranca")}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Segurança
             </button>
             <button
-              onClick={() => scrollToSection('contato')}
+              onClick={() => scrollToSection("contato")}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Contato
@@ -69,8 +76,8 @@ export function AboutHeader({ onOpenBetaModal }: AboutHeaderProps) {
           </nav>
 
           {/* CTA Button */}
-          <Button 
-            onClick={() => navigate('/beta')}
+          <Button
+            onClick={() => navigate("/beta")}
             className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground px-6 py-2 shadow-lg"
           >
             Entrar na Lista Beta

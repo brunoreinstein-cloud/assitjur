@@ -1,40 +1,71 @@
-import { AppLayout } from '@/components/navigation/AppLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Download, Target, TrendingUp, FileText, Users, Award, CheckCircle } from 'lucide-react';
+import { AppLayout } from "@/components/navigation/AppLayout";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Shield,
+  Download,
+  Target,
+  TrendingUp,
+  FileText,
+  Users,
+  Award,
+  CheckCircle,
+} from "lucide-react";
 
 export function MarketingCompliance() {
   const marketingArguments = [
     {
       title: "Compliance LGPD 85% Automatizada",
-      description: "Sistema com políticas de retenção automática, anonimização de PII e auditoria completa",
+      description:
+        "Sistema com políticas de retenção automática, anonimização de PII e auditoria completa",
       icon: Shield,
-      metrics: ["85% compliance automática", "100% dados protegidos", "0 vazamentos registrados"]
+      metrics: [
+        "85% compliance automática",
+        "100% dados protegidos",
+        "0 vazamentos registrados",
+      ],
     },
     {
       title: "ROI Comprovado em Compliance",
-      description: "Redução de 70% nos custos de adequação LGPD vs. consultoria tradicional",
+      description:
+        "Redução de 70% nos custos de adequação LGPD vs. consultoria tradicional",
       icon: TrendingUp,
-      metrics: ["70% redução de custos", "90% menos tempo de setup", "100% auditável"]
+      metrics: [
+        "70% redução de custos",
+        "90% menos tempo de setup",
+        "100% auditável",
+      ],
     },
     {
       title: "Diferencial Competitivo",
-      description: "Único sistema jurídico com LGPD by design para análise de testemunhas",
+      description:
+        "Único sistema jurídico com LGPD by design para análise de testemunhas",
       icon: Award,
-      metrics: ["1º no mercado", "Tecnologia exclusiva", "Certificação própria"]
-    }
+      metrics: [
+        "1º no mercado",
+        "Tecnologia exclusiva",
+        "Certificação própria",
+      ],
+    },
   ];
 
   const leadMagnets = [
     {
       title: "Whitepaper: LGPD para Escritórios",
-      description: "Guia completo de adequação LGPD para escritórios de advocacia",
+      description:
+        "Guia completo de adequação LGPD para escritórios de advocacia",
       type: "PDF",
       pages: "24 páginas",
       icon: FileText,
-      downloadUrl: "/whitepaper-assistjur.pdf"
+      downloadUrl: "/whitepaper-assistjur.pdf",
     },
     {
       title: "Checklist de Compliance",
@@ -42,7 +73,7 @@ export function MarketingCompliance() {
       type: "Planilha",
       pages: "5 categorias",
       icon: CheckCircle,
-      downloadUrl: "/checklist-compliance.xlsx"
+      downloadUrl: "/checklist-compliance.xlsx",
     },
     {
       title: "Template de Políticas",
@@ -50,23 +81,25 @@ export function MarketingCompliance() {
       type: "DOC",
       pages: "12 modelos",
       icon: FileText,
-      downloadUrl: "/templates-politicas.docx"
-    }
+      downloadUrl: "/templates-politicas.docx",
+    },
   ];
 
   const testimonials = [
     {
       name: "Dr. Carlos Mendes",
       role: "Sócio, Mendes & Associados",
-      quote: "Com o AssistJur.IA, nossa adequação LGPD foi 3x mais rápida que o esperado.",
-      compliance: "100% conforme"
+      quote:
+        "Com o AssistJur.IA, nossa adequação LGPD foi 3x mais rápida que o esperado.",
+      compliance: "100% conforme",
     },
     {
       name: "Dra. Ana Silva",
       role: "Coordenadora de Compliance",
-      quote: "A auditoria automática nos deu total controle sobre os dados dos clientes.",
-      compliance: "0 incidentes"
-    }
+      quote:
+        "A auditoria automática nos deu total controle sobre os dados dos clientes.",
+      compliance: "0 incidentes",
+    },
   ];
 
   return (
@@ -137,10 +170,14 @@ export function MarketingCompliance() {
               </CardHeader>
               <CardContent>
                 <p className="text-lg leading-relaxed">
-                  <strong>AssistJur.IA</strong> é o único sistema jurídico com{' '}
-                  <Badge variant="outline" className="mx-1">LGPD by design</Badge>
-                  que oferece <strong>85% de compliance automatizada</strong> para análise de testemunhas,
-                  com economia de <strong>70% nos custos</strong> e <strong>90% menos tempo</strong> de adequação.
+                  <strong>AssistJur.IA</strong> é o único sistema jurídico com{" "}
+                  <Badge variant="outline" className="mx-1">
+                    LGPD by design
+                  </Badge>
+                  que oferece <strong>85% de compliance automatizada</strong>{" "}
+                  para análise de testemunhas, com economia de{" "}
+                  <strong>70% nos custos</strong> e{" "}
+                  <strong>90% menos tempo</strong> de adequação.
                 </p>
               </CardContent>
             </Card>
@@ -152,7 +189,10 @@ export function MarketingCompliance() {
               {leadMagnets.map((magnet, index) => {
                 const Icon = magnet.icon;
                 return (
-                  <Card key={index} className="group hover:shadow-lg transition-shadow">
+                  <Card
+                    key={index}
+                    className="group hover:shadow-lg transition-shadow"
+                  >
                     <CardHeader>
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-accent/10 rounded-lg">
@@ -169,9 +209,11 @@ export function MarketingCompliance() {
                       <div className="text-sm text-muted-foreground">
                         📄 {magnet.pages}
                       </div>
-                      <Button 
+                      <Button
                         className="w-full group-hover:bg-primary/90 transition-colors"
-                        onClick={() => window.open(magnet.downloadUrl, '_blank')}
+                        onClick={() =>
+                          window.open(magnet.downloadUrl, "_blank")
+                        }
                       >
                         <Download className="w-4 h-4 mr-2" />
                         Download Gratuito
@@ -191,15 +233,21 @@ export function MarketingCompliance() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
                     <div className="text-2xl font-bold text-primary">1,247</div>
-                    <div className="text-sm text-muted-foreground">Downloads totais</div>
+                    <div className="text-sm text-muted-foreground">
+                      Downloads totais
+                    </div>
                   </div>
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
                     <div className="text-2xl font-bold text-accent">32%</div>
-                    <div className="text-sm text-muted-foreground">Taxa de conversão</div>
+                    <div className="text-sm text-muted-foreground">
+                      Taxa de conversão
+                    </div>
                   </div>
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
                     <div className="text-2xl font-bold text-primary">89</div>
-                    <div className="text-sm text-muted-foreground">Leads qualificados</div>
+                    <div className="text-sm text-muted-foreground">
+                      Leads qualificados
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -212,14 +260,17 @@ export function MarketingCompliance() {
               <CardHeader>
                 <CardTitle>Calculadora de ROI - Compliance LGPD</CardTitle>
                 <CardDescription>
-                  Compare os custos de adequação LGPD: AssistJur.IA vs. Consultoria Tradicional
+                  Compare os custos de adequação LGPD: AssistJur.IA vs.
+                  Consultoria Tradicional
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Consultoria Tradicional */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-destructive">Consultoria Tradicional</h3>
+                    <h3 className="text-lg font-semibold text-destructive">
+                      Consultoria Tradicional
+                    </h3>
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span>Consultoria inicial:</span>
@@ -248,7 +299,9 @@ export function MarketingCompliance() {
 
                   {/* AssistJur.IA */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-primary">AssistJur.IA</h3>
+                    <h3 className="text-lg font-semibold text-primary">
+                      AssistJur.IA
+                    </h3>
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span>Setup inicial:</span>
@@ -286,7 +339,8 @@ export function MarketingCompliance() {
                       73% menos custos no primeiro ano
                     </div>
                     <div className="mt-4 text-sm text-muted-foreground">
-                      + 90% menos tempo de implementação + Compliance automática 24/7
+                      + 90% menos tempo de implementação + Compliance automática
+                      24/7
                     </div>
                   </div>
                 </div>
@@ -310,7 +364,9 @@ export function MarketingCompliance() {
                         </blockquote>
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="font-semibold">{testimonial.name}</div>
+                            <div className="font-semibold">
+                              {testimonial.name}
+                            </div>
                             <div className="text-sm text-muted-foreground">
                               {testimonial.role}
                             </div>
@@ -334,13 +390,18 @@ export function MarketingCompliance() {
                     Pronto para 85% de Compliance Automatizada?
                   </h3>
                   <p className="text-lg opacity-90">
-                    Junte-se aos escritórios que já economizam 70% em adequação LGPD
+                    Junte-se aos escritórios que já economizam 70% em adequação
+                    LGPD
                   </p>
                   <div className="flex gap-4 justify-center">
                     <Button variant="secondary" size="lg">
                       Demonstração Gratuita
                     </Button>
-                    <Button variant="outline" size="lg" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                    >
                       Falar com Especialista
                     </Button>
                   </div>

@@ -4,8 +4,8 @@ import { Eye, EyeOff, Shield } from "lucide-react";
 import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
 
 export const MaskPIISwitch = () => {
-  const isPiiMasked = useMapaTestemunhasStore(s => s.isPiiMasked);
-  const setIsPiiMasked = useMapaTestemunhasStore(s => s.setIsPiiMasked);
+  const isPiiMasked = useMapaTestemunhasStore((s) => s.isPiiMasked);
+  const setIsPiiMasked = useMapaTestemunhasStore((s) => s.setIsPiiMasked);
 
   return (
     <div className="flex items-center space-x-3">
@@ -16,8 +16,8 @@ export const MaskPIISwitch = () => {
           checked={isPiiMasked}
           onCheckedChange={setIsPiiMasked}
         />
-        <Label 
-          htmlFor="mask-pii" 
+        <Label
+          htmlFor="mask-pii"
           className="text-sm font-medium cursor-pointer flex items-center gap-1"
         >
           {isPiiMasked ? (

@@ -1,18 +1,29 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Play, Zap, Clock, DollarSign } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { toast } from '@/hooks/use-toast';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Play, Zap, Clock, DollarSign } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 
 const OpenAIPlayground = () => {
   const { profile } = useAuth();
-  const [testInput, setTestInput] = useState({ cnj: '', nome: '', comarca: '', ano: '' });
+  const [testInput, setTestInput] = useState({
+    cnj: "",
+    nome: "",
+    comarca: "",
+    ano: "",
+  });
   const [result, setResult] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [metrics, setMetrics] = useState<any>(null);
@@ -20,19 +31,22 @@ const OpenAIPlayground = () => {
   const handleTest = async (streaming = false) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('admin-openai-test', {
-        body: { 
-          input: testInput,
-          streaming,
-          org_id: profile?.organization_id 
-        }
-      });
-      
+      const { data, error } = await supabase.functions.invoke(
+        "admin-openai-test",
+        {
+          body: {
+            input: testInput,
+            streaming,
+            org_id: profile?.organization_id,
+          },
+        },
+      );
+
       if (error) throw error;
-      
+
       setResult(data.response);
       setMetrics(data.metrics);
-      
+
       toast({
         title: "Teste executado",
         description: `Resposta gerada em ${data.metrics?.duration_ms}ms`,
@@ -69,7 +83,9 @@ const OpenAIPlayground = () => {
               <Input
                 placeholder="0000000-00.0000.0.00.0000"
                 value={testInput.cnj}
-                onChange={(e) => setTestInput({ ...testInput, cnj: e.target.value })}
+                onChange={(e) =>
+                  setTestInput({ ...testInput, cnj: e.target.value })
+                }
               />
             </div>
             <div>
@@ -77,7 +93,9 @@ const OpenAIPlayground = () => {
               <Input
                 placeholder="João da Silva"
                 value={testInput.nome}
-                onChange={(e) => setTestInput({ ...testInput, nome: e.target.value })}
+                onChange={(e) =>
+                  setTestInput({ ...testInput, nome: e.target.value })
+                }
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -86,7 +104,9 @@ const OpenAIPlayground = () => {
                 <Input
                   placeholder="São Paulo"
                   value={testInput.comarca}
-                  onChange={(e) => setTestInput({ ...testInput, comarca: e.target.value })}
+                  onChange={(e) =>
+                    setTestInput({ ...testInput, comarca: e.target.value })
+                  }
                 />
               </div>
               <div>
@@ -94,22 +114,24 @@ const OpenAIPlayground = () => {
                 <Input
                   placeholder="2024"
                   value={testInput.ano}
-                  onChange={(e) => setTestInput({ ...testInput, ano: e.target.value })}
+                  onChange={(e) =>
+                    setTestInput({ ...testInput, ano: e.target.value })
+                  }
                 />
               </div>
             </div>
-            
+
             <div className="flex space-x-2">
-              <Button 
-                onClick={() => handleTest(false)} 
+              <Button
+                onClick={() => handleTest(false)}
                 disabled={isLoading}
                 className="flex-1"
               >
                 <Play className="h-4 w-4 mr-2" />
                 Executar
               </Button>
-              <Button 
-                onClick={() => handleTest(true)} 
+              <Button
+                onClick={() => handleTest(true)}
                 disabled={isLoading}
                 variant="outline"
                 className="flex-1"
@@ -138,7 +160,7 @@ const OpenAIPlayground = () => {
                     {JSON.stringify(result, null, 2)}
                   </pre>
                 </div>
-                
+
                 {metrics && (
                   <div className="grid grid-cols-3 gap-2 text-sm">
                     <div className="flex items-center space-x-1">
@@ -147,7 +169,9 @@ const OpenAIPlayground = () => {
                     </div>
                     <div className="flex items-center space-x-1">
                       <DollarSign className="h-3 w-3" />
-                      <span>{metrics.tokens_in + metrics.tokens_out} tokens</span>
+                      <span>
+                        {metrics.tokens_in + metrics.tokens_out} tokens
+                      </span>
                     </div>
                     <div>
                       <Badge variant="outline">{metrics.model}</Badge>

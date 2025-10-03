@@ -1,9 +1,9 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from "@/integrations/supabase/client";
 import type {
   PorTestemunha,
   TestemunhaFilters,
   ProcessoFilters,
-} from '@/types/mapa-testemunhas';
+} from "@/types/mapa-testemunhas";
 import {
   ProcessosRequestSchema,
   TestemunhasRequestSchema,
@@ -11,24 +11,24 @@ import {
   type TestemunhasRequest,
   MAPA_TESTEMUNHAS_PROCESSOS_FN,
   MAPA_TESTEMUNHAS_TESTEMUNHAS_FN,
-} from '@/contracts/mapa-contracts';
-import { DebugMode } from '@/lib/debug-mode';
+} from "@/contracts/mapa-contracts";
+import { DebugMode } from "@/lib/debug-mode";
 
 /**
  * Converte filtros em camelCase para snake_case aceito pela API
  * Remove valores vazios, undefined e null
  */
 function toSnakeCaseFilters(
-  filters: TestemunhaFilters | ProcessoFilters | undefined
+  filters: TestemunhaFilters | ProcessoFilters | undefined,
 ) {
   const map: Record<string, string> = {
-    temTriangulacao: 'tem_triangulacao',
-    temTroca: 'tem_troca',
-    temProvaEmprestada: 'tem_prova_emprestada',
-    qtdDeposMin: 'qtd_depoimentos_min',
-    qtdDeposMax: 'qtd_depoimentos_max',
-    ambosPolos: 'ambos_polos',
-    jaFoiReclamante: 'ja_foi_reclamante',
+    temTriangulacao: "tem_triangulacao",
+    temTroca: "tem_troca",
+    temProvaEmprestada: "tem_prova_emprestada",
+    qtdDeposMin: "qtd_depoimentos_min",
+    qtdDeposMax: "qtd_depoimentos_max",
+    ambosPolos: "ambos_polos",
+    jaFoiReclamante: "ja_foi_reclamante",
   };
 
   return Object.fromEntries(
@@ -36,13 +36,10 @@ function toSnakeCaseFilters(
       .filter(([_, value]) => {
         // Remove undefined, null, e strings vazias
         if (value === undefined || value === null) return false;
-        if (typeof value === 'string' && value.trim() === '') return false;
+        if (typeof value === "string" && value.trim() === "") return false;
         return true;
       })
-      .map(([key, value]) => [
-        map[key] ?? key,
-        value,
-      ])
+      .map(([key, value]) => [map[key] ?? key, value]),
   );
 }
 
@@ -52,10 +49,10 @@ function toSnakeCaseFilters(
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   maxRetries = 3,
-  initialDelay = 1000
+  initialDelay = 1000,
 ): Promise<T> {
   let lastError: Error | null = null;
-  
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       return await fn();
@@ -63,24 +60,31 @@ async function retryWithBackoff<T>(
       lastError = error as Error;
       if (attempt < maxRetries - 1) {
         const delay = initialDelay * Math.pow(2, attempt);
-        console.warn(`Tentativa ${attempt + 1} falhou, aguardando ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        console.warn(
+          `Tentativa ${attempt + 1} falhou, aguardando ${delay}ms...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
-  
+
   throw lastError;
 }
 
 /**
  * Fallback para dados mock quando API falha
  */
-function getMockTestemunhasData(page: number, limit: number): { data: PorTestemunha[]; total: number } {
-  console.warn('⚠️ MODO FALLBACK: Usando dados mock para testemunhas (API não disponível)');
+function getMockTestemunhasData(
+  page: number,
+  limit: number,
+): { data: PorTestemunha[]; total: number } {
+  console.warn(
+    "⚠️ MODO FALLBACK: Usando dados mock para testemunhas (API não disponível)",
+  );
   if (DebugMode.isEnabled()) {
-    console.table({ mode: 'FALLBACK', type: 'TESTEMUNHAS', page, limit });
+    console.table({ mode: "FALLBACK", type: "TESTEMUNHAS", page, limit });
   }
-  
+
   const mockData: PorTestemunha[] = [
     {
       nome: "Maria Silva Santos",
@@ -116,10 +120,10 @@ function getMockTestemunhasData(page: number, limit: number): { data: PorTestemu
 
   const start = (page - 1) * limit;
   const end = start + limit;
-  
+
   return {
     data: mockData.slice(start, end),
-    total: mockData.length
+    total: mockData.length,
   };
 }
 
@@ -129,9 +133,9 @@ export async function fetchTestemunhas(params: {
   filters?: TestemunhaFilters;
 }): Promise<{ data: PorTestemunha[]; total: number; error?: string }> {
   const requestId = Math.random().toString(36).substring(7);
-  
+
   const searchTerm = params.filters?.search || params.filters?.nome;
-  
+
   DebugMode.log(`🔍 [${requestId}] fetchTestemunhas iniciado`, {
     page: params.page,
     limit: params.limit,
@@ -161,35 +165,43 @@ export async function fetchTestemunhas(params: {
       },
       filtros,
     } satisfies TestemunhasRequest;
-    
+
     // 🔍 DEBUG ESPECÍFICO PARA SEARCH
     if (searchTerm) {
       console.log(`🎯 [${requestId}] SEARCH DETECTADO:`, {
         searchTerm,
         filtrosEnviados: body.filtros,
-        hasSearchInFiltros: 'search' in body.filtros || 'nome' in body.filtros
+        hasSearchInFiltros: "search" in body.filtros || "nome" in body.filtros,
       });
     }
-    
+
     DebugMode.log(`📦 [${requestId}] Payload preparado`, body);
     TestemunhasRequestSchema.parse(body);
 
     // Use Edge Function com retry automático
     const result = await retryWithBackoff(async () => {
       DebugMode.log(`🚀 [${requestId}] ===== CHAMANDO EDGE FUNCTION =====`);
-      DebugMode.log(`🚀 [${requestId}] Function: ${MAPA_TESTEMUNHAS_TESTEMUNHAS_FN}`);
-      DebugMode.log(`🚀 [${requestId}] URL: ${supabase.functions.url}/${MAPA_TESTEMUNHAS_TESTEMUNHAS_FN}`);
+      DebugMode.log(
+        `🚀 [${requestId}] Function: ${MAPA_TESTEMUNHAS_TESTEMUNHAS_FN}`,
+      );
+      DebugMode.log(
+        `🚀 [${requestId}] URL: ${supabase.functions.url}/${MAPA_TESTEMUNHAS_TESTEMUNHAS_FN}`,
+      );
       DebugMode.log(`🚀 [${requestId}] Body:`, body);
-      DebugMode.log(`🚀 [${requestId}] Auth Token presente: ${!!sessionData.session.access_token}`);
-      
+      DebugMode.log(
+        `🚀 [${requestId}] Auth Token presente: ${!!sessionData.session.access_token}`,
+      );
+
       const startTime = performance.now();
       const { data, error } = await supabase.functions.invoke(
         MAPA_TESTEMUNHAS_TESTEMUNHAS_FN,
-        { body }
+        { body },
       );
       const duration = performance.now() - startTime;
 
-      DebugMode.log(`⏱️ [${requestId}] Tempo de resposta: ${duration.toFixed(2)}ms`);
+      DebugMode.log(
+        `⏱️ [${requestId}] Tempo de resposta: ${duration.toFixed(2)}ms`,
+      );
 
       if (error) {
         DebugMode.error(`❌ [${requestId}] ===== ERRO NA EDGE FUNCTION =====`);
@@ -201,44 +213,55 @@ export async function fetchTestemunhas(params: {
 
       if (!data || !data.items) {
         DebugMode.log(`✅ [${requestId}] ===== DATASET VAZIO (VÁLIDO) =====`);
-        DebugMode.log(`✅ [${requestId}] Empty dataset (0 records) - this is valid, not an error`);
+        DebugMode.log(
+          `✅ [${requestId}] Empty dataset (0 records) - this is valid, not an error`,
+        );
         return { data: [], total: 0 };
       }
 
-      DebugMode.log(`✅ [${requestId}] ===== RESPOSTA RECEBIDA COM SUCESSO =====`);
+      DebugMode.log(
+        `✅ [${requestId}] ===== RESPOSTA RECEBIDA COM SUCESSO =====`,
+      );
       DebugMode.log(`✅ [${requestId}] Data structure:`, {
         hasData: !!data,
         dataKeys: data ? Object.keys(data) : [],
         itemsCount: data.items?.length || 0,
         total: data.total,
-        hasNextCursor: !!data.next_cursor
+        hasNextCursor: !!data.next_cursor,
       });
 
       // Transform backend data - data already comes correctly typed from RPC
-      const transformedItems = data.items.map((item: any) => ({
-        nome_testemunha: item.nome_testemunha || '',
-        qtd_depoimentos: Number(item.qtd_depoimentos) || 0,
-        foi_testemunha_em_ambos_polos: Boolean(item.foi_testemunha_em_ambos_polos),
-        ja_foi_reclamante: Boolean(item.ja_foi_reclamante),
-        participou_triangulacao: Boolean(item.participou_triangulacao),
-        participou_troca_favor: Boolean(item.participou_troca_favor),
-        classificacao: item.classificacao || null,
-        classificacao_estrategica: item.classificacao_estrategica || null,
-        cnjs_como_testemunha: item.cnjs_como_testemunha || null,
-        cnjs_como_reclamante: item.cnjs_como_reclamante || null,
-        foi_testemunha_ativo: Boolean(item.foi_testemunha_ativo),
-        cnjs_ativo: item.cnjs_ativo || null,
-        foi_testemunha_passivo: Boolean(item.foi_testemunha_passivo),
-        cnjs_passivo: item.cnjs_passivo || null,
-        cnjs_troca_favor: item.cnjs_troca_favor || null,
-        cnjs_triangulacao: item.cnjs_triangulacao || null,
-        e_prova_emprestada: Boolean(item.e_prova_emprestada),
-        org_id: item.org_id || null,
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-      } as PorTestemunha));
+      const transformedItems = data.items.map(
+        (item: any) =>
+          ({
+            nome_testemunha: item.nome_testemunha || "",
+            qtd_depoimentos: Number(item.qtd_depoimentos) || 0,
+            foi_testemunha_em_ambos_polos: Boolean(
+              item.foi_testemunha_em_ambos_polos,
+            ),
+            ja_foi_reclamante: Boolean(item.ja_foi_reclamante),
+            participou_triangulacao: Boolean(item.participou_triangulacao),
+            participou_troca_favor: Boolean(item.participou_troca_favor),
+            classificacao: item.classificacao || null,
+            classificacao_estrategica: item.classificacao_estrategica || null,
+            cnjs_como_testemunha: item.cnjs_como_testemunha || null,
+            cnjs_como_reclamante: item.cnjs_como_reclamante || null,
+            foi_testemunha_ativo: Boolean(item.foi_testemunha_ativo),
+            cnjs_ativo: item.cnjs_ativo || null,
+            foi_testemunha_passivo: Boolean(item.foi_testemunha_passivo),
+            cnjs_passivo: item.cnjs_passivo || null,
+            cnjs_troca_favor: item.cnjs_troca_favor || null,
+            cnjs_triangulacao: item.cnjs_triangulacao || null,
+            e_prova_emprestada: Boolean(item.e_prova_emprestada),
+            org_id: item.org_id || null,
+            created_at: item.created_at,
+            updated_at: item.updated_at,
+          }) as PorTestemunha,
+      );
 
-      DebugMode.log(`✅ [${requestId}] Transformed ${transformedItems.length} items`);
+      DebugMode.log(
+        `✅ [${requestId}] Transformed ${transformedItems.length} items`,
+      );
       if (transformedItems.length > 0) {
         DebugMode.log(`✅ [${requestId}] Sample item:`, transformedItems[0]);
       }
@@ -249,12 +272,21 @@ export async function fetchTestemunhas(params: {
     DebugMode.log(`🎉 [${requestId}] fetchTestemunhas concluído com sucesso`);
     return result;
   } catch (error) {
-    DebugMode.error(`💥 [${requestId}] Erro fatal ao buscar testemunhas:`, error);
+    DebugMode.error(
+      `💥 [${requestId}] Erro fatal ao buscar testemunhas:`,
+      error,
+    );
     // Fallback para dados mock em caso de erro
-    const fallback = getMockTestemunhasData(params.page || 1, params.limit || 20);
+    const fallback = getMockTestemunhasData(
+      params.page || 1,
+      params.limit || 20,
+    );
     return {
       ...fallback,
-      error: error instanceof Error ? error.message : 'Erro desconhecido ao buscar testemunhas'
+      error:
+        error instanceof Error
+          ? error.message
+          : "Erro desconhecido ao buscar testemunhas",
     };
   }
 }
@@ -262,12 +294,17 @@ export async function fetchTestemunhas(params: {
 /**
  * Fallback para dados mock de processos quando API falha
  */
-function getMockProcessosData(page: number, limit: number): { data: any[]; total: number } {
-  console.warn('⚠️ MODO FALLBACK: Usando dados mock para processos (API não disponível)');
+function getMockProcessosData(
+  page: number,
+  limit: number,
+): { data: any[]; total: number } {
+  console.warn(
+    "⚠️ MODO FALLBACK: Usando dados mock para processos (API não disponível)",
+  );
   if (DebugMode.isEnabled()) {
-    console.table({ mode: 'FALLBACK', type: 'PROCESSOS', page, limit });
+    console.table({ mode: "FALLBACK", type: "PROCESSOS", page, limit });
   }
-  
+
   const mockData = [
     {
       cnj: "0001234-56.2024.5.02.0001",
@@ -297,10 +334,10 @@ function getMockProcessosData(page: number, limit: number): { data: any[]; total
 
   const start = (page - 1) * limit;
   const end = start + limit;
-  
+
   return {
     data: mockData.slice(start, end),
-    total: mockData.length
+    total: mockData.length,
   };
 }
 
@@ -310,7 +347,7 @@ export async function fetchProcessos(params: {
   filters?: ProcessoFilters;
 }): Promise<{ data: any[]; total: number; error?: string }> {
   const requestId = Math.random().toString(36).substring(7);
-  
+
   DebugMode.log(`🔍 [${requestId}] fetchProcessos iniciado`, {
     page: params.page,
     limit: params.limit,
@@ -339,26 +376,34 @@ export async function fetchProcessos(params: {
       },
       filtros,
     } satisfies ProcessosRequest;
-    
+
     DebugMode.log(`📦 [${requestId}] Payload preparado`, body);
     ProcessosRequestSchema.parse(body);
 
     // Use Edge Function com retry automático
     const result = await retryWithBackoff(async () => {
       DebugMode.log(`🚀 [${requestId}] ===== CHAMANDO EDGE FUNCTION =====`);
-      DebugMode.log(`🚀 [${requestId}] Function: ${MAPA_TESTEMUNHAS_PROCESSOS_FN}`);
-      DebugMode.log(`🚀 [${requestId}] URL: ${supabase.functions.url}/${MAPA_TESTEMUNHAS_PROCESSOS_FN}`);
+      DebugMode.log(
+        `🚀 [${requestId}] Function: ${MAPA_TESTEMUNHAS_PROCESSOS_FN}`,
+      );
+      DebugMode.log(
+        `🚀 [${requestId}] URL: ${supabase.functions.url}/${MAPA_TESTEMUNHAS_PROCESSOS_FN}`,
+      );
       DebugMode.log(`🚀 [${requestId}] Body:`, body);
-      DebugMode.log(`🚀 [${requestId}] Auth Token presente: ${!!sessionData.session.access_token}`);
-      
+      DebugMode.log(
+        `🚀 [${requestId}] Auth Token presente: ${!!sessionData.session.access_token}`,
+      );
+
       const startTime = performance.now();
       const { data, error } = await supabase.functions.invoke(
         MAPA_TESTEMUNHAS_PROCESSOS_FN,
-        { body }
+        { body },
       );
       const duration = performance.now() - startTime;
 
-      DebugMode.log(`⏱️ [${requestId}] Tempo de resposta: ${duration.toFixed(2)}ms`);
+      DebugMode.log(
+        `⏱️ [${requestId}] Tempo de resposta: ${duration.toFixed(2)}ms`,
+      );
 
       if (error) {
         DebugMode.error(`❌ [${requestId}] ===== ERRO NA EDGE FUNCTION =====`);
@@ -370,17 +415,21 @@ export async function fetchProcessos(params: {
 
       if (!data || !data.items) {
         DebugMode.log(`✅ [${requestId}] ===== DATASET VAZIO (VÁLIDO) =====`);
-        DebugMode.log(`✅ [${requestId}] Empty dataset (0 records) - this is valid, not an error`);
+        DebugMode.log(
+          `✅ [${requestId}] Empty dataset (0 records) - this is valid, not an error`,
+        );
         return { data: [], total: 0 };
       }
 
-      DebugMode.log(`✅ [${requestId}] ===== RESPOSTA RECEBIDA COM SUCESSO =====`);
+      DebugMode.log(
+        `✅ [${requestId}] ===== RESPOSTA RECEBIDA COM SUCESSO =====`,
+      );
       DebugMode.log(`✅ [${requestId}] Data structure:`, {
         hasData: !!data,
         dataKeys: data ? Object.keys(data) : [],
         itemsCount: data.items?.length || 0,
         total: data.total,
-        hasNextCursor: !!data.next_cursor
+        hasNextCursor: !!data.next_cursor,
       });
 
       // Validar e normalizar items
@@ -398,7 +447,10 @@ export async function fetchProcessos(params: {
     const fallback = getMockProcessosData(params.page || 1, params.limit || 20);
     return {
       ...fallback,
-      error: error instanceof Error ? error.message : 'Erro desconhecido ao buscar processos'
+      error:
+        error instanceof Error
+          ? error.message
+          : "Erro desconhecido ao buscar processos",
     };
   }
 }

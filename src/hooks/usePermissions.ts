@@ -1,5 +1,5 @@
-import { useAuth } from '@/hooks/useAuth';
-import { NavItem } from '@/config/sidebar';
+import { useAuth } from "@/hooks/useAuth";
+import { NavItem } from "@/config/sidebar";
 
 export function usePermissions() {
   const { user, hasRole, isAdmin, isSuperAdmin } = useAuth();
@@ -24,18 +24,18 @@ export function usePermissions() {
     // Map permissions to role-based access
     const permissions: Record<string, boolean> = {
       // Analytics permissions
-      canViewAnalytics: hasRole('ADMIN') || hasRole('ANALYST'),
-      
+      canViewAnalytics: hasRole("ADMIN") || hasRole("ANALYST"),
+
       // Data management permissions
-      canManageData: hasRole('ADMIN') || hasRole('ANALYST'),
-      canImportData: hasRole('ADMIN') || hasRole('ANALYST'),
-      canViewVersions: hasRole('ADMIN') || hasRole('ANALYST'),
-      
+      canManageData: hasRole("ADMIN") || hasRole("ANALYST"),
+      canImportData: hasRole("ADMIN") || hasRole("ANALYST"),
+      canViewVersions: hasRole("ADMIN") || hasRole("ANALYST"),
+
       // Admin-only permissions
-      canManageOrg: hasRole('ADMIN'),
-      canManagePermissions: hasRole('ADMIN'),
-      canViewLogs: hasRole('ADMIN'),
-      canManageSettings: hasRole('ADMIN'),
+      canManageOrg: hasRole("ADMIN"),
+      canManagePermissions: hasRole("ADMIN"),
+      canViewLogs: hasRole("ADMIN"),
+      canManageSettings: hasRole("ADMIN"),
     };
 
     return permissions[item.permission] || false;
@@ -45,12 +45,12 @@ export function usePermissions() {
     if (canAccess(item)) {
       return item.description || item.label;
     }
-    
+
     return "Sem permissão para acessar esta funcionalidade";
   };
 
   const hasAnyPermissionInGroup = (items: NavItem[]): boolean => {
-    return items.some(item => canAccess(item));
+    return items.some((item) => canAccess(item));
   };
 
   return {
@@ -60,6 +60,6 @@ export function usePermissions() {
     user,
     isAdmin,
     isSuperAdmin,
-    userRole: user?.user_metadata?.role || 'VIEWER'
+    userRole: user?.user_metadata?.role || "VIEWER",
   };
 }

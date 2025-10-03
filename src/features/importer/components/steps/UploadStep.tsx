@@ -1,133 +1,159 @@
-import React, { useCallback } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { Upload, FileSpreadsheet, AlertCircle, CheckCircle, FileText, Download } from 'lucide-react';
-import { useDropzone } from 'react-dropzone';
-import { toast } from '@/hooks/use-toast';
-import { detectFileStructure } from '@/features/importer/etl/detect';
-import { generateSessionId } from '@/features/importer/etl/utils';
-import { MappingDialog } from '@/features/importer/components/MappingDialog';
-import { useImportStore } from '@/features/importer/store/useImportStore';
-import type { ImportSession, DetectedSheet } from '@/lib/importer/types';
-import { useState } from 'react';
+import React, { useCallback } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import {
+  Upload,
+  FileSpreadsheet,
+  AlertCircle,
+  CheckCircle,
+  FileText,
+  Download,
+} from "lucide-react";
+import { useDropzone } from "react-dropzone";
+import { toast } from "@/hooks/use-toast";
+import { detectFileStructure } from "@/features/importer/etl/detect";
+import { generateSessionId } from "@/features/importer/etl/utils";
+import { MappingDialog } from "@/features/importer/components/MappingDialog";
+import { useImportStore } from "@/features/importer/store/useImportStore";
+import type { ImportSession, DetectedSheet } from "@/lib/importer/types";
+import { useState } from "react";
 
 export function UploadStep() {
-  const { 
-    setSession, 
-    setFile, 
-    setCurrentStep, 
-    isProcessing, 
-    setIsProcessing, 
-    uploadProgress, 
+  const {
+    setSession,
+    setFile,
+    setCurrentStep,
+    isProcessing,
+    setIsProcessing,
+    uploadProgress,
     setUploadProgress,
     error,
-    setError
+    setError,
   } = useImportStore();
-  
+
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [detectedSheets, setDetectedSheets] = useState<DetectedSheet[]>([]);
   const [showMapping, setShowMapping] = useState(false);
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (!file) return;
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      const file = acceptedFiles[0];
+      if (!file) return;
 
-    // File size validation (20MB limit)
-    if (file.size > 20 * 1024 * 1024) {
-      setError('Arquivo muito grande. Tamanho máximo: 20MB');
-      toast({
-        title: "Arquivo muito grande",
-        description: "O arquivo deve ter no máximo 20MB",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setUploadedFile(file);
-    setError(null);
-    setIsProcessing(true);
-    setUploadProgress(0);
-
-    // Add debouncing to prevent rate limiting
-    const debounceTimeout = setTimeout(async () => {
-      try {
-        // Simulate upload progress
-        const progressInterval = setInterval(() => {
-          setUploadProgress((prev: number) => {
-            if (prev >= 90) {
-              clearInterval(progressInterval);
-              return 90;
-            }
-            return prev + Math.random() * 15; // Slower progress to reduce pressure
-          });
-        }, 150); // Slower interval
-
-        console.log('Starting file structure detection for:', file.name);
-        
-        // Detect file structure with retry logic
-        let sheets: any[] = [];
-        let retryCount = 0;
-        const maxRetries = 3;
-        
-        while (retryCount < maxRetries) {
-          try {
-            sheets = await detectFileStructure(file);
-            break;
-          } catch (err) {
-            retryCount++;
-            if (retryCount === maxRetries) {
-              throw err;
-            }
-            
-            console.log(`Retry ${retryCount}/${maxRetries} for file detection`);
-            // Exponential backoff
-            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
-          }
-        }
-        
-        clearInterval(progressInterval);
-        setUploadProgress(100);
-        setDetectedSheets(sheets);
-
-        console.log('Detected sheets:', sheets.map(s => ({ name: s.name, model: s.model })));
-
-        // Check if manual mapping is needed
-        const hasAmbiguous = sheets.some(s => s.model === 'ambiguous');
-        
-        if (hasAmbiguous) {
-          console.log('Ambiguous sheets detected, showing mapping dialog');
-          setShowMapping(true);
-        } else {
-          handleContinue(sheets, file);
-        }
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Erro ao processar arquivo';
-        console.error('File processing error:', errorMessage);
-        
-        setError(errorMessage);
+      // File size validation (20MB limit)
+      if (file.size > 20 * 1024 * 1024) {
+        setError("Arquivo muito grande. Tamanho máximo: 20MB");
         toast({
-          title: "Erro no processamento",
-          description: errorMessage,
-          variant: "destructive"
+          title: "Arquivo muito grande",
+          description: "O arquivo deve ter no máximo 20MB",
+          variant: "destructive",
         });
-      } finally {
-        setIsProcessing(false);
+        return;
       }
-    }, 300); // 300ms debounce
 
-    // Cleanup timeout if component unmounts
-    return () => clearTimeout(debounceTimeout);
-  }, [setError, setIsProcessing, setUploadProgress]);
+      setUploadedFile(file);
+      setError(null);
+      setIsProcessing(true);
+      setUploadProgress(0);
+
+      // Add debouncing to prevent rate limiting
+      const debounceTimeout = setTimeout(async () => {
+        try {
+          // Simulate upload progress
+          const progressInterval = setInterval(() => {
+            setUploadProgress((prev: number) => {
+              if (prev >= 90) {
+                clearInterval(progressInterval);
+                return 90;
+              }
+              return prev + Math.random() * 15; // Slower progress to reduce pressure
+            });
+          }, 150); // Slower interval
+
+          console.log("Starting file structure detection for:", file.name);
+
+          // Detect file structure with retry logic
+          let sheets: any[] = [];
+          let retryCount = 0;
+          const maxRetries = 3;
+
+          while (retryCount < maxRetries) {
+            try {
+              sheets = await detectFileStructure(file);
+              break;
+            } catch (err) {
+              retryCount++;
+              if (retryCount === maxRetries) {
+                throw err;
+              }
+
+              console.log(
+                `Retry ${retryCount}/${maxRetries} for file detection`,
+              );
+              // Exponential backoff
+              await new Promise((resolve) =>
+                setTimeout(resolve, 1000 * retryCount),
+              );
+            }
+          }
+
+          clearInterval(progressInterval);
+          setUploadProgress(100);
+          setDetectedSheets(sheets);
+
+          console.log(
+            "Detected sheets:",
+            sheets.map((s) => ({ name: s.name, model: s.model })),
+          );
+
+          // Check if manual mapping is needed
+          const hasAmbiguous = sheets.some((s) => s.model === "ambiguous");
+
+          if (hasAmbiguous) {
+            console.log("Ambiguous sheets detected, showing mapping dialog");
+            setShowMapping(true);
+          } else {
+            handleContinue(sheets, file);
+          }
+        } catch (err) {
+          const errorMessage =
+            err instanceof Error ? err.message : "Erro ao processar arquivo";
+          console.error("File processing error:", errorMessage);
+
+          setError(errorMessage);
+          toast({
+            title: "Erro no processamento",
+            description: errorMessage,
+            variant: "destructive",
+          });
+        } finally {
+          setIsProcessing(false);
+        }
+      }, 300); // 300ms debounce
+
+      // Cleanup timeout if component unmounts
+      return () => clearTimeout(debounceTimeout);
+    },
+    [setError, setIsProcessing, setUploadProgress],
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'application/vnd.ms-excel': ['.xls'],
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-      'text/csv': ['.csv']
+      "application/vnd.ms-excel": [".xls"],
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+        ".xlsx",
+      ],
+      "text/csv": [".csv"],
     },
     maxFiles: 1,
     maxSize: 20 * 1024 * 1024, // 20MB
@@ -135,14 +161,16 @@ export function UploadStep() {
 
   const handleContinue = (sheets: DetectedSheet[], file: File) => {
     // Validate at least one valid sheet
-    const hasValidSheet = sheets.some(s => s.model === 'processo' || s.model === 'testemunha');
-    
+    const hasValidSheet = sheets.some(
+      (s) => s.model === "processo" || s.model === "testemunha",
+    );
+
     if (!hasValidSheet) {
-      setError('Arquivo deve conter pelo menos uma aba válida');
+      setError("Arquivo deve conter pelo menos uma aba válida");
       toast({
         title: "Estrutura inválida",
-        description: 'É necessário ter pelo menos uma aba com estrutura válida',
-        variant: "destructive"
+        description: "É necessário ter pelo menos uma aba com estrutura válida",
+        variant: "destructive",
       });
       return;
     }
@@ -152,12 +180,12 @@ export function UploadStep() {
       fileSize: file.size,
       sheets,
       uploadedAt: new Date(),
-      sessionId: generateSessionId()
+      sessionId: generateSessionId(),
     };
 
     setSession(session);
     setFile(file);
-    setCurrentStep('validation');
+    setCurrentStep("validation");
   };
 
   const handleMappingComplete = (updatedSheets: DetectedSheet[]) => {
@@ -169,12 +197,24 @@ export function UploadStep() {
 
   const getModelBadge = (model: string) => {
     switch (model) {
-      case 'testemunha':
-        return <Badge className="bg-primary/10 text-primary border-primary/20">Por Testemunha</Badge>;
-      case 'processo':
-        return <Badge className="bg-accent/10 text-accent border-accent/20">Por Processo</Badge>;
-      case 'ambiguous':
-        return <Badge className="bg-warning/10 text-warning-foreground border-warning/20">Requer mapeamento</Badge>;
+      case "testemunha":
+        return (
+          <Badge className="bg-primary/10 text-primary border-primary/20">
+            Por Testemunha
+          </Badge>
+        );
+      case "processo":
+        return (
+          <Badge className="bg-accent/10 text-accent border-accent/20">
+            Por Processo
+          </Badge>
+        );
+      case "ambiguous":
+        return (
+          <Badge className="bg-warning/10 text-warning-foreground border-warning/20">
+            Requer mapeamento
+          </Badge>
+        );
       default:
         return <Badge variant="secondary">Desconhecido</Badge>;
     }
@@ -189,7 +229,8 @@ export function UploadStep() {
             Upload de Arquivo
           </CardTitle>
           <CardDescription>
-            Faça upload do arquivo CSV ou XLSX com os dados das testemunhas e processos
+            Faça upload do arquivo CSV ou XLSX com os dados das testemunhas e
+            processos
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -198,9 +239,9 @@ export function UploadStep() {
             <div
               {...getRootProps()}
               className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                isDragActive 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-muted-foreground/25 hover:border-primary hover:bg-muted/50'
+                isDragActive
+                  ? "border-primary bg-primary/5"
+                  : "border-muted-foreground/25 hover:border-primary hover:bg-muted/50"
               }`}
             >
               <input {...getInputProps()} />
@@ -209,7 +250,9 @@ export function UploadStep() {
                 <p className="text-lg font-medium">Solte o arquivo aqui...</p>
               ) : (
                 <div className="space-y-2">
-                  <p className="text-lg font-medium">Arraste o arquivo ou clique para selecionar</p>
+                  <p className="text-lg font-medium">
+                    Arraste o arquivo ou clique para selecionar
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     Formatos aceitos: Excel (.xlsx, .xls) e CSV • Máximo 20MB
                   </p>
@@ -244,9 +287,11 @@ export function UploadStep() {
                   <div className="mt-4 space-y-2">
                     <Progress value={uploadProgress} className="w-full" />
                     <p className="text-sm text-muted-foreground">
-                      {uploadProgress < 50 ? 'Carregando arquivo...' : 
-                       uploadProgress < 90 ? 'Analisando estrutura...' : 
-                       'Finalizando detecção...'}
+                      {uploadProgress < 50
+                        ? "Carregando arquivo..."
+                        : uploadProgress < 90
+                          ? "Analisando estrutura..."
+                          : "Finalizando detecção..."}
                     </p>
                   </div>
                 )}
@@ -276,7 +321,8 @@ export function UploadStep() {
                           {getModelBadge(sheet.model)}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {sheet.rows.toLocaleString()} linhas • {sheet.headers.length} colunas
+                          {sheet.rows.toLocaleString()} linhas •{" "}
+                          {sheet.headers.length} colunas
                         </p>
                       </div>
                     </div>
@@ -284,8 +330,10 @@ export function UploadStep() {
                 ))}
               </div>
 
-              <Button 
-                onClick={() => uploadedFile && handleContinue(detectedSheets, uploadedFile)} 
+              <Button
+                onClick={() =>
+                  uploadedFile && handleContinue(detectedSheets, uploadedFile)
+                }
                 className="w-full"
                 disabled={!uploadedFile}
               >

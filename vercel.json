@@ -1,7 +1,5 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "redirects": [
     { "source": "/404", "destination": "/404.html", "statusCode": 404 }
   ],
@@ -14,7 +12,7 @@
           "value": "nosniff"
         },
         {
-          "key": "X-Frame-Options", 
+          "key": "X-Frame-Options",
           "value": "DENY"
         },
         {

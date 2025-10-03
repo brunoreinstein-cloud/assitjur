@@ -1,15 +1,15 @@
-import React, { useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Circle, ArrowRight } from 'lucide-react';
-import { useImportStore } from '@/features/importer/store/useImportStore';
-import { UploadStep } from '@/components/importer/UploadStep';
-import { ValidationStep } from '@/components/importer/ValidationStep';  
-import { ConfirmStep } from '@/components/importer/ConfirmStep';
-import { TrustNote } from '@/components/importer/TrustNote';
+import React, { useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle, Circle, ArrowRight } from "lucide-react";
+import { useImportStore } from "@/features/importer/store/useImportStore";
+import { UploadStep } from "@/components/importer/UploadStep";
+import { ValidationStep } from "@/components/importer/ValidationStep";
+import { ConfirmStep } from "@/components/importer/ConfirmStep";
+import { TrustNote } from "@/components/importer/TrustNote";
 
 export function ImporterWizard() {
-  const { 
+  const {
     currentStep,
     session,
     file,
@@ -19,7 +19,7 @@ export function ImporterWizard() {
     setCurrentStep,
     setSession,
     setFile,
-    setValidationResult
+    setValidationResult,
   } = useImportStore();
 
   // Criar nova versão quando o wizard inicia
@@ -30,21 +30,21 @@ export function ImporterWizard() {
   }, [createNewVersion]);
 
   const steps = [
-    { id: 'upload', label: 'Upload & Detecção', icon: Circle },
-    { id: 'validation', label: 'Validação & Correções', icon: Circle },
-    { id: 'preview', label: 'Prévia & Revisão', icon: Circle },
-    { id: 'publish', label: 'Confirmação & Publicação', icon: Circle },
+    { id: "upload", label: "Upload & Detecção", icon: Circle },
+    { id: "validation", label: "Validação & Correções", icon: Circle },
+    { id: "preview", label: "Prévia & Revisão", icon: Circle },
+    { id: "publish", label: "Confirmação & Publicação", icon: Circle },
   ] as const;
 
   const handleUploadComplete = (newSession: any, uploadedFile: File) => {
     setSession(newSession);
     setFile(uploadedFile);
-    setCurrentStep('validation');
+    setCurrentStep("validation");
   };
 
   const handleValidationComplete = (result: any) => {
     setValidationResult(result);
-    setCurrentStep('preview');
+    setCurrentStep("preview");
   };
 
   const handleConfirmComplete = () => {
@@ -52,12 +52,12 @@ export function ImporterWizard() {
   };
 
   const getStepStatus = (stepId: string) => {
-    const currentIndex = steps.findIndex(s => s.id === currentStep);
-    const stepIndex = steps.findIndex(s => s.id === stepId);
-    
-    if (stepIndex < currentIndex) return 'completed';
-    if (stepIndex === currentIndex) return 'current';
-    return 'pending';
+    const currentIndex = steps.findIndex((s) => s.id === currentStep);
+    const stepIndex = steps.findIndex((s) => s.id === stepId);
+
+    if (stepIndex < currentIndex) return "completed";
+    if (stepIndex === currentIndex) return "current";
+    return "pending";
   };
 
   return (
@@ -69,30 +69,38 @@ export function ImporterWizard() {
             {steps.map((step, index) => {
               const status = getStepStatus(step.id);
               const isLast = index === steps.length - 1;
-              
+
               return (
                 <div key={step.id} className="flex items-center">
                   <div className="flex flex-col items-center">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors ${
-                      status === 'completed' 
-                        ? 'bg-success border-success text-success-foreground' 
-                        : status === 'current'
-                        ? 'bg-primary border-primary text-primary-foreground'
-                        : 'bg-muted border-border text-muted-foreground'
-                    }`}>
-                      {status === 'completed' ? (
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors ${
+                        status === "completed"
+                          ? "bg-success border-success text-success-foreground"
+                          : status === "current"
+                            ? "bg-primary border-primary text-primary-foreground"
+                            : "bg-muted border-border text-muted-foreground"
+                      }`}
+                    >
+                      {status === "completed" ? (
                         <CheckCircle className="h-5 w-5" />
                       ) : (
                         <span className="text-sm font-medium">{index + 1}</span>
                       )}
                     </div>
                     <div className="mt-2 text-center">
-                      <p className={`text-sm font-medium ${
-                        status === 'current' ? 'text-primary' : 'text-muted-foreground'
-                      }`}>
+                      <p
+                        className={`text-sm font-medium ${
+                          status === "current"
+                            ? "text-primary"
+                            : "text-muted-foreground"
+                        }`}
+                      >
                         {step.label}
-                        {step.id === 'upload' && versionNumber && (
-                          <span className="ml-2 text-xs opacity-70">v{versionNumber}</span>
+                        {step.id === "upload" && versionNumber && (
+                          <span className="ml-2 text-xs opacity-70">
+                            v{versionNumber}
+                          </span>
                         )}
                       </p>
                     </div>
@@ -109,30 +117,31 @@ export function ImporterWizard() {
 
       {/* Step Content */}
       <div className="space-y-6">
-        {currentStep === 'upload' && (
+        {currentStep === "upload" && (
           <UploadStep onComplete={handleUploadComplete} />
         )}
-        
-        {currentStep === 'validation' && session && file && (
-          <ValidationStep 
-            session={session} 
+
+        {currentStep === "validation" && session && file && (
+          <ValidationStep
+            session={session}
             file={file}
             onComplete={handleValidationComplete}
           />
         )}
-        
-        {currentStep === 'preview' && session && validationResult && (
+
+        {currentStep === "preview" && session && validationResult && (
           <div className="text-center p-8">
             <h3 className="text-lg font-medium mb-2">Prévia dos Dados</h3>
             <p className="text-muted-foreground mb-4">
-              {validationResult.summary.valid} registros válidos prontos para publicação
+              {validationResult.summary.valid} registros válidos prontos para
+              publicação
             </p>
             <Badge variant="secondary">v{versionNumber} (draft)</Badge>
           </div>
         )}
-        
-        {currentStep === 'publish' && session && validationResult && (
-          <ConfirmStep 
+
+        {currentStep === "publish" && session && validationResult && (
+          <ConfirmStep
             session={session}
             validationResult={validationResult}
             onComplete={handleConfirmComplete}

@@ -1,20 +1,17 @@
-import { RoutesMap, BreadcrumbInfo } from '@/types/routes';
-import { useLocation } from 'react-router-dom';
-import { 
-  SidebarTrigger, 
-  useSidebar 
-} from '@/components/ui/sidebar';
-import { 
+import { RoutesMap, BreadcrumbInfo } from "@/types/routes";
+import { useLocation } from "react-router-dom";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { NotificationCenter } from '@/components/core/NotificationCenter';
-import { OrgBadge } from '@/components/auth/OrgBadge';
-import { 
+} from "@/components/ui/breadcrumb";
+import { NotificationCenter } from "@/components/core/NotificationCenter";
+import { OrgBadge } from "@/components/auth/OrgBadge";
+import {
   ChevronRight,
   MessageSquare,
   Database,
@@ -23,26 +20,26 @@ import {
   Bot,
   Users,
   FileText,
-  Home
-} from 'lucide-react';
+  Home,
+} from "lucide-react";
 
 const routeConfig: RoutesMap = {
-  '/': { label: 'Início', icon: Home },
-  '/chat': { label: 'Chat Assistente', icon: MessageSquare },
-  '/dados': { label: 'Dados', icon: Database },
-  '/dados/mapa': { label: 'Mapa de Testemunhas', icon: Database },
-  '/admin': { label: 'Administração', icon: BarChart3 },
-  '/admin/ia': { label: 'Inteligência Artificial', icon: Bot },
-  '/admin/ia/chaves': { label: 'Chaves API', icon: Settings },
-  '/admin/ia/modelos': { label: 'Modelos', icon: Settings },
-  '/admin/ia/prompt-studio': { label: 'Prompt Studio', icon: FileText },
-  '/admin/ia/testes': { label: 'Playground', icon: Settings },
-  '/admin/base': { label: 'Base de Dados', icon: Database },
-  '/admin/org': { label: 'Organização', icon: Users },
-  '/admin/config': { label: 'Configurações', icon: Settings },
-  '/admin/analytics': { label: 'Analytics', icon: BarChart3 },
-  '/admin/logs': { label: 'Logs', icon: FileText },
-  '/admin/versoes': { label: 'Versões', icon: FileText }
+  "/": { label: "Início", icon: Home },
+  "/chat": { label: "Chat Assistente", icon: MessageSquare },
+  "/dados": { label: "Dados", icon: Database },
+  "/dados/mapa": { label: "Mapa de Testemunhas", icon: Database },
+  "/admin": { label: "Administração", icon: BarChart3 },
+  "/admin/ia": { label: "Inteligência Artificial", icon: Bot },
+  "/admin/ia/chaves": { label: "Chaves API", icon: Settings },
+  "/admin/ia/modelos": { label: "Modelos", icon: Settings },
+  "/admin/ia/prompt-studio": { label: "Prompt Studio", icon: FileText },
+  "/admin/ia/testes": { label: "Playground", icon: Settings },
+  "/admin/base": { label: "Base de Dados", icon: Database },
+  "/admin/org": { label: "Organização", icon: Users },
+  "/admin/config": { label: "Configurações", icon: Settings },
+  "/admin/analytics": { label: "Analytics", icon: BarChart3 },
+  "/admin/logs": { label: "Logs", icon: FileText },
+  "/admin/versoes": { label: "Versões", icon: FileText },
 };
 
 export function AppHeader() {
@@ -50,30 +47,30 @@ export function AppHeader() {
   const { open: sidebarOpen } = useSidebar();
 
   const generateBreadcrumbs = (): BreadcrumbInfo[] => {
-    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const pathSegments = location.pathname.split("/").filter(Boolean);
     const breadcrumbs: BreadcrumbInfo[] = [];
 
     // Always start with home if not on home page
-    if (location.pathname !== '/') {
+    if (location.pathname !== "/") {
       breadcrumbs.push({
-        path: '/',
-        label: 'Início',
-        icon: Home
+        path: "/",
+        label: "Início",
+        icon: Home,
       });
     }
 
     // Build breadcrumbs from path segments
-    let currentPath = '';
+    let currentPath = "";
     pathSegments.forEach((segment, index) => {
       currentPath += `/${segment}`;
       const config = routeConfig[currentPath];
-      
+
       if (config) {
         breadcrumbs.push({
           path: currentPath,
           label: config.label,
           icon: config.icon,
-          isLast: index === pathSegments.length - 1
+          isLast: index === pathSegments.length - 1,
         });
       }
     });
@@ -93,7 +90,7 @@ export function AppHeader() {
           aria-controls="menu"
           aria-expanded={sidebarOpen}
         />
-        
+
         <div className="flex items-center gap-2 flex-1">
           {/* Current page title for mobile */}
           <div className="flex items-center gap-2 md:hidden">
@@ -105,7 +102,7 @@ export function AppHeader() {
               />
             )}
             <h1 className="font-semibold text-sm">
-              {currentRoute?.label || 'AssistJur.IA'}
+              {currentRoute?.label || "AssistJur.IA"}
             </h1>
           </div>
 
@@ -116,7 +113,7 @@ export function AppHeader() {
                 {breadcrumbs.map((breadcrumb, index) => (
                   <div key={breadcrumb.path}>
                     <BreadcrumbItem>
-                      {breadcrumb.isLast ?? false ? (
+                      {(breadcrumb.isLast ?? false) ? (
                         <BreadcrumbPage className="flex items-center gap-2">
                           <breadcrumb.icon
                             className="h-4 w-4"
@@ -126,7 +123,7 @@ export function AppHeader() {
                           {breadcrumb.label}
                         </BreadcrumbPage>
                       ) : (
-                        <BreadcrumbLink 
+                        <BreadcrumbLink
                           href={breadcrumb.path}
                           className="flex items-center gap-2 hover:text-foreground"
                         >
@@ -161,9 +158,9 @@ export function AppHeader() {
           <div className="hidden md:block">
             <OrgBadge />
           </div>
-          
+
           <NotificationCenter />
-          
+
           {/* Status indicator */}
           <div className="hidden lg:flex items-center gap-2 text-sm text-muted-foreground">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>

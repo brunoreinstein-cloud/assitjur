@@ -10,7 +10,7 @@ import {
   Briefcase,
   ShieldCheck,
   ClipboardList,
-  Settings
+  Settings,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -23,103 +23,105 @@ export type NavItem = {
   description?: string;
 };
 
-export type NavGroup = { 
-  title: string; 
+export type NavGroup = {
+  title: string;
   items: NavItem[];
 };
 
 export const NAV_GROUPS: NavGroup[] = [
-  { 
-    title: "Operação", 
+  {
+    title: "Operação",
     items: [
-      { 
-        label: "Início", 
-        to: "/dashboard", 
+      {
+        label: "Início",
+        to: "/dashboard",
         icon: Home,
-        description: "Visão geral"
+        description: "Visão geral",
       },
-      { 
-        label: "Mapa de Testemunhas", 
-        to: "/mapa-testemunhas", 
+      {
+        label: "Mapa de Testemunhas",
+        to: "/mapa-testemunhas",
         icon: Users,
-        description: "Análise de vínculos e padrões com assistente integrado"
+        description: "Análise de vínculos e padrões com assistente integrado",
       },
-    ]
+    ],
   },
-  { 
-    title: "Análises", 
+  {
+    title: "Análises",
     items: [
-      { 
-        label: "Painel", 
-        to: "/admin", 
+      {
+        label: "Painel",
+        to: "/admin",
         icon: BarChart3,
         description: "Dashboard executivo",
-        permission: "canViewAnalytics"
+        permission: "canViewAnalytics",
       },
-      { 
-        label: "Relatórios", 
-        to: "/admin/analytics", 
+      {
+        label: "Relatórios",
+        to: "/admin/analytics",
         icon: LineChart,
         description: "Análises detalhadas",
-        permission: "canViewAnalytics"
+        permission: "canViewAnalytics",
       },
-    ]
+    ],
   },
-  { 
-    title: "Dados", 
+  {
+    title: "Dados",
     items: [
-      { 
-        label: "Base de Dados", 
-        to: "/admin/base", 
+      {
+        label: "Base de Dados",
+        to: "/admin/base",
         icon: Database,
         description: "Gestão de dados centralizados",
-        permission: "canManageData"
+        permission: "canManageData",
       },
-      { 
-        label: "Importação", 
-        to: "/admin/base-import", 
+      {
+        label: "Importação",
+        to: "/admin/base-import",
         icon: Upload,
         description: "Upload e validação de planilhas",
-        permission: "canImportData"
+        permission: "canImportData",
       },
-      { 
-        label: "Versões", 
-        to: "/admin/versoes", 
+      {
+        label: "Versões",
+        to: "/admin/versoes",
         icon: History,
         description: "Histórico e rollback",
         permission: "canViewVersions",
-        badge: "2" // Example badge
+        badge: "2", // Example badge
       },
-    ]
+    ],
   },
-  { 
-    title: "Administração", 
+  {
+    title: "Administração",
     items: [
-      { 
-        label: "Organização", 
-        to: "/admin/organization", 
+      {
+        label: "Organização",
+        to: "/admin/organization",
         icon: Briefcase,
         description: "Configurações organizacionais",
-        permission: "canManageOrg"
+        permission: "canManageOrg",
       },
-      { 
-        label: "Logs", 
-        to: "/admin/logs", 
+      {
+        label: "Logs",
+        to: "/admin/logs",
         icon: ClipboardList,
         description: "Auditoria e monitoramento",
         permission: "canViewLogs",
-        badge: 3 // Example badge
+        badge: 3, // Example badge
       },
-      { 
-        label: "Configurações", 
-        to: "/settings", 
+      {
+        label: "Configurações",
+        to: "/settings",
         icon: Settings,
         description: "Configurações da organização",
-        permission: "canManageSettings"
+        permission: "canManageSettings",
       },
-    ]
+    ],
   },
 ];
 
 // Flatten all items for search functionality
-export const ALL_NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap(group => group.items);
+export const ALL_NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap(
+  (group) => group.items,
+);

@@ -7,14 +7,14 @@
  * Converte índice numérico da coluna para notação Excel (A, B, C, ..., AA, AB, etc.)
  */
 export function getExcelColumn(columnIndex: number): string {
-  let column = '';
+  let column = "";
   let index = columnIndex;
-  
+
   while (index >= 0) {
     column = String.fromCharCode(65 + (index % 26)) + column;
     index = Math.floor(index / 26) - 1;
   }
-  
+
   return column;
 }
 
@@ -30,21 +30,25 @@ export function getExcelAddress(rowIndex: number, columnIndex: number): string {
 /**
  * Converte nome do campo para índice da coluna em um array de headers
  */
-export function getColumnIndexFromField(field: string, headers: string[]): number {
+export function getColumnIndexFromField(
+  field: string,
+  headers: string[],
+): number {
   // Procura pelo campo exato primeiro
-  let index = headers.findIndex(h => h === field);
+  let index = headers.findIndex((h) => h === field);
   if (index !== -1) return index;
-  
+
   // Procura por correspondência case-insensitive
-  index = headers.findIndex(h => h.toLowerCase() === field.toLowerCase());
+  index = headers.findIndex((h) => h.toLowerCase() === field.toLowerCase());
   if (index !== -1) return index;
-  
+
   // Procura por campos que contenham o termo
-  index = headers.findIndex(h => 
-    h.toLowerCase().includes(field.toLowerCase()) ||
-    field.toLowerCase().includes(h.toLowerCase())
+  index = headers.findIndex(
+    (h) =>
+      h.toLowerCase().includes(field.toLowerCase()) ||
+      field.toLowerCase().includes(h.toLowerCase()),
   );
-  
+
   return index !== -1 ? index : -1;
 }
 
@@ -52,13 +56,13 @@ export function getColumnIndexFromField(field: string, headers: string[]): numbe
  * Cria endereço Excel a partir de nome do campo e índice da linha
  */
 export function createExcelAddressFromField(
-  field: string, 
-  rowIndex: number, 
-  headers: string[]
+  field: string,
+  rowIndex: number,
+  headers: string[],
 ): string | null {
   const columnIndex = getColumnIndexFromField(field, headers);
   if (columnIndex === -1) return null;
-  
+
   return getExcelAddress(rowIndex, columnIndex);
 }
 
@@ -74,15 +78,15 @@ export function isValidExcelAddress(address: string): boolean {
  * Converte endereço no formato antigo "LinhaX!field" para endereço Excel válido
  */
 export function convertLegacyAddress(
-  legacyAddress: string, 
-  headers: string[]
+  legacyAddress: string,
+  headers: string[],
 ): string | null {
   // Formato esperado: "Linha2!cnj" ou similar
   const match = legacyAddress.match(/Linha(\d+)!(.+)/);
   if (!match) return null;
-  
+
   const rowIndex = parseInt(match[1]) - 1; // Converter para 0-indexed
   const field = match[2];
-  
+
   return createExcelAddressFromField(field, rowIndex, headers);
 }

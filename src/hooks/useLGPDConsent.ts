@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export interface LGPDConsent {
   analytics: boolean;
@@ -38,9 +38,9 @@ export function useLGPDConsent() {
     marketing: boolean,
     sharing: boolean,
     retention_period_days: number,
-    legal_basis: string
+    legal_basis: string,
   ) => {
-    // TODO: Re-enable when lgpd_consent table exists  
+    // TODO: Re-enable when lgpd_consent table exists
     // const { data } = await supabase
     //   .from('lgpd_consent')
     //   .upsert({
@@ -51,7 +51,13 @@ export function useLGPDConsent() {
     //     retention_period_days,
     //     legal_basis
     //   });
-    setConsent({ analytics, marketing, sharing, retention_period_days, legal_basis });
+    setConsent({
+      analytics,
+      marketing,
+      sharing,
+      retention_period_days,
+      legal_basis,
+    });
   };
 
   return { consent, loading, updateConsent };

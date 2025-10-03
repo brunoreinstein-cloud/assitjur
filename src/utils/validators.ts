@@ -25,17 +25,17 @@ export interface HeaderMappingResult {
  */
 export function validateCNJ(cnj: string): ValidationResult {
   if (!cnj) {
-    return { isValid: false, error: 'CNJ é obrigatório' };
+    return { isValid: false, error: "CNJ é obrigatório" };
   }
 
   // Normalize CNJ (remove all non-digits)
-  const normalized = cnj.replace(/\D/g, '');
-  
+  const normalized = cnj.replace(/\D/g, "");
+
   if (normalized.length !== 20) {
-    return { 
-      isValid: false, 
-      error: 'CNJ deve ter exatamente 20 dígitos',
-      normalizedValue: normalized
+    return {
+      isValid: false,
+      error: "CNJ deve ter exatamente 20 dígitos",
+      normalizedValue: normalized,
     };
   }
 
@@ -44,14 +44,14 @@ export function validateCNJ(cnj: string): ValidationResult {
   if (!isValidCheckDigit) {
     return {
       isValid: false,
-      error: 'CNJ possui dígitos verificadores inválidos',
-      normalizedValue: normalized
+      error: "CNJ possui dígitos verificadores inválidos",
+      normalizedValue: normalized,
     };
   }
 
   // Format CNJ for display
   const formattedCNJ = formatCNJ(normalized);
-  
+
   return {
     isValid: true,
     normalizedValue: normalized,
@@ -75,17 +75,19 @@ function validateCNJCheckDigits(cnj: string): boolean {
   // Calculate first check digit
   const weights1 = [2, 3, 4, 5, 6, 7, 8, 9, 2, 3, 4, 5, 6, 7, 8, 9, 2, 3];
   let sum1 = 0;
-  
-  const digits = (sequencial + ano + segmento + tribunal + origem).split('').map(Number);
-  
+
+  const digits = (sequencial + ano + segmento + tribunal + origem)
+    .split("")
+    .map(Number);
+
   for (let i = 0; i < digits.length; i++) {
     sum1 += digits[i] * weights1[i];
   }
-  
+
   const remainder1 = sum1 % 97;
   const checkDigit1 = 98 - remainder1;
-  
-  return checkDigit1.toString().padStart(2, '0') === digitosVerificadores;
+
+  return checkDigit1.toString().padStart(2, "0") === digitosVerificadores;
 }
 
 /**
@@ -93,7 +95,7 @@ function validateCNJCheckDigits(cnj: string): boolean {
  */
 function formatCNJ(cnj: string): string {
   if (cnj.length !== 20) return cnj;
-  
+
   return `${cnj.substring(0, 7)}-${cnj.substring(7, 9)}.${cnj.substring(9, 13)}.${cnj.substring(13, 14)}.${cnj.substring(14, 16)}.${cnj.substring(16, 20)}`;
 }
 
@@ -102,16 +104,16 @@ function formatCNJ(cnj: string): string {
  */
 export function validateCPF(cpf: string): ValidationResult {
   if (!cpf) {
-    return { isValid: true, warning: 'CPF não informado' }; // CPF is optional
+    return { isValid: true, warning: "CPF não informado" }; // CPF is optional
   }
 
-  const normalized = cpf.replace(/\D/g, '');
-  
+  const normalized = cpf.replace(/\D/g, "");
+
   if (normalized.length !== 11) {
     return {
       isValid: false,
-      error: 'CPF deve ter exatamente 11 dígitos',
-      normalizedValue: normalized
+      error: "CPF deve ter exatamente 11 dígitos",
+      normalizedValue: normalized,
     };
   }
 
@@ -119,8 +121,8 @@ export function validateCPF(cpf: string): ValidationResult {
   if (/^(\d)\1{10}$/.test(normalized)) {
     return {
       isValid: false,
-      error: 'CPF inválido (todos os dígitos iguais)',
-      normalizedValue: normalized
+      error: "CPF inválido (todos os dígitos iguais)",
+      normalizedValue: normalized,
     };
   }
 
@@ -128,14 +130,14 @@ export function validateCPF(cpf: string): ValidationResult {
   if (!validateCPFCheckDigits(normalized)) {
     return {
       isValid: false,
-      error: 'CPF possui dígitos verificadores inválidos',
-      normalizedValue: normalized
+      error: "CPF possui dígitos verificadores inválidos",
+      normalizedValue: normalized,
     };
   }
 
   return {
     isValid: true,
-    normalizedValue: maskCPF(normalized)
+    normalizedValue: maskCPF(normalized),
   };
 }
 
@@ -177,22 +179,22 @@ function maskCPF(cpf: string): string {
  */
 export function validateDate(dateStr: any): ValidationResult {
   if (!dateStr) {
-    return { isValid: true, warning: 'Data não informada' };
+    return { isValid: true, warning: "Data não informada" };
   }
 
   let date: Date;
-  
+
   // Try parsing different date formats
-  if (typeof dateStr === 'number') {
+  if (typeof dateStr === "number") {
     // Excel serial date
     date = new Date((dateStr - 25569) * 86400 * 1000);
-  } else if (typeof dateStr === 'string') {
+  } else if (typeof dateStr === "string") {
     // Try various string formats
     const cleanDateStr = dateStr.trim();
-    
+
     // DD/MM/YYYY
     if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(cleanDateStr)) {
-      const [day, month, year] = cleanDateStr.split('/').map(Number);
+      const [day, month, year] = cleanDateStr.split("/").map(Number);
       date = new Date(year, month - 1, day);
     }
     // YYYY-MM-DD
@@ -201,26 +203,26 @@ export function validateDate(dateStr: any): ValidationResult {
     }
     // DD-MM-YYYY
     else if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(cleanDateStr)) {
-      const [day, month, year] = cleanDateStr.split('-').map(Number);
+      const [day, month, year] = cleanDateStr.split("-").map(Number);
       date = new Date(year, month - 1, day);
-    }
-    else {
+    } else {
       return {
         isValid: false,
-        error: 'Formato de data inválido. Use DD/MM/YYYY, YYYY-MM-DD ou DD-MM-YYYY'
+        error:
+          "Formato de data inválido. Use DD/MM/YYYY, YYYY-MM-DD ou DD-MM-YYYY",
       };
     }
   } else {
     return {
       isValid: false,
-      error: 'Tipo de data inválido'
+      error: "Tipo de data inválido",
     };
   }
 
   if (isNaN(date.getTime())) {
     return {
       isValid: false,
-      error: 'Data inválida'
+      error: "Data inválida",
     };
   }
 
@@ -232,13 +234,13 @@ export function validateDate(dateStr: any): ValidationResult {
   if (date < minDate || date > maxDate) {
     return {
       isValid: false,
-      error: `Data fora do intervalo válido (${minDate.getFullYear()}-${maxDate.getFullYear()})`
+      error: `Data fora do intervalo válido (${minDate.getFullYear()}-${maxDate.getFullYear()})`,
     };
   }
 
   return {
     isValid: true,
-    normalizedValue: date.toISOString().split('T')[0] // YYYY-MM-DD format
+    normalizedValue: date.toISOString().split("T")[0], // YYYY-MM-DD format
   };
 }
 
@@ -247,28 +249,28 @@ export function validateDate(dateStr: any): ValidationResult {
  */
 export function validateScoreRisco(score: any): ValidationResult {
   if (!score && score !== 0) {
-    return { isValid: true, warning: 'Score de risco não informado' };
+    return { isValid: true, warning: "Score de risco não informado" };
   }
 
   const numScore = Number(score);
-  
+
   if (isNaN(numScore)) {
     return {
       isValid: false,
-      error: 'Score de risco deve ser um número'
+      error: "Score de risco deve ser um número",
     };
   }
 
   if (numScore < 0 || numScore > 100) {
     return {
       isValid: false,
-      error: 'Score de risco deve estar entre 0 e 100'
+      error: "Score de risco deve estar entre 0 e 100",
     };
   }
 
   return {
     isValid: true,
-    normalizedValue: Math.round(numScore)
+    normalizedValue: Math.round(numScore),
   };
 }
 
@@ -282,13 +284,13 @@ export function sanitizeText(text: any): ValidationResult {
 
   const cleanText = String(text)
     .trim()
-    .replace(/\s+/g, ' ') // Multiple spaces to single space
-    .replace(/[<>]/g, '') // Remove potential HTML
+    .replace(/\s+/g, " ") // Multiple spaces to single space
+    .replace(/[<>]/g, "") // Remove potential HTML
     .substring(0, 1000); // Limit length
 
   return {
     isValid: true,
-    normalizedValue: cleanText || null
+    normalizedValue: cleanText || null,
   };
 }
 
@@ -303,24 +305,25 @@ export function parseArrayField(value: any): ValidationResult {
   let names: string[] = [];
 
   if (Array.isArray(value)) {
-    names = value.map(v => String(v).trim()).filter(Boolean);
-  } else if (typeof value === 'string') {
+    names = value.map((v) => String(v).trim()).filter(Boolean);
+  } else if (typeof value === "string") {
     // Split by common separators
-    names = value.split(/[;,\|\n]/)
-      .map(name => name.trim())
+    names = value
+      .split(/[;,\|\n]/)
+      .map((name) => name.trim())
       .filter(Boolean);
   } else {
     names = [String(value).trim()].filter(Boolean);
   }
 
   // Sanitize each name
-  const sanitizedNames = names.map(name => 
-    name.replace(/[<>]/g, '').substring(0, 200)
+  const sanitizedNames = names.map((name) =>
+    name.replace(/[<>]/g, "").substring(0, 200),
   );
 
   return {
     isValid: true,
-    normalizedValue: sanitizedNames
+    normalizedValue: sanitizedNames,
   };
 }
 
@@ -329,39 +332,49 @@ export function parseArrayField(value: any): ValidationResult {
  */
 export function mapHeadersAdvanced(headers: string[]): HeaderMappingResult {
   const requiredFieldMappings = {
-    cnj: ['cnj', 'numero', 'processo', 'num_processo'],
-    reclamante_nome: ['reclamante', 'autor', 'requerente', 'nome_reclamante'],
-    reu_nome: ['reu', 'réu', 'requerido', 'nome_reu', 'demandado']
+    cnj: ["cnj", "numero", "processo", "num_processo"],
+    reclamante_nome: ["reclamante", "autor", "requerente", "nome_reclamante"],
+    reu_nome: ["reu", "réu", "requerido", "nome_reu", "demandado"],
   };
 
   const optionalFieldMappings = {
-    comarca: ['comarca', 'local', 'municipio'],
-    tribunal: ['tribunal', 'trib', 'orgao'],
-    vara: ['vara', 'juizo', 'juízo'],
-    fase: ['fase', 'situacao', 'etapa'],
-    status: ['status', 'situacao', 'estado'],
-    reclamante_cpf: ['cpf', 'cpf_reclamante', 'documento', 'doc_reclamante'],
-    data_audiencia: ['audiencia', 'audiência', 'data_audiencia', 'data'],
-    advogados_ativo: ['advogados_ativo', 'adv_ativo', 'advogado_autor'],
-    advogados_passivo: ['advogados_passivo', 'adv_passivo', 'advogado_reu'],
-    testemunhas_ativo: ['testemunhas_ativo', 'test_ativo', 'testemunha_autor'],
-    testemunhas_passivo: ['testemunhas_passivo', 'test_passivo', 'testemunha_reu'],
-    observacoes: ['observacoes', 'observações', 'obs', 'comentarios']
+    comarca: ["comarca", "local", "municipio"],
+    tribunal: ["tribunal", "trib", "orgao"],
+    vara: ["vara", "juizo", "juízo"],
+    fase: ["fase", "situacao", "etapa"],
+    status: ["status", "situacao", "estado"],
+    reclamante_cpf: ["cpf", "cpf_reclamante", "documento", "doc_reclamante"],
+    data_audiencia: ["audiencia", "audiência", "data_audiencia", "data"],
+    advogados_ativo: ["advogados_ativo", "adv_ativo", "advogado_autor"],
+    advogados_passivo: ["advogados_passivo", "adv_passivo", "advogado_reu"],
+    testemunhas_ativo: ["testemunhas_ativo", "test_ativo", "testemunha_autor"],
+    testemunhas_passivo: [
+      "testemunhas_passivo",
+      "test_passivo",
+      "testemunha_reu",
+    ],
+    observacoes: ["observacoes", "observações", "obs", "comentarios"],
   };
 
   const requiredFields: Record<string, number> = {};
   const optionalFields: Record<string, number> = {};
   const unmappedFields: string[] = [];
-  const suggestions: Array<{ header: string; suggestion: string; confidence: number }> = [];
+  const suggestions: Array<{
+    header: string;
+    suggestion: string;
+    confidence: number;
+  }> = [];
 
   headers.forEach((header, index) => {
-    const normalized = header.toLowerCase().trim()
-      .replace(/[áàâãä]/g, 'a')
-      .replace(/[éèêë]/g, 'e')
-      .replace(/[íìîï]/g, 'i')
-      .replace(/[óòôõö]/g, 'o')
-      .replace(/[úùûü]/g, 'u')
-      .replace(/[ç]/g, 'c');
+    const normalized = header
+      .toLowerCase()
+      .trim()
+      .replace(/[áàâãä]/g, "a")
+      .replace(/[éèêë]/g, "e")
+      .replace(/[íìîï]/g, "i")
+      .replace(/[óòôõö]/g, "o")
+      .replace(/[úùûü]/g, "u")
+      .replace(/[ç]/g, "c");
 
     let mapped = false;
 
@@ -393,8 +406,11 @@ export function mapHeadersAdvanced(headers: string[]): HeaderMappingResult {
 
     // If still not mapped, try to suggest
     if (!mapped) {
-      const allMappings = { ...requiredFieldMappings, ...optionalFieldMappings };
-      
+      const allMappings = {
+        ...requiredFieldMappings,
+        ...optionalFieldMappings,
+      };
+
       for (const [field, patterns] of Object.entries(allMappings)) {
         for (const pattern of patterns) {
           const similarity = calculateSimilarity(normalized, pattern);
@@ -402,14 +418,17 @@ export function mapHeadersAdvanced(headers: string[]): HeaderMappingResult {
             suggestions.push({
               header,
               suggestion: field,
-              confidence: similarity
+              confidence: similarity,
             });
             break;
           }
         }
       }
-      
-      if (suggestions.length === 0 || !suggestions.some(s => s.header === header)) {
+
+      if (
+        suggestions.length === 0 ||
+        !suggestions.some((s) => s.header === header)
+      ) {
         unmappedFields.push(header);
       }
     }
@@ -419,7 +438,7 @@ export function mapHeadersAdvanced(headers: string[]): HeaderMappingResult {
     requiredFields,
     optionalFields,
     unmappedFields,
-    suggestions: suggestions.sort((a, b) => b.confidence - a.confidence)
+    suggestions: suggestions.sort((a, b) => b.confidence - a.confidence),
   };
 }
 
@@ -427,7 +446,9 @@ export function mapHeadersAdvanced(headers: string[]): HeaderMappingResult {
  * Calculate string similarity (Levenshtein distance based)
  */
 function calculateSimilarity(str1: string, str2: string): number {
-  const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+  const matrix = Array(str2.length + 1)
+    .fill(null)
+    .map(() => Array(str1.length + 1).fill(null));
 
   for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
   for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
@@ -438,7 +459,7 @@ function calculateSimilarity(str1: string, str2: string): number {
       matrix[j][i] = Math.min(
         matrix[j][i - 1] + 1,
         matrix[j - 1][i] + 1,
-        matrix[j - 1][i - 1] + indicator
+        matrix[j - 1][i - 1] + indicator,
       );
     }
   }
@@ -451,18 +472,27 @@ function calculateSimilarity(str1: string, str2: string): number {
  * Validate boolean fields
  */
 export function validateBoolean(value: any): ValidationResult {
-  if (value === null || value === undefined || value === '') {
+  if (value === null || value === undefined || value === "") {
     return { isValid: true, normalizedValue: false };
   }
 
-  if (typeof value === 'boolean') {
+  if (typeof value === "boolean") {
     return { isValid: true, normalizedValue: value };
   }
 
   const strValue = String(value).toLowerCase().trim();
-  
-  const trueValues = ['true', '1', 'sim', 'yes', 's', 'verdadeiro', 'ativo'];
-  const falseValues = ['false', '0', 'não', 'nao', 'no', 'n', 'falso', 'inativo'];
+
+  const trueValues = ["true", "1", "sim", "yes", "s", "verdadeiro", "ativo"];
+  const falseValues = [
+    "false",
+    "0",
+    "não",
+    "nao",
+    "no",
+    "n",
+    "falso",
+    "inativo",
+  ];
 
   if (trueValues.includes(strValue)) {
     return { isValid: true, normalizedValue: true };
@@ -474,20 +504,23 @@ export function validateBoolean(value: any): ValidationResult {
 
   return {
     isValid: false,
-    error: `Valor booleano inválido: "${value}". Use: sim/não, true/false, 1/0`
+    error: `Valor booleano inválido: "${value}". Use: sim/não, true/false, 1/0`,
   };
 }
 
 /**
  * Check for duplicate CNJs
  */
-export function checkDuplicateCNJ(cnj: string, existingCNJs: Set<string>): ValidationResult {
-  const normalized = cnj.replace(/\D/g, '');
-  
+export function checkDuplicateCNJ(
+  cnj: string,
+  existingCNJs: Set<string>,
+): ValidationResult {
+  const normalized = cnj.replace(/\D/g, "");
+
   if (existingCNJs.has(normalized)) {
     return {
       isValid: false,
-      error: 'CNJ duplicado encontrado'
+      error: "CNJ duplicado encontrado",
     };
   }
 

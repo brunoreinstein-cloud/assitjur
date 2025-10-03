@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-export type Status = 'empty' | 'loading' | 'success' | 'error' | 'offline';
+export type Status = "empty" | "loading" | "success" | "error" | "offline";
 
 interface StatusState<T = unknown> {
   loading?: boolean;
@@ -15,17 +15,17 @@ export function useStatus<T>(state: StatusState<T>): Status {
   useEffect(() => {
     const handleOnline = () => setOffline(false);
     const handleOffline = () => setOffline(true);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
-  if (offline) return 'offline';
-  if (loading) return 'loading';
-  if (error) return 'error';
-  if (!data || (Array.isArray(data) && data.length === 0)) return 'empty';
-  return 'success';
+  if (offline) return "offline";
+  if (loading) return "loading";
+  if (error) return "error";
+  if (!data || (Array.isArray(data) && data.length === 0)) return "empty";
+  return "success";
 }

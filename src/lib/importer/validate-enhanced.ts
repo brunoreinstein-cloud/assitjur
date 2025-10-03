@@ -1,4 +1,4 @@
-import { intelligentValidateAndCorrect } from '@/lib/importer/intelligent-corrector';
+import { intelligentValidateAndCorrect } from "@/lib/importer/intelligent-corrector";
 
 // Enhanced validation with intelligent correction
 export { intelligentValidateAndCorrect };
@@ -7,7 +7,7 @@ export { intelligentValidateAndCorrect };
 export async function normalizeAndValidate(
   session: any,
   autoCorrections: any,
-  file?: File
+  file?: File,
 ) {
   return intelligentValidateAndCorrect(session, autoCorrections, file);
 }

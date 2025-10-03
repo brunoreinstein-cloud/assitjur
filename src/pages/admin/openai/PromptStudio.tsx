@@ -1,28 +1,75 @@
-import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Slider } from '@/components/ui/slider';
-import { Separator } from '@/components/ui/separator';
-import { FileText, Plus, Edit, History, FlaskConical, GitBranch, Lock, Shield } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
+import { Separator } from "@/components/ui/separator";
+import {
+  FileText,
+  Plus,
+  Edit,
+  History,
+  FlaskConical,
+  GitBranch,
+  Lock,
+  Shield,
+} from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const TEMPLATE_TYPES = [
-  { id: 'processo', name: 'Processo (CNJ)', description: 'Consultas por número de processo' },
-  { id: 'testemunha', name: 'Testemunha (Nome)', description: 'Consultas por nome de testemunha' },
-  { id: 'general', name: 'Padrões Gerais', description: 'Consultas gerais na base' }
+  {
+    id: "processo",
+    name: "Processo (CNJ)",
+    description: "Consultas por número de processo",
+  },
+  {
+    id: "testemunha",
+    name: "Testemunha (Nome)",
+    description: "Consultas por nome de testemunha",
+  },
+  {
+    id: "general",
+    name: "Padrões Gerais",
+    description: "Consultas gerais na base",
+  },
 ];
 
 const SYSTEM_GUARDS = [
@@ -30,13 +77,13 @@ const SYSTEM_GUARDS = [
   "Não inventar ou inferir dados não presentes na base",
   "Sempre mascarar números de CPF no formato XXX.XXX.XXX-XX",
   'Responder "não consta na base fornecida" quando dados não estão disponíveis',
-  "Incluir rodapé obrigatório sobre validação nos autos"
+  "Incluir rodapé obrigatório sobre validação nos autos",
 ];
 
 const DEFAULT_SYSTEM_PROMPT = `Você é um assistente especializado em análise de dados jurídicos. Sua função é consultar e analisar informações de uma planilha de processos e pessoas fornecida pelo usuário.
 
 REGRAS FUNDAMENTAIS (NÃO EDITÁVEIS):
-${SYSTEM_GUARDS.map(guard => `- ${guard}`).join('\n')}
+${SYSTEM_GUARDS.map((guard) => `- ${guard}`).join("\n")}
 
 VARIÁVEIS DISPONÍVEIS:
 - {cnj} - Número do processo
@@ -55,21 +102,21 @@ const PromptStudio = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<any>(null);
   const [abWeights, setAbWeights] = useState({ v1: 80, v2: 20 });
   const [newPrompt, setNewPrompt] = useState({
-    label: '',
+    label: "",
     content: DEFAULT_SYSTEM_PROMPT,
-    template_type: 'general'
+    template_type: "general",
   });
 
   // Fetch prompts
   const { data: prompts, isLoading } = useQuery({
-    queryKey: ['prompts', profile?.organization_id],
+    queryKey: ["prompts", profile?.organization_id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('prompts')
-        .select('*')
-        .eq('org_id', profile?.organization_id)
-        .order('created_at', { ascending: false });
-      
+        .from("prompts")
+        .select("*")
+        .eq("org_id", profile?.organization_id)
+        .order("created_at", { ascending: false });
+
       if (error) throw error;
       return data || [];
     },
@@ -78,15 +125,15 @@ const PromptStudio = () => {
 
   // Fetch active settings
   const { data: settings } = useQuery({
-    queryKey: ['org-settings', profile?.organization_id],
+    queryKey: ["org-settings", profile?.organization_id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('org_settings')
-        .select('prompt_active_id, ab_weights')
-        .eq('org_id', profile?.organization_id)
+        .from("org_settings")
+        .select("prompt_active_id, ab_weights")
+        .eq("org_id", profile?.organization_id)
         .single();
-      
-      if (error && error.code !== 'PGRST116') throw error;
+
+      if (error && error.code !== "PGRST116") throw error;
       return data;
     },
     enabled: !!profile?.organization_id,
@@ -95,19 +142,23 @@ const PromptStudio = () => {
   // Create prompt
   const createPromptMutation = useMutation({
     mutationFn: async (promptData: typeof newPrompt) => {
-      const { error } = await supabase.functions.invoke('admin-prompts', {
-        body: { 
-          action: 'create',
+      const { error } = await supabase.functions.invoke("admin-prompts", {
+        body: {
+          action: "create",
           ...promptData,
-          org_id: profile?.organization_id 
-        }
+          org_id: profile?.organization_id,
+        },
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['prompts'] });
+      queryClient.invalidateQueries({ queryKey: ["prompts"] });
       setIsCreateDialogOpen(false);
-      setNewPrompt({ label: '', content: DEFAULT_SYSTEM_PROMPT, template_type: 'general' });
+      setNewPrompt({
+        label: "",
+        content: DEFAULT_SYSTEM_PROMPT,
+        template_type: "general",
+      });
       toast({
         title: "Prompt criado",
         description: "Nova versão de prompt foi salva.",
@@ -125,18 +176,18 @@ const PromptStudio = () => {
   // Activate prompt
   const activatePromptMutation = useMutation({
     mutationFn: async (promptId: string) => {
-      const { error } = await supabase.functions.invoke('admin-prompts', {
-        body: { 
-          action: 'activate',
+      const { error } = await supabase.functions.invoke("admin-prompts", {
+        body: {
+          action: "activate",
           promptId,
-          org_id: profile?.organization_id 
-        }
+          org_id: profile?.organization_id,
+        },
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['org-settings'] });
-      queryClient.invalidateQueries({ queryKey: ['prompts'] });
+      queryClient.invalidateQueries({ queryKey: ["org-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["prompts"] });
       toast({
         title: "Prompt ativado",
         description: "Prompt está agora ativo para consultas.",
@@ -154,17 +205,17 @@ const PromptStudio = () => {
   // Update A/B weights
   const updateAbWeightsMutation = useMutation({
     mutationFn: async (weights: typeof abWeights) => {
-      const { error } = await supabase.functions.invoke('admin-prompts', {
-        body: { 
-          action: 'update_ab_weights',
+      const { error } = await supabase.functions.invoke("admin-prompts", {
+        body: {
+          action: "update_ab_weights",
           weights,
-          org_id: profile?.organization_id 
-        }
+          org_id: profile?.organization_id,
+        },
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['org-settings'] });
+      queryClient.invalidateQueries({ queryKey: ["org-settings"] });
       toast({
         title: "A/B Test atualizado",
         description: "Pesos de distribuição foram salvos.",
@@ -179,12 +230,18 @@ const PromptStudio = () => {
     },
   });
 
-  const activePrompt = prompts?.find(p => p.id === settings?.prompt_active_id);
-  const promptsByType = prompts?.reduce((acc, prompt) => {
-    if (!acc[prompt.template_type]) acc[prompt.template_type] = [];
-    acc[prompt.template_type].push(prompt);
-    return acc;
-  }, {} as Record<string, any[]>) || {};
+  const activePrompt = prompts?.find(
+    (p) => p.id === settings?.prompt_active_id,
+  );
+  const promptsByType =
+    prompts?.reduce(
+      (acc, prompt) => {
+        if (!acc[prompt.template_type]) acc[prompt.template_type] = [];
+        acc[prompt.template_type].push(prompt);
+        return acc;
+      },
+      {} as Record<string, any[]>,
+    ) || {};
 
   if (isLoading) {
     return (
@@ -204,7 +261,7 @@ const PromptStudio = () => {
             Gerencie prompts do sistema, templates e testes A/B
           </p>
         </div>
-        
+
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -219,7 +276,7 @@ const PromptStudio = () => {
                 Configure um novo template de prompt para sua organização
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -228,15 +285,19 @@ const PromptStudio = () => {
                     id="label"
                     placeholder="Ex: Análise CNJ v2.1"
                     value={newPrompt.label}
-                    onChange={(e) => setNewPrompt({ ...newPrompt, label: e.target.value })}
+                    onChange={(e) =>
+                      setNewPrompt({ ...newPrompt, label: e.target.value })
+                    }
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="type">Tipo de Template</Label>
                   <Select
                     value={newPrompt.template_type}
-                    onValueChange={(value) => setNewPrompt({ ...newPrompt, template_type: value })}
+                    onValueChange={(value) =>
+                      setNewPrompt({ ...newPrompt, template_type: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -246,7 +307,9 @@ const PromptStudio = () => {
                         <SelectItem key={type.id} value={type.id}>
                           <div>
                             <div className="font-medium">{type.name}</div>
-                            <div className="text-xs text-muted-foreground">{type.description}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {type.description}
+                            </div>
                           </div>
                         </SelectItem>
                       ))}
@@ -254,28 +317,37 @@ const PromptStudio = () => {
                   </Select>
                 </div>
               </div>
-              
+
               <div>
                 <Label htmlFor="content">Conteúdo do Prompt</Label>
                 <Textarea
                   id="content"
                   className="min-h-[300px] font-mono text-sm"
                   value={newPrompt.content}
-                  onChange={(e) => setNewPrompt({ ...newPrompt, content: e.target.value })}
+                  onChange={(e) =>
+                    setNewPrompt({ ...newPrompt, content: e.target.value })
+                  }
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   Use variáveis como {"{cnj}"}, {"{nome}"}, {"{comarca}"}, etc.
                 </p>
               </div>
             </div>
-            
+
             <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsCreateDialogOpen(false)}
+              >
                 Cancelar
               </Button>
-              <Button 
+              <Button
                 onClick={() => createPromptMutation.mutate(newPrompt)}
-                disabled={!newPrompt.label || !newPrompt.content || createPromptMutation.isPending}
+                disabled={
+                  !newPrompt.label ||
+                  !newPrompt.content ||
+                  createPromptMutation.isPending
+                }
               >
                 {createPromptMutation.isPending ? "Criando..." : "Criar Prompt"}
               </Button>
@@ -300,10 +372,17 @@ const PromptStudio = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Badge variant="default">Ativo</Badge>
-                    <CardTitle className="text-green-800">{activePrompt.label}</CardTitle>
+                    <CardTitle className="text-green-800">
+                      {activePrompt.label}
+                    </CardTitle>
                   </div>
                   <div className="text-sm text-green-700">
-                    v{activePrompt.version} • {TEMPLATE_TYPES.find(t => t.id === activePrompt.template_type)?.name}
+                    v{activePrompt.version} •{" "}
+                    {
+                      TEMPLATE_TYPES.find(
+                        (t) => t.id === activePrompt.template_type,
+                      )?.name
+                    }
                   </div>
                 </div>
               </CardHeader>
@@ -345,15 +424,23 @@ const PromptStudio = () => {
                     <TableBody>
                       {promptsByType[type.id].map((prompt: any) => (
                         <TableRow key={prompt.id}>
-                          <TableCell className="font-medium">{prompt.label}</TableCell>
+                          <TableCell className="font-medium">
+                            {prompt.label}
+                          </TableCell>
                           <TableCell>v{prompt.version}</TableCell>
                           <TableCell>
-                            <Badge variant={prompt.is_active ? "default" : "secondary"}>
+                            <Badge
+                              variant={
+                                prompt.is_active ? "default" : "secondary"
+                              }
+                            >
                               {prompt.is_active ? "Ativo" : "Inativo"}
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {format(new Date(prompt.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+                            {format(new Date(prompt.created_at), "dd/MM/yyyy", {
+                              locale: ptBR,
+                            })}
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end space-x-2">
@@ -368,7 +455,9 @@ const PromptStudio = () => {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => activatePromptMutation.mutate(prompt.id)}
+                                  onClick={() =>
+                                    activatePromptMutation.mutate(prompt.id)
+                                  }
                                   disabled={activatePromptMutation.isPending}
                                 >
                                   Ativar
@@ -401,7 +490,10 @@ const PromptStudio = () => {
             <CardContent>
               <div className="space-y-2">
                 {SYSTEM_GUARDS.map((guard, index) => (
-                  <div key={index} className="flex items-start space-x-2 text-red-800">
+                  <div
+                    key={index}
+                    className="flex items-start space-x-2 text-red-800"
+                  >
                     <Shield className="h-4 w-4 mt-0.5 flex-shrink-0" />
                     <span className="text-sm">{guard}</span>
                   </div>
@@ -441,11 +533,15 @@ const PromptStudio = () => {
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <Label>Versão 1 (Principal)</Label>
-                  <span className="text-sm text-muted-foreground">{abWeights.v1}%</span>
+                  <span className="text-sm text-muted-foreground">
+                    {abWeights.v1}%
+                  </span>
                 </div>
                 <Slider
                   value={[abWeights.v1]}
-                  onValueChange={([value]) => setAbWeights({ v1: value, v2: 100 - value })}
+                  onValueChange={([value]) =>
+                    setAbWeights({ v1: value, v2: 100 - value })
+                  }
                   max={100}
                   min={0}
                   step={5}
@@ -456,11 +552,15 @@ const PromptStudio = () => {
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <Label>Versão 2 (Teste)</Label>
-                  <span className="text-sm text-muted-foreground">{abWeights.v2}%</span>
+                  <span className="text-sm text-muted-foreground">
+                    {abWeights.v2}%
+                  </span>
                 </div>
                 <Slider
                   value={[abWeights.v2]}
-                  onValueChange={([value]) => setAbWeights({ v1: 100 - value, v2: value })}
+                  onValueChange={([value]) =>
+                    setAbWeights({ v1: 100 - value, v2: value })
+                  }
                   max={100}
                   min={0}
                   step={5}
@@ -476,7 +576,9 @@ const PromptStudio = () => {
                   onClick={() => updateAbWeightsMutation.mutate(abWeights)}
                   disabled={updateAbWeightsMutation.isPending}
                 >
-                  {updateAbWeightsMutation.isPending ? "Salvando..." : "Salvar Configuração"}
+                  {updateAbWeightsMutation.isPending
+                    ? "Salvando..."
+                    : "Salvar Configuração"}
                 </Button>
               </div>
             </CardContent>
@@ -494,7 +596,9 @@ const PromptStudio = () => {
               <div className="text-center py-8 text-muted-foreground">
                 <FlaskConical className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Dados insuficientes para análise</p>
-                <p className="text-sm">Execute mais testes para ver métricas comparativas</p>
+                <p className="text-sm">
+                  Execute mais testes para ver métricas comparativas
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -512,19 +616,25 @@ const PromptStudio = () => {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-3">
                   <div>
-                    <code className="bg-muted px-2 py-1 rounded font-mono text-sm">{"{cnj}"}</code>
+                    <code className="bg-muted px-2 py-1 rounded font-mono text-sm">
+                      {"{cnj}"}
+                    </code>
                     <p className="text-sm text-muted-foreground mt-1">
                       Número do processo CNJ formatado
                     </p>
                   </div>
                   <div>
-                    <code className="bg-muted px-2 py-1 rounded font-mono text-sm">{"{nome}"}</code>
+                    <code className="bg-muted px-2 py-1 rounded font-mono text-sm">
+                      {"{nome}"}
+                    </code>
                     <p className="text-sm text-muted-foreground mt-1">
                       Nome da pessoa para consulta
                     </p>
                   </div>
                   <div>
-                    <code className="bg-muted px-2 py-1 rounded font-mono text-sm">{"{comarca}"}</code>
+                    <code className="bg-muted px-2 py-1 rounded font-mono text-sm">
+                      {"{comarca}"}
+                    </code>
                     <p className="text-sm text-muted-foreground mt-1">
                       Comarca do processo
                     </p>
@@ -532,19 +642,25 @@ const PromptStudio = () => {
                 </div>
                 <div className="space-y-3">
                   <div>
-                    <code className="bg-muted px-2 py-1 rounded font-mono text-sm">{"{ano}"}</code>
+                    <code className="bg-muted px-2 py-1 rounded font-mono text-sm">
+                      {"{ano}"}
+                    </code>
                     <p className="text-sm text-muted-foreground mt-1">
                       Ano de referência para filtros
                     </p>
                   </div>
                   <div>
-                    <code className="bg-muted px-2 py-1 rounded font-mono text-sm">{"{janelaTriangulacao}"}</code>
+                    <code className="bg-muted px-2 py-1 rounded font-mono text-sm">
+                      {"{janelaTriangulacao}"}
+                    </code>
                     <p className="text-sm text-muted-foreground mt-1">
                       Período para análise de triangulação
                     </p>
                   </div>
                   <div>
-                    <code className="bg-muted px-2 py-1 rounded font-mono text-sm">{"{politicaLGPD}"}</code>
+                    <code className="bg-muted px-2 py-1 rounded font-mono text-sm">
+                      {"{politicaLGPD}"}
+                    </code>
                     <p className="text-sm text-muted-foreground mt-1">
                       Diretrizes de proteção de dados
                     </p>

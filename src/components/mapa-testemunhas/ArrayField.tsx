@@ -1,6 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Copy, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { applyPIIMask } from "@/utils/pii-mask";
@@ -11,9 +15,13 @@ interface ArrayFieldProps {
   isPiiMasked?: boolean;
 }
 
-export function ArrayField({ items, maxVisible = 2, isPiiMasked = false }: ArrayFieldProps) {
+export function ArrayField({
+  items,
+  maxVisible = 2,
+  isPiiMasked = false,
+}: ArrayFieldProps) {
   const { toast } = useToast();
-  
+
   if (!items || items.length === 0) {
     return <span className="text-muted-foreground">—</span>;
   }
@@ -24,7 +32,7 @@ export function ArrayField({ items, maxVisible = 2, isPiiMasked = false }: Array
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(items.join('\n'));
+      await navigator.clipboard.writeText(items.join("\n"));
       toast({
         title: "Copiado!",
         description: "Lista copiada para a área de transferência.",
@@ -67,10 +75,12 @@ export function ArrayField({ items, maxVisible = 2, isPiiMasked = false }: Array
           <PopoverContent className="w-80" align="start">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium">Lista completa ({items.length} itens)</h4>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <h4 className="font-medium">
+                  Lista completa ({items.length} itens)
+                </h4>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={copyToClipboard}
                   className="h-8 px-2"
                 >

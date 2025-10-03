@@ -1,48 +1,51 @@
-import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { 
-  Sidebar, 
-  SidebarContent, 
-  SidebarFooter, 
-  SidebarGroup, 
-  SidebarGroupContent, 
-  SidebarGroupLabel, 
-  SidebarHeader, 
-  SidebarMenu, 
-  SidebarMenuButton, 
+import React from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar
-} from '@/components/ui/sidebar';
-import { useAuth } from '@/hooks/useAuth';
-import { usePermissions } from '@/hooks/usePermissions';
-import { useToast } from '@/hooks/use-toast';
-import { useConsent } from '@/hooks/useConsent';
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useToast } from "@/hooks/use-toast";
+import { useConsent } from "@/hooks/useConsent";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { NAV_GROUPS } from '@/config/sidebar';
-import { ThemeToggle } from '@/components/navigation/ThemeToggle';
-import { CommandPalette } from '@/components/navigation/CommandPalette';
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
-  User,
-  LogOut,
-  UserCog
-} from 'lucide-react';
-import { BrandLogo } from '@/components/brand/BrandLogo';
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { NAV_GROUPS } from "@/config/sidebar";
+import { ThemeToggle } from "@/components/navigation/ThemeToggle";
+import { CommandPalette } from "@/components/navigation/CommandPalette";
+import { User, LogOut, UserCog } from "lucide-react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 
 export function AppSidebar() {
-  const { open, setOpen, openMobile, setOpenMobile, isMobile, state } = useSidebar();
+  const { open, setOpen, openMobile, setOpenMobile, isMobile, state } =
+    useSidebar();
   const location = useLocation();
   const { setOpen: setConsentOpen } = useConsent();
   const { user, signOut, isAdmin } = useAuth();
-  const { canAccess, getPermissionTooltip, hasAnyPermissionInGroup, userRole } = usePermissions();
+  const { canAccess, getPermissionTooltip, hasAnyPermissionInGroup, userRole } =
+    usePermissions();
   const { toast } = useToast();
 
   const handleSignOut = async () => {
@@ -63,56 +66,56 @@ export function AppSidebar() {
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'ADMIN':
-        return 'destructive' as const;
-      case 'ANALYST':
-        return 'default' as const;
-      case 'VIEWER':
-        return 'secondary' as const;
+      case "ADMIN":
+        return "destructive" as const;
+      case "ANALYST":
+        return "default" as const;
+      case "VIEWER":
+        return "secondary" as const;
       default:
-        return 'secondary' as const;
+        return "secondary" as const;
     }
   };
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case 'ADMIN':
-        return 'Admin';
-      case 'ANALYST':
-        return 'Analyst';
-      case 'VIEWER':
-        return 'Viewer';
+      case "ADMIN":
+        return "Admin";
+      case "ANALYST":
+        return "Analyst";
+      case "VIEWER":
+        return "Viewer";
       default:
-        return 'Usuário';
+        return "Usuário";
     }
   };
 
   const isActive = (path: string) => {
-    if (path === '/') {
-      return location.pathname === '/';
+    if (path === "/") {
+      return location.pathname === "/";
     }
     return location.pathname.startsWith(path);
   };
 
   return (
     <TooltipProvider>
-      <Sidebar 
-        variant="sidebar" 
+      <Sidebar
+        variant="sidebar"
         className={`bg-sidebar border-sidebar-border transition-all duration-300 ${
-          !open ? 'w-[72px]' : 'w-60'
+          !open ? "w-[72px]" : "w-60"
         }`}
       >
         <SidebarHeader className="border-b border-sidebar-border p-4">
           <div className="flex items-center gap-3">
-            <BrandLogo
-              variation="mark"
-              size="md"
-              className="flex-shrink-0"
-            />
+            <BrandLogo variation="mark" size="md" className="flex-shrink-0" />
             {open && (
               <div className="min-w-0">
-                <h2 className="text-lg font-semibold text-sidebar-foreground truncate">AssistJur.IA</h2>
-                <p className="text-xs text-sidebar-foreground/60">Legal Intelligence</p>
+                <h2 className="text-lg font-semibold text-sidebar-foreground truncate">
+                  AssistJur.IA
+                </h2>
+                <p className="text-xs text-sidebar-foreground/60">
+                  Legal Intelligence
+                </p>
               </div>
             )}
           </div>
@@ -134,7 +137,7 @@ export function AppSidebar() {
                     {group.items.map((item) => {
                       const canAccessItem = canAccess(item);
                       const active = isActive(item.to);
-                      
+
                       if (!canAccessItem) {
                         // Show disabled item with tooltip for admin visibility
                         return (
@@ -155,22 +158,22 @@ export function AppSidebar() {
                       }
 
                       const MenuButton = (
-                        <NavLink 
+                        <NavLink
                           to={item.to}
                           className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors group ${
-                            active 
-                              ? 'bg-primary/10 text-foreground border-l-2 border-primary' 
-                              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                            active
+                              ? "bg-primary/10 text-foreground border-l-2 border-primary"
+                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
                           }`}
-                          aria-current={active ? 'page' : undefined}
+                          aria-current={active ? "page" : undefined}
                         >
                           <item.icon className="h-4 w-4 flex-shrink-0" />
                           {open && (
                             <div className="flex items-center justify-between w-full min-w-0">
                               <span className="truncate">{item.label}</span>
                               {item.badge && (
-                                <Badge 
-                                  variant="secondary" 
+                                <Badge
+                                  variant="secondary"
                                   className="ml-2 text-xs h-5 px-1.5 bg-primary/20 text-primary border-0"
                                 >
                                   {item.badge}
@@ -211,14 +214,19 @@ export function AppSidebar() {
             <ThemeToggle />
             <CommandPalette />
           </div>
-          <button onClick={() => setConsentOpen(true)} className="text-xs underline text-sidebar-foreground">Privacidade / Gerenciar cookies</button>
+          <button
+            onClick={() => setConsentOpen(true)}
+            className="text-xs underline text-sidebar-foreground"
+          >
+            Privacidade / Gerenciar cookies
+          </button>
 
           {/* User Profile */}
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent text-left w-full transition-colors">
               <Avatar className="h-8 w-8 flex-shrink-0">
                 <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                  {user?.email?.charAt(0).toUpperCase() || 'U'}
+                  {user?.email?.charAt(0).toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
               {open && (
@@ -227,8 +235,8 @@ export function AppSidebar() {
                     {user?.email}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge 
-                      variant={getRoleBadgeVariant(userRole)} 
+                    <Badge
+                      variant={getRoleBadgeVariant(userRole)}
                       className="text-xs"
                     >
                       {getRoleLabel(userRole)}
@@ -237,7 +245,7 @@ export function AppSidebar() {
                 </div>
               )}
             </DropdownMenuTrigger>
-            
+
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem asChild className="cursor-pointer">
                 <NavLink to="/profile" className="flex items-center gap-2">
@@ -254,7 +262,7 @@ export function AppSidebar() {
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={handleSignOut}
                 className="flex items-center gap-2 text-destructive focus:text-destructive cursor-pointer"
               >

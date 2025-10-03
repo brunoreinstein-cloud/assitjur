@@ -1,17 +1,37 @@
-import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CheckCircle, AlertCircle, Info, Wand2, Eye, EyeOff } from 'lucide-react';
+import React, { useState, useMemo } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  CheckCircle,
+  AlertCircle,
+  Info,
+  Wand2,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 interface FieldCorrection {
   field: string;
   originalValue: any;
   correctedValue: any;
-  correctionType: 'auto_complete' | 'format' | 'infer' | 'default';
+  correctionType: "auto_complete" | "format" | "infer" | "default";
   confidence: number;
 }
 
@@ -28,9 +48,15 @@ interface CorrectionInterfaceProps {
   onReject: () => void;
 }
 
-export function CorrectionInterface({ corrections, onApplyCorrections, onReject }: CorrectionInterfaceProps) {
+export function CorrectionInterface({
+  corrections,
+  onApplyCorrections,
+  onReject,
+}: CorrectionInterfaceProps) {
   const [showDetails, setShowDetails] = useState(false);
-  const [selectedCorrections, setSelectedCorrections] = useState<Set<string>>(new Set());
+  const [selectedCorrections, setSelectedCorrections] = useState<Set<string>>(
+    new Set(),
+  );
 
   const correctionStats = useMemo(() => {
     return corrections.reduce(
@@ -38,37 +64,57 @@ export function CorrectionInterface({ corrections, onApplyCorrections, onReject 
         acc.total += 1;
         if (c.corrections.length > 0) acc.withCorrections += 1;
         if (c.isValid) acc.valid += 1;
-        if (c.corrections.some((cor) => cor.correctionType === 'auto_complete')) acc.autoComplete += 1;
-        if (c.corrections.some((cor) => cor.correctionType === 'format')) acc.format += 1;
-        if (c.corrections.some((cor) => cor.correctionType === 'infer')) acc.inferred += 1;
+        if (c.corrections.some((cor) => cor.correctionType === "auto_complete"))
+          acc.autoComplete += 1;
+        if (c.corrections.some((cor) => cor.correctionType === "format"))
+          acc.format += 1;
+        if (c.corrections.some((cor) => cor.correctionType === "infer"))
+          acc.inferred += 1;
         return acc;
       },
-      { total: 0, withCorrections: 0, autoComplete: 0, format: 0, inferred: 0, valid: 0 }
+      {
+        total: 0,
+        withCorrections: 0,
+        autoComplete: 0,
+        format: 0,
+        inferred: 0,
+        valid: 0,
+      },
     );
   }, [corrections]);
 
   const getCorrectionTypeColor = (type: string) => {
     switch (type) {
-      case 'auto_complete': return 'bg-blue-500/10 text-blue-700 border-blue-200';
-      case 'format': return 'bg-green-500/10 text-green-700 border-green-200';
-      case 'infer': return 'bg-amber-500/10 text-amber-700 border-amber-200';
-      case 'default': return 'bg-purple-500/10 text-purple-700 border-purple-200';
-      default: return 'bg-muted text-muted-foreground';
+      case "auto_complete":
+        return "bg-blue-500/10 text-blue-700 border-blue-200";
+      case "format":
+        return "bg-green-500/10 text-green-700 border-green-200";
+      case "infer":
+        return "bg-amber-500/10 text-amber-700 border-amber-200";
+      case "default":
+        return "bg-purple-500/10 text-purple-700 border-purple-200";
+      default:
+        return "bg-muted text-muted-foreground";
     }
   };
 
   const getCorrectionTypeLabel = (type: string) => {
     switch (type) {
-      case 'auto_complete': return 'Auto-completar';
-      case 'format': return 'Formatação';
-      case 'infer': return 'Inferência';
-      case 'default': return 'Padrão';
-      default: return type;
+      case "auto_complete":
+        return "Auto-completar";
+      case "format":
+        return "Formatação";
+      case "infer":
+        return "Inferência";
+      case "default":
+        return "Padrão";
+      default:
+        return type;
     }
   };
 
   const handleApplyCorrections = () => {
-    const correctedData = corrections.map(c => c.correctedData);
+    const correctedData = corrections.map((c) => c.correctedData);
     onApplyCorrections(correctedData);
   };
 
@@ -80,7 +126,8 @@ export function CorrectionInterface({ corrections, onApplyCorrections, onReject 
           Correções Inteligentes Detectadas
         </CardTitle>
         <CardDescription>
-          O sistema detectou e pode corrigir automaticamente alguns problemas nos dados
+          O sistema detectou e pode corrigir automaticamente alguns problemas
+          nos dados
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -91,28 +138,34 @@ export function CorrectionInterface({ corrections, onApplyCorrections, onReject 
             <div className="text-xs text-muted-foreground">Total de linhas</div>
           </Card>
           <Card className="p-3 text-center bg-success/5 border-success/20">
-            <div className="text-lg font-bold text-success">{correctionStats.valid}</div>
+            <div className="text-lg font-bold text-success">
+              {correctionStats.valid}
+            </div>
             <div className="text-xs text-muted-foreground">Serão válidas</div>
           </Card>
           <Card className="p-3 text-center bg-blue-500/5 border-blue-500/20">
-            <div className="text-lg font-bold text-blue-600">{correctionStats.withCorrections}</div>
+            <div className="text-lg font-bold text-blue-600">
+              {correctionStats.withCorrections}
+            </div>
             <div className="text-xs text-muted-foreground">Com correções</div>
           </Card>
           <Card className="p-3 text-center bg-amber-500/5 border-amber-500/20">
-            <div className="text-lg font-bold text-amber-600">{correctionStats.inferred}</div>
+            <div className="text-lg font-bold text-amber-600">
+              {correctionStats.inferred}
+            </div>
             <div className="text-xs text-muted-foreground">Inferências</div>
           </Card>
         </div>
 
         {/* Correction Types Summary */}
         <div className="flex flex-wrap gap-2">
-          <Badge className={getCorrectionTypeColor('auto_complete')}>
+          <Badge className={getCorrectionTypeColor("auto_complete")}>
             {correctionStats.autoComplete} Auto-completar
           </Badge>
-          <Badge className={getCorrectionTypeColor('format')}>
+          <Badge className={getCorrectionTypeColor("format")}>
             {correctionStats.format} Formatação
           </Badge>
-          <Badge className={getCorrectionTypeColor('infer')}>
+          <Badge className={getCorrectionTypeColor("infer")}>
             {correctionStats.inferred} Inferências
           </Badge>
         </div>
@@ -121,19 +174,24 @@ export function CorrectionInterface({ corrections, onApplyCorrections, onReject 
         <Alert className="border-success bg-success/5">
           <CheckCircle className="h-4 w-4 text-success" />
           <AlertDescription className="text-success">
-            <strong>Pronto para aplicar:</strong> {correctionStats.valid} de {correctionStats.total} linhas serão válidas após as correções
+            <strong>Pronto para aplicar:</strong> {correctionStats.valid} de{" "}
+            {correctionStats.total} linhas serão válidas após as correções
           </AlertDescription>
         </Alert>
 
         {/* Details Toggle */}
         <div className="flex justify-center">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => setShowDetails(!showDetails)}
           >
-            {showDetails ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
-            {showDetails ? 'Ocultar Detalhes' : 'Ver Detalhes'}
+            {showDetails ? (
+              <EyeOff className="h-4 w-4 mr-2" />
+            ) : (
+              <Eye className="h-4 w-4 mr-2" />
+            )}
+            {showDetails ? "Ocultar Detalhes" : "Ver Detalhes"}
           </Button>
         </div>
 
@@ -141,10 +199,12 @@ export function CorrectionInterface({ corrections, onApplyCorrections, onReject 
         {showDetails && (
           <Tabs defaultValue="corrections" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="corrections">Correções ({correctionStats.withCorrections})</TabsTrigger>
+              <TabsTrigger value="corrections">
+                Correções ({correctionStats.withCorrections})
+              </TabsTrigger>
               <TabsTrigger value="samples">Amostras (5)</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="corrections" className="space-y-4">
               <div className="max-h-96 overflow-y-auto">
                 <Table>
@@ -159,14 +219,23 @@ export function CorrectionInterface({ corrections, onApplyCorrections, onReject 
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {corrections.slice(0, 50).map((row, rowIndex) => 
+                    {corrections.slice(0, 50).map((row, rowIndex) =>
                       row.corrections.map((correction, corrIndex) => (
                         <TableRow key={`${rowIndex}-${corrIndex}`}>
                           <TableCell>{rowIndex + 1}</TableCell>
-                          <TableCell className="font-mono text-sm">{correction.field}</TableCell>
+                          <TableCell className="font-mono text-sm">
+                            {correction.field}
+                          </TableCell>
                           <TableCell>
-                            <Badge className={getCorrectionTypeColor(correction.correctionType)} variant="outline">
-                              {getCorrectionTypeLabel(correction.correctionType)}
+                            <Badge
+                              className={getCorrectionTypeColor(
+                                correction.correctionType,
+                              )}
+                              variant="outline"
+                            >
+                              {getCorrectionTypeLabel(
+                                correction.correctionType,
+                              )}
                             </Badge>
                           </TableCell>
                           <TableCell className="max-w-32 truncate">
@@ -185,13 +254,13 @@ export function CorrectionInterface({ corrections, onApplyCorrections, onReject 
                             </Badge>
                           </TableCell>
                         </TableRow>
-                      ))
+                      )),
                     )}
                   </TableBody>
                 </Table>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="samples" className="space-y-4">
               <div className="max-h-96 overflow-y-auto space-y-4">
                 {corrections.slice(0, 5).map((row, index) => (
@@ -218,7 +287,9 @@ export function CorrectionInterface({ corrections, onApplyCorrections, onReject 
                         </pre>
                       </div>
                       <div>
-                        <div className="font-medium mb-1">Dados Corrigidos:</div>
+                        <div className="font-medium mb-1">
+                          Dados Corrigidos:
+                        </div>
                         <pre className="bg-success/10 p-2 rounded text-xs overflow-x-auto">
                           {JSON.stringify(row.correctedData, null, 2)}
                         </pre>
@@ -229,8 +300,17 @@ export function CorrectionInterface({ corrections, onApplyCorrections, onReject 
                         <div className="font-medium mb-1">Correções:</div>
                         <div className="flex flex-wrap gap-1">
                           {row.corrections.map((correction, corrIndex) => (
-                            <Badge key={corrIndex} className={getCorrectionTypeColor(correction.correctionType)} variant="outline">
-                              {correction.field}: {getCorrectionTypeLabel(correction.correctionType)}
+                            <Badge
+                              key={corrIndex}
+                              className={getCorrectionTypeColor(
+                                correction.correctionType,
+                              )}
+                              variant="outline"
+                            >
+                              {correction.field}:{" "}
+                              {getCorrectionTypeLabel(
+                                correction.correctionType,
+                              )}
                             </Badge>
                           ))}
                         </div>
@@ -248,7 +328,10 @@ export function CorrectionInterface({ corrections, onApplyCorrections, onReject 
           <Button variant="outline" onClick={onReject}>
             Rejeitar Correções
           </Button>
-          <Button onClick={handleApplyCorrections} className="bg-success hover:bg-success/90">
+          <Button
+            onClick={handleApplyCorrections}
+            className="bg-success hover:bg-success/90"
+          >
             <Wand2 className="h-4 w-4 mr-2" />
             Aplicar Correções ({correctionStats.withCorrections})
           </Button>

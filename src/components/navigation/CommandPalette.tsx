@@ -1,18 +1,23 @@
-import React from 'react';
-import { Command } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { 
+import React from "react";
+import { Command } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
   CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useNavigate } from 'react-router-dom';
-import { NAV_GROUPS } from '@/config/sidebar';
-import { usePermissions } from '@/hooks/usePermissions';
+} from "@/components/ui/command";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useNavigate } from "react-router-dom";
+import { NAV_GROUPS } from "@/config/sidebar";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export function CommandPalette() {
   const [open, setOpen] = React.useState(false);
@@ -21,14 +26,14 @@ export function CommandPalette() {
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((open) => !open);
       }
     };
 
-    document.addEventListener('keydown', down);
-    return () => document.removeEventListener('keydown', down);
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
   }, []);
 
   const handleSelect = (to: string) => {
@@ -61,12 +66,12 @@ export function CommandPalette() {
         <CommandInput placeholder="Pesquisar páginas..." />
         <CommandList>
           <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
-          
+
           {NAV_GROUPS.map((group) => {
             const accessibleItems = group.items.filter(canAccess);
-            
+
             if (accessibleItems.length === 0) return null;
-            
+
             return (
               <CommandGroup key={group.title} heading={group.title}>
                 {accessibleItems.map((item) => (

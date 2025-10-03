@@ -15,7 +15,7 @@ Deno.test("honeypot returns 400", async () => {
       email: "fulano@example.com",
       organizacao: "Org XYZ",
       necessidades: ["feature1"],
-      honeypot: "bot"
+      honeypot: "bot",
     }),
   });
   const res = await handler(req);
@@ -31,7 +31,7 @@ Deno.test("rate limit returns 429", async () => {
       nome: "Fulano",
       email: "fulano@example.com",
       organizacao: "Org XYZ",
-      necessidades: ["feature1"]
+      necessidades: ["feature1"],
     }),
   });
   const res = await handler(req);
@@ -47,7 +47,7 @@ Deno.test("disposable domain returns 400", async () => {
       nome: "Fulano",
       email: "user@mailinator.com",
       organizacao: "Org XYZ",
-      necessidades: ["feature1"]
+      necessidades: ["feature1"],
     }),
   });
   const res = await handler(req);

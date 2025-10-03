@@ -3,6 +3,7 @@
 ## Estrutura de Testes
 
 ### 📁 Organização
+
 ```
 tests/
 ├── integration/           # Testes de integração com Supabase
@@ -28,6 +29,7 @@ src/
 ## 🚀 Executando Testes
 
 ### Testes Unitários
+
 ```bash
 npm run test              # Executa todos os testes unitários
 npm run test:watch        # Modo watch
@@ -35,11 +37,13 @@ npm run test:coverage     # Com cobertura
 ```
 
 ### Testes de Integração
+
 ```bash
 npm run test:integration  # Testes com Supabase real
 ```
 
 **Requisitos para testes de integração:**
+
 - `.env.local` configurado com:
   - `SUPABASE_TEST_URL`
   - `SUPABASE_TEST_KEY`
@@ -49,18 +53,21 @@ npm run test:integration  # Testes com Supabase real
 ## 📝 Tipos de Testes
 
 ### 1. **Testes Unitários**
+
 - Testes de contexts (MultiTenantContext)
 - Testes de hooks (useMultiTenantLoading)
 - Testes de componentes isolados
 - Utilizam mocks completos
 
 ### 2. **Testes de Integração**
+
 - Validação de RLS policies
 - Isolamento multi-tenant
 - Operações CRUD com banco real
 - Edge functions
 
 ### 3. **Testes de Segurança**
+
 - Tentativas de acesso não autorizado
 - Validação de data access levels
 - Cross-org data access prevention
@@ -69,7 +76,9 @@ npm run test:integration  # Testes com Supabase real
 ## 🔧 Utilitários de Teste
 
 ### `renderWithProviders`
+
 Renderiza componentes com todos os providers necessários:
+
 ```typescript
 import { renderWithProviders } from '@/tests/helpers/test-utils';
 
@@ -77,22 +86,26 @@ const { result } = renderWithProviders(<MyComponent />);
 ```
 
 ### `createTestQueryClient`
+
 Cria um QueryClient configurado para testes:
+
 ```typescript
-import { createTestQueryClient } from '@/tests/helpers/test-utils';
+import { createTestQueryClient } from "@/tests/helpers/test-utils";
 
 const queryClient = createTestQueryClient();
 ```
 
 ### Mocks
+
 ```typescript
-import { mockOrganizations, mockSingleOrg } from '@/tests/mocks/organizations';
-import { mockUsers, mockProfiles } from '@/tests/mocks/users';
+import { mockOrganizations, mockSingleOrg } from "@/tests/mocks/organizations";
+import { mockUsers, mockProfiles } from "@/tests/mocks/users";
 ```
 
 ## ✅ Checklist de Cobertura
 
 ### Multi-Tenant System
+
 - [x] Inicialização do MultiTenantContext
 - [x] Loading states progressivos
 - [x] Troca de organizações
@@ -101,6 +114,7 @@ import { mockUsers, mockProfiles } from '@/tests/mocks/users';
 - [x] Fallback para org padrão
 
 ### RLS Security
+
 - [x] Isolamento de dados por org_id
 - [x] Profiles isolation
 - [x] Processos isolation
@@ -110,6 +124,7 @@ import { mockUsers, mockProfiles } from '@/tests/mocks/users';
 - [x] Cross-org access prevention
 
 ### Error Boundaries
+
 - [x] OrganizationErrorBoundary
 - [x] AuthErrorBoundary
 - [x] Recovery mechanisms
@@ -142,12 +157,14 @@ npm run test:integration -- --reporter=verbose
 ## 🔐 Segurança nos Testes
 
 **NUNCA commite:**
+
 - Credenciais reais no código
 - Tokens de API
 - Senhas de teste
 - IDs de organizações reais sensíveis
 
 **Use sempre:**
+
 - Variáveis de ambiente
 - Mocks para testes unitários
 - Dados anônimos para testes de integração

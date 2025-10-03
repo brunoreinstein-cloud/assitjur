@@ -1,6 +1,9 @@
 // Export all report components
-export { ConclusiveReportTemplate, type ConclusiveReportData } from '@/components/reports/ConclusiveReportTemplate';
-export { ReportGenerator } from '@/components/reports/ReportGenerator';
+export {
+  ConclusiveReportTemplate,
+  type ConclusiveReportData,
+} from "@/components/reports/ConclusiveReportTemplate";
+export { ReportGenerator } from "@/components/reports/ReportGenerator";
 
 // Re-export related types for convenience
 export type {
@@ -10,8 +13,8 @@ export type {
   DuploPapelResult,
   ProvaEmprestadaResult,
   HomonimoResult,
-  PadroesAgregados
-} from '@/types/mapa-testemunhas-analysis';
+  PadroesAgregados,
+} from "@/types/mapa-testemunhas-analysis";
 
 export type {
   ProcessoScore,
@@ -19,5 +22,5 @@ export type {
   ScoringMetrics,
   ScoreClassification,
   ContradictaPriority,
-  TestemunhaClassification
-} from '@/types/scoring';
+  TestemunhaClassification,
+} from "@/types/scoring";

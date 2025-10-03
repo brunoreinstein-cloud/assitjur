@@ -1,66 +1,77 @@
-import React, { useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { BetaTrustBadges } from '@/components/beta/BetaTrustBadges';
-import { BetaSuccess } from '@/components/beta/BetaSuccess';
-import { EmailHint } from '@/components/beta/EmailHint';
-import { Fieldset } from '@/components/beta/Fieldset';
-import { supabase } from '@/integrations/supabase/client';
-import { disposableDomains } from '@/config/disposableDomains';
-import { track } from '@/lib/track';
+import React, { useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { BetaTrustBadges } from "@/components/beta/BetaTrustBadges";
+import { BetaSuccess } from "@/components/beta/BetaSuccess";
+import { EmailHint } from "@/components/beta/EmailHint";
+import { Fieldset } from "@/components/beta/Fieldset";
+import { supabase } from "@/integrations/supabase/client";
+import { disposableDomains } from "@/config/disposableDomains";
+import { track } from "@/lib/track";
 
 const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
 const betaSignupSchema = z.object({
-  nome: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
+  nome: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
   email: z
     .string()
-    .regex(emailRegex, 'E-mail inválido')
-    .refine(val => {
-      const domain = val.split('@')[1]?.toLowerCase();
+    .regex(emailRegex, "E-mail inválido")
+    .refine((val) => {
+      const domain = val.split("@")[1]?.toLowerCase();
       return domain ? !disposableDomains.includes(domain) : true;
-    }, 'Domínio de e-mail descartável não permitido'),
+    }, "Domínio de e-mail descartável não permitido"),
   cargo: z.string().optional(),
-  organizacao: z.string().min(2, 'Organização deve ter pelo menos 2 caracteres'),
-  necessidades: z.array(z.string()).min(1, 'Selecione pelo menos uma necessidade'),
-  outro_texto: z.string().max(120, 'Máximo 120 caracteres').optional(),
+  organizacao: z
+    .string()
+    .min(2, "Organização deve ter pelo menos 2 caracteres"),
+  necessidades: z
+    .array(z.string())
+    .min(1, "Selecione pelo menos uma necessidade"),
+  outro_texto: z.string().max(120, "Máximo 120 caracteres").optional(),
   website: z.string().max(0).optional(),
-  consentimento: z.boolean().refine(val => val === true, {
-    message: 'É necessário seu consentimento',
+  consentimento: z.boolean().refine((val) => val === true, {
+    message: "É necessário seu consentimento",
   }),
-  termos: z.boolean().refine(val => val === true, {
-    message: 'Você deve aceitar os termos',
+  termos: z.boolean().refine((val) => val === true, {
+    message: "Você deve aceitar os termos",
   }),
 });
 
 type BetaSignupForm = z.infer<typeof betaSignupSchema>;
 
 const cargoOptions = [
-  { value: 'gestor', label: 'Gestor(a)' },
-  { value: 'advogado', label: 'Advogado(a)' },
-  { value: 'analista', label: 'Analista' },
-  { value: 'diretoria', label: 'Diretoria' },
-  { value: 'outro', label: 'Outro' },
+  { value: "gestor", label: "Gestor(a)" },
+  { value: "advogado", label: "Advogado(a)" },
+  { value: "analista", label: "Analista" },
+  { value: "diretoria", label: "Diretoria" },
+  { value: "outro", label: "Outro" },
 ];
 
 const necessidadeOptions = [
-  { value: 'tempo_operacional', label: 'Reduzir tempo operacional' },
-  { value: 'provisoes', label: 'Ajustar provisões' },
-  { value: 'testemunhas', label: 'Mapear testemunhas' },
-  { value: 'governanca', label: 'Melhorar governança jurídica' },
-  { value: 'outro', label: 'Outro' },
+  { value: "tempo_operacional", label: "Reduzir tempo operacional" },
+  { value: "provisoes", label: "Ajustar provisões" },
+  { value: "testemunhas", label: "Mapear testemunhas" },
+  { value: "governanca", label: "Melhorar governança jurídica" },
+  { value: "outro", label: "Outro" },
 ];
 
-const publicDomains = ['gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 'uol.com.br', 'bol.com.br'];
+const publicDomains = [
+  "gmail.com",
+  "outlook.com",
+  "hotmail.com",
+  "yahoo.com",
+  "uol.com.br",
+  "bol.com.br",
+];
 
 function levenshtein(a: string, b: string) {
   const matrix = Array.from({ length: a.length + 1 }, () =>
-    Array(b.length + 1).fill(0)
+    Array(b.length + 1).fill(0),
   );
   for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
   for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
@@ -70,7 +81,7 @@ function levenshtein(a: string, b: string) {
       matrix[i][j] = Math.min(
         matrix[i - 1][j] + 1,
         matrix[i][j - 1] + 1,
-        matrix[i - 1][j - 1] + cost
+        matrix[i - 1][j - 1] + cost,
       );
     }
   }
@@ -79,7 +90,9 @@ function levenshtein(a: string, b: string) {
 
 async function hasMxRecord(domain: string): Promise<boolean> {
   try {
-    const res = await fetch(`https://dns.google/resolve?name=${domain}&type=MX`);
+    const res = await fetch(
+      `https://dns.google/resolve?name=${domain}&type=MX`,
+    );
     const data = await res.json();
     return Array.isArray(data.Answer) && data.Answer.length > 0;
   } catch {
@@ -90,10 +103,14 @@ async function hasMxRecord(domain: string): Promise<boolean> {
 interface BetaSignupProps {
   compact?: boolean;
   className?: string;
-  variant?: 'inline' | 'card';
+  variant?: "inline" | "card";
 }
 
-export function BetaSignup({ compact = false, className = '', variant = 'inline' }: BetaSignupProps) {
+export function BetaSignup({
+  compact = false,
+  className = "",
+  variant = "inline",
+}: BetaSignupProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [showEmailHint, setShowEmailHint] = useState(false);
@@ -113,29 +130,29 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
     formState: { errors, isValid },
   } = useForm<BetaSignupForm>({
     resolver: zodResolver(betaSignupSchema),
-    mode: 'onChange',
+    mode: "onChange",
     defaultValues: {
       consentimento: false,
       termos: false,
-      website: '',
+      website: "",
     },
   });
 
-  const watchEmail = watch('email');
-  const watchNecessidades = watch('necessidades', []);
+  const watchEmail = watch("email");
+  const watchNecessidades = watch("necessidades", []);
 
   // Check for public domain and suggest corrections
   React.useEffect(() => {
     if (watchEmail) {
-      const domain = watchEmail.split('@')[1];
+      const domain = watchEmail.split("@")[1];
       if (domain) {
         const lower = domain.toLowerCase();
         setShowEmailHint(publicDomains.includes(lower));
-        const suggestion = publicDomains.find(d =>
-          levenshtein(lower, d) <= 2
+        const suggestion = publicDomains.find(
+          (d) => levenshtein(lower, d) <= 2,
         );
         setEmailSuggestion(
-          suggestion && suggestion !== lower ? suggestion : null
+          suggestion && suggestion !== lower ? suggestion : null,
         );
       } else {
         setShowEmailHint(false);
@@ -149,20 +166,20 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
 
   // Optional MX record validation
   React.useEffect(() => {
-    const domain = watchEmail?.split('@')[1]?.toLowerCase();
+    const domain = watchEmail?.split("@")[1]?.toLowerCase();
     if (
       domain &&
       emailRegex.test(watchEmail) &&
       !publicDomains.includes(domain)
     ) {
-      hasMxRecord(domain).then(valid => {
+      hasMxRecord(domain).then((valid) => {
         if (!valid) {
-          setError('email', {
-            type: 'custom',
-            message: 'Domínio de e-mail inválido',
+          setError("email", {
+            type: "custom",
+            message: "Domínio de e-mail inválido",
           });
-        } else if (errors.email?.type === 'custom') {
-          clearErrors('email');
+        } else if (errors.email?.type === "custom") {
+          clearErrors("email");
         }
       });
     }
@@ -170,19 +187,22 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
 
   // Show outro text field when "Outro" is selected
   React.useEffect(() => {
-    const hasOutro = watchNecessidades?.includes('outro');
+    const hasOutro = watchNecessidades?.includes("outro");
     setShowOutroText(hasOutro);
     if (!hasOutro) {
-      setValue('outro_texto', '');
+      setValue("outro_texto", "");
     }
   }, [watchNecessidades, setValue]);
 
   const handleNecessidadeChange = (value: string, checked: boolean) => {
     const current = watchNecessidades || [];
     if (checked) {
-      setValue('necessidades', [...current, value]);
+      setValue("necessidades", [...current, value]);
     } else {
-      setValue('necessidades', current.filter(n => n !== value));
+      setValue(
+        "necessidades",
+        current.filter((n) => n !== value),
+      );
     }
   };
 
@@ -196,17 +216,17 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
     }
     lastSubmitRef.current = now;
     setIsSubmitting(true);
-    
+
     try {
       // Track form submission
-      track('beta_submit', { email_domain: data.email.split('@')[1] });
-      
+      track("beta_submit", { email_domain: data.email.split("@")[1] });
+
       // Get UTM parameters
       const urlParams = new URLSearchParams(window.location.search);
       const utm = {
-        source: urlParams.get('utm_source'),
-        medium: urlParams.get('utm_medium'),
-        campaign: urlParams.get('utm_campaign'),
+        source: urlParams.get("utm_source"),
+        medium: urlParams.get("utm_medium"),
+        campaign: urlParams.get("utm_campaign"),
       };
 
       const payload = {
@@ -217,15 +237,19 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
 
       // Try to call the edge function
       try {
-        const { data: result, error } = await supabase.functions.invoke('beta-signup', {
-          body: payload,
-        });
+        const { data: result, error } = await supabase.functions.invoke(
+          "beta-signup",
+          {
+            body: payload,
+          },
+        );
 
         if (error) {
           if (error.status === 429) {
             toast({
-              title: 'Calma aí!',
-              description: 'Muitas inscrições em pouco tempo. Tente novamente mais tarde.',
+              title: "Calma aí!",
+              description:
+                "Muitas inscrições em pouco tempo. Tente novamente mais tarde.",
             });
             return;
           }
@@ -234,25 +258,25 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
 
         setIsSuccess(true);
         toast({
-          title: 'Sucesso!',
-          description: 'Você foi adicionado à lista Beta do AssistJur.IA',
+          title: "Sucesso!",
+          description: "Você foi adicionado à lista Beta do AssistJur.IA",
         });
       } catch (apiError) {
         // Fallback to mock success
-        await new Promise(resolve => setTimeout(resolve, 700)); // Simulate API delay
-        
+        await new Promise((resolve) => setTimeout(resolve, 700)); // Simulate API delay
+
         setIsSuccess(true);
         toast({
-          title: 'Sucesso!',
-          description: 'Você foi adicionado à lista Beta do AssistJur.IA',
+          title: "Sucesso!",
+          description: "Você foi adicionado à lista Beta do AssistJur.IA",
         });
       }
     } catch (error) {
-      console.error('beta_form_error', error);
+      console.error("beta_form_error", error);
       toast({
         title: "Erro no formulário",
         description: "Ocorreu um erro inesperado. Tente novamente.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -273,7 +297,8 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
       {/* Header */}
       <div className="text-center space-y-2">
         <p className="text-primary font-medium text-sm">
-          Ganhe acesso antecipado e ajude a moldar o futuro do contencioso com IA.
+          Ganhe acesso antecipado e ajude a moldar o futuro do contencioso com
+          IA.
         </p>
       </div>
 
@@ -285,20 +310,16 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
           tabIndex={-1}
           autoComplete="off"
           aria-hidden="true"
-          {...register('website')}
+          {...register("website")}
         />
         {/* Nome */}
-        <Fieldset
-          label="Nome completo"
-          error={errors.nome?.message}
-          required
-        >
+        <Fieldset label="Nome completo" error={errors.nome?.message} required>
           <input
-            {...register('nome')}
+            {...register("nome")}
             type="text"
             placeholder="Ex.: Ana Silva"
             className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
-            aria-describedby={errors.nome ? 'nome-error' : undefined}
+            aria-describedby={errors.nome ? "nome-error" : undefined}
           />
         </Fieldset>
 
@@ -310,16 +331,19 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
           required
         >
           <input
-            {...register('email')}
+            {...register("email")}
             type="email"
             placeholder="seuemail@empresa.com"
             className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
-            aria-describedby={errors.email ? 'email-error' : 'email-help'}
+            aria-describedby={errors.email ? "email-error" : "email-help"}
             autoComplete="email"
           />
           {showEmailHint && <EmailHint />}
           {emailSuggestion && (
-            <p className="text-xs text-muted-foreground mt-2" aria-live="polite">
+            <p
+              className="text-xs text-muted-foreground mt-2"
+              aria-live="polite"
+            >
               Você quis dizer {emailSuggestion}?
             </p>
           )}
@@ -327,16 +351,13 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
 
         {/* Cargo (opcional se compact) */}
         {!compact && (
-          <Fieldset
-            label="Cargo/Função"
-            error={errors.cargo?.message}
-          >
+          <Fieldset label="Cargo/Função" error={errors.cargo?.message}>
             <select
-              {...register('cargo')}
+              {...register("cargo")}
               className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
             >
               <option value="">Selecione seu cargo</option>
-              {cargoOptions.map(option => (
+              {cargoOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -352,11 +373,13 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
           required
         >
           <input
-            {...register('organizacao')}
+            {...register("organizacao")}
             type="text"
             placeholder="Ex.: Empresa X / Escritório Y"
             className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
-            aria-describedby={errors.organizacao ? 'organizacao-error' : undefined}
+            aria-describedby={
+              errors.organizacao ? "organizacao-error" : undefined
+            }
           />
         </Fieldset>
 
@@ -368,12 +391,17 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
           required
         >
           <div className="space-y-2">
-            {necessidadeOptions.map(option => (
-              <label key={option.value} className="flex items-center space-x-2 text-sm">
+            {necessidadeOptions.map((option) => (
+              <label
+                key={option.value}
+                className="flex items-center space-x-2 text-sm"
+              >
                 <input
                   type="checkbox"
                   checked={watchNecessidades?.includes(option.value) || false}
-                  onChange={(e) => handleNecessidadeChange(option.value, e.target.checked)}
+                  onChange={(e) =>
+                    handleNecessidadeChange(option.value, e.target.checked)
+                  }
                   className="rounded border-border text-primary focus:ring-primary focus:ring-2"
                 />
                 <span className="text-foreground">{option.label}</span>
@@ -390,7 +418,7 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
             help="Máximo 120 caracteres"
           >
             <input
-              {...register('outro_texto')}
+              {...register("outro_texto")}
               type="text"
               placeholder="Descreva sua necessidade..."
               maxLength={120}
@@ -404,9 +432,11 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
           <label className="flex items-start space-x-2 text-sm">
             <input
               type="checkbox"
-              {...register('consentimento')}
+              {...register("consentimento")}
               className="rounded border-border text-primary focus:ring-primary focus:ring-2 mt-1"
-              aria-describedby={errors.consentimento ? 'consentimento-error' : undefined}
+              aria-describedby={
+                errors.consentimento ? "consentimento-error" : undefined
+              }
             />
             <span className="text-foreground">
               Autorizo o uso dos meus dados para contato sobre o AssistJur.IA.
@@ -429,11 +459,13 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
           <label className="flex items-start space-x-2 text-sm">
             <input
               type="checkbox"
-              {...register('termos')}
+              {...register("termos")}
               className="rounded border-border text-primary focus:ring-primary focus:ring-2 mt-1"
-              aria-describedby={errors.termos ? 'termos-error' : undefined}
+              aria-describedby={errors.termos ? "termos-error" : undefined}
             />
-            <span className="text-foreground">Li e concordo com os termos de uso.</span>
+            <span className="text-foreground">
+              Li e concordo com os termos de uso.
+            </span>
           </label>
           {errors.termos && (
             <p
@@ -463,7 +495,7 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
               Processando...
             </>
           ) : (
-            'Quero entrar na lista Beta'
+            "Quero entrar na lista Beta"
           )}
         </Button>
 
@@ -472,18 +504,20 @@ export function BetaSignup({ compact = false, className = '', variant = 'inline'
 
         {/* LGPD Notice */}
         <p className="text-xs text-muted-foreground text-center leading-relaxed">
-          Seus dados serão usados apenas para contato sobre o AssistJur.IA. Você pode sair da lista a qualquer momento.
+          Seus dados serão usados apenas para contato sobre o AssistJur.IA. Você
+          pode sair da lista a qualquer momento.
         </p>
       </form>
     </div>
   );
 
-  if (variant === 'card') {
+  if (variant === "card") {
     return (
-      <Card data-beta-signup className={`max-w-lg mx-auto shadow-glow border-2 border-primary/20 ${className}`}>
-        <CardContent className="p-6">
-          {content}
-        </CardContent>
+      <Card
+        data-beta-signup
+        className={`max-w-lg mx-auto shadow-glow border-2 border-primary/20 ${className}`}
+      >
+        <CardContent className="p-6">{content}</CardContent>
       </Card>
     );
   }

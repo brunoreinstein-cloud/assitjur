@@ -1,17 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { AlertTriangle } from 'lucide-react';
-import type { DetectedSheet } from '@/lib/importer/types';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { AlertTriangle } from "lucide-react";
+import type { DetectedSheet } from "@/lib/importer/types";
 
 interface MappingDialogProps {
   open: boolean;
@@ -20,35 +26,48 @@ interface MappingDialogProps {
   onCancel: () => void;
 }
 
-export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDialogProps) {
-  const [sheetModels, setSheetModels] = useState<Record<string, 'testemunha' | 'processo' | 'ignore'>>(
-    sheets.reduce((acc, sheet) => {
-      if (sheet.model === 'ambiguous') {
-        acc[sheet.name] = 'testemunha'; // Default para ambiguous
-      } else if (sheet.model === 'ignore') {
-        acc[sheet.name] = 'ignore';
-      } else {
-        acc[sheet.name] = sheet.model;
-      }
-      return acc;
-    }, {} as Record<string, 'testemunha' | 'processo' | 'ignore'>)
+export function MappingDialog({
+  open,
+  sheets,
+  onComplete,
+  onCancel,
+}: MappingDialogProps) {
+  const [sheetModels, setSheetModels] = useState<
+    Record<string, "testemunha" | "processo" | "ignore">
+  >(
+    sheets.reduce(
+      (acc, sheet) => {
+        if (sheet.model === "ambiguous") {
+          acc[sheet.name] = "testemunha"; // Default para ambiguous
+        } else if (sheet.model === "ignore") {
+          acc[sheet.name] = "ignore";
+        } else {
+          acc[sheet.name] = sheet.model;
+        }
+        return acc;
+      },
+      {} as Record<string, "testemunha" | "processo" | "ignore">,
+    ),
   );
 
-  const ambiguousSheets = sheets.filter(s => s.model === 'ambiguous');
+  const ambiguousSheets = sheets.filter((s) => s.model === "ambiguous");
 
-  const handleModelChange = (sheetName: string, model: 'testemunha' | 'processo' | 'ignore') => {
-    setSheetModels(prev => ({
+  const handleModelChange = (
+    sheetName: string,
+    model: "testemunha" | "processo" | "ignore",
+  ) => {
+    setSheetModels((prev) => ({
       ...prev,
-      [sheetName]: model
+      [sheetName]: model,
     }));
   };
 
   const handleConfirm = () => {
-    const updatedSheets = sheets.map(sheet => ({
+    const updatedSheets = sheets.map((sheet) => ({
       ...sheet,
-      model: sheetModels[sheet.name] || sheet.model
+      model: sheetModels[sheet.name] || sheet.model,
     }));
-    
+
     onComplete(updatedSheets);
   };
 
@@ -66,15 +85,17 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
 
         <div className="space-y-6">
           <p className="text-muted-foreground">
-            Detectamos abas que podem ter ambos os modelos (CNJ + Lista de CNJs). 
-            Por favor, escolha como processar cada aba:
+            Detectamos abas que podem ter ambos os modelos (CNJ + Lista de
+            CNJs). Por favor, escolha como processar cada aba:
           </p>
 
           {ambiguousSheets.map((sheet) => (
             <div key={sheet.name} className="border rounded-lg p-4 space-y-4">
               <div className="flex items-center gap-2">
                 <h4 className="font-medium">{sheet.name}</h4>
-                <Badge variant="outline">{sheet.rows.toLocaleString()} linhas</Badge>
+                <Badge variant="outline">
+                  {sheet.rows.toLocaleString()} linhas
+                </Badge>
               </div>
 
               <div className="space-y-2">
@@ -83,9 +104,9 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
                 </Label>
                 <Select
                   value={sheetModels[sheet.name]}
-                  onValueChange={(value: 'testemunha' | 'processo' | 'ignore') => 
-                    handleModelChange(sheet.name, value)
-                  }
+                  onValueChange={(
+                    value: "testemunha" | "processo" | "ignore",
+                  ) => handleModelChange(sheet.name, value)}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -120,8 +141,13 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
               </div>
 
               <div className="text-xs text-muted-foreground">
-                <p><strong>Colunas detectadas:</strong></p>
-                <p>{sheet.headers.slice(0, 5).join(', ')}{sheet.headers.length > 5 ? '...' : ''}</p>
+                <p>
+                  <strong>Colunas detectadas:</strong>
+                </p>
+                <p>
+                  {sheet.headers.slice(0, 5).join(", ")}
+                  {sheet.headers.length > 5 ? "..." : ""}
+                </p>
               </div>
             </div>
           ))}
@@ -131,9 +157,7 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
           <Button variant="outline" onClick={onCancel}>
             Voltar
           </Button>
-          <Button onClick={handleConfirm}>
-            Continuar
-          </Button>
+          <Button onClick={handleConfirm}>Continuar</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

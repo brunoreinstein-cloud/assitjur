@@ -82,7 +82,7 @@ export type MapaTestemunhasRequest<F = ProcessoFilters | TestemunhaFilters> = {
   page: number;
   limit: number;
   sortBy?: string;
-  sortDir?: 'asc' | 'desc';
+  sortDir?: "asc" | "desc";
   filters: F;
 };
 
@@ -119,11 +119,11 @@ export type TestemunhaFiltersApi = {
  * realizar requisições.
  */
 export type MapaTestemunhasRequestApi<
-  F = ProcessoFiltersApi | TestemunhaFiltersApi
+  F = ProcessoFiltersApi | TestemunhaFiltersApi,
 > = {
   paginacao: { page: number; limit: number };
   sort_by?: string;
-  sort_dir?: 'asc' | 'desc';
+  sort_dir?: "asc" | "desc";
   filtros: F;
 };
 

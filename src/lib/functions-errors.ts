@@ -1,4 +1,4 @@
-import { FunctionsHttpError } from '@supabase/supabase-js';
+import { FunctionsHttpError } from "@supabase/supabase-js";
 
 // Map specific function error messages to user friendly Portuguese messages
 const ERROR_MESSAGE_MAP: Record<string, string> = {
@@ -18,13 +18,13 @@ const ERROR_MESSAGE_MAP: Record<string, string> = {
  */
 export function mapFunctionsError(error: FunctionsHttpError): string {
   if (import.meta.env.DEV) {
-    console.error('FunctionsHttpError context:', error.context);
+    console.error("FunctionsHttpError context:", error.context);
     // Note: FunctionsHttpError doesn't have a direct response property
-    console.error('FunctionsHttpError details:', error);
+    console.error("FunctionsHttpError details:", error);
   }
 
   const contextError = (error.context as any)?.error as string | undefined;
   return contextError && ERROR_MESSAGE_MAP[contextError]
     ? ERROR_MESSAGE_MAP[contextError]
-    : 'Erro ao executar função.';
+    : "Erro ao executar função.";
 }

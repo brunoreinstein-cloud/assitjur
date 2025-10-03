@@ -1,13 +1,17 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useDebounce } from './useDebounce';
-import type { SearchResponse, SearchScope } from '@/types/search';
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useDebounce } from "./useDebounce";
+import type { SearchResponse, SearchScope } from "@/types/search";
 
-export function useUnifiedSearch(query: string, scope: SearchScope = 'all', enabled = true) {
+export function useUnifiedSearch(
+  query: string,
+  scope: SearchScope = "all",
+  enabled = true,
+) {
   const debouncedQuery = useDebounce(query, 250);
 
   return useQuery({
-    queryKey: ['unified-search', debouncedQuery, scope],
+    queryKey: ["unified-search", debouncedQuery, scope],
     queryFn: async (): Promise<SearchResponse> => {
       if (!debouncedQuery || debouncedQuery.length < 2) {
         return {
@@ -20,7 +24,7 @@ export function useUnifiedSearch(query: string, scope: SearchScope = 'all', enab
         };
       }
 
-      const { data, error } = await supabase.functions.invoke('search', {
+      const { data, error } = await supabase.functions.invoke("search", {
         body: { q: debouncedQuery, scope, limit: 20 },
       });
 

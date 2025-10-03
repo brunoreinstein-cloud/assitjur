@@ -1,31 +1,46 @@
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Download, FileSpreadsheet, AlertCircle, CheckCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { TemplateDownloadCard } from '@/components/template/TemplateDownloadCard';
-import { FieldDictionary } from '@/components/template/FieldDictionary';
-import { Examples } from '@/components/template/Examples';
-import { Checklist } from '@/components/template/Checklist';
-import { TrustNote } from '@/components/template/TrustNote';
-import { supabase } from '@/integrations/supabase/client';
+import { Link } from "react-router-dom";
+import {
+  ArrowLeft,
+  Download,
+  FileSpreadsheet,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { TemplateDownloadCard } from "@/components/template/TemplateDownloadCard";
+import { FieldDictionary } from "@/components/template/FieldDictionary";
+import { Examples } from "@/components/template/Examples";
+import { Checklist } from "@/components/template/Checklist";
+import { TrustNote } from "@/components/template/TrustNote";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function TemplatePage() {
-  const handleTemplateDownload = async (functionName: string, filename: string) => {
+  const handleTemplateDownload = async (
+    functionName: string,
+    filename: string,
+  ) => {
     try {
       const { data, error } = await supabase.functions.invoke(functionName);
-      
+
       if (error) throw error;
-      
-      const blob = new Blob([data], { type: 'application/octet-stream' });
+
+      const blob = new Blob([data], { type: "application/octet-stream" });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = filename;
       link.click();
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Erro no download:', error);
+      console.error("Erro no download:", error);
     }
   };
 
@@ -34,11 +49,14 @@ export default function TemplatePage() {
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
         <div className="mb-8">
-          <Link to="/import" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6">
+          <Link
+            to="/import"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar ao Importador
           </Link>
-          
+
           <div className="text-center space-y-4">
             <div className="flex items-center justify-center gap-3">
               <FileSpreadsheet className="h-10 w-10 text-primary" />
@@ -47,7 +65,8 @@ export default function TemplatePage() {
               </h1>
             </div>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Baixe os templates oficiais e configure seus dados no formato correto para importação no Mapa de Testemunhas
+              Baixe os templates oficiais e configure seus dados no formato
+              correto para importação no Mapa de Testemunhas
             </p>
           </div>
 
@@ -55,7 +74,8 @@ export default function TemplatePage() {
           <Alert className="mt-6 border-blue-200 bg-blue-50 dark:bg-blue-950">
             <CheckCircle className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-blue-800 dark:text-blue-200">
-              <strong>Novas Diretrizes:</strong> Validação rigorosa com mapeamento estrito de colunas e CNJs com 20 dígitos exatos
+              <strong>Novas Diretrizes:</strong> Validação rigorosa com
+              mapeamento estrito de colunas e CNJs com 20 dígitos exatos
             </AlertDescription>
           </Alert>
         </div>
@@ -81,7 +101,7 @@ export default function TemplatePage() {
                 filename="template-assistjur.xlsx"
                 recommended={true}
               />
-              
+
               <TemplateDownloadCard
                 title="CSV – Por Processo"
                 description="Apenas dados de processos em formato CSV (separador ponto e vírgula)"
@@ -89,7 +109,7 @@ export default function TemplatePage() {
                 icon="csv"
                 filename="template-por-processo.csv"
               />
-              
+
               <TemplateDownloadCard
                 title="CSV – Por Testemunha"
                 description="Apenas dados de testemunhas em formato CSV (separador ponto e vírgula)"
@@ -124,9 +144,12 @@ export default function TemplatePage() {
         {/* CTA para importação */}
         <Card className="text-center">
           <CardContent className="pt-8 pb-8">
-            <h3 className="text-xl font-semibold mb-4">Pronto para Importar?</h3>
+            <h3 className="text-xl font-semibold mb-4">
+              Pronto para Importar?
+            </h3>
             <p className="text-muted-foreground mb-6">
-              Agora que você tem o template, acesse o sistema de importação para enviar seus dados
+              Agora que você tem o template, acesse o sistema de importação para
+              enviar seus dados
             </p>
             <div className="flex gap-4 justify-center">
               <Link to="/dados/mapa">

@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Bug } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { DebugMode } from '@/lib/debug-mode';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from "react";
+import { Bug } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { DebugMode } from "@/lib/debug-mode";
+import { useToast } from "@/hooks/use-toast";
 
 export const DebugToggle = () => {
   const [isDebugMode, setIsDebugMode] = useState(DebugMode.isEnabled());
@@ -17,11 +17,11 @@ export const DebugToggle = () => {
   const handleToggle = () => {
     const newState = DebugMode.toggle();
     setIsDebugMode(newState);
-    
+
     toast({
       title: newState ? "🐛 Debug Mode Ativado" : "Debug Mode Desativado",
-      description: newState 
-        ? "Logs detalhados estão sendo exibidos no console" 
+      description: newState
+        ? "Logs detalhados estão sendo exibidos no console"
         : "Logs de debug foram desativados",
       duration: 2000,
     });

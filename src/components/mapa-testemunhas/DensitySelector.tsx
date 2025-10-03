@@ -10,12 +10,20 @@ import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
 import type { Density } from "@/components/ui/design-tokens";
 
 export function DensitySelector() {
-  const density = useMapaTestemunhasStore(s => s.density);
-  const setDensity = useMapaTestemunhasStore(s => s.setDensity);
+  const density = useMapaTestemunhasStore((s) => s.density);
+  const setDensity = useMapaTestemunhasStore((s) => s.setDensity);
 
-  const densityOptions: { value: Density; label: string; description: string }[] = [
+  const densityOptions: {
+    value: Density;
+    label: string;
+    description: string;
+  }[] = [
     { value: "compact", label: "Compacto", description: "Espaçamento mínimo" },
-    { value: "comfortable", label: "Confortável", description: "Espaçamento amplo" },
+    {
+      value: "comfortable",
+      label: "Confortável",
+      description: "Espaçamento amplo",
+    },
   ];
 
   return (
@@ -35,7 +43,9 @@ export function DensitySelector() {
           >
             <div className="flex flex-col gap-0.5">
               <span className="text-sm font-medium">{option.label}</span>
-              <span className="text-xs text-muted-foreground">{option.description}</span>
+              <span className="text-xs text-muted-foreground">
+                {option.description}
+              </span>
             </div>
             {density === option.value && (
               <Check className="h-4 w-4 text-primary" />

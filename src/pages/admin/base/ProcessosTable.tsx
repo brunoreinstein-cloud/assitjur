@@ -1,7 +1,7 @@
-import { ProcessosDataTable } from '@/components/assistjur/ProcessosDataTable';
-import { BulkDeleteManager } from '@/components/admin/BulkDeleteManager';
-import { RestoreButton } from '@/components/admin/RestoreButton';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ProcessosDataTable } from "@/components/assistjur/ProcessosDataTable";
+import { BulkDeleteManager } from "@/components/admin/BulkDeleteManager";
+import { RestoreButton } from "@/components/admin/RestoreButton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function ProcessosTable() {
   return (
@@ -22,7 +22,7 @@ export default function ProcessosTable() {
           </div>
         </CardHeader>
       </Card>
-      
+
       <ProcessosDataTable />
     </div>
   );

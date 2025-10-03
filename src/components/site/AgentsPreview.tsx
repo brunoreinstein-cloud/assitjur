@@ -1,7 +1,15 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Database, Search, BarChart3, Brain, Settings2, Zap } from "lucide-react";
+import {
+  Sparkles,
+  Database,
+  Search,
+  BarChart3,
+  Brain,
+  Settings2,
+  Zap,
+} from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -59,10 +67,11 @@ export function AgentsPreview() {
       examples: [
         "Relatórios de processos trabalhistas e cíveis",
         "Relatórios para escritórios no formato exigido por clientes externos",
-        "Preenchimento automatizado de formulários (ex.: solicitação de seguro garantia)"
+        "Preenchimento automatizado de formulários (ex.: solicitação de seguro garantia)",
       ],
       status: "Consulte-nos",
-      statusColor: "bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30",
+      statusColor:
+        "bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30",
     },
     {
       icon: Zap,
@@ -96,7 +105,8 @@ export function AgentsPreview() {
               Catálogo de Assistentes
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Soluções inteligentes personalizadas e plug & play para transformar seu trabalho jurídico
+              Soluções inteligentes personalizadas e plug & play para
+              transformar seu trabalho jurídico
             </p>
           </div>
 
@@ -136,7 +146,9 @@ export function AgentsPreview() {
                         </p>
                         {agent.examples && (
                           <div className="text-left pt-2">
-                            <p className="text-xs font-semibold text-foreground mb-2">Exemplos já criados:</p>
+                            <p className="text-xs font-semibold text-foreground mb-2">
+                              Exemplos já criados:
+                            </p>
                             <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
                               {agent.examples.map((example, i) => (
                                 <li key={i}>{example}</li>
@@ -202,7 +214,9 @@ export function AgentsPreview() {
                   </p>
                   {agent.examples && (
                     <div className="text-left pt-2">
-                      <p className="text-xs font-semibold text-foreground mb-2">Exemplos já criados:</p>
+                      <p className="text-xs font-semibold text-foreground mb-2">
+                        Exemplos já criados:
+                      </p>
                       <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
                         {agent.examples.map((example, i) => (
                           <li key={i}>{example}</li>

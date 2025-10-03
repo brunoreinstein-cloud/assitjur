@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AuthCard } from '@/components/auth/AuthCard';
-import { OAuthButtons } from '@/components/auth/OAuthButtons';
-import { EmailPasswordForm } from '@/components/auth/EmailPasswordForm';
-import { MagicLinkForm } from '@/components/auth/MagicLinkForm';
-import { AlertBox } from '@/components/auth/AlertBox';
-import { ErrorBanner } from '@/components/common/ErrorBanner';
-import { ERROR_MESSAGES } from '@/utils/errorMessages';
-import { useAuth } from '@/hooks/useAuth';
-import { getDefaultRedirect, AUTH_CONFIG } from '@/config/auth';
-import { BrandHeader } from '@/components/brand/BrandHeader';
-import { BackToTopFAB } from '@/components/site/BackToTopFAB';
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AuthCard } from "@/components/auth/AuthCard";
+import { OAuthButtons } from "@/components/auth/OAuthButtons";
+import { EmailPasswordForm } from "@/components/auth/EmailPasswordForm";
+import { MagicLinkForm } from "@/components/auth/MagicLinkForm";
+import { AlertBox } from "@/components/auth/AlertBox";
+import { ErrorBanner } from "@/components/common/ErrorBanner";
+import { ERROR_MESSAGES } from "@/utils/errorMessages";
+import { useAuth } from "@/hooks/useAuth";
+import { getDefaultRedirect, AUTH_CONFIG } from "@/config/auth";
+import { BrandHeader } from "@/components/brand/BrandHeader";
+import { BackToTopFAB } from "@/components/site/BackToTopFAB";
 
 const heroImageAvif =
   "https://placehold.co/1600x900/000000/FFFFFF.avif?text=AssistJur";
@@ -24,28 +24,31 @@ const Login = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, profile } = useAuth();
-  const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
+  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
   const [showMagicLink, setShowMagicLink] = useState(false);
 
   useEffect(() => {
-    if (window.location.hash.includes('access_token')) {
+    if (window.location.hash.includes("access_token")) {
       const cleanUrl = window.location.pathname + window.location.search;
-      window.history.replaceState(null, '', cleanUrl);
+      window.history.replaceState(null, "", cleanUrl);
     }
   }, []);
 
   // Check for URL parameters
-  const next = searchParams.get('next');
-  const confirm = searchParams.get('confirm');
-  const error = searchParams.get('error');
+  const next = searchParams.get("next");
+  const confirm = searchParams.get("confirm");
+  const error = searchParams.get("error");
 
   // Redirect if already authenticated
   useEffect(() => {
     if (user && profile) {
-      if (profile.two_factor_enabled && sessionStorage.getItem('mfa_verified') !== 'true') {
+      if (
+        profile.two_factor_enabled &&
+        sessionStorage.getItem("mfa_verified") !== "true"
+      ) {
         const params = new URLSearchParams();
-        params.set('email', user.email ?? '');
-        if (next) params.set('next', next);
+        params.set("email", user.email ?? "");
+        if (next) params.set("next", next);
         navigate(`/verify-otp?${params.toString()}`);
       } else {
         const redirectTo = getDefaultRedirect(profile.role, next);
@@ -58,7 +61,7 @@ const Login = () => {
     setShowMagicLink(!showMagicLink);
   };
 
-  const handleModeChange = (mode: 'signin' | 'signup') => {
+  const handleModeChange = (mode: "signin" | "signup") => {
     setActiveTab(mode);
     setShowMagicLink(false);
   };
@@ -67,8 +70,13 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-subtle lg:grid lg:grid-cols-2">
       {/* SEO and Accessibility */}
       <div className="sr-only">
-        <h1 id="main-heading" tabIndex={-1}>Login - AssistJur.IA</h1>
-        <p>Acesse sua conta do AssistJur.IA para análise avançada de testemunhas com conformidade LGPD</p>
+        <h1 id="main-heading" tabIndex={-1}>
+          Login - AssistJur.IA
+        </h1>
+        <p>
+          Acesse sua conta do AssistJur.IA para análise avançada de testemunhas
+          com conformidade LGPD
+        </p>
       </div>
 
       {/* Left side - Form */}
@@ -105,20 +113,25 @@ const Login = () => {
           </div>
 
           {/* Error Banner */}
-            {error && (
-              <div className="mb-6">
-                <ErrorBanner
-                  message={error === 'access_denied' ? ERROR_MESSAGES.INCORRECT_PASSWORD : ERROR_MESSAGES.NOT_FOUND}
-                  onRetry={() => window.location.reload()}
-                />
-              </div>
-            )}
+          {error && (
+            <div className="mb-6">
+              <ErrorBanner
+                message={
+                  error === "access_denied"
+                    ? ERROR_MESSAGES.INCORRECT_PASSWORD
+                    : ERROR_MESSAGES.NOT_FOUND
+                }
+                onRetry={() => window.location.reload()}
+              />
+            </div>
+          )}
 
           {/* Confirmation Banner */}
-          {confirm === '1' && (
+          {confirm === "1" && (
             <div className="mb-6">
               <AlertBox variant="info" title="Confirme seu cadastro">
-                Verifique seu e-mail e clique no link de confirmação para ativar sua conta.
+                Verifique seu e-mail e clique no link de confirmação para ativar
+                sua conta.
               </AlertBox>
             </div>
           )}
@@ -133,7 +146,11 @@ const Login = () => {
             </AuthCard>
           ) : (
             <AuthCard
-              title={activeTab === 'signin' ? 'Acesse sua conta' : 'Comece gratuitamente'}
+              title={
+                activeTab === "signin"
+                  ? "Acesse sua conta"
+                  : "Comece gratuitamente"
+              }
               description="Acesso seguro e conformidade LGPD"
             >
               <div className="space-y-6">
@@ -141,32 +158,34 @@ const Login = () => {
                 <OAuthButtons next={next} />
 
                 {/* Tabs */}
-                <Tabs 
-                  value={activeTab} 
-                  onValueChange={(value) => setActiveTab(value as 'signin' | 'signup')}
+                <Tabs
+                  value={activeTab}
+                  onValueChange={(value) =>
+                    setActiveTab(value as "signin" | "signup")
+                  }
                   className="w-full"
                 >
                   <TabsList className="grid w-full grid-cols-2" role="tablist">
                     <TabsTrigger
                       value="signin"
                       role="tab"
-                      aria-selected={activeTab === 'signin'}
+                      aria-selected={activeTab === "signin"}
                       aria-controls="signin-panel"
                     >
                       Acessar área segura
                     </TabsTrigger>
-                    <TabsTrigger 
+                    <TabsTrigger
                       value="signup"
                       role="tab"
-                      aria-selected={activeTab === 'signup'}
+                      aria-selected={activeTab === "signup"}
                       aria-controls="signup-panel"
                     >
                       Criar conta
                     </TabsTrigger>
                   </TabsList>
 
-                  <TabsContent 
-                    value="signin" 
+                  <TabsContent
+                    value="signin"
                     className="mt-6"
                     role="tabpanel"
                     id="signin-panel"
@@ -176,7 +195,7 @@ const Login = () => {
                       mode="signin"
                       onModeChange={handleModeChange}
                     />
-                    
+
                     {/* Magic Link Toggle */}
                     {AUTH_CONFIG.FEATURES.MAGIC_LINK_ENABLED && (
                       <div className="mt-4 text-center">
@@ -192,8 +211,8 @@ const Login = () => {
                     )}
                   </TabsContent>
 
-                  <TabsContent 
-                    value="signup" 
+                  <TabsContent
+                    value="signup"
                     className="mt-6"
                     role="tabpanel"
                     id="signup-panel"
@@ -212,21 +231,21 @@ const Login = () => {
           {/* Footer */}
           <footer className="mt-8 text-center">
             <p className="text-xs text-muted-foreground">
-              Dados tratados conforme{' '}
+              Dados tratados conforme{" "}
               <Link
                 to="/lgpd"
                 className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm px-1"
               >
                 LGPD
               </Link>
-              {' • '}
+              {" • "}
               <Link
                 to="/privacidade"
                 className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm px-1"
               >
                 Política de Privacidade
               </Link>
-              {' • '}
+              {" • "}
               <Link
                 to="/termos"
                 className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm px-1"
@@ -245,7 +264,7 @@ const Login = () => {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary-light) / 0.8)), image-set(url(${heroImageAvif}) type('image/avif'), url(${heroImageWebp}) type('image/webp'), url(${heroImageJpg}) type('image/jpeg'))`
+            backgroundImage: `linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary-light) / 0.8)), image-set(url(${heroImageAvif}) type('image/avif'), url(${heroImageWebp}) type('image/webp'), url(${heroImageJpg}) type('image/jpeg'))`,
           }}
           role="img"
           aria-label="Imagem de fundo mostrando tecnologia jurídica"
@@ -260,21 +279,31 @@ const Login = () => {
                 Análise avançada de testemunhas com LGPD by design
               </h4>
               <p className="text-xl opacity-90 leading-relaxed">
-                Detecte padrões suspeitos, triangulações e provas emprestadas com total conformidade às normas de proteção de dados.
+                Detecte padrões suspeitos, triangulações e provas emprestadas
+                com total conformidade às normas de proteção de dados.
               </p>
-              
+
               {/* Features */}
               <ul className="space-y-3 pt-8" role="list">
                 <li className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-primary-foreground rounded-full" aria-hidden="true"></div>
+                  <div
+                    className="w-2 h-2 bg-primary-foreground rounded-full"
+                    aria-hidden="true"
+                  ></div>
                   <span>Mascaramento automático de PII</span>
                 </li>
                 <li className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-primary-foreground rounded-full" aria-hidden="true"></div>
+                  <div
+                    className="w-2 h-2 bg-primary-foreground rounded-full"
+                    aria-hidden="true"
+                  ></div>
                   <span>Trilha de auditoria completa</span>
                 </li>
                 <li className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-primary-foreground rounded-full" aria-hidden="true"></div>
+                  <div
+                    className="w-2 h-2 bg-primary-foreground rounded-full"
+                    aria-hidden="true"
+                  ></div>
                   <span>Criptografia end-to-end</span>
                 </li>
               </ul>
@@ -287,4 +316,3 @@ const Login = () => {
 };
 
 export default Login;
-

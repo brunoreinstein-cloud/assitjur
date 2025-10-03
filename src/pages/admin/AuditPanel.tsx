@@ -1,13 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Download, Filter } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Download, Filter } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 interface AuditLog {
   id: string;
@@ -24,8 +31,8 @@ const AuditPanel: React.FC = () => {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [filteredLogs, setFilteredLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const { } = useAuth();
+  const [searchTerm, setSearchTerm] = useState("");
+  const {} = useAuth();
 
   useEffect(() => {
     fetchAuditLogs();
@@ -39,8 +46,9 @@ const AuditPanel: React.FC = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('audit_logs')
-        .select(`
+        .from("audit_logs")
+        .select(
+          `
           id,
           user_id,
           action,
@@ -49,21 +57,27 @@ const AuditPanel: React.FC = () => {
           profiles!inner (
             email
           )
-        `)
-        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: false })
+        `,
+        )
+        .gte(
+          "created_at",
+          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        )
+        .order("created_at", { ascending: false })
         .limit(1000);
 
       if (error) throw error;
       // Transform the data to match our interface
       const transformedData = (data || []).map((item: any) => ({
         ...item,
-        profiles: Array.isArray(item.profiles) ? item.profiles[0] : item.profiles
+        profiles: Array.isArray(item.profiles)
+          ? item.profiles[0]
+          : item.profiles,
       }));
       setLogs(transformedData);
     } catch (error) {
-      console.error('Error fetching audit logs:', error);
-      toast.error('Erro ao carregar logs de auditoria');
+      console.error("Error fetching audit logs:", error);
+      toast.error("Erro ao carregar logs de auditoria");
     } finally {
       setLoading(false);
     }
@@ -75,50 +89,56 @@ const AuditPanel: React.FC = () => {
       return;
     }
 
-    const filtered = logs.filter(log => 
-      log.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.action?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.entity?.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = logs.filter(
+      (log) =>
+        log.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.action?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.entity?.toLowerCase().includes(searchTerm.toLowerCase()),
     );
     setFilteredLogs(filtered);
   };
 
   const getActionBadgeColor = (action: string) => {
     switch (action.toUpperCase()) {
-      case 'CREATE':
-      case 'INSERT':
-        return 'bg-green-100 text-green-800';
-      case 'UPDATE':
-      case 'EDIT':
-        return 'bg-blue-100 text-blue-800';
-      case 'DELETE':
-      case 'REMOVE':
-        return 'bg-red-100 text-red-800';
-      case 'EXPORT_PROCESSOS':
-      case 'EXPORT':
-        return 'bg-purple-100 text-purple-800';
+      case "CREATE":
+      case "INSERT":
+        return "bg-green-100 text-green-800";
+      case "UPDATE":
+      case "EDIT":
+        return "bg-blue-100 text-blue-800";
+      case "DELETE":
+      case "REMOVE":
+        return "bg-red-100 text-red-800";
+      case "EXPORT_PROCESSOS":
+      case "EXPORT":
+        return "bg-purple-100 text-purple-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const exportLogs = () => {
     const csvContent = [
-      ['Data', 'Usuário', 'Ação', 'Entidade'].join(','),
-      ...filteredLogs.map(log => [
-        new Date(log.created_at).toLocaleString('pt-BR'),
-        log.profiles?.email || 'N/A',
-        log.action,
-        log.entity
-      ].join(','))
-    ].join('\n');
+      ["Data", "Usuário", "Ação", "Entidade"].join(","),
+      ...filteredLogs.map((log) =>
+        [
+          new Date(log.created_at).toLocaleString("pt-BR"),
+          log.profiles?.email || "N/A",
+          log.action,
+          log.entity,
+        ].join(","),
+      ),
+    ].join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `audit-logs-${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `audit-logs-${new Date().toISOString().split("T")[0]}.csv`,
+    );
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -184,11 +204,9 @@ const AuditPanel: React.FC = () => {
                 {filteredLogs.map((log) => (
                   <TableRow key={log.id}>
                     <TableCell>
-                      {new Date(log.created_at).toLocaleString('pt-BR')}
+                      {new Date(log.created_at).toLocaleString("pt-BR")}
                     </TableCell>
-                    <TableCell>
-                      {log.profiles?.email || 'N/A'}
-                    </TableCell>
+                    <TableCell>{log.profiles?.email || "N/A"}</TableCell>
                     <TableCell>
                       <Badge className={getActionBadgeColor(log.action)}>
                         {log.action}
@@ -199,7 +217,10 @@ const AuditPanel: React.FC = () => {
                 ))}
                 {filteredLogs.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                    <TableCell
+                      colSpan={4}
+                      className="text-center text-muted-foreground py-8"
+                    >
                       Nenhum log encontrado
                     </TableCell>
                   </TableRow>

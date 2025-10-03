@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 /**
  * Utilitários de performance para produção
@@ -6,7 +6,7 @@ import React from 'react';
 
 // Lazy loading para componentes pesados
 export const createLazyComponent = <T extends React.ComponentType<any>>(
-  importFn: () => Promise<{ default: T }>
+  importFn: () => Promise<{ default: T }>,
 ) => {
   return React.lazy(importFn);
 };
@@ -14,7 +14,7 @@ export const createLazyComponent = <T extends React.ComponentType<any>>(
 // Debounce para inputs
 export const debounce = <T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): ((...args: Parameters<T>) => void) => {
   let timeout: NodeJS.Timeout;
   return (...args: Parameters<T>) => {
@@ -26,7 +26,7 @@ export const debounce = <T extends (...args: any[]) => any>(
 // Throttle para scroll events
 export const throttle = <T extends (...args: any[]) => any>(
   func: T,
-  limit: number
+  limit: number,
 ): ((...args: Parameters<T>) => void) => {
   let inThrottle: boolean;
   return (...args: Parameters<T>) => {
@@ -39,18 +39,18 @@ export const throttle = <T extends (...args: any[]) => any>(
 };
 
 // Preload critical resources
-export const preloadResource = (href: string, as: string = 'fetch') => {
-  const link = document.createElement('link');
-  link.rel = 'preload';
+export const preloadResource = (href: string, as: string = "fetch") => {
+  const link = document.createElement("link");
+  link.rel = "preload";
   link.href = href;
   link.as = as;
-  link.crossOrigin = 'anonymous';
+  link.crossOrigin = "anonymous";
   document.head.appendChild(link);
 };
 
 // Memory cleanup
 export const cleanupMemory = () => {
-  if ('gc' in window && typeof (window as any).gc === 'function') {
+  if ("gc" in window && typeof (window as any).gc === "function") {
     (window as any).gc();
   }
 };

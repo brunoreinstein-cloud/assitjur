@@ -6,8 +6,8 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogAction,
-} from '@/components/ui/alert-dialog';
-import { useSessionStore } from '@/stores/useSessionStore';
+} from "@/components/ui/alert-dialog";
+import { useSessionStore } from "@/stores/useSessionStore";
 
 export function SessionExpiredModal() {
   const { expired, redirectUrl, hideExpired } = useSessionStore();
@@ -25,7 +25,8 @@ export function SessionExpiredModal() {
         <AlertDialogHeader>
           <AlertDialogTitle>Sessão expirada</AlertDialogTitle>
           <AlertDialogDescription>
-            Sua sessão foi encerrada por inatividade ou expiração. Rascunhos foram preservados.
+            Sua sessão foi encerrada por inatividade ou expiração. Rascunhos
+            foram preservados.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

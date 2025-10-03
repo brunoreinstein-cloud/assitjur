@@ -1,6 +1,16 @@
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 import {
   BarChart,
   Bar,
@@ -14,8 +24,8 @@ import {
   CartesianGrid,
   ResponsiveContainer,
   Area,
-  AreaChart
-} from 'recharts';
+  AreaChart,
+} from "recharts";
 
 interface UsageData {
   date: string;
@@ -46,9 +56,9 @@ interface AnalyticsChartsProps {
 }
 
 const RISK_COLORS = {
-  low: '#10b981',    // green-500
-  medium: '#f59e0b', // amber-500
-  high: '#ef4444'    // red-500
+  low: "#10b981", // green-500
+  medium: "#f59e0b", // amber-500
+  high: "#ef4444", // red-500
 };
 
 const chartConfig = {
@@ -71,7 +81,7 @@ const chartConfig = {
   avgRisk: {
     label: "Risco Médio",
     color: "hsl(var(--chart-5))",
-  }
+  },
 };
 
 export const UsageChart: React.FC<{ data: UsageData[] }> = ({ data }) => {
@@ -101,15 +111,22 @@ export const UsageChart: React.FC<{ data: UsageData[] }> = ({ data }) => {
         <ChartContainer config={chartConfig} className="h-[300px]">
           <AreaChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="date" 
-              tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' })}
+            <XAxis
+              dataKey="date"
+              tickFormatter={(value) =>
+                new Date(value).toLocaleDateString("pt-BR", {
+                  month: "short",
+                  day: "numeric",
+                })
+              }
             />
             <YAxis yAxisId="left" />
             <YAxis yAxisId="right" orientation="right" />
-            <ChartTooltip 
+            <ChartTooltip
               content={<ChartTooltipContent />}
-              labelFormatter={(value) => new Date(value).toLocaleDateString('pt-BR')}
+              labelFormatter={(value) =>
+                new Date(value).toLocaleDateString("pt-BR")
+              }
             />
             <Area
               yAxisId="left"
@@ -136,19 +153,23 @@ export const UsageChart: React.FC<{ data: UsageData[] }> = ({ data }) => {
   );
 };
 
-export const RiskDistributionChart: React.FC<{ data: RiskDistribution }> = ({ data }) => {
+export const RiskDistributionChart: React.FC<{ data: RiskDistribution }> = ({
+  data,
+}) => {
   const pieData = [
-    { name: 'Baixo Risco', value: data.low, color: RISK_COLORS.low },
-    { name: 'Médio Risco', value: data.medium, color: RISK_COLORS.medium },
-    { name: 'Alto Risco', value: data.high, color: RISK_COLORS.high },
-  ].filter(item => item.value > 0);
+    { name: "Baixo Risco", value: data.low, color: RISK_COLORS.low },
+    { name: "Médio Risco", value: data.medium, color: RISK_COLORS.medium },
+    { name: "Alto Risco", value: data.high, color: RISK_COLORS.high },
+  ].filter((item) => item.value > 0);
 
   if (pieData.length === 0) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Distribuição de Riscos</CardTitle>
-          <CardDescription>Classificação dos processos por nível de risco</CardDescription>
+          <CardDescription>
+            Classificação dos processos por nível de risco
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-[300px] text-muted-foreground">
@@ -163,7 +184,9 @@ export const RiskDistributionChart: React.FC<{ data: RiskDistribution }> = ({ da
     <Card>
       <CardHeader>
         <CardTitle>Distribuição de Riscos</CardTitle>
-        <CardDescription>Classificação dos processos por nível de risco</CardDescription>
+        <CardDescription>
+          Classificação dos processos por nível de risco
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
@@ -182,7 +205,7 @@ export const RiskDistributionChart: React.FC<{ data: RiskDistribution }> = ({ da
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <ChartTooltip 
+              <ChartTooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const data = payload[0];
@@ -190,14 +213,25 @@ export const RiskDistributionChart: React.FC<{ data: RiskDistribution }> = ({ da
                       <div className="rounded-lg border bg-background p-2 shadow-sm">
                         <div className="grid gap-2">
                           <div className="flex items-center gap-2">
-                            <div 
-                              className="h-3 w-3 rounded-full" 
+                            <div
+                              className="h-3 w-3 rounded-full"
                               style={{ backgroundColor: data.payload.color }}
                             />
-                            <span className="font-medium">{data.payload.name}</span>
+                            <span className="font-medium">
+                              {data.payload.name}
+                            </span>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {data.value} processos ({((Number(data.value) / (pieData.reduce((sum, item) => sum + item.value, 0) || 1)) * 100).toFixed(1)}%)
+                            {data.value} processos (
+                            {(
+                              (Number(data.value) /
+                                (pieData.reduce(
+                                  (sum, item) => sum + item.value,
+                                  0,
+                                ) || 1)) *
+                              100
+                            ).toFixed(1)}
+                            %)
                           </div>
                         </div>
                       </div>
@@ -212,11 +246,13 @@ export const RiskDistributionChart: React.FC<{ data: RiskDistribution }> = ({ da
         <div className="flex justify-center gap-6 mt-4">
           {pieData.map((item) => (
             <div key={item.name} className="flex items-center gap-2">
-              <div 
-                className="h-3 w-3 rounded-full" 
+              <div
+                className="h-3 w-3 rounded-full"
                 style={{ backgroundColor: item.color }}
               />
-              <span className="text-sm">{item.name}: {item.value}</span>
+              <span className="text-sm">
+                {item.name}: {item.value}
+              </span>
             </div>
           ))}
         </div>
@@ -225,13 +261,17 @@ export const RiskDistributionChart: React.FC<{ data: RiskDistribution }> = ({ da
   );
 };
 
-export const ComarcaRiskChart: React.FC<{ data: ComarcaRisk[] }> = ({ data }) => {
+export const ComarcaRiskChart: React.FC<{ data: ComarcaRisk[] }> = ({
+  data,
+}) => {
   if (!data?.length) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Risco por Comarca</CardTitle>
-          <CardDescription>Top 10 comarcas com maior risco médio</CardDescription>
+          <CardDescription>
+            Top 10 comarcas com maior risco médio
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-[300px] text-muted-foreground">
@@ -253,13 +293,13 @@ export const ComarcaRiskChart: React.FC<{ data: ComarcaRisk[] }> = ({ data }) =>
           <BarChart data={data} layout="horizontal" margin={{ left: 120 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis type="number" domain={[0, 10]} />
-            <YAxis 
-              type="category" 
-              dataKey="comarca" 
+            <YAxis
+              type="category"
+              dataKey="comarca"
               width={100}
               tick={{ fontSize: 12 }}
             />
-            <ChartTooltip 
+            <ChartTooltip
               content={({ active, payload, label }) => {
                 if (active && payload && payload.length) {
                   const data = payload[0].payload;
@@ -268,9 +308,22 @@ export const ComarcaRiskChart: React.FC<{ data: ComarcaRisk[] }> = ({ data }) =>
                       <div className="grid gap-2">
                         <div className="font-medium">{label}</div>
                         <div className="text-sm">
-                          <div>Risco Médio: <span className="font-mono">{data.avgRisk.toFixed(1)}</span></div>
-                          <div>Total Processos: <span className="font-mono">{data.count}</span></div>
-                          <div>Alto Risco: <span className="font-mono">{data.highRiskCount}</span></div>
+                          <div>
+                            Risco Médio:{" "}
+                            <span className="font-mono">
+                              {data.avgRisk.toFixed(1)}
+                            </span>
+                          </div>
+                          <div>
+                            Total Processos:{" "}
+                            <span className="font-mono">{data.count}</span>
+                          </div>
+                          <div>
+                            Alto Risco:{" "}
+                            <span className="font-mono">
+                              {data.highRiskCount}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -279,8 +332,8 @@ export const ComarcaRiskChart: React.FC<{ data: ComarcaRisk[] }> = ({ data }) =>
                 return null;
               }}
             />
-            <Bar 
-              dataKey="avgRisk" 
+            <Bar
+              dataKey="avgRisk"
               fill="var(--color-avgRisk)"
               radius={[0, 4, 4, 0]}
             />
@@ -318,26 +371,33 @@ export const TokensChart: React.FC<{ data: UsageData[] }> = ({ data }) => {
         <ChartContainer config={chartConfig} className="h-[300px]">
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="date" 
-              tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' })}
+            <XAxis
+              dataKey="date"
+              tickFormatter={(value) =>
+                new Date(value).toLocaleDateString("pt-BR", {
+                  month: "short",
+                  day: "numeric",
+                })
+              }
             />
             <YAxis />
-            <ChartTooltip 
+            <ChartTooltip
               content={<ChartTooltipContent />}
-              labelFormatter={(value) => new Date(value).toLocaleDateString('pt-BR')}
+              labelFormatter={(value) =>
+                new Date(value).toLocaleDateString("pt-BR")
+              }
             />
-            <Line 
-              type="monotone" 
-              dataKey="tokens_in" 
-              stroke="var(--color-tokens_in)" 
+            <Line
+              type="monotone"
+              dataKey="tokens_in"
+              stroke="var(--color-tokens_in)"
               strokeWidth={2}
               dot={{ r: 4 }}
             />
-            <Line 
-              type="monotone" 
-              dataKey="tokens_out" 
-              stroke="var(--color-tokens_out)" 
+            <Line
+              type="monotone"
+              dataKey="tokens_out"
+              stroke="var(--color-tokens_out)"
               strokeWidth={2}
               dot={{ r: 4 }}
             />

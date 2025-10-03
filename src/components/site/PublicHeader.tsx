@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { track } from '@/lib/track';
+import React, { useState, useCallback } from "react";
+import { track } from "@/lib/track";
 
 interface PublicHeaderProps {
   onBetaClick?: () => void;
@@ -11,7 +11,7 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
   const scrollToSection = useCallback((id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     setIsMobileMenuOpen(false);
   }, []);
@@ -21,18 +21,18 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
       e.preventDefault();
       scrollToSection(id);
     },
-    [scrollToSection]
+    [scrollToSection],
   );
 
   const handleBetaClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
       if (onBetaClick) {
         e.preventDefault();
-        track('cta_click', { id: 'menu-entrar-beta' });
+        track("cta_click", { id: "menu-entrar-beta" });
         onBetaClick();
       }
     },
-    [onBetaClick]
+    [onBetaClick],
   );
 
   const toggleMobileMenu = useCallback(() => {
@@ -40,13 +40,13 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
   }, []);
 
   const navItems = [
-    { label: 'Início', id: 'inicio' },
-    { label: 'Para Quem', id: 'para-quem' },
-    { label: 'Diferenciais', id: 'diferenciais' },
-    { label: 'ROI', id: 'roi' },
-    { label: 'Agentes', id: 'agentes' },
-    { label: 'Segurança', id: 'seguranca' },
-    { label: 'Sobre', id: 'sobre' }
+    { label: "Início", id: "inicio" },
+    { label: "Para Quem", id: "para-quem" },
+    { label: "Diferenciais", id: "diferenciais" },
+    { label: "ROI", id: "roi" },
+    { label: "Agentes", id: "agentes" },
+    { label: "Segurança", id: "seguranca" },
+    { label: "Sobre", id: "sobre" },
   ];
 
   return (
@@ -131,7 +131,11 @@ export function PublicHeader({ onBetaClick }: PublicHeaderProps) {
                 className="h-6 w-6"
                 aria-hidden="true"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                />
               </svg>
             )}
           </button>

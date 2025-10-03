@@ -1,5 +1,5 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Shield, AlertTriangle } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
+import { Shield, AlertTriangle } from "lucide-react";
 
 export function TrustNote() {
   return (
@@ -14,10 +14,13 @@ export function TrustNote() {
                 Validação Jurídica Obrigatória
               </p>
               <p className="text-sm text-orange-700 dark:text-orange-300 mt-2">
-                O AssistJur.IA facilita a organização e análise dos dados, mas a verificação da veracidade das informações nos autos processuais permanece responsabilidade exclusiva do usuário jurídico.
+                O AssistJur.IA facilita a organização e análise dos dados, mas a
+                verificação da veracidade das informações nos autos processuais
+                permanece responsabilidade exclusiva do usuário jurídico.
               </p>
               <p className="text-xs text-orange-600 dark:text-orange-400 mt-2 font-medium">
-                ⚖️ Sempre confira as informações com os documentos oficiais dos processos
+                ⚖️ Sempre confira as informações com os documentos oficiais dos
+                processos
               </p>
             </div>
           </div>
@@ -34,7 +37,9 @@ export function TrustNote() {
                 Segurança e Privacidade (LGPD)
               </p>
               <p className="text-sm text-blue-700 dark:text-blue-300 mt-2">
-                Seus dados são processados localmente durante a validação e armazenados de forma criptografada. Não compartilhamos informações pessoais com terceiros.
+                Seus dados são processados localmente durante a validação e
+                armazenados de forma criptografada. Não compartilhamos
+                informações pessoais com terceiros.
               </p>
               <div className="space-y-1 mt-3 text-xs text-blue-600 dark:text-blue-400">
                 <div className="flex items-center gap-2">

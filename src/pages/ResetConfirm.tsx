@@ -1,30 +1,33 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react';
-import { BRAND } from '@/branding/brand';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { AuthCard } from '@/components/auth/AuthCard';
-import { AlertBox } from '@/components/auth/AlertBox';
-import { PasswordStrength } from '@/components/auth/PasswordStrength';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { MIN_PASSWORD_LENGTH } from '@/utils/security/passwordPolicy';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Eye, EyeOff, Loader2, CheckCircle } from "lucide-react";
+import { BRAND } from "@/branding/brand";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { AuthCard } from "@/components/auth/AuthCard";
+import { AlertBox } from "@/components/auth/AlertBox";
+import { PasswordStrength } from "@/components/auth/PasswordStrength";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { MIN_PASSWORD_LENGTH } from "@/utils/security/passwordPolicy";
 
-const confirmResetSchema = z.object({
-  password: z.string().min(MIN_PASSWORD_LENGTH, `Mínimo de ${MIN_PASSWORD_LENGTH} caracteres`),
-  confirmPassword: z.string(),
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Senhas não conferem",
-  path: ["confirmPassword"]
-});
+const confirmResetSchema = z
+  .object({
+    password: z
+      .string()
+      .min(MIN_PASSWORD_LENGTH, `Mínimo de ${MIN_PASSWORD_LENGTH} caracteres`),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Senhas não conferem",
+    path: ["confirmPassword"],
+  });
 
 type ConfirmResetFormData = z.infer<typeof confirmResetSchema>;
-
 
 const ResetConfirm = () => {
   const navigate = useNavigate();
@@ -35,24 +38,24 @@ const ResetConfirm = () => {
 
   // Get token from URL fragments (Supabase auth uses hash fragments)
   const params = new URLSearchParams(window.location.hash.slice(1));
-  const accessToken = params.get('access_token');
-  const refreshToken = params.get('refresh_token');
+  const accessToken = params.get("access_token");
+  const refreshToken = params.get("refresh_token");
 
   useEffect(() => {
-    if (window.location.hash.includes('access_token')) {
-      window.location.hash = '';
+    if (window.location.hash.includes("access_token")) {
+      window.location.hash = "";
     }
   }, []);
 
   const form = useForm<ConfirmResetFormData>({
     resolver: zodResolver(confirmResetSchema),
     defaultValues: {
-      password: '',
-      confirmPassword: ''
-    }
+      password: "",
+      confirmPassword: "",
+    },
   });
 
-  const watchPassword = form.watch('password');
+  const watchPassword = form.watch("password");
 
   // Validate token on mount
   useEffect(() => {
@@ -71,12 +74,12 @@ const ResetConfirm = () => {
       try {
         const { error } = await supabase.auth.setSession({
           access_token: accessToken,
-          refresh_token: refreshToken
+          refresh_token: refreshToken,
         });
 
         setIsValidToken(!error);
       } catch (error) {
-        console.error('Token validation error:', error);
+        console.error("Token validation error:", error);
         setIsValidToken(false);
       }
     };
@@ -86,19 +89,19 @@ const ResetConfirm = () => {
 
   const handleUpdatePassword = async (data: ConfirmResetFormData) => {
     setIsLoading(true);
-    
-    try {      
+
+    try {
       if (!supabase) {
         // Mock password update for development
         toast.success("Senha atualizada!", {
-          description: "Sua senha foi redefinida com sucesso (modo demo)."
+          description: "Sua senha foi redefinida com sucesso (modo demo).",
         });
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
       const { error } = await supabase.auth.updateUser({
-        password: data.password
+        password: data.password,
       });
 
       if (error) {
@@ -106,7 +109,8 @@ const ResetConfirm = () => {
       }
 
       toast.success("Senha atualizada!", {
-        description: "Sua senha foi redefinida com sucesso. Faça login com a nova senha."
+        description:
+          "Sua senha foi redefinida com sucesso. Faça login com a nova senha.",
       });
 
       // Rotate refresh token and sign out
@@ -114,12 +118,11 @@ const ResetConfirm = () => {
         await supabase.auth.refreshSession();
       } catch {}
       await supabase.auth.signOut();
-      navigate('/login');
-
+      navigate("/login");
     } catch (error: any) {
-      console.error('Password update error:', error);
+      console.error("Password update error:", error);
       toast.error("Erro ao atualizar senha", {
-        description: "Não foi possível atualizar a senha. Tente novamente."
+        description: "Não foi possível atualizar a senha. Tente novamente.",
       });
     } finally {
       setIsLoading(false);
@@ -133,7 +136,9 @@ const ResetConfirm = () => {
         <div className="mx-auto w-full max-w-md">
           <div className="text-center space-y-4">
             <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-            <p className="text-sm text-muted-foreground">Validando link de redefinição...</p>
+            <p className="text-sm text-muted-foreground">
+              Validando link de redefinição...
+            </p>
           </div>
         </div>
       </div>
@@ -155,8 +160,12 @@ const ResetConfirm = () => {
                 loading="lazy"
               />
               <div>
-                <h1 className="text-2xl font-bold text-foreground">{BRAND.name}</h1>
-                <p className="text-sm text-muted-foreground">Assistente de Testemunhas</p>
+                <h1 className="text-2xl font-bold text-foreground">
+                  {BRAND.name}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Assistente de Testemunhas
+                </p>
               </div>
             </div>
           </div>
@@ -178,13 +187,13 @@ const ResetConfirm = () => {
               </AlertBox>
 
               <div className="space-y-3">
-                <Button onClick={() => navigate('/reset')} className="w-full">
+                <Button onClick={() => navigate("/reset")} className="w-full">
                   Solicitar novo link
                 </Button>
-                
+
                 <Button
                   variant="ghost"
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate("/login")}
                   className="w-full"
                 >
                   Voltar ao login
@@ -210,8 +219,12 @@ const ResetConfirm = () => {
               loading="lazy"
             />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">{BRAND.name}</h1>
-              <p className="text-sm text-muted-foreground">Assistente de Testemunhas</p>
+              <h1 className="text-2xl font-bold text-foreground">
+                {BRAND.name}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Assistente de Testemunhas
+              </p>
             </div>
           </div>
         </div>
@@ -230,19 +243,26 @@ const ResetConfirm = () => {
               </p>
             </div>
 
-            <form onSubmit={form.handleSubmit(handleUpdatePassword)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(handleUpdatePassword)}
+              className="space-y-4"
+            >
               {/* New Password */}
               <div className="space-y-2">
                 <Label htmlFor="password">Nova senha</Label>
                 <div className="relative">
                   <Input
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     aria-invalid={!!form.formState.errors.password}
                     aria-describedby="reset-password-error"
-                    {...form.register('password')}
-                    className={form.formState.errors.password ? 'border-destructive pr-10' : 'pr-10'}
+                    {...form.register("password")}
+                    className={
+                      form.formState.errors.password
+                        ? "border-destructive pr-10"
+                        : "pr-10"
+                    }
                   />
                   <Button
                     type="button"
@@ -250,25 +270,40 @@ const ResetConfirm = () => {
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                    aria-label={
+                      showPassword ? "Ocultar senha" : "Mostrar senha"
+                    }
                     aria-pressed={showPassword}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" aria-hidden="true" focusable="false" />
+                      <EyeOff
+                        className="h-4 w-4 text-muted-foreground"
+                        aria-hidden="true"
+                        focusable="false"
+                      />
                     ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" aria-hidden="true" focusable="false" />
+                      <Eye
+                        className="h-4 w-4 text-muted-foreground"
+                        aria-hidden="true"
+                        focusable="false"
+                      />
                     )}
                   </Button>
                 </div>
                 {form.formState.errors.password && (
-                  <p id="reset-password-error" className="text-sm text-destructive" role="alert" aria-live="polite">{form.formState.errors.password.message}</p>
+                  <p
+                    id="reset-password-error"
+                    className="text-sm text-destructive"
+                    role="alert"
+                    aria-live="polite"
+                  >
+                    {form.formState.errors.password.message}
+                  </p>
                 )}
               </div>
 
               {/* Password Strength */}
-              {watchPassword && (
-                <PasswordStrength password={watchPassword} />
-              )}
+              {watchPassword && <PasswordStrength password={watchPassword} />}
 
               {/* Confirm Password */}
               <div className="space-y-2">
@@ -276,12 +311,16 @@ const ResetConfirm = () => {
                 <div className="relative">
                   <Input
                     id="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
+                    type={showConfirmPassword ? "text" : "password"}
                     placeholder="••••••••"
                     aria-invalid={!!form.formState.errors.confirmPassword}
                     aria-describedby="reset-confirm-password-error"
-                    {...form.register('confirmPassword')}
-                    className={form.formState.errors.confirmPassword ? 'border-destructive pr-10' : 'pr-10'}
+                    {...form.register("confirmPassword")}
+                    className={
+                      form.formState.errors.confirmPassword
+                        ? "border-destructive pr-10"
+                        : "pr-10"
+                    }
                   />
                   <Button
                     type="button"
@@ -289,33 +328,46 @@ const ResetConfirm = () => {
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    aria-label={showConfirmPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                    aria-label={
+                      showConfirmPassword ? "Ocultar senha" : "Mostrar senha"
+                    }
                     aria-pressed={showConfirmPassword}
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" aria-hidden="true" focusable="false" />
+                      <EyeOff
+                        className="h-4 w-4 text-muted-foreground"
+                        aria-hidden="true"
+                        focusable="false"
+                      />
                     ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" aria-hidden="true" focusable="false" />
+                      <Eye
+                        className="h-4 w-4 text-muted-foreground"
+                        aria-hidden="true"
+                        focusable="false"
+                      />
                     )}
                   </Button>
                 </div>
                 {form.formState.errors.confirmPassword && (
-                  <p id="reset-confirm-password-error" className="text-sm text-destructive" role="alert" aria-live="polite">{form.formState.errors.confirmPassword.message}</p>
+                  <p
+                    id="reset-confirm-password-error"
+                    className="text-sm text-destructive"
+                    role="alert"
+                    aria-live="polite"
+                  >
+                    {form.formState.errors.confirmPassword.message}
+                  </p>
                 )}
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={isLoading}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     Atualizando senha...
                   </>
                 ) : (
-                  'Atualizar senha'
+                  "Atualizar senha"
                 )}
               </Button>
             </form>

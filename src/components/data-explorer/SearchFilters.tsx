@@ -1,10 +1,20 @@
-import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, X, Save, Bookmark } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import React, { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search, Filter, X, Save, Bookmark } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface SearchFiltersProps {
   searchTerm: string;
@@ -16,31 +26,39 @@ interface SearchFiltersProps {
 }
 
 const severityOptions = [
-  { value: 'ERROR', label: 'Erro', color: 'bg-destructive text-destructive-foreground' },
-  { value: 'WARNING', label: 'Atenção', color: 'bg-warning text-warning-foreground' },
-  { value: 'INFO', label: 'Info', color: 'bg-primary text-primary-foreground' },
-  { value: 'OK', label: 'OK', color: 'bg-success text-success-foreground' },
+  {
+    value: "ERROR",
+    label: "Erro",
+    color: "bg-destructive text-destructive-foreground",
+  },
+  {
+    value: "WARNING",
+    label: "Atenção",
+    color: "bg-warning text-warning-foreground",
+  },
+  { value: "INFO", label: "Info", color: "bg-primary text-primary-foreground" },
+  { value: "OK", label: "OK", color: "bg-success text-success-foreground" },
 ];
 
-export function SearchFilters({ 
-  searchTerm, 
-  onSearchChange, 
-  selectedSeverity, 
+export function SearchFilters({
+  searchTerm,
+  onSearchChange,
+  selectedSeverity,
   onSeverityChange,
   onClearFilters,
-  hasActiveFilters 
+  hasActiveFilters,
 }: SearchFiltersProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const handleSeverityToggle = (severity: string) => {
     const newSeverity = selectedSeverity.includes(severity)
-      ? selectedSeverity.filter(s => s !== severity)
+      ? selectedSeverity.filter((s) => s !== severity)
       : [...selectedSeverity, severity];
     onSeverityChange(newSeverity);
   };
 
   const removeSeverityFilter = (severity: string) => {
-    onSeverityChange(selectedSeverity.filter(s => s !== severity));
+    onSeverityChange(selectedSeverity.filter((s) => s !== severity));
   };
 
   return (
@@ -64,7 +82,10 @@ export function SearchFilters({
               <Filter className="h-4 w-4" />
               Filtros
               {hasActiveFilters && (
-                <Badge variant="secondary" className="ml-1 px-1.5 py-0.5 text-xs">
+                <Badge
+                  variant="secondary"
+                  className="ml-1 px-1.5 py-0.5 text-xs"
+                >
                   {selectedSeverity.length}
                 </Badge>
               )}
@@ -73,12 +94,16 @@ export function SearchFilters({
           <PopoverContent className="w-80 p-4" align="start">
             <div className="space-y-4">
               <h4 className="font-semibold text-sm">Filtrar por Severidade</h4>
-              
+
               <div className="grid grid-cols-2 gap-2">
                 {severityOptions.map((option) => (
                   <Button
                     key={option.value}
-                    variant={selectedSeverity.includes(option.value) ? "default" : "outline"}
+                    variant={
+                      selectedSeverity.includes(option.value)
+                        ? "default"
+                        : "outline"
+                    }
                     size="sm"
                     onClick={() => handleSeverityToggle(option.value)}
                     className="justify-start gap-2"
@@ -105,7 +130,7 @@ export function SearchFilters({
 
         {/* Active Filters */}
         {selectedSeverity.map((severity) => {
-          const option = severityOptions.find(opt => opt.value === severity);
+          const option = severityOptions.find((opt) => opt.value === severity);
           return (
             <Badge key={severity} variant="secondary" className="gap-1">
               <div className={`w-2 h-2 rounded-full ${option?.color}`} />
@@ -123,7 +148,12 @@ export function SearchFilters({
         })}
 
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={onClearFilters} className="gap-2 text-muted-foreground">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClearFilters}
+            className="gap-2 text-muted-foreground"
+          >
             <X className="h-4 w-4" />
             Limpar Filtros
           </Button>

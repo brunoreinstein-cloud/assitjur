@@ -1,16 +1,24 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Download, FileSpreadsheet, Loader2 } from "lucide-react";
-import { exportProcessosToCSV, exportTestemunhasToCSV, validateExportSize, estimateCSVSize } from "@/lib/csv";
+import {
+  exportProcessosToCSV,
+  exportTestemunhasToCSV,
+  validateExportSize,
+  estimateCSVSize,
+} from "@/lib/csv";
 import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
-import { useMapaTestemunhasStore, selectIsPiiMasked } from "@/lib/store/mapa-testemunhas";
+import {
+  useMapaTestemunhasStore,
+  selectIsPiiMasked,
+} from "@/lib/store/mapa-testemunhas";
 
 // Type aliases for backward compatibility
 type Processo = PorProcesso;
@@ -27,35 +35,37 @@ interface ExportCsvButtonProps {
 export const ExportCsvButton = ({
   data,
   fileName,
-  disabled = false
+  disabled = false,
 }: ExportCsvButtonProps) => {
   const [isExporting, setIsExporting] = useState(false);
   const isPiiMasked = useMapaTestemunhasStore(selectIsPiiMasked);
-  
+
   const isProcessoData = (data: ExportData): data is Processo[] => {
-    return data.length > 0 && 'cnj' in data[0] && 'reclamante_limpo' in data[0];
+    return data.length > 0 && "cnj" in data[0] && "reclamante_limpo" in data[0];
   };
-  
+
   const handleExport = async () => {
     setIsExporting(true);
-    
+
     try {
       const exportCount = data.length;
       const validation = validateExportSize(exportCount, false);
-      
+
       if (!validation.isValid) {
         toast.error("Erro na exportação", {
-          description: validation.message
+          description: validation.message,
         });
         return;
       }
-      
+
       let exportedCount = 0;
-      const defaultFileName = isProcessoData(data) ? "processos.csv" : "testemunhas.csv";
-      
+      const defaultFileName = isProcessoData(data)
+        ? "processos.csv"
+        : "testemunhas.csv";
+
       if (isProcessoData(data)) {
         // Convert Processo[] to PorProcesso[] for compatibility
-        const porProcessoData: PorProcesso[] = data.map(p => ({
+        const porProcessoData: PorProcesso[] = data.map((p) => ({
           cnj: p.cnj,
           status: p.status || null,
           uf: p.uf || null,
@@ -67,9 +77,12 @@ export const ExportCsvButton = ({
           testemunhas_passivo_limpo: p.testemunhas_passivo_limpo || null,
           todas_testemunhas: p.todas_testemunhas || null,
           reclamante_foi_testemunha: p.reclamante_foi_testemunha || null,
-          qtd_vezes_reclamante_foi_testemunha: p.qtd_vezes_reclamante_foi_testemunha || null,
-          cnjs_em_que_reclamante_foi_testemunha: p.cnjs_em_que_reclamante_foi_testemunha || null,
-          reclamante_testemunha_polo_passivo: p.reclamante_testemunha_polo_passivo || null,
+          qtd_vezes_reclamante_foi_testemunha:
+            p.qtd_vezes_reclamante_foi_testemunha || null,
+          cnjs_em_que_reclamante_foi_testemunha:
+            p.cnjs_em_que_reclamante_foi_testemunha || null,
+          reclamante_testemunha_polo_passivo:
+            p.reclamante_testemunha_polo_passivo || null,
           cnjs_passivo: p.cnjs_passivo || null,
           troca_direta: p.troca_direta || null,
           desenho_troca_direta: p.desenho_troca_direta || null,
@@ -77,7 +90,8 @@ export const ExportCsvButton = ({
           triangulacao_confirmada: p.triangulacao_confirmada || null,
           desenho_triangulacao: p.desenho_triangulacao || null,
           cnjs_triangulacao: p.cnjs_triangulacao || null,
-          testemunha_do_reclamante_ja_foi_testemunha_antes: p.testemunha_do_reclamante_ja_foi_testemunha_antes || null,
+          testemunha_do_reclamante_ja_foi_testemunha_antes:
+            p.testemunha_do_reclamante_ja_foi_testemunha_antes || null,
           qtd_total_depos_unicos: p.qtd_total_depos_unicos || null,
           cnjs_depos_unicos: p.cnjs_depos_unicos || null,
           contem_prova_emprestada: p.contem_prova_emprestada || null,
@@ -88,54 +102,56 @@ export const ExportCsvButton = ({
           created_at: p.created_at || new Date().toISOString(),
           updated_at: p.updated_at || new Date().toISOString(),
         }));
-        
+
         exportedCount = exportProcessosToCSV(porProcessoData, {
           filename: fileName || defaultFileName,
           maskPII: isPiiMasked,
           selectedOnly: false,
-          selectedIds: []
+          selectedIds: [],
         });
       } else {
         // Convert Testemunha[] to PorTestemunha[] for compatibility
-        const porTestemunhaData: PorTestemunha[] = (data as Testemunha[]).map(t => ({
-          nome_testemunha: t.nome_testemunha,
-          qtd_depoimentos: t.qtd_depoimentos || null,
-          cnjs_como_testemunha: t.cnjs_como_testemunha || null,
-          ja_foi_reclamante: t.ja_foi_reclamante || null,
-          cnjs_como_reclamante: t.cnjs_como_reclamante || null,
-          foi_testemunha_ativo: t.foi_testemunha_ativo || null,
-          cnjs_ativo: t.cnjs_ativo || null,
-          foi_testemunha_passivo: t.foi_testemunha_passivo || null,
-          cnjs_passivo: t.cnjs_passivo || null,
-          foi_testemunha_em_ambos_polos: t.foi_testemunha_em_ambos_polos || null,
-          participou_troca_favor: t.participou_troca_favor || null,
-          cnjs_troca_favor: t.cnjs_troca_favor || null,
-          participou_triangulacao: t.participou_triangulacao || null,
-          cnjs_triangulacao: t.cnjs_triangulacao || null,
-          e_prova_emprestada: t.e_prova_emprestada || null,
-          classificacao: t.classificacao || null,
-          classificacao_estrategica: t.classificacao_estrategica || null,
-          org_id: t.org_id || null,
-          created_at: t.created_at || new Date().toISOString(),
-          updated_at: t.updated_at || new Date().toISOString(),
-        }));
-        
+        const porTestemunhaData: PorTestemunha[] = (data as Testemunha[]).map(
+          (t) => ({
+            nome_testemunha: t.nome_testemunha,
+            qtd_depoimentos: t.qtd_depoimentos || null,
+            cnjs_como_testemunha: t.cnjs_como_testemunha || null,
+            ja_foi_reclamante: t.ja_foi_reclamante || null,
+            cnjs_como_reclamante: t.cnjs_como_reclamante || null,
+            foi_testemunha_ativo: t.foi_testemunha_ativo || null,
+            cnjs_ativo: t.cnjs_ativo || null,
+            foi_testemunha_passivo: t.foi_testemunha_passivo || null,
+            cnjs_passivo: t.cnjs_passivo || null,
+            foi_testemunha_em_ambos_polos:
+              t.foi_testemunha_em_ambos_polos || null,
+            participou_troca_favor: t.participou_troca_favor || null,
+            cnjs_troca_favor: t.cnjs_troca_favor || null,
+            participou_triangulacao: t.participou_triangulacao || null,
+            cnjs_triangulacao: t.cnjs_triangulacao || null,
+            e_prova_emprestada: t.e_prova_emprestada || null,
+            classificacao: t.classificacao || null,
+            classificacao_estrategica: t.classificacao_estrategica || null,
+            org_id: t.org_id || null,
+            created_at: t.created_at || new Date().toISOString(),
+            updated_at: t.updated_at || new Date().toISOString(),
+          }),
+        );
+
         exportedCount = exportTestemunhasToCSV(porTestemunhaData, {
           filename: fileName || defaultFileName,
           maskPII: isPiiMasked,
           selectedOnly: false,
-          selectedIds: []
+          selectedIds: [],
         });
       }
-      
+
       toast.success("Exportação concluída!", {
-        description: `${exportedCount} registros exportados com sucesso.`
+        description: `${exportedCount} registros exportados com sucesso.`,
       });
-      
     } catch (error) {
-      console.error('Export error:', error);
+      console.error("Export error:", error);
       toast.error("Erro na exportação", {
-        description: "Não foi possível exportar os dados. Tente novamente."
+        description: "Não foi possível exportar os dados. Tente novamente.",
       });
     } finally {
       setIsExporting(false);
@@ -145,10 +161,10 @@ export const ExportCsvButton = ({
   const getExportSummary = () => {
     const count = Math.min(data.length, 5000);
     const isProcesso = isProcessoData(data);
-    
+
     return {
       count,
-      size: estimateCSVSize(count, isProcesso)
+      size: estimateCSVSize(count, isProcesso),
     };
   };
 
@@ -157,8 +173,8 @@ export const ExportCsvButton = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           disabled={disabled || isExporting || data.length === 0}
           className="gap-2"
           aria-label="Exportar dados como CSV"
@@ -178,13 +194,10 @@ export const ExportCsvButton = ({
             Exportar como CSV
           </div>
         </div>
-        
+
         <DropdownMenuSeparator />
-        
-        <DropdownMenuItem
-          onClick={handleExport}
-          disabled={isExporting}
-        >
+
+        <DropdownMenuItem onClick={handleExport} disabled={isExporting}>
           <div className="w-full">
             <div className="flex justify-between items-center">
               <span>Todos os registros</span>
@@ -192,12 +205,10 @@ export const ExportCsvButton = ({
                 {summary.count.toLocaleString()}
               </span>
             </div>
-            <div className="text-xs text-muted-foreground">
-              {summary.size}
-            </div>
+            <div className="text-xs text-muted-foreground">{summary.size}</div>
           </div>
         </DropdownMenuItem>
-        
+
         {data.length > 5000 && (
           <>
             <DropdownMenuSeparator />

@@ -1,6 +1,6 @@
-import { PropsWithChildren } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
-import { DEFAULT_TRANSITION } from '@/config/motion';
+import { PropsWithChildren } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { DEFAULT_TRANSITION } from "@/config/motion";
 
 export function PageFade({ children }: PropsWithChildren) {
   const shouldReduceMotion = useReducedMotion();

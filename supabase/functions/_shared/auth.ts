@@ -6,21 +6,27 @@ const PUBLISHABLE_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 export function clientRLS(req: Request) {
   return createClient(SUPABASE_URL, PUBLISHABLE_KEY, {
-    global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
-    auth: { autoRefreshToken: false, persistSession: false }
+    global: {
+      headers: { Authorization: req.headers.get("Authorization") ?? "" },
+    },
+    auth: { autoRefreshToken: false, persistSession: false },
   });
 }
 
 export function adminClient() {
   return createClient(SUPABASE_URL, SERVICE_ROLE, {
-    auth: { autoRefreshToken: false, persistSession: false }
+    auth: { autoRefreshToken: false, persistSession: false },
   });
 }
 
 export async function getAuth(req: Request) {
   const supa = clientRLS(req);
-  const { data: { user }, error } = await supa.auth.getUser();
-  if (error || !user) return { user: null, supa, error: "unauthorized" } as const;
+  const {
+    data: { user },
+    error,
+  } = await supa.auth.getUser();
+  if (error || !user)
+    return { user: null, supa, error: "unauthorized" } as const;
 
   // Get user profile organization
   const { data: profile } = await supa
@@ -42,6 +48,6 @@ export async function getAuth(req: Request) {
     user,
     organization_id: profile?.organization_id ?? null,
     role: memberRole?.role ?? null,
-    supa
+    supa,
   } as const;
 }

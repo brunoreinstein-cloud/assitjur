@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { AssistJurImportResult } from '@/types/assistjur';
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { AssistJurImportResult } from "@/types/assistjur";
 
 export function useAssistJurImport() {
   const [isUploading, setIsUploading] = useState(false);
@@ -9,38 +9,41 @@ export function useAssistJurImport() {
 
   const uploadFile = async (file: File): Promise<AssistJurImportResult> => {
     setIsUploading(true);
-    
+
     try {
       // Validar tipo de arquivo
-      if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
-        throw new Error('Apenas arquivos Excel (.xlsx, .xls) são suportados');
+      if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls")) {
+        throw new Error("Apenas arquivos Excel (.xlsx, .xls) são suportados");
       }
 
       // Validar tamanho (max 50MB)
       if (file.size > 50 * 1024 * 1024) {
-        throw new Error('Arquivo muito grande. Limite: 50MB');
+        throw new Error("Arquivo muito grande. Limite: 50MB");
       }
 
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
 
-      const { data, error } = await supabase.functions.invoke('import-assistjur-xlsx', {
-        body: formData
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "import-assistjur-xlsx",
+        {
+          body: formData,
+        },
+      );
 
       if (error) {
-        throw new Error(error.message || 'Erro na importação');
+        throw new Error(error.message || "Erro na importação");
       }
 
       if (!data.success) {
-        throw new Error(data.error || 'Erro desconhecido na importação');
+        throw new Error(data.error || "Erro desconhecido na importação");
       }
 
-      toast.success('Arquivo processado com sucesso!');
+      toast.success("Arquivo processado com sucesso!");
       return data as AssistJurImportResult;
-      
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro na importação';
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro na importação";
       toast.error(errorMessage);
       throw error;
     } finally {
@@ -50,14 +53,16 @@ export function useAssistJurImport() {
 
   const publishData = async (uploadId: string): Promise<boolean> => {
     setIsPublishing(true);
-    
+
     try {
       // Simular publicação por ora - implementação completa seria feita com RPC customizada
-      toast.success('Função de publicação será implementada com RPC customizada');
+      toast.success(
+        "Função de publicação será implementada com RPC customizada",
+      );
       return true;
-      
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro na publicação';
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro na publicação";
       toast.error(errorMessage);
       throw error;
     } finally {
@@ -68,9 +73,10 @@ export function useAssistJurImport() {
   const downloadReport = async (uploadId: string): Promise<void> => {
     try {
       // Simular download - implementação seria com busca nos logs
-      toast.success('Função de download será implementada');
+      toast.success("Função de download será implementada");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao baixar relatório';
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro ao baixar relatório";
       toast.error(errorMessage);
     }
   };
@@ -78,9 +84,10 @@ export function useAssistJurImport() {
   const exportData = async (uploadId: string): Promise<void> => {
     try {
       // Simular exportação - implementação seria com busca no staging
-      toast.success('Função de exportação será implementada');
+      toast.success("Função de exportação será implementada");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao exportar dados';
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro ao exportar dados";
       toast.error(errorMessage);
     }
   };
@@ -91,6 +98,6 @@ export function useAssistJurImport() {
     downloadReport,
     exportData,
     isUploading,
-    isPublishing
+    isPublishing,
   };
 }

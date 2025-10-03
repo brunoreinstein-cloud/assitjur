@@ -1,4 +1,8 @@
-import { getOrCreateVectorStore, uploadFile, attachFile } from "@/lib/vectorStore";
+import {
+  getOrCreateVectorStore,
+  uploadFile,
+  attachFile,
+} from "@/lib/vectorStore";
 
 export default async function handler(req: Request): Promise<Response> {
   if (req.method !== "POST") {

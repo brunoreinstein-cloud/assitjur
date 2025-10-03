@@ -1,4 +1,4 @@
-import { getEnv } from '@/lib/getEnv';
+import { getEnv } from "@/lib/getEnv";
 
 export const METHODS = ["GET", "POST", "OPTIONS"] as const;
 
@@ -15,8 +15,8 @@ export function parseAllowedOrigins(env: string | undefined): AllowedOrigins {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-  const patterns = raw.map((o) =>
-    new RegExp(`^${o.replace(/\./g, "\\.").replace(/\*/g, ".*")}$`)
+  const patterns = raw.map(
+    (o) => new RegExp(`^${o.replace(/\./g, "\\.").replace(/\*/g, ".*")}$`),
   );
   return { raw, patterns };
 }
@@ -69,4 +69,3 @@ export function handlePreflight(
 }
 
 export { handlePreflight as handleOptions };
-

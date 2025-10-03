@@ -1,21 +1,21 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { OrgSwitcher } from './OrgSwitcher';
-import { 
-  Building2, 
-  Users, 
-  FileText, 
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { OrgSwitcher } from "./OrgSwitcher";
+import {
+  Building2,
+  Users,
+  FileText,
   UserCircle,
   Calendar,
-  Activity
-} from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+  Activity,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface OrgSummary {
   org_id: string;
@@ -41,15 +41,15 @@ export function OrgList() {
 
   const loadOrganizations = async () => {
     try {
-      const { data, error } = await supabase.rpc('get_all_orgs_summary');
-      
+      const { data, error } = await supabase.rpc("get_all_orgs_summary");
+
       if (error) throw error;
       setOrgs(data || []);
     } catch (error: any) {
       toast({
-        title: 'Erro ao carregar organizações',
+        title: "Erro ao carregar organizações",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -57,7 +57,7 @@ export function OrgList() {
   };
 
   const filteredOrgs = selectedOrgId
-    ? orgs.filter(org => org.org_id === selectedOrgId)
+    ? orgs.filter((org) => org.org_id === selectedOrgId)
     : orgs;
 
   if (loading) {
@@ -81,8 +81,8 @@ export function OrgList() {
           <h2 className="text-xl font-semibold">Organizações</h2>
           <Badge variant="secondary">{filteredOrgs.length}</Badge>
         </div>
-        <OrgSwitcher 
-          onOrgChange={setSelectedOrgId} 
+        <OrgSwitcher
+          onOrgChange={setSelectedOrgId}
           selectedOrgId={selectedOrgId}
         />
       </div>
@@ -94,7 +94,10 @@ export function OrgList() {
       ) : (
         <div className="space-y-4">
           {filteredOrgs.map((org) => (
-            <Card key={org.org_id} className="p-4 hover:shadow-md transition-shadow">
+            <Card
+              key={org.org_id}
+              className="p-4 hover:shadow-md transition-shadow"
+            >
               <div className="space-y-3">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
@@ -102,7 +105,10 @@ export function OrgList() {
                       <h3 className="text-lg font-semibold">{org.org_name}</h3>
                       <Badge variant="outline">{org.org_code}</Badge>
                       {org.is_active ? (
-                        <Badge variant="default" className="bg-green-500/10 text-green-600 hover:bg-green-500/20">
+                        <Badge
+                          variant="default"
+                          className="bg-green-500/10 text-green-600 hover:bg-green-500/20"
+                        >
                           Ativa
                         </Badge>
                       ) : (
@@ -113,18 +119,20 @@ export function OrgList() {
                       <div className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
                         <span>
-                          Criada {formatDistanceToNow(new Date(org.created_at), { 
-                            addSuffix: true, 
-                            locale: ptBR 
+                          Criada{" "}
+                          {formatDistanceToNow(new Date(org.created_at), {
+                            addSuffix: true,
+                            locale: ptBR,
                           })}
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Activity className="w-4 h-4" />
                         <span>
-                          Última atividade {formatDistanceToNow(new Date(org.last_activity), { 
-                            addSuffix: true, 
-                            locale: ptBR 
+                          Última atividade{" "}
+                          {formatDistanceToNow(new Date(org.last_activity), {
+                            addSuffix: true,
+                            locale: ptBR,
                           })}
                         </span>
                       </div>
@@ -139,7 +147,9 @@ export function OrgList() {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Membros</p>
-                      <p className="text-lg font-semibold">{org.total_members}</p>
+                      <p className="text-lg font-semibold">
+                        {org.total_members}
+                      </p>
                     </div>
                   </div>
 
@@ -149,7 +159,9 @@ export function OrgList() {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Processos</p>
-                      <p className="text-lg font-semibold">{org.total_processos}</p>
+                      <p className="text-lg font-semibold">
+                        {org.total_processos}
+                      </p>
                     </div>
                   </div>
 
@@ -159,7 +171,9 @@ export function OrgList() {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Pessoas</p>
-                      <p className="text-lg font-semibold">{org.total_pessoas}</p>
+                      <p className="text-lg font-semibold">
+                        {org.total_pessoas}
+                      </p>
                     </div>
                   </div>
                 </div>

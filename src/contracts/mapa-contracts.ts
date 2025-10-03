@@ -1,1 +1,1 @@
-export * from '@/contracts/mapa-contracts-core';
+export * from "@/contracts/mapa-contracts-core";

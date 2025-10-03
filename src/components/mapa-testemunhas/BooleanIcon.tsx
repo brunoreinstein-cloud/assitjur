@@ -1,5 +1,5 @@
-import React, { memo } from 'react';
-import { CheckCircle, XCircle } from 'lucide-react';
+import React, { memo } from "react";
+import { CheckCircle, XCircle } from "lucide-react";
 
 interface BooleanIconProps {
   value: boolean | null;
@@ -16,6 +16,6 @@ export const BooleanIcon = memo(({ value }: BooleanIconProps) => {
   );
 });
 
-BooleanIcon.displayName = 'BooleanIcon';
+BooleanIcon.displayName = "BooleanIcon";
 
 export default BooleanIcon;

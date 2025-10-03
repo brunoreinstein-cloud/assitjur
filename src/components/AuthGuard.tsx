@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth, UserRole } from '@/hooks/useAuth';
-import { useMultiTenantLoading } from '@/hooks/useMultiTenantLoading';
-import { MultiTenantLoadingScreen } from '@/components/core/MultiTenantLoadingScreen';
-import { Loader2 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth, UserRole } from "@/hooks/useAuth";
+import { useMultiTenantLoading } from "@/hooks/useMultiTenantLoading";
+import { MultiTenantLoadingScreen } from "@/components/core/MultiTenantLoadingScreen";
+import { Loader2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -12,10 +12,10 @@ interface AuthGuardProps {
   redirectTo?: string;
 }
 
-const AuthGuard: React.FC<AuthGuardProps> = ({ 
-  children, 
+const AuthGuard: React.FC<AuthGuardProps> = ({
+  children,
   requiredRole,
-  redirectTo = '/login' 
+  redirectTo = "/login",
 }) => {
   const { user, profile, loading } = useAuth();
   const { isLoading: multiTenantLoading } = useMultiTenantLoading();
@@ -29,7 +29,10 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
         return;
       }
 
-      if (profile.two_factor_enabled && sessionStorage.getItem('mfa_verified') !== 'true') {
+      if (
+        profile.two_factor_enabled &&
+        sessionStorage.getItem("mfa_verified") !== "true"
+      ) {
         const nextPath = window.location.pathname + window.location.search;
         navigate(`/verify-otp?next=${encodeURIComponent(nextPath)}`);
         return;
@@ -40,21 +43,23 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
         toast({
           variant: "destructive",
           title: "Acesso negado",
-          description: "Sua conta está desativada. Contate o Administrador."
+          description: "Sua conta está desativada. Contate o Administrador.",
         });
         navigate(redirectTo);
         return;
       }
 
       // Role requirement not met
-      const currentRole = profile.roles?.find(r => r.org_id === profile.organization_id)?.role;
+      const currentRole = profile.roles?.find(
+        (r) => r.org_id === profile.organization_id,
+      )?.role;
       if (requiredRole && currentRole !== requiredRole) {
         toast({
           variant: "destructive",
           title: "Acesso restrito",
-          description: "Recurso disponível somente para administradores."
+          description: "Recurso disponível somente para administradores.",
         });
-        navigate('/app/chat'); // Redirect to main app instead of login
+        navigate("/app/chat"); // Redirect to main app instead of login
         return;
       }
     }
@@ -78,8 +83,15 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   }
 
   // Not authenticated or insufficient role
-  const currentRole = profile?.roles?.find(r => r.org_id === profile.organization_id)?.role;
-  if (!user || !profile || !profile.is_active || (requiredRole && currentRole !== requiredRole)) {
+  const currentRole = profile?.roles?.find(
+    (r) => r.org_id === profile.organization_id,
+  )?.role;
+  if (
+    !user ||
+    !profile ||
+    !profile.is_active ||
+    (requiredRole && currentRole !== requiredRole)
+  ) {
     return null; // Let useEffect handle the redirect
   }
 

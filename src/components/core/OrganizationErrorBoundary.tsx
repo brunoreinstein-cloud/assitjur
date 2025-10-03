@@ -1,7 +1,7 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { logError } from '@/lib/logger';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { logError } from "@/lib/logger";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -12,37 +12,41 @@ interface Props {
 interface State {
   hasError: boolean;
   error?: Error;
-  errorType: 'organization' | 'data' | 'unknown';
+  errorType: "organization" | "data" | "unknown";
 }
 
 export class OrganizationErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, errorType: 'unknown' };
+    this.state = { hasError: false, errorType: "unknown" };
   }
 
   static getDerivedStateFromError(error: Error): State {
     // Classify error type
-    const errorType = error.message.includes('organization')
-      ? 'organization'
-      : error.message.includes('data') || error.message.includes('fetch')
-      ? 'data'
-      : 'unknown';
+    const errorType = error.message.includes("organization")
+      ? "organization"
+      : error.message.includes("data") || error.message.includes("fetch")
+        ? "data"
+        : "unknown";
 
     return { hasError: true, error, errorType };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    logError('Organization context error', {
-      error: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack,
-      errorType: this.state.errorType
-    }, 'OrganizationErrorBoundary');
+    logError(
+      "Organization context error",
+      {
+        error: error.message,
+        stack: error.stack,
+        componentStack: errorInfo.componentStack,
+        errorType: this.state.errorType,
+      },
+      "OrganizationErrorBoundary",
+    );
   }
 
   handleRetry = () => {
-    this.setState({ hasError: false, error: undefined, errorType: 'unknown' });
+    this.setState({ hasError: false, error: undefined, errorType: "unknown" });
     if (this.props.onRetry) {
       this.props.onRetry();
     } else {
@@ -58,17 +62,19 @@ export class OrganizationErrorBoundary extends Component<Props, State> {
 
       const messages = {
         organization: {
-          title: 'Erro ao Carregar Organização',
-          description: 'Não foi possível carregar os dados da sua organização. Verifique sua conexão e tente novamente.'
+          title: "Erro ao Carregar Organização",
+          description:
+            "Não foi possível carregar os dados da sua organização. Verifique sua conexão e tente novamente.",
         },
         data: {
-          title: 'Erro ao Carregar Dados',
-          description: 'Houve um problema ao carregar os dados. Isso pode ser temporário.'
+          title: "Erro ao Carregar Dados",
+          description:
+            "Houve um problema ao carregar os dados. Isso pode ser temporário.",
         },
         unknown: {
-          title: 'Erro Inesperado',
-          description: 'Algo deu errado. Tente recarregar a página.'
-        }
+          title: "Erro Inesperado",
+          description: "Algo deu errado. Tente recarregar a página.",
+        },
       };
 
       const { title, description } = messages[this.state.errorType];
@@ -83,7 +89,9 @@ export class OrganizationErrorBoundary extends Component<Props, State> {
             <p className="text-muted-foreground">{description}</p>
             {this.state.error && (
               <details className="text-xs text-muted-foreground text-left bg-muted p-2 rounded">
-                <summary className="cursor-pointer font-medium">Detalhes técnicos</summary>
+                <summary className="cursor-pointer font-medium">
+                  Detalhes técnicos
+                </summary>
                 <pre className="mt-2 whitespace-pre-wrap break-all">
                   {this.state.error.message}
                 </pre>

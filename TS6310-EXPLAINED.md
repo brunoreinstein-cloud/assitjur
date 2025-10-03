@@ -22,7 +22,7 @@ O projeto está **100% funcional**:
 ✅ `npm run build` → Gera dist/ corretamente  
 ✅ `npm run dev` → Dev server funciona  
 ✅ Deploy no Lovable → Funciona perfeitamente  
-✅ SPA routing + 404.html → OK  
+✅ SPA routing + 404.html → OK
 
 ## 🔧 Configurações aplicadas
 

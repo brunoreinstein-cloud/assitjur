@@ -1,4 +1,4 @@
-import { AssistJurUploadWizard } from '@/components/assistjur/AssistJurUploadWizard';
+import { AssistJurUploadWizard } from "@/components/assistjur/AssistJurUploadWizard";
 
 const Import = () => {
   return (
@@ -9,7 +9,8 @@ const Import = () => {
             Importador AssistJur.IA
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Pipeline completo de análise de testemunhas e processos com detecção de padrões
+            Pipeline completo de análise de testemunhas e processos com detecção
+            de padrões
           </p>
         </div>
         <AssistJurUploadWizard />

@@ -1,25 +1,32 @@
-import { serve } from '../_shared/observability.ts';
-import { corsHeaders, handlePreflight, parseAllowedOrigins } from "../_shared/cors.ts";
+import { serve } from "../_shared/observability.ts";
+import {
+  corsHeaders,
+  handlePreflight,
+  parseAllowedOrigins,
+} from "../_shared/cors.ts";
 
-const origins = parseAllowedOrigins(Deno.env.get('ALLOWED_ORIGINS'));
+const origins = parseAllowedOrigins(Deno.env.get("ALLOWED_ORIGINS"));
 
-serve('import-mapa-testemunhas', async (req) => {
-  const requestId = req.headers.get('x-request-id') ?? crypto.randomUUID();
+serve("import-mapa-testemunhas", async (req) => {
+  const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();
   const ch = corsHeaders(req, origins);
-  const pre = handlePreflight(req, origins, { 'x-request-id': requestId });
+  const pre = handlePreflight(req, origins, { "x-request-id": requestId });
   if (pre) return pre;
 
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
     const body = await req.json();
     const processos = body?.processos as any[] | undefined;
     const testemunhas = body?.testemunhas as any[] | undefined;
 
-    if ((!processos || !Array.isArray(processos)) && (!testemunhas || !Array.isArray(testemunhas))) {
+    if (
+      (!processos || !Array.isArray(processos)) &&
+      (!testemunhas || !Array.isArray(testemunhas))
+    ) {
       throw new Error("Missing required data: processos or testemunhas array");
     }
 
@@ -66,8 +73,12 @@ serve('import-mapa-testemunhas', async (req) => {
         if (cnjDigits.length !== 20) return;
         processNumbers.add(cnjDigits);
 
-        const ativo: string[] = Array.isArray(row.testemunhas_ativo) ? row.testemunhas_ativo : [];
-        const passivo: string[] = Array.isArray(row.testemunhas_passivo) ? row.testemunhas_passivo : [];
+        const ativo: string[] = Array.isArray(row.testemunhas_ativo)
+          ? row.testemunhas_ativo
+          : [];
+        const passivo: string[] = Array.isArray(row.testemunhas_passivo)
+          ? row.testemunhas_passivo
+          : [];
 
         [...ativo, ...passivo].forEach((name) => {
           if (!name || typeof name !== "string") return;
@@ -81,7 +92,10 @@ serve('import-mapa-testemunhas', async (req) => {
 
     if (Array.isArray(testemunhas)) {
       testemunhas.forEach((row) => {
-        const cnjDigits = String(row.cnj || row.cnj_digits || "").replace(/[^\d]/g, "");
+        const cnjDigits = String(row.cnj || row.cnj_digits || "").replace(
+          /[^\d]/g,
+          "",
+        );
         const name = (row.nome_testemunha || row.nome || "").trim();
         if (cnjDigits.length !== 20 || !name) return;
         processNumbers.add(cnjDigits);
@@ -91,7 +105,9 @@ serve('import-mapa-testemunhas', async (req) => {
     }
 
     if (processNumbers.size === 0 || links.length === 0) {
-      throw new Error("No valid records found. Check CNJ format and witness names.");
+      throw new Error(
+        "No valid records found. Check CNJ format and witness names.",
+      );
     }
 
     // Upsert processes
@@ -116,7 +132,9 @@ serve('import-mapa-testemunhas', async (req) => {
     upsertedProcessos?.forEach((p: any) => processoIdMap.set(p.numero, p.id));
 
     if (processoIdMap.size < processNumbers.size) {
-      const missing = Array.from(processNumbers).filter((n) => !processoIdMap.has(n));
+      const missing = Array.from(processNumbers).filter(
+        (n) => !processoIdMap.has(n),
+      );
       if (missing.length) {
         const { data: fetched } = await supabase
           .from("assistjur.processos")
@@ -133,13 +151,14 @@ serve('import-mapa-testemunhas', async (req) => {
       tenant_id: tenantId,
     }));
 
-    const { data: upsertedTestemunhas, error: testemunhasError } = await supabase
-      .from("assistjur.testemunhas")
-      .upsert(testemunhasToUpsert, {
-        onConflict: "tenant_id,nome",
-        ignoreDuplicates: false,
-      })
-      .select();
+    const { data: upsertedTestemunhas, error: testemunhasError } =
+      await supabase
+        .from("assistjur.testemunhas")
+        .upsert(testemunhasToUpsert, {
+          onConflict: "tenant_id,nome",
+          ignoreDuplicates: false,
+        })
+        .select();
 
     if (testemunhasError) {
       throw testemunhasError;
@@ -149,7 +168,9 @@ serve('import-mapa-testemunhas', async (req) => {
     upsertedTestemunhas?.forEach((t: any) => testemunhaIdMap.set(t.nome, t.id));
 
     if (testemunhaIdMap.size < witnessNames.size) {
-      const missing = Array.from(witnessNames).filter((n) => !testemunhaIdMap.has(n));
+      const missing = Array.from(witnessNames).filter(
+        (n) => !testemunhaIdMap.has(n),
+      );
       if (missing.length) {
         const { data: fetched } = await supabase
           .from("assistjur.testemunhas")
@@ -174,7 +195,15 @@ serve('import-mapa-testemunhas', async (req) => {
         }
         return null;
       })
-      .filter((r): r is { processo_id: string; testemunha_id: string; tenant_id: string } => r !== null);
+      .filter(
+        (
+          r,
+        ): r is {
+          processo_id: string;
+          testemunha_id: string;
+          tenant_id: string;
+        } => r !== null,
+      );
 
     if (joinData.length === 0) {
       throw new Error("No valid process-witness relationships found.");
@@ -205,13 +234,9 @@ serve('import-mapa-testemunhas', async (req) => {
     });
   } catch (error: any) {
     console.error("Import error:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
-      },
-    );
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
+    });
   }
 });
-

@@ -13,23 +13,26 @@ import { Button } from "@/components/ui/button";
   title="Sem resultados"
   description="Tente ajustar os filtros para encontrar o que procura."
   action={<Button>Limpar Filtros</Button>}
-/>
+/>;
 ```
 
 ## Variantes
 
 ### Contextuais
+
 - `no-data`: Quando ainda não há dados (ícone: AlertCircle)
 - `no-results`: Quando filtros não retornam resultados (ícone: Search)
 - `error`: Estado de erro (ícone: AlertTriangle, vermelho)
 - `permission-denied`: Sem permissão (ícone: ShieldOff, amarelo)
 
 ### Densidade
+
 - `density`: `comfortable` | `compact`
 
 ## Exemplos
 
 ### Sem Dados
+
 ```tsx
 <EmptyState
   variant="no-data"
@@ -40,6 +43,7 @@ import { Button } from "@/components/ui/button";
 ```
 
 ### Erro
+
 ```tsx
 <EmptyState
   variant="error"
@@ -50,6 +54,7 @@ import { Button } from "@/components/ui/button";
 ```
 
 ### Sem Permissão
+
 ```tsx
 <EmptyState
   variant="permission-denied"

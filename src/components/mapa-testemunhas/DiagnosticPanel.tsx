@@ -3,17 +3,29 @@
  * Mostra status de conectividade e configuração
  */
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Activity, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
-import { runMapaDiagnostics, logSupabaseConfig, type EdgeFunctionDiagnostics } from '@/lib/edge-function-diagnostics';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Activity, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
+import {
+  runMapaDiagnostics,
+  logSupabaseConfig,
+  type EdgeFunctionDiagnostics,
+} from "@/lib/edge-function-diagnostics";
 
 export function DiagnosticPanel() {
-  const [diagnostics, setDiagnostics] = useState<Record<string, EdgeFunctionDiagnostics> | null>(null);
+  const [diagnostics, setDiagnostics] = useState<Record<
+    string,
+    EdgeFunctionDiagnostics
+  > | null>(null);
   const [isRunning, setIsRunning] = useState(false);
-
 
   const handleRunDiagnostics = async () => {
     setIsRunning(true);
@@ -29,9 +41,14 @@ export function DiagnosticPanel() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Activity className="h-4 w-4 text-yellow-600" />
-            <CardTitle className="text-sm">Diagnóstico de Edge Functions</CardTitle>
+            <CardTitle className="text-sm">
+              Diagnóstico de Edge Functions
+            </CardTitle>
           </div>
-          <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+          <Badge
+            variant="outline"
+            className="text-yellow-600 border-yellow-600"
+          >
             DEV ONLY
           </Badge>
         </div>
@@ -48,7 +65,7 @@ export function DiagnosticPanel() {
           className="w-full"
         >
           {isRunning && <RefreshCw className="mr-2 h-3 w-3 animate-spin" />}
-          {isRunning ? 'Executando diagnóstico...' : 'Executar Diagnóstico'}
+          {isRunning ? "Executando diagnóstico..." : "Executar Diagnóstico"}
         </Button>
 
         {diagnostics && (
@@ -62,23 +79,35 @@ export function DiagnosticPanel() {
                   <div className="font-mono font-medium">{name}</div>
                   <div className="flex flex-wrap gap-1">
                     {diag.hasAuth ? (
-                      <Badge variant="outline" className="text-green-600 border-green-600 text-[10px]">
+                      <Badge
+                        variant="outline"
+                        className="text-green-600 border-green-600 text-[10px]"
+                      >
                         <CheckCircle2 className="mr-1 h-2 w-2" />
                         Autenticado
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-red-600 border-red-600 text-[10px]">
+                      <Badge
+                        variant="outline"
+                        className="text-red-600 border-red-600 text-[10px]"
+                      >
                         <XCircle className="mr-1 h-2 w-2" />
                         Sem Auth
                       </Badge>
                     )}
                     {diag.isReachable ? (
-                      <Badge variant="outline" className="text-green-600 border-green-600 text-[10px]">
+                      <Badge
+                        variant="outline"
+                        className="text-green-600 border-green-600 text-[10px]"
+                      >
                         <CheckCircle2 className="mr-1 h-2 w-2" />
                         Alcançável
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-red-600 border-red-600 text-[10px]">
+                      <Badge
+                        variant="outline"
+                        className="text-red-600 border-red-600 text-[10px]"
+                      >
                         <XCircle className="mr-1 h-2 w-2" />
                         Não Alcançável
                       </Badge>
@@ -86,7 +115,9 @@ export function DiagnosticPanel() {
                   </div>
                   {(diag.authError || diag.errorDetails) && (
                     <div className="text-[10px] text-destructive/80">
-                      {diag.authError || diag.errorDetails?.message || 'Erro desconhecido'}
+                      {diag.authError ||
+                        diag.errorDetails?.message ||
+                        "Erro desconhecido"}
                     </div>
                   )}
                 </div>

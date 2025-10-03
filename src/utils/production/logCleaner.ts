@@ -3,9 +3,9 @@
  * Remove logs desnecessários e substitui por logger estruturado
  */
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-type ConsoleMethod = 'log' | 'warn' | 'info' | 'debug';
+type ConsoleMethod = "log" | "warn" | "info" | "debug";
 
 interface LogCleanerConfig {
   enabledMethods: ConsoleMethod[];
@@ -18,13 +18,13 @@ class LogCleaner {
     log: console.log,
     warn: console.warn,
     info: console.info,
-    debug: console.debug
+    debug: console.debug,
   };
 
   private config: LogCleanerConfig = {
     enabledMethods: [],
     preserveErrors: true,
-    structuredLogging: true
+    structuredLogging: true,
   };
 
   constructor(config?: Partial<LogCleanerConfig>) {
@@ -44,28 +44,28 @@ class LogCleaner {
     // Substitui console.log por logger estruturado ou silencia
     console.log = (...args: any[]) => {
       if (this.config.structuredLogging) {
-        logger.info('Legacy console.log usage', { args }, 'LogCleaner');
+        logger.info("Legacy console.log usage", { args }, "LogCleaner");
       }
       // Silencia em produção
     };
 
     console.warn = (...args: any[]) => {
       if (this.config.structuredLogging) {
-        logger.warn('Legacy console.warn usage', { args }, 'LogCleaner');
+        logger.warn("Legacy console.warn usage", { args }, "LogCleaner");
       }
       // Silencia em produção
     };
 
     console.info = (...args: any[]) => {
       if (this.config.structuredLogging) {
-        logger.info('Legacy console.info usage', { args }, 'LogCleaner');
+        logger.info("Legacy console.info usage", { args }, "LogCleaner");
       }
       // Silencia em produção
     };
 
     console.debug = (...args: any[]) => {
       if (this.config.structuredLogging) {
-        logger.debug('Legacy console.debug usage', { args }, 'LogCleaner');
+        logger.debug("Legacy console.debug usage", { args }, "LogCleaner");
       }
       // Silencia em produção
     };
@@ -91,7 +91,7 @@ class LogCleaner {
 
     console.log = (...args: any[]) => {
       if (import.meta.env.PROD) {
-        logger.info('Intercepted console.log', { args }, 'LegacyInterceptor');
+        logger.info("Intercepted console.log", { args }, "LegacyInterceptor");
       } else {
         originalLog(...args);
       }
@@ -99,7 +99,7 @@ class LogCleaner {
 
     console.warn = (...args: any[]) => {
       if (import.meta.env.PROD) {
-        logger.warn('Intercepted console.warn', { args }, 'LegacyInterceptor');
+        logger.warn("Intercepted console.warn", { args }, "LegacyInterceptor");
       } else {
         originalWarn(...args);
       }
@@ -107,7 +107,7 @@ class LogCleaner {
 
     console.info = (...args: any[]) => {
       if (import.meta.env.PROD) {
-        logger.info('Intercepted console.info', { args }, 'LegacyInterceptor');
+        logger.info("Intercepted console.info", { args }, "LegacyInterceptor");
       } else {
         originalInfo(...args);
       }
@@ -119,7 +119,7 @@ class LogCleaner {
 export const logCleaner = new LogCleaner({
   enabledMethods: [],
   preserveErrors: true,
-  structuredLogging: true
+  structuredLogging: true,
 });
 
 // Utilitários para migração gradual

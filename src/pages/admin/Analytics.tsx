@@ -1,13 +1,19 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Download, 
-  RefreshCw, 
-  TrendingUp, 
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Download,
+  RefreshCw,
+  TrendingUp,
   TrendingDown,
   Calendar,
   FileText,
@@ -15,17 +21,17 @@ import {
   Brain,
   AlertTriangle,
   Info,
-  CheckCircle
-} from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { analyticsAllowed } from '@/middleware/consent';
-import { toast } from 'sonner';
-import { 
-  UsageChart, 
-  RiskDistributionChart, 
+  CheckCircle,
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { analyticsAllowed } from "@/middleware/consent";
+import { toast } from "sonner";
+import {
+  UsageChart,
+  RiskDistributionChart,
   ComarcaRiskChart,
-  TokensChart 
-} from '@/components/analytics/AnalyticsCharts';
+  TokensChart,
+} from "@/components/analytics/AnalyticsCharts";
 
 interface ReportData {
   period: string;
@@ -46,7 +52,7 @@ interface ReportData {
 const Analytics = () => {
   const [loading, setLoading] = useState(false);
   const [reportData, setReportData] = useState<ReportData | null>(null);
-  const [selectedPeriod, setSelectedPeriod] = useState('30d');
+  const [selectedPeriod, setSelectedPeriod] = useState("30d");
   const [exportLoading, setExportLoading] = useState(false);
   const [usageData, setUsageData] = useState<any>(null);
   const [patternsData, setPatternsData] = useState<any>(null);
@@ -55,18 +61,21 @@ const Analytics = () => {
     if (!(await analyticsAllowed())) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('admin-analytics', {
-        body: { 
-          type: 'detailed_report',
-          period 
-        }
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "admin-analytics",
+        {
+          body: {
+            type: "detailed_report",
+            period,
+          },
+        },
+      );
 
       if (error) throw error;
       setReportData(data);
     } catch (error) {
-      console.error('Error fetching detailed analytics:', error);
-      toast.error('Erro ao carregar relatório detalhado');
+      console.error("Error fetching detailed analytics:", error);
+      toast.error("Erro ao carregar relatório detalhado");
     } finally {
       setLoading(false);
     }
@@ -75,49 +84,58 @@ const Analytics = () => {
   const fetchUsageData = async () => {
     if (!(await analyticsAllowed())) return;
     try {
-      const { data, error } = await supabase.functions.invoke('admin-analytics', {
-        body: { type: 'usage', period: selectedPeriod }
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "admin-analytics",
+        {
+          body: { type: "usage", period: selectedPeriod },
+        },
+      );
       if (error) throw error;
       setUsageData(data);
     } catch (error) {
-      console.error('Error fetching usage data:', error);
+      console.error("Error fetching usage data:", error);
     }
   };
 
   const fetchPatternsData = async () => {
     if (!(await analyticsAllowed())) return;
     try {
-      const { data, error } = await supabase.functions.invoke('admin-analytics', {
-        body: { type: 'ai_patterns' }
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "admin-analytics",
+        {
+          body: { type: "ai_patterns" },
+        },
+      );
       if (error) throw error;
       setPatternsData(data);
     } catch (error) {
-      console.error('Error fetching patterns data:', error);
+      console.error("Error fetching patterns data:", error);
     }
   };
 
-  const exportReport = async (format: 'pdf' | 'excel') => {
+  const exportReport = async (format: "pdf" | "excel") => {
     if (!(await analyticsAllowed())) return;
     setExportLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('admin-analytics', {
-        body: { 
-          type: 'export',
-          format,
-          period: selectedPeriod
-        }
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "admin-analytics",
+        {
+          body: {
+            type: "export",
+            format,
+            period: selectedPeriod,
+          },
+        },
+      );
 
       if (error) throw error;
-      
+
       // Create and download file
-      const blob = new Blob([JSON.stringify(data.data, null, 2)], { 
-        type: 'application/json'
+      const blob = new Blob([JSON.stringify(data.data, null, 2)], {
+        type: "application/json",
       });
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `analytics-report-${selectedPeriod}.json`;
       document.body.appendChild(a);
@@ -127,8 +145,8 @@ const Analytics = () => {
 
       toast.success(`Relatório exportado com sucesso`);
     } catch (error) {
-      console.error('Error exporting report:', error);
-      toast.error('Erro ao exportar relatório');
+      console.error("Error exporting report:", error);
+      toast.error("Erro ao exportar relatório");
     } finally {
       setExportLoading(false);
     }
@@ -144,24 +162,28 @@ const Analytics = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Analytics Avançado</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Analytics Avançado
+          </h1>
           <p className="text-muted-foreground">
             Relatórios detalhados e análises de performance
           </p>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             onClick={() => fetchDetailedAnalytics(selectedPeriod)}
             disabled={loading}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+            />
             Atualizar
           </Button>
           <Button
             variant="outline"
-            onClick={() => exportReport('excel')}
+            onClick={() => exportReport("excel")}
             disabled={exportLoading}
           >
             <Download className="h-4 w-4 mr-2" />
@@ -169,7 +191,7 @@ const Analytics = () => {
           </Button>
           <Button
             variant="outline"
-            onClick={() => exportReport('pdf')}
+            onClick={() => exportReport("pdf")}
             disabled={exportLoading}
           >
             <FileText className="h-4 w-4 mr-2" />
@@ -182,17 +204,17 @@ const Analytics = () => {
       <div className="flex items-center gap-2">
         <Calendar className="h-4 w-4" />
         <span className="text-sm font-medium">Período:</span>
-        {['7d', '30d', '90d', '1y'].map((period) => (
+        {["7d", "30d", "90d", "1y"].map((period) => (
           <Button
             key={period}
-            variant={selectedPeriod === period ? 'default' : 'outline'}
+            variant={selectedPeriod === period ? "default" : "outline"}
             size="sm"
             onClick={() => setSelectedPeriod(period)}
           >
-            {period === '7d' && '7 dias'}
-            {period === '30d' && '30 dias'}
-            {period === '90d' && '90 dias'}
-            {period === '1y' && '1 ano'}
+            {period === "7d" && "7 dias"}
+            {period === "30d" && "30 dias"}
+            {period === "90d" && "90 dias"}
+            {period === "1y" && "1 ano"}
           </Button>
         ))}
       </div>
@@ -210,7 +232,9 @@ const Analytics = () => {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Queries Totais</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Queries Totais
+                </CardTitle>
                 <BarChart3 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -220,14 +244,18 @@ const Analytics = () => {
                 <div className="flex items-center gap-1 text-xs">
                   <TrendingUp className="h-3 w-3 text-green-500" />
                   <span className="text-green-500">+12.3%</span>
-                  <span className="text-muted-foreground">vs período anterior</span>
+                  <span className="text-muted-foreground">
+                    vs período anterior
+                  </span>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Custo Total</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Custo Total
+                </CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -244,7 +272,9 @@ const Analytics = () => {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Tempo Médio</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Tempo Médio
+                </CardTitle>
                 <TrendingDown className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -261,7 +291,9 @@ const Analytics = () => {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Usuários Ativos</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Usuários Ativos
+                </CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -282,7 +314,9 @@ const Analytics = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Insights Principais</CardTitle>
-                <CardDescription>Descobertas importantes do período</CardDescription>
+                <CardDescription>
+                  Descobertas importantes do período
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-start gap-3">
@@ -290,7 +324,8 @@ const Analytics = () => {
                   <div>
                     <p className="text-sm font-medium">Eficiência Melhorada</p>
                     <p className="text-xs text-muted-foreground">
-                      Tempo médio de resposta reduziu 8.7% com otimizações de prompts
+                      Tempo médio de resposta reduziu 8.7% com otimizações de
+                      prompts
                     </p>
                   </div>
                 </div>
@@ -318,7 +353,9 @@ const Analytics = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Métricas de Qualidade</CardTitle>
-                <CardDescription>Indicadores de satisfação e precisão</CardDescription>
+                <CardDescription>
+                  Indicadores de satisfação e precisão
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -363,8 +400,18 @@ const Analytics = () => {
             <div className="grid gap-6 md:grid-cols-2">
               <UsageChart data={usageData?.dailyUsage || []} />
               <TokensChart data={usageData?.dailyUsage || []} />
-              <RiskDistributionChart data={reportData?.riskPatterns?.riskDistribution || { low: 0, medium: 0, high: 0 }} />
-              <ComarcaRiskChart data={reportData?.riskPatterns?.comarcaStats || []} />
+              <RiskDistributionChart
+                data={
+                  reportData?.riskPatterns?.riskDistribution || {
+                    low: 0,
+                    medium: 0,
+                    high: 0,
+                  }
+                }
+              />
+              <ComarcaRiskChart
+                data={reportData?.riskPatterns?.comarcaStats || []}
+              />
             </div>
           )}
 
@@ -378,7 +425,9 @@ const Analytics = () => {
                 <div className="text-2xl font-bold">
                   {usageData?.totalStats?.totalRequests?.toLocaleString() || 0}
                 </div>
-                <p className="text-xs text-muted-foreground">Últimos {selectedPeriod}</p>
+                <p className="text-xs text-muted-foreground">
+                  Últimos {selectedPeriod}
+                </p>
               </CardContent>
             </Card>
             <Card>
@@ -389,7 +438,9 @@ const Analytics = () => {
                 <div className="text-2xl font-bold">
                   ${((usageData?.totalStats?.totalCost || 0) / 100).toFixed(2)}
                 </div>
-                <p className="text-xs text-muted-foreground">Últimos {selectedPeriod}</p>
+                <p className="text-xs text-muted-foreground">
+                  Últimos {selectedPeriod}
+                </p>
               </CardContent>
             </Card>
             <Card>
@@ -400,7 +451,9 @@ const Analytics = () => {
                 <div className="text-2xl font-bold">
                   {usageData?.userStats?.length || 0}
                 </div>
-                <p className="text-xs text-muted-foreground">Período selecionado</p>
+                <p className="text-xs text-muted-foreground">
+                  Período selecionado
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -411,7 +464,9 @@ const Analytics = () => {
           <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Troca Direta</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Troca Direta
+                </CardTitle>
                 <Brain className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -425,7 +480,9 @@ const Analytics = () => {
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Triangulação</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Triangulação
+                </CardTitle>
                 <Brain className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -439,7 +496,9 @@ const Analytics = () => {
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Prova Emprestada</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Prova Emprestada
+                </CardTitle>
                 <Brain className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -453,7 +512,9 @@ const Analytics = () => {
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Duplo Papel</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Duplo Papel
+                </CardTitle>
                 <Brain className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -480,13 +541,19 @@ const Analytics = () => {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Baixa Complexidade</span>
-                    <Badge variant="outline" className="bg-green-50 text-green-700">
+                    <Badge
+                      variant="outline"
+                      className="bg-green-50 text-green-700"
+                    >
                       {patternsData?.complexityDistribution?.low || 0}
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Média Complexidade</span>
-                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
+                    <Badge
+                      variant="outline"
+                      className="bg-yellow-50 text-yellow-700"
+                    >
                       {patternsData?.complexityDistribution?.medium || 0}
                     </Badge>
                   </div>
@@ -517,11 +584,17 @@ const Analytics = () => {
                   </p>
                   <div className="text-xs">
                     {(patternsData?.riskCorrelation || 0) > 0.7 ? (
-                      <Badge className="bg-red-100 text-red-800">Correlação Forte</Badge>
+                      <Badge className="bg-red-100 text-red-800">
+                        Correlação Forte
+                      </Badge>
                     ) : (patternsData?.riskCorrelation || 0) > 0.4 ? (
-                      <Badge className="bg-yellow-100 text-yellow-800">Correlação Moderada</Badge>
+                      <Badge className="bg-yellow-100 text-yellow-800">
+                        Correlação Moderada
+                      </Badge>
                     ) : (
-                      <Badge className="bg-green-100 text-green-800">Correlação Fraca</Badge>
+                      <Badge className="bg-green-100 text-green-800">
+                        Correlação Fraca
+                      </Badge>
                     )}
                   </div>
                 </div>
@@ -568,24 +641,34 @@ const Analytics = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {reportData?.insights?.map((insight: any, index: number) => (
-                  <div 
+                  <div
                     key={index}
                     className={`border-l-4 pl-4 ${
-                      insight.type === 'warning' ? 'border-orange-500' :
-                      insight.type === 'error' ? 'border-red-500' :
-                      'border-blue-500'
+                      insight.type === "warning"
+                        ? "border-orange-500"
+                        : insight.type === "error"
+                          ? "border-red-500"
+                          : "border-blue-500"
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      {insight.type === 'warning' && <AlertTriangle className="h-4 w-4 text-orange-500" />}
-                      {insight.type === 'error' && <AlertTriangle className="h-4 w-4 text-red-500" />}
-                      {insight.type === 'info' && <Info className="h-4 w-4 text-blue-500" />}
+                      {insight.type === "warning" && (
+                        <AlertTriangle className="h-4 w-4 text-orange-500" />
+                      )}
+                      {insight.type === "error" && (
+                        <AlertTriangle className="h-4 w-4 text-red-500" />
+                      )}
+                      {insight.type === "info" && (
+                        <Info className="h-4 w-4 text-blue-500" />
+                      )}
                       <h4 className="font-medium">{insight.title}</h4>
                       <Badge variant="outline" className="text-xs">
                         {insight.category}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">{insight.description}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {insight.description}
+                    </p>
                   </div>
                 ))}
               </CardContent>
@@ -603,29 +686,41 @@ const Analytics = () => {
             <CardContent className="space-y-4">
               {(reportData?.recommendations?.length ?? 0) > 0 ? (
                 reportData?.recommendations?.map((rec: any, index: number) => (
-                  <div 
+                  <div
                     key={index}
                     className={`border-l-4 pl-4 ${
-                      rec.priority === 'high' ? 'border-red-500' :
-                      rec.priority === 'medium' ? 'border-orange-500' :
-                      'border-green-500'
+                      rec.priority === "high"
+                        ? "border-red-500"
+                        : rec.priority === "medium"
+                          ? "border-orange-500"
+                          : "border-green-500"
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="font-medium">{rec.title}</h4>
-                      <Badge variant={
-                        rec.priority === 'high' ? 'destructive' :
-                        rec.priority === 'medium' ? 'default' :
-                        'secondary'
-                      }>
-                        {rec.priority === 'high' ? 'Alta' : 
-                         rec.priority === 'medium' ? 'Média' : 'Baixa'} Prioridade
+                      <Badge
+                        variant={
+                          rec.priority === "high"
+                            ? "destructive"
+                            : rec.priority === "medium"
+                              ? "default"
+                              : "secondary"
+                        }
+                      >
+                        {rec.priority === "high"
+                          ? "Alta"
+                          : rec.priority === "medium"
+                            ? "Média"
+                            : "Baixa"}{" "}
+                        Prioridade
                       </Badge>
                       <Badge variant="outline" className="text-xs">
                         {rec.category}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">{rec.description}</p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {rec.description}
+                    </p>
                     <p className="text-xs text-green-600 font-medium">
                       Impacto esperado: {rec.expectedImpact}
                     </p>
@@ -635,7 +730,9 @@ const Analytics = () => {
                 <div className="text-center text-muted-foreground py-8">
                   <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
                   <p>Sistema funcionando dentro dos parâmetros ideais</p>
-                  <p className="text-sm">Nenhuma recomendação crítica no momento</p>
+                  <p className="text-sm">
+                    Nenhuma recomendação crítica no momento
+                  </p>
                 </div>
               )}
             </CardContent>

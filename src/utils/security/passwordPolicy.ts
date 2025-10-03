@@ -3,8 +3,11 @@
  * Implements security best practices while maintaining usability.
  */
 
-import { checkPasswordBreach, assessPasswordStrength } from '@/utils/security/breachDetection';
-import { sanitizeInput } from '@/utils/security';
+import {
+  checkPasswordBreach,
+  assessPasswordStrength,
+} from "@/utils/security/breachDetection";
+import { sanitizeInput } from "@/utils/security";
 
 export const MIN_PASSWORD_LENGTH = 12;
 export const RECOMMENDED_PASSWORD_LENGTH = 16;
@@ -25,9 +28,9 @@ export interface PasswordPolicyResult {
 }
 
 export const validatePassword = async (
-  password: string, 
-  userRole: 'ADMIN' | 'ANALYST' | 'VIEWER' = 'VIEWER',
-  checkBreaches = true
+  password: string,
+  userRole: "ADMIN" | "ANALYST" | "VIEWER" = "VIEWER",
+  checkBreaches = true,
 ): Promise<PasswordPolicyResult> => {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -35,7 +38,7 @@ export const validatePassword = async (
   // Sanitize input
   const cleanPassword = sanitizeInput(password);
   if (cleanPassword !== password) {
-    errors.push('Senha contém caracteres não permitidos');
+    errors.push("Senha contém caracteres não permitidos");
   }
 
   // Basic length requirement
@@ -44,11 +47,15 @@ export const validatePassword = async (
   }
 
   // Progressive requirements based on role
-  const adminRequired = userRole === 'ADMIN';
-  const minLengthForRole = adminRequired ? RECOMMENDED_PASSWORD_LENGTH : MIN_PASSWORD_LENGTH;
-  
+  const adminRequired = userRole === "ADMIN";
+  const minLengthForRole = adminRequired
+    ? RECOMMENDED_PASSWORD_LENGTH
+    : MIN_PASSWORD_LENGTH;
+
   if (adminRequired && password.length < RECOMMENDED_PASSWORD_LENGTH) {
-    errors.push(`Administradores devem usar senhas com pelo menos ${RECOMMENDED_PASSWORD_LENGTH} caracteres`);
+    errors.push(
+      `Administradores devem usar senhas com pelo menos ${RECOMMENDED_PASSWORD_LENGTH} caracteres`,
+    );
   }
 
   // Character complexity requirements
@@ -57,16 +64,23 @@ export const validatePassword = async (
   const hasNumber = /\d/.test(password);
   const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
 
-  if (!hasUpper) errors.push('Senha deve conter pelo menos uma letra maiúscula');
-  if (!hasLower) errors.push('Senha deve conter pelo menos uma letra minúscula');
-  if (!hasNumber) errors.push('Senha deve conter pelo menos um número');
-  if (!hasSpecial) errors.push('Senha deve conter pelo menos um caractere especial');
+  if (!hasUpper)
+    errors.push("Senha deve conter pelo menos uma letra maiúscula");
+  if (!hasLower)
+    errors.push("Senha deve conter pelo menos uma letra minúscula");
+  if (!hasNumber) errors.push("Senha deve conter pelo menos um número");
+  if (!hasSpecial)
+    errors.push("Senha deve conter pelo menos um caractere especial");
 
   // Enhanced security for admins
   if (adminRequired) {
-    const specialCount = (password.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g) || []).length;
+    const specialCount = (
+      password.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g) || []
+    ).length;
     if (specialCount < 2) {
-      errors.push('Administradores devem usar pelo menos 2 caracteres especiais');
+      errors.push(
+        "Administradores devem usar pelo menos 2 caracteres especiais",
+      );
     }
   }
 
@@ -81,9 +95,11 @@ export const validatePassword = async (
   for (const pattern of commonPatterns) {
     if (pattern.test(password)) {
       if (adminRequired) {
-        errors.push('Senha contém padrões comuns - use uma combinação mais complexa');
+        errors.push(
+          "Senha contém padrões comuns - use uma combinação mais complexa",
+        );
       } else {
-        warnings.push('Considere usar uma combinação menos previsível');
+        warnings.push("Considere usar uma combinação menos previsível");
       }
       break;
     }
@@ -91,12 +107,14 @@ export const validatePassword = async (
 
   // Get password strength assessment
   const strength = assessPasswordStrength(password);
-  
+
   // Strength requirements by role
   if (adminRequired && strength.score < 70) {
-    errors.push('Administradores devem usar senhas mais fortes (pontuação mínima: 70)');
+    errors.push(
+      "Administradores devem usar senhas mais fortes (pontuação mínima: 70)",
+    );
   } else if (strength.score < 40) {
-    warnings.push('Considere usar uma senha mais forte para maior segurança');
+    warnings.push("Considere usar uma senha mais forte para maior segurança");
   }
 
   // Check for breaches if enabled and password meets basic requirements
@@ -106,36 +124,38 @@ export const validatePassword = async (
       const breachResult = await checkPasswordBreach(password);
       breachStatus = {
         breached: breachResult.breached,
-        breachCount: breachResult.breachCount
+        breachCount: breachResult.breachCount,
       };
 
       if (breachResult.breached) {
         const breachCount = breachResult.breachCount || 0;
         if (breachCount > 100000) {
-          errors.push('Esta senha foi exposta em grandes vazamentos de dados - escolha uma diferente');
+          errors.push(
+            "Esta senha foi exposta em grandes vazamentos de dados - escolha uma diferente",
+          );
         } else if (breachCount > 1000) {
-          errors.push('Esta senha foi comprometida em vazamentos de dados - recomendamos uma diferente');
+          errors.push(
+            "Esta senha foi comprometida em vazamentos de dados - recomendamos uma diferente",
+          );
         } else if (breachCount > 0) {
-          warnings.push('Esta senha aparece em vazamentos de dados conhecidos');
+          warnings.push("Esta senha aparece em vazamentos de dados conhecidos");
         }
       }
     } catch (error) {
       // Don't fail validation if breach check fails, just warn
-      warnings.push('Não foi possível verificar vazamentos de dados');
+      warnings.push("Não foi possível verificar vazamentos de dados");
     }
   }
 
-  return { 
-    valid: errors.length === 0, 
+  return {
+    valid: errors.length === 0,
     errors,
     warnings,
     strength: {
       score: strength.score,
       level: strength.level,
-      suggestions: strength.suggestions
+      suggestions: strength.suggestions,
     },
-    breachStatus
+    breachStatus,
   };
 };
-
-

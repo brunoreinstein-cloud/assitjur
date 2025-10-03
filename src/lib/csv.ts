@@ -1,7 +1,10 @@
-import Papa from 'papaparse';
-import { PorProcesso, PorTestemunha } from '@/types/mapa-testemunhas';
-import { formatProcessoToCanonical, formatTestemunhaToCanonical } from '@/lib/formatters-canonical';
-import { applyPIIMask } from '@/lib/pii';
+import Papa from "papaparse";
+import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
+import {
+  formatProcessoToCanonical,
+  formatTestemunhaToCanonical,
+} from "@/lib/formatters-canonical";
+import { applyPIIMask } from "@/lib/pii";
 
 export interface ExportOptions {
   filename?: string;
@@ -11,57 +14,57 @@ export interface ExportOptions {
 }
 
 export const exportProcessosToCSV = (
-  data: PorProcesso[], 
-  options: ExportOptions = {}
+  data: PorProcesso[],
+  options: ExportOptions = {},
 ) => {
-  const { 
-    filename = `processos-${new Date().toISOString().split('T')[0]}.csv`,
+  const {
+    filename = `processos-${new Date().toISOString().split("T")[0]}.csv`,
     maskPII = false,
     selectedOnly = false,
-    selectedIds = []
+    selectedIds = [],
   } = options;
 
   // Filter data if selectedOnly is true
   let exportData = data;
   if (selectedOnly && selectedIds.length > 0) {
-    exportData = data.filter(item => selectedIds.includes(item.cnj));
+    exportData = data.filter((item) => selectedIds.includes(item.cnj));
   }
 
   // Convert to CSV format using canonical headers
-  const csvData = exportData.map(processo => {
+  const csvData = exportData.map((processo) => {
     const formatted = formatProcessoToCanonical(processo);
-    
+
     if (maskPII) {
       // Apply PII masking to sensitive fields
       return {
         ...formatted,
-        'Reclamantes': applyPIIMask(formatted['Reclamantes']),
-        'Todas_Testemunhas': applyPIIMask(formatted['Todas_Testemunhas']),
-        'Insight_Estrategico': applyPIIMask(formatted['Insight_Estrategico']),
+        Reclamantes: applyPIIMask(formatted["Reclamantes"]),
+        Todas_Testemunhas: applyPIIMask(formatted["Todas_Testemunhas"]),
+        Insight_Estrategico: applyPIIMask(formatted["Insight_Estrategico"]),
       };
     }
-    
+
     return formatted;
   });
 
   // Generate CSV
   const csv = Papa.unparse(csvData, {
-    delimiter: ',',
-    header: true
+    delimiter: ",",
+    header: true,
   });
 
   // Add BOM for proper UTF-8 encoding in Excel
-  const csvWithBOM = '\uFEFF' + csv;
+  const csvWithBOM = "\uFEFF" + csv;
 
   // Create and trigger download
-  const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  
+  const blob = new Blob([csvWithBOM], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+
   if (link.download !== undefined) {
     const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -71,57 +74,59 @@ export const exportProcessosToCSV = (
 };
 
 export const exportTestemunhasToCSV = (
-  data: PorTestemunha[], 
-  options: ExportOptions = {}
+  data: PorTestemunha[],
+  options: ExportOptions = {},
 ) => {
-  const { 
-    filename = `testemunhas-${new Date().toISOString().split('T')[0]}.csv`,
+  const {
+    filename = `testemunhas-${new Date().toISOString().split("T")[0]}.csv`,
     maskPII = false,
     selectedOnly = false,
-    selectedIds = []
+    selectedIds = [],
   } = options;
 
   // Filter data if selectedOnly is true
   let exportData = data;
   if (selectedOnly && selectedIds.length > 0) {
-    exportData = data.filter(item => selectedIds.includes(item.nome_testemunha));
+    exportData = data.filter((item) =>
+      selectedIds.includes(item.nome_testemunha),
+    );
   }
 
   // Convert to CSV format using canonical headers
-  const csvData = exportData.map(testemunha => {
+  const csvData = exportData.map((testemunha) => {
     const formatted = formatTestemunhaToCanonical(testemunha);
-    
+
     if (maskPII) {
       // Apply PII masking to sensitive fields
       return {
         ...formatted,
-        'Nome_Testemunha': applyPIIMask(formatted['Nome_Testemunha']),
-        'CNJs_Como_Testemunha': applyPIIMask(formatted['CNJs_Como_Testemunha']),
-        'CNJs_Como_Reclamante': applyPIIMask(formatted['CNJs_Como_Reclamante']),
+        Nome_Testemunha: applyPIIMask(formatted["Nome_Testemunha"]),
+        CNJs_Como_Testemunha: applyPIIMask(formatted["CNJs_Como_Testemunha"]),
+        CNJs_Como_Reclamante: applyPIIMask(formatted["CNJs_Como_Reclamante"]),
       };
     }
-    
+
     return formatted;
   });
 
   // Generate CSV
   const csv = Papa.unparse(csvData, {
-    delimiter: ',',
-    header: true
+    delimiter: ",",
+    header: true,
   });
 
   // Add BOM for proper UTF-8 encoding in Excel
-  const csvWithBOM = '\uFEFF' + csv;
+  const csvWithBOM = "\uFEFF" + csv;
 
   // Create and trigger download
-  const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  
+  const blob = new Blob([csvWithBOM], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+
   if (link.download !== undefined) {
     const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -131,11 +136,14 @@ export const exportTestemunhasToCSV = (
 };
 
 // Utility function to estimate CSV size
-export const estimateCSVSize = (recordCount: number, isProcesso: boolean = true): string => {
+export const estimateCSVSize = (
+  recordCount: number,
+  isProcesso: boolean = true,
+): string => {
   // Rough estimation based on average field sizes
   const avgRecordSize = isProcesso ? 500 : 350; // bytes per record
   const totalSize = recordCount * avgRecordSize;
-  
+
   if (totalSize < 1024) {
     return `${totalSize} bytes`;
   } else if (totalSize < 1024 * 1024) {
@@ -146,31 +154,36 @@ export const estimateCSVSize = (recordCount: number, isProcesso: boolean = true)
 };
 
 // Validate export limits (max 5000 records as per requirements)
-export const validateExportSize = (recordCount: number, selectedOnly: boolean = false): {
+export const validateExportSize = (
+  recordCount: number,
+  selectedOnly: boolean = false,
+): {
   isValid: boolean;
   message?: string;
   maxRecords: number;
 } => {
   const maxRecords = 5000;
-  
+
   if (recordCount === 0) {
     return {
       isValid: false,
-      message: selectedOnly ? 'Nenhum registro selecionado para exportação.' : 'Nenhum registro encontrado para exportação.',
-      maxRecords
+      message: selectedOnly
+        ? "Nenhum registro selecionado para exportação."
+        : "Nenhum registro encontrado para exportação.",
+      maxRecords,
     };
   }
-  
+
   if (recordCount > maxRecords) {
     return {
       isValid: false,
-      message: `Limite de exportação excedido. Máximo permitido: ${maxRecords.toLocaleString()} registros. ${selectedOnly ? 'Selecione menos registros' : 'Aplique filtros para reduzir o resultado'}.`,
-      maxRecords
+      message: `Limite de exportação excedido. Máximo permitido: ${maxRecords.toLocaleString()} registros. ${selectedOnly ? "Selecione menos registros" : "Aplique filtros para reduzir o resultado"}.`,
+      maxRecords,
     };
   }
-  
+
   return {
     isValid: true,
-    maxRecords
+    maxRecords,
   };
 };

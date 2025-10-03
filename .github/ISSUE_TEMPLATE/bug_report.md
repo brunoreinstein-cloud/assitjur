@@ -25,9 +25,9 @@ Se aplicável, adicione screenshots ou logs para ajudar a explicar o problema.
 
 ## Ambiente
 
-- SO: 
-- Navegador: 
-- Versão do app: 
+- SO:
+- Navegador:
+- Versão do app:
 
 ## Informações adicionais
 

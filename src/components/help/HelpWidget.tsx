@@ -1,13 +1,20 @@
-import React, { useState } from 'react';
-import { HelpCircle, FileText, Video, MessageCircle, Sparkles, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState } from "react";
+import {
+  HelpCircle,
+  FileText,
+  Video,
+  MessageCircle,
+  Sparkles,
+  X,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { Badge } from '@/components/ui/badge';
-import { motion, AnimatePresence } from 'framer-motion';
+} from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface HelpLink {
   icon: React.ReactNode;
@@ -20,27 +27,27 @@ interface HelpLink {
 const helpLinks: HelpLink[] = [
   {
     icon: <FileText className="h-5 w-5" />,
-    title: 'Documentação',
-    description: 'Guias completos e referências',
-    href: '/docs',
+    title: "Documentação",
+    description: "Guias completos e referências",
+    href: "/docs",
   },
   {
     icon: <Video className="h-5 w-5" />,
-    title: 'Vídeos Tutoriais',
-    description: 'Aprenda através de vídeos',
-    href: '/tutorials',
+    title: "Vídeos Tutoriais",
+    description: "Aprenda através de vídeos",
+    href: "/tutorials",
   },
   {
     icon: <MessageCircle className="h-5 w-5" />,
-    title: 'Suporte',
-    description: 'Entre em contato conosco',
-    href: '/support',
+    title: "Suporte",
+    description: "Entre em contato conosco",
+    href: "/support",
   },
   {
     icon: <Sparkles className="h-5 w-5" />,
-    title: 'Novidades',
-    description: 'Veja as últimas atualizações',
-    href: '/changelog',
+    title: "Novidades",
+    description: "Veja as últimas atualizações",
+    href: "/changelog",
     isNew: true,
   },
 ];
@@ -90,7 +97,7 @@ export function HelpWidget() {
                     Como podemos ajudá-lo hoje?
                   </p>
                 </div>
-                
+
                 <div className="p-2">
                   {helpLinks.map((link, index) => (
                     <motion.a
@@ -110,7 +117,10 @@ export function HelpWidget() {
                             {link.title}
                           </h4>
                           {link.isNew && (
-                            <Badge variant="default" className="text-xs px-1.5 py-0">
+                            <Badge
+                              variant="default"
+                              className="text-xs px-1.5 py-0"
+                            >
                               Novo
                             </Badge>
                           )}
@@ -125,7 +135,11 @@ export function HelpWidget() {
 
                 <div className="border-t p-3 bg-muted/30">
                   <p className="text-xs text-muted-foreground text-center">
-                    Pressione <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-background border rounded">?</kbd> para abrir esta janela
+                    Pressione{" "}
+                    <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-background border rounded">
+                      ?
+                    </kbd>{" "}
+                    para abrir esta janela
                   </p>
                 </div>
               </PopoverContent>
@@ -143,18 +157,18 @@ export function useHelpShortcut() {
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (e.key === "?" && !e.ctrlKey && !e.metaKey && !e.altKey) {
         const target = e.target as HTMLElement;
         // Don't trigger if user is typing in an input
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+        if (target.tagName !== "INPUT" && target.tagName !== "TEXTAREA") {
           e.preventDefault();
-          setIsOpen(prev => !prev);
+          setIsOpen((prev) => !prev);
         }
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   return { isOpen, setIsOpen };

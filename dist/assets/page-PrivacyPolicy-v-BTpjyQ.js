@@ -1,4 +1,7 @@
-import{j as e}from"./vendor-xNGbxDip.js";import"./page-Login-5_M3Gm0y.js";import"./page-About-RKuI2z9S.js";const a=`<!DOCTYPE html>\r
+import { j as e } from "./vendor-xNGbxDip.js";
+import "./page-Login-5_M3Gm0y.js";
+import "./page-About-RKuI2z9S.js";
+const a = `<!DOCTYPE html>\r
 <html lang="pt-BR">\r
 <head>\r
     <meta charset="UTF-8">\r
@@ -29,4 +32,8 @@ import{j as e}from"./vendor-xNGbxDip.js";import"./page-Login-5_M3Gm0y.js";import
         <p>Para questões sobre privacidade, entre em contato através do site oficial.</p>\r
     </div>\r
 </body>\r
-</html>`;function i(){return e.jsx("div",{dangerouslySetInnerHTML:{__html:a}})}export{i as default};
+</html>`;
+function i() {
+  return e.jsx("div", { dangerouslySetInnerHTML: { __html: a } });
+}
+export { i as default };

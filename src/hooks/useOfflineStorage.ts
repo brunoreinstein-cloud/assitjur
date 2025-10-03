@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useNotifications } from '@/stores/useNotificationStore';
-import { logWarn } from '@/lib/logger';
+import { useState, useEffect } from "react";
+import { useNotifications } from "@/stores/useNotificationStore";
+import { logWarn } from "@/lib/logger";
 
 export interface CacheEntry<T = any> {
   data: T;
@@ -9,19 +9,19 @@ export interface CacheEntry<T = any> {
 }
 
 class OfflineStorage {
-  private prefix = 'assistjur_';
+  private prefix = "assistjur_";
 
   set<T>(key: string, data: T, expiresIn = 24 * 60 * 60 * 1000): void {
     try {
       const entry: CacheEntry<T> = {
         data,
         timestamp: Date.now(),
-        expiresIn
+        expiresIn,
       };
-      
+
       localStorage.setItem(`${this.prefix}${key}`, JSON.stringify(entry));
     } catch (error) {
-      logWarn('Failed to save to localStorage', { key }, 'OfflineStorage');
+      logWarn("Failed to save to localStorage", { key }, "OfflineStorage");
     }
   }
 
@@ -31,7 +31,7 @@ class OfflineStorage {
       if (!item) return null;
 
       const entry: CacheEntry<T> = JSON.parse(item);
-      
+
       // Check if expired
       if (Date.now() - entry.timestamp > entry.expiresIn) {
         this.remove(key);
@@ -40,7 +40,7 @@ class OfflineStorage {
 
       return entry.data;
     } catch (error) {
-      logWarn('Failed to read from localStorage', { key }, 'OfflineStorage');
+      logWarn("Failed to read from localStorage", { key }, "OfflineStorage");
       return null;
     }
   }
@@ -49,17 +49,17 @@ class OfflineStorage {
     try {
       localStorage.removeItem(`${this.prefix}${key}`);
     } catch (error) {
-      logWarn('Failed to remove from localStorage', { key }, 'OfflineStorage');
+      logWarn("Failed to remove from localStorage", { key }, "OfflineStorage");
     }
   }
 
   clear(): void {
     try {
       Object.keys(localStorage)
-        .filter(key => key.startsWith(this.prefix))
-        .forEach(key => localStorage.removeItem(key));
+        .filter((key) => key.startsWith(this.prefix))
+        .forEach((key) => localStorage.removeItem(key));
     } catch (error) {
-      logWarn('Failed to clear localStorage', {}, 'OfflineStorage');
+      logWarn("Failed to clear localStorage", {}, "OfflineStorage");
     }
   }
 
@@ -67,14 +67,14 @@ class OfflineStorage {
     let total = 0;
     try {
       Object.keys(localStorage)
-        .filter(key => key.startsWith(this.prefix))
-        .forEach(key => {
+        .filter((key) => key.startsWith(this.prefix))
+        .forEach((key) => {
           total += localStorage.getItem(key)?.length || 0;
         });
     } catch (error) {
-      logWarn('Failed to calculate storage size', {}, 'OfflineStorage');
+      logWarn("Failed to calculate storage size", {}, "OfflineStorage");
     }
-    
+
     return `${(total / 1024).toFixed(2)} KB`;
   }
 }
@@ -89,24 +89,24 @@ export function useOnlineStatus() {
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      success('Conexão restaurada', 'Sistema online novamente');
+      success("Conexão restaurada", "Sistema online novamente");
     };
 
     const handleOffline = () => {
       setIsOnline(false);
       warning(
-        'Sem conexão', 
-        'Modo offline ativado. Algumas funcionalidades podem não estar disponíveis.',
-        { duration: undefined } // Persistent notification
+        "Sem conexão",
+        "Modo offline ativado. Algumas funcionalidades podem não estar disponíveis.",
+        { duration: undefined }, // Persistent notification
       );
     };
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, [warning, success]);
 
@@ -121,12 +121,12 @@ export function useCachedData<T>(
     cacheTime?: number;
     enabled?: boolean;
     fallbackData?: T;
-  } = {}
+  } = {},
 ) {
   const {
     cacheTime = 5 * 60 * 1000, // 5 minutes
     enabled = true,
-    fallbackData
+    fallbackData,
   } = options;
 
   const [data, setData] = useState<T | null>(fallbackData || null);
@@ -150,20 +150,21 @@ export function useCachedData<T>(
         try {
           setLoading(true);
           setError(null);
-          
+
           const freshData = await fetcher();
-          
+
           setData(freshData);
           offlineStorage.set(key, freshData, cacheTime);
         } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+          const errorMessage =
+            err instanceof Error ? err.message : "Erro desconhecido";
           setError(errorMessage);
-          
+
           // If no cached data, notify user
           if (!cached) {
             notifyError(
-              'Erro ao carregar dados',
-              'Verifique sua conexão e tente novamente.'
+              "Erro ao carregar dados",
+              "Verifique sua conexão e tente novamente.",
             );
           }
         } finally {
@@ -190,6 +191,6 @@ export function useCachedData<T>(
     error,
     refresh,
     isOnline,
-    isCached: !!offlineStorage.get(key)
+    isCached: !!offlineStorage.get(key),
   };
 }

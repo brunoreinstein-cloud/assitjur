@@ -1,12 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
+import React, { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 interface FeatureFlag {
   id?: string;
@@ -24,11 +30,16 @@ interface AuditEntry {
   timestamp: string;
 }
 
-const envs = ['development', 'staging', 'production'];
+const envs = ["development", "staging", "production"];
 
 export const FeatureFlagAdmin: React.FC = () => {
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
-  const [current, setCurrent] = useState<FeatureFlag>({ flag: '', enabled: true, rollout_percentage: 100, environment: 'development' });
+  const [current, setCurrent] = useState<FeatureFlag>({
+    flag: "",
+    enabled: true,
+    rollout_percentage: 100,
+    environment: "development",
+  });
   const [editing, setEditing] = useState<FeatureFlag | null>(null);
   const [audits, setAudits] = useState<AuditEntry[]>([]);
   const [killed, setKilled] = useState<string[]>([]);
@@ -47,8 +58,20 @@ export const FeatureFlagAdmin: React.FC = () => {
   const fetchFlags = async () => {
     // Mock data since feature_flags table doesn't exist yet
     const mockFlags: FeatureFlag[] = [
-      { id: '1', flag: 'advanced-search', enabled: true, rollout_percentage: 100, environment: 'development' },
-      { id: '2', flag: 'beta-features', enabled: false, rollout_percentage: 50, environment: 'staging' }
+      {
+        id: "1",
+        flag: "advanced-search",
+        enabled: true,
+        rollout_percentage: 100,
+        environment: "development",
+      },
+      {
+        id: "2",
+        flag: "beta-features",
+        enabled: false,
+        rollout_percentage: 50,
+        environment: "staging",
+      },
     ];
     setFlags(mockFlags);
   };
@@ -62,8 +85,20 @@ export const FeatureFlagAdmin: React.FC = () => {
   const fetchAudit = async (flagId: string) => {
     // Mock audit data since audit table doesn't exist yet
     const mockAudits: AuditEntry[] = [
-      { id: '1', action: 'created', old_value: null, new_value: { enabled: true }, timestamp: new Date().toISOString() },
-      { id: '2', action: 'updated', old_value: { enabled: true }, new_value: { enabled: false }, timestamp: new Date().toISOString() }
+      {
+        id: "1",
+        action: "created",
+        old_value: null,
+        new_value: { enabled: true },
+        timestamp: new Date().toISOString(),
+      },
+      {
+        id: "2",
+        action: "updated",
+        old_value: { enabled: true },
+        new_value: { enabled: false },
+        timestamp: new Date().toISOString(),
+      },
     ];
     setAudits(mockAudits);
   };
@@ -78,7 +113,7 @@ export const FeatureFlagAdmin: React.FC = () => {
     setCurrent((c) => ({ ...c, [field]: value }));
   };
 
-  const quickSet = (value: number) => handleField('rollout_percentage', value);
+  const quickSet = (value: number) => handleField("rollout_percentage", value);
 
   const diff = (oldFlag: FeatureFlag | null, newFlag: FeatureFlag) => {
     return JSON.stringify({ old: oldFlag, new: newFlag }, null, 2);
@@ -89,29 +124,34 @@ export const FeatureFlagAdmin: React.FC = () => {
     const confirmation = window.confirm(diff(editing, current));
     if (!confirmation) return;
     try {
-      const { error } = await supabase.functions.invoke('feature-flag-admin', {
-        body: { action: 'save', flag: current }
+      const { error } = await supabase.functions.invoke("feature-flag-admin", {
+        body: { action: "save", flag: current },
       });
       if (error) throw error;
       toast({
         title: "Sucesso",
-        description: "Flag salva com sucesso"
+        description: "Flag salva com sucesso",
       });
       await fetchFlags();
       setEditing(null);
-      setCurrent({ flag: '', enabled: true, rollout_percentage: 100, environment: 'development' });
+      setCurrent({
+        flag: "",
+        enabled: true,
+        rollout_percentage: 100,
+        environment: "development",
+      });
     } catch (e: any) {
       if (e?.status === 401 || e?.status === 403) {
         toast({
           title: "Erro",
           description: "Acesso negado",
-          variant: "destructive"
+          variant: "destructive",
         });
       } else {
         toast({
-          title: "Erro", 
+          title: "Erro",
           description: "Erro ao salvar flag",
-          variant: "destructive"
+          variant: "destructive",
         });
       }
     }
@@ -120,13 +160,13 @@ export const FeatureFlagAdmin: React.FC = () => {
   const clone = async (env: string) => {
     if (!editing?.id) return;
     try {
-      const { error } = await supabase.functions.invoke('feature-flag-admin', {
-        body: { action: 'clone', flag_id: editing.id, target_env: env }
+      const { error } = await supabase.functions.invoke("feature-flag-admin", {
+        body: { action: "clone", flag_id: editing.id, target_env: env },
       });
       if (error) throw error;
       toast({
         title: "Sucesso",
-        description: "Flag clonada com sucesso"
+        description: "Flag clonada com sucesso",
       });
       fetchFlags();
     } catch (e: any) {
@@ -134,13 +174,13 @@ export const FeatureFlagAdmin: React.FC = () => {
         toast({
           title: "Erro",
           description: "Acesso negado",
-          variant: "destructive"
+          variant: "destructive",
         });
       } else {
         toast({
           title: "Erro",
           description: "Erro ao clonar flag",
-          variant: "destructive"
+          variant: "destructive",
         });
       }
     }
@@ -156,13 +196,13 @@ export const FeatureFlagAdmin: React.FC = () => {
       setKilled(next);
       toast({
         title: "Sucesso",
-        description: "Kill switch atualizado com sucesso"
+        description: "Kill switch atualizado com sucesso",
       });
     } catch {
       toast({
         title: "Erro",
         description: "Erro ao atualizar kill switch",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -175,7 +215,11 @@ export const FeatureFlagAdmin: React.FC = () => {
       <CardContent className="space-y-4">
         <div className="flex gap-2 flex-wrap">
           {flags.map((f) => (
-            <Button key={f.id} variant={editing?.id === f.id ? 'secondary' : 'outline'} onClick={() => startEdit(f)}>
+            <Button
+              key={f.id}
+              variant={editing?.id === f.id ? "secondary" : "outline"}
+              onClick={() => startEdit(f)}
+            >
               {f.flag}
             </Button>
           ))}
@@ -185,15 +229,20 @@ export const FeatureFlagAdmin: React.FC = () => {
           <Input
             placeholder="flag name"
             value={current.flag}
-            onChange={(e) => handleField('flag', e.target.value)}
+            onChange={(e) => handleField("flag", e.target.value)}
           />
-          <Select value={current.environment} onValueChange={(v) => handleField('environment', v)}>
+          <Select
+            value={current.environment}
+            onValueChange={(v) => handleField("environment", v)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="environment" />
             </SelectTrigger>
             <SelectContent>
               {envs.map((e) => (
-                <SelectItem key={e} value={e}>{e}</SelectItem>
+                <SelectItem key={e} value={e}>
+                  {e}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -201,16 +250,23 @@ export const FeatureFlagAdmin: React.FC = () => {
             <Input
               type="number"
               value={current.rollout_percentage}
-              onChange={(e) => handleField('rollout_percentage', Number(e.target.value))}
+              onChange={(e) =>
+                handleField("rollout_percentage", Number(e.target.value))
+              }
             />
             <div className="flex gap-1">
-              {[10,25,50,100].map(p => (
-                <Button key={p} type="button" onClick={() => quickSet(p)}>{p}%</Button>
+              {[10, 25, 50, 100].map((p) => (
+                <Button key={p} type="button" onClick={() => quickSet(p)}>
+                  {p}%
+                </Button>
               ))}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Switch checked={current.enabled} onCheckedChange={(v) => handleField('enabled', v)} />
+            <Switch
+              checked={current.enabled}
+              onCheckedChange={(v) => handleField("enabled", v)}
+            />
             <span>Enabled</span>
           </div>
           {editing?.id && (
@@ -229,9 +285,13 @@ export const FeatureFlagAdmin: React.FC = () => {
           <div className="space-y-2">
             <h3 className="font-bold">Clone to environment</h3>
             <div className="flex gap-2">
-              {envs.filter(e => e !== editing.environment).map(env => (
-                <Button key={env} onClick={() => clone(env)}>{env}</Button>
-              ))}
+              {envs
+                .filter((e) => e !== editing.environment)
+                .map((env) => (
+                  <Button key={env} onClick={() => clone(env)}>
+                    {env}
+                  </Button>
+                ))}
             </div>
           </div>
         )}
@@ -240,8 +300,10 @@ export const FeatureFlagAdmin: React.FC = () => {
           <div className="space-y-2">
             <h3 className="font-bold">Audit</h3>
             <ul className="list-disc pl-4">
-              {audits.map(a => (
-                <li key={a.id}>{a.action} - {a.timestamp}</li>
+              {audits.map((a) => (
+                <li key={a.id}>
+                  {a.action} - {a.timestamp}
+                </li>
               ))}
             </ul>
           </div>
@@ -252,4 +314,3 @@ export const FeatureFlagAdmin: React.FC = () => {
 };
 
 export default FeatureFlagAdmin;
-

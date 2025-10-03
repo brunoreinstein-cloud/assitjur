@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface SessionState {
   expired: boolean;
@@ -10,6 +10,6 @@ interface SessionState {
 export const useSessionStore = create<SessionState>((set) => ({
   expired: false,
   redirectUrl: null,
-  showExpired: (url) => set({ expired: true, redirectUrl: url ?? '/login' }),
+  showExpired: (url) => set({ expired: true, redirectUrl: url ?? "/login" }),
   hideExpired: () => set({ expired: false, redirectUrl: null }),
 }));

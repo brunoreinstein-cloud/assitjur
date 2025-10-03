@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 interface HealthResponse {
   uptime: number;
@@ -11,8 +11,8 @@ export default function Status() {
 
   useEffect(() => {
     const start = performance.now();
-    fetch('/api/health')
-      .then(async res => {
+    fetch("/api/health")
+      .then(async (res) => {
         const data = await res.json();
         setHealth(data);
         setLatency(performance.now() - start);

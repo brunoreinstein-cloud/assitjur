@@ -1,26 +1,26 @@
-import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ExternalLink, Copy } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ExternalLink, Copy } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface CNJCitationProps {
   cnj: string;
-  variant?: 'default' | 'outline' | 'secondary';
+  variant?: "default" | "outline" | "secondary";
   showCopyButton?: boolean;
   showExternalLink?: boolean;
   onClick?: (cnj: string) => void;
   className?: string;
 }
 
-export function CNJCitation({ 
-  cnj, 
-  variant = 'outline',
+export function CNJCitation({
+  cnj,
+  variant = "outline",
   showCopyButton = true,
   showExternalLink = false,
   onClick,
-  className 
+  className,
 }: CNJCitationProps) {
   const { toast } = useToast();
 
@@ -50,22 +50,22 @@ export function CNJCitation({
 
   return (
     <div className={cn("flex items-center gap-1 print:gap-0", className)}>
-      <Badge 
+      <Badge
         variant={variant}
         className={cn(
           "font-mono cursor-pointer hover:bg-accent print:border-0 print:bg-transparent print:p-0",
-          onClick && "hover:bg-primary/10"
+          onClick && "hover:bg-primary/10",
         )}
         onClick={handleClick}
       >
         {cnj}
       </Badge>
-      
+
       <div className="flex items-center print:hidden">
         {showCopyButton && (
           <Button
             variant="ghost"
-            size="sm" 
+            size="sm"
             className="h-6 w-6 p-0"
             onClick={handleCopy}
             title="Copiar CNJ"
@@ -73,7 +73,7 @@ export function CNJCitation({
             <Copy className="h-3 w-3" />
           </Button>
         )}
-        
+
         {showExternalLink && (
           <Button
             variant="ghost"

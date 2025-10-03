@@ -1,24 +1,28 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { ArrowDown } from 'lucide-react';
-import { NeedsForm } from '@/components/site/NeedsForm';
-import { BrandLogo } from '@/components/brand/BrandLogo';
-import { track } from '@/lib/track';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowDown } from "lucide-react";
+import { NeedsForm } from "@/components/site/NeedsForm";
+import { BrandLogo } from "@/components/brand/BrandLogo";
+import { track } from "@/lib/track";
 
 interface HeroProps {
-  onSignup?: (data: { email: string; needs: string[]; otherNeed?: string }) => void;
+  onSignup?: (data: {
+    email: string;
+    needs: string[];
+    otherNeed?: string;
+  }) => void;
 }
 
 export function Hero({ onSignup }: HeroProps) {
   const [showForm, setShowForm] = useState(false);
 
   const scrollToForm = () => {
-    track('cta_click', { id: 'hero-testar-hub' });
+    track("cta_click", { id: "hero-testar-hub" });
     setShowForm(true);
     setTimeout(() => {
-      const formElement = document.getElementById('needs-form');
+      const formElement = document.getElementById("needs-form");
       if (formElement) {
-        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        formElement.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }, 100);
   };
@@ -27,7 +31,7 @@ export function Hero({ onSignup }: HeroProps) {
     <section className="relative min-h-screen flex flex-col justify-center bg-gradient-to-br from-background via-background to-muted/30">
       {/* Gradient glow effect */}
       <div className="absolute inset-0 bg-gradient-glow pointer-events-none" />
-      
+
       <div className="container mx-auto px-6 py-20 relative z-10">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           {/* Logo e Tagline */}
@@ -42,7 +46,7 @@ export function Hero({ onSignup }: HeroProps) {
 
           {/* H1 Principal */}
           <h1 className="text-4xl md:text-6xl font-bold text-foreground leading-tight">
-            O primeiro hub de agentes de IA especializados em{' '}
+            O primeiro hub de agentes de IA especializados em{" "}
             <span className="text-transparent bg-gradient-primary bg-clip-text">
               gestão estratégica do contencioso
             </span>
@@ -50,8 +54,8 @@ export function Hero({ onSignup }: HeroProps) {
 
           {/* CTA Principal */}
           <div className="space-y-4">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               onClick={scrollToForm}
               className="bg-gradient-primary hover:shadow-glow text-lg px-8 py-6 transition-all duration-300"
             >
@@ -70,7 +74,9 @@ export function Hero({ onSignup }: HeroProps) {
                 <div className="w-16 h-16 mx-auto rounded-full bg-gradient-primary flex items-center justify-center">
                   <div className="w-8 h-8 rounded-full bg-accent animate-pulse" />
                 </div>
-                <p className="text-muted-foreground">Ilustração da rede neural/hub digital</p>
+                <p className="text-muted-foreground">
+                  Ilustração da rede neural/hub digital
+                </p>
               </div>
             </div>
           </div>

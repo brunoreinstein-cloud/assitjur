@@ -1,6 +1,6 @@
-import React from 'react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, Lock, Eye, CheckCircle2 } from 'lucide-react';
+import React from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Shield, Lock, Eye, CheckCircle2 } from "lucide-react";
 
 export function TrustNote() {
   return (
@@ -8,8 +8,10 @@ export function TrustNote() {
       <Alert className="border-primary/20 bg-primary/5">
         <Shield className="h-4 w-4 text-primary" />
         <AlertDescription>
-          <strong className="text-primary">Conformidade LGPD:</strong> Todos os dados são processados de acordo com a Lei Geral de Proteção de Dados. 
-          Os arquivos são analisados localmente e descartados após o processamento.
+          <strong className="text-primary">Conformidade LGPD:</strong> Todos os
+          dados são processados de acordo com a Lei Geral de Proteção de Dados.
+          Os arquivos são analisados localmente e descartados após o
+          processamento.
         </AlertDescription>
       </Alert>
 

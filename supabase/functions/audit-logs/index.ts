@@ -1,5 +1,9 @@
 import { createClient } from "npm:@supabase/supabase-js@2.56.0";
-import { corsHeaders, handlePreflight, parseAllowedOrigins } from "../_shared/cors.ts";
+import {
+  corsHeaders,
+  handlePreflight,
+  parseAllowedOrigins,
+} from "../_shared/cors.ts";
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
@@ -19,17 +23,31 @@ Deno.serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: "Missing authorization header" }),
-        { status: 401, headers: { ...ch, "Content-Type": "application/json", "x-correlation-id": cid } },
+        {
+          status: 401,
+          headers: {
+            ...ch,
+            "Content-Type": "application/json",
+            "x-correlation-id": cid,
+          },
+        },
       );
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(token);
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Invalid token" }),
-        { status: 401, headers: { ...ch, "Content-Type": "application/json", "x-correlation-id": cid } },
-      );
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
+        status: 401,
+        headers: {
+          ...ch,
+          "Content-Type": "application/json",
+          "x-correlation-id": cid,
+        },
+      });
     }
 
     const { data: profile, error: profileError } = await supabase
@@ -39,10 +57,14 @@ Deno.serve(async (req) => {
       .single();
 
     if (profileError || !profile) {
-      return new Response(
-        JSON.stringify({ error: "Profile not found" }),
-        { status: 404, headers: { ...ch, "Content-Type": "application/json", "x-correlation-id": cid } },
-      );
+      return new Response(JSON.stringify({ error: "Profile not found" }), {
+        status: 404,
+        headers: {
+          ...ch,
+          "Content-Type": "application/json",
+          "x-correlation-id": cid,
+        },
+      });
     }
 
     const url = new URL(req.url);
@@ -69,15 +91,23 @@ Deno.serve(async (req) => {
     const { data, error } = await query;
     if (error) throw error;
 
-    return new Response(
-      JSON.stringify({ logs: data ?? [], page, limit }),
-      { status: 200, headers: { ...ch, "Content-Type": "application/json", "x-correlation-id": cid } },
-    );
+    return new Response(JSON.stringify({ logs: data ?? [], page, limit }), {
+      status: 200,
+      headers: {
+        ...ch,
+        "Content-Type": "application/json",
+        "x-correlation-id": cid,
+      },
+    });
   } catch (err) {
     console.error("audit-logs error", err);
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...ch, "Content-Type": "application/json", "x-correlation-id": cid } },
-    );
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: {
+        ...ch,
+        "Content-Type": "application/json",
+        "x-correlation-id": cid,
+      },
+    });
   }
 });

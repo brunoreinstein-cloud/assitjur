@@ -40,7 +40,7 @@
       "examples": ["Ana Lima", "Pedro Santos"]
     },
     "reu_nome": {
-      "type": ["string", "null"], 
+      "type": ["string", "null"],
       "description": "Nome do réu (campo legado para compatibilidade)",
       "examples": ["Empresa XYZ Ltda", "Indústria ABC S/A"]
     },
@@ -132,12 +132,16 @@
     "Insight_Estrategico": {
       "type": ["string", "null"],
       "description": "Resumo dos principais achados estratégicos",
-      "examples": ["Triangulação + prova emprestada", "Processo regular sem irregularidades", "Testemunha recorrente - monitorar"]
+      "examples": [
+        "Triangulação + prova emprestada",
+        "Processo regular sem irregularidades",
+        "Testemunha recorrente - monitorar"
+      ]
     }
   },
   "required": [
     "CNJ",
-    "UF", 
+    "UF",
     "Comarca",
     "Reclamantes",
     "Advogados_Ativo",

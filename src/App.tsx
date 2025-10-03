@@ -7,17 +7,22 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ConsentProvider } from "@/hooks/useConsent";
 import ConsentDialog from "@/components/privacy/ConsentDialog";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
 import { AuthProvider as AuthContextProvider } from "@/hooks/useAuth";
 import { AuthProvider as SupabaseAuthProvider } from "@/providers/AuthProvider";
-import { MultiTenantProvider } from '@/contexts/MultiTenantContext';
-import { OrganizationErrorBoundary } from '@/components/core/OrganizationErrorBoundary';
-import { AuthErrorBoundary } from '@/components/core/AuthErrorBoundary';
+import { MultiTenantProvider } from "@/contexts/MultiTenantContext";
+import { OrganizationErrorBoundary } from "@/components/core/OrganizationErrorBoundary";
+import { AuthErrorBoundary } from "@/components/core/AuthErrorBoundary";
 import AuthGuard from "@/components/AuthGuard";
 import { AppLayout } from "@/components/navigation/AppLayout";
 import { ErrorBoundary } from "@/components/core/ErrorBoundary";
 import { ProductionOptimizer } from "@/components/production/ProductionOptimizer";
-
 
 // Admin pages (lazy loaded)
 const Dashboard = lazy(() => import("@/pages/admin/Dashboard"));
@@ -29,9 +34,11 @@ const Versions = lazy(() => import("@/pages/admin/Versions"));
 const Organization = lazy(() => import("@/pages/admin/Organization"));
 const SystemConfig = lazy(() => import("@/pages/admin/SystemConfig"));
 const Compliance = lazy(() => import("@/pages/admin/Compliance"));
-const MarketingCompliance = lazy(() => import("@/pages/admin/MarketingCompliance"));
+const MarketingCompliance = lazy(
+  () => import("@/pages/admin/MarketingCompliance"),
+);
 const DataRetention = lazy(() => import("@/pages/admin/DataRetention"));
-const AppHome = lazy(() => import('@/pages/AppHome'));
+const AppHome = lazy(() => import("@/pages/AppHome"));
 const OpenAI = lazy(() => import("@/pages/admin/OpenAI"));
 const OpenAIKeys = lazy(() => import("@/pages/admin/openai/Keys"));
 const OpenAIModels = lazy(() => import("@/pages/admin/openai/Models"));
@@ -39,11 +46,15 @@ const PromptStudio = lazy(() => import("@/pages/admin/openai/PromptStudio"));
 const OpenAIPlayground = lazy(() => import("@/pages/admin/openai/Playground"));
 const ValidationTest = lazy(() => import("@/pages/admin/ValidationTest"));
 const Metrics = lazy(() => import("@/pages/admin/Metrics"));
-const FeatureFlagMetrics = lazy(() => import("@/pages/admin/FeatureFlagMetrics"));
+const FeatureFlagMetrics = lazy(
+  () => import("@/pages/admin/FeatureFlagMetrics"),
+);
 const BaseRedirect = lazy(() => import("@/pages/admin/base/index"));
 const BaseLayout = lazy(() => import("@/pages/admin/base/BaseLayout"));
 const ProcessosTable = lazy(() => import("@/pages/admin/base/ProcessosTable"));
-const TestemunhasTable = lazy(() => import("@/pages/admin/base/TestemunhasTable"));
+const TestemunhasTable = lazy(
+  () => import("@/pages/admin/base/TestemunhasTable"),
+);
 
 // Profile and Settings pages
 const Profile = lazy(() => import("@/pages/Profile"));
@@ -92,100 +103,115 @@ function AppRoutes() {
   }
 
   return (
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<PublicHome />} />
-        <Route path="/sobre" element={<About />} />
-        <Route path="/beta" element={<Beta />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/reset" element={<Reset />} />
-        <Route path="/reset/confirm" element={<ResetConfirm />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/verify-otp" element={<VerifyOtp />} />
-        <Route path="/portal-titular" element={<PortalTitular />} />
-        <Route path="/import/template" element={<TemplatePage />} />
-        <Route path="/demo/mapa-testemunhas" element={<DemoMapaTestemunhas />} />
-        <Route path="/privacidade" element={<PrivacyPolicy />} />
-        <Route path="/termos" element={<TermsOfUse />} />
-        <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
-        <Route path="/termos-de-uso" element={<TermsOfUse />} />
-        <Route path="/lgpd" element={<LGPD />} />
-        <Route path="/500" element={<ServerError />} />
-        <Route path="/status" element={<Status />} />
+    <Routes>
+      {/* Public routes */}
+      <Route path="/" element={<PublicHome />} />
+      <Route path="/sobre" element={<About />} />
+      <Route path="/beta" element={<Beta />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/reset" element={<Reset />} />
+      <Route path="/reset/confirm" element={<ResetConfirm />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/verify-otp" element={<VerifyOtp />} />
+      <Route path="/portal-titular" element={<PortalTitular />} />
+      <Route path="/import/template" element={<TemplatePage />} />
+      <Route path="/demo/mapa-testemunhas" element={<DemoMapaTestemunhas />} />
+      <Route path="/privacidade" element={<PrivacyPolicy />} />
+      <Route path="/termos" element={<TermsOfUse />} />
+      <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+      <Route path="/termos-de-uso" element={<TermsOfUse />} />
+      <Route path="/lgpd" element={<LGPD />} />
+      <Route path="/500" element={<ServerError />} />
+      <Route path="/status" element={<Status />} />
 
-        {/* Protected routes with app layout */}
+      {/* Protected routes with app layout */}
+      <Route
+        element={
+          <AuthGuard>
+            <AppLayout>
+              <ErrorBoundary>
+                <Suspense fallback={<div className="p-4">Carregando...</div>}>
+                  <Outlet />
+                </Suspense>
+              </ErrorBoundary>
+            </AppLayout>
+          </AuthGuard>
+        }
+      >
+        <Route path="/dashboard" element={<AppHome />} />
+        <Route path="/mapa" element={<MapaPage />} />
+        <Route path="/mapa-testemunhas" element={<MapaPage />} />
+        <Route path="/dados" element={<Navigate to="/mapa" replace />} />
+        <Route path="/dados/mapa" element={<Navigate to="/mapa" replace />} />
+        {/* Redirect deprecated chat route to mapa-testemunhas */}
         <Route
-          element={
-            <AuthGuard>
-              <AppLayout>
-                <ErrorBoundary>
-                  <Suspense fallback={<div className="p-4">Carregando...</div>}>
-                    <Outlet />
-                  </Suspense>
-                </ErrorBoundary>
-              </AppLayout>
-            </AuthGuard>
-          }
-        >
-          <Route path="/dashboard" element={<AppHome />} />
-          <Route path="/mapa" element={<MapaPage />} />
-          <Route path="/mapa-testemunhas" element={<MapaPage />} />
-          <Route path="/dados" element={<Navigate to="/mapa" replace />} />
-          <Route path="/dados/mapa" element={<Navigate to="/mapa" replace />} />
-          {/* Redirect deprecated chat route to mapa-testemunhas */}
-          <Route path="/chat" element={<Navigate to="/mapa-testemunhas?view=chat" replace />} />
-          <Route path="/app/chat" element={<Navigate to="/mapa-testemunhas?view=chat" replace />} />
+          path="/chat"
+          element={<Navigate to="/mapa-testemunhas?view=chat" replace />}
+        />
+        <Route
+          path="/app/chat"
+          element={<Navigate to="/mapa-testemunhas?view=chat" replace />}
+        />
 
-          {/* Super Admin routes */}
-          <Route path="/super-admin" element={<SuperAdminDashboard />} />
-          <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
-          <Route path="/super-admin/users" element={<UserManagement />} />
+        {/* Super Admin routes */}
+        <Route path="/super-admin" element={<SuperAdminDashboard />} />
+        <Route
+          path="/super-admin/dashboard"
+          element={<SuperAdminDashboard />}
+        />
+        <Route path="/super-admin/users" element={<UserManagement />} />
 
-          {/* Admin routes */}
-          <Route path="/admin" element={<Dashboard />} />
-          <Route path="/admin/dashboard" element={<Dashboard />} />
-          <Route path="/admin/analytics" element={<Analytics />} />
-          <Route path="/admin/metrics" element={<Metrics />} />
-          <Route path="/admin/feature-flags/metrics" element={<FeatureFlagMetrics />} />
-          <Route path="/admin/ia" element={<OpenAI />} />
-          <Route path="/admin/ia/chaves" element={<OpenAIKeys />} />
-          <Route path="/admin/ia/modelos" element={<OpenAIModels />} />
-          <Route path="/admin/ia/prompt-studio" element={<PromptStudio />} />
-          <Route path="/admin/ia/testes" element={<OpenAIPlayground />} />
-          <Route path="/admin/base-import" element={<ImportBase />} />
-          <Route path="/admin/base-import/test" element={<ValidationTest />} />
-          <Route path="/admin/base" element={<BaseRedirect />} />
-          <Route path="/admin/base/*" element={<BaseLayout />}>
-            <Route path="processos" element={<ProcessosTable />} />
-            <Route path="testemunhas" element={<TestemunhasTable />} />
-          </Route>
-          <Route path="/admin/versoes" element={<Versions />} />
-          <Route path="/admin/org" element={<Organization />} />
-          <Route path="/admin/organization" element={<Organization />} />
-          <Route path="/admin/compliance" element={<Compliance />} />
-          <Route path="/admin/marketing" element={<MarketingCompliance />} />
-          <Route path="/admin/retencao" element={<DataRetention />} />
-          <Route path="/admin/config" element={<SystemConfig />} />
-          <Route path="/import" element={<Navigate to="/admin/base-import" replace />} />
-          <Route
-            path="/relatorio"
-            element={
-              <FeatureFlagGuard flag="advanced-report">
-                <ReportDemo />
-              </FeatureFlagGuard>
-            }
-          />
-          <Route path="/account/2fa" element={<TwoFactorSetup />} />
-          
-          {/* Profile and Settings routes */}
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<SettingsPage />} />
+        {/* Admin routes */}
+        <Route path="/admin" element={<Dashboard />} />
+        <Route path="/admin/dashboard" element={<Dashboard />} />
+        <Route path="/admin/analytics" element={<Analytics />} />
+        <Route path="/admin/metrics" element={<Metrics />} />
+        <Route
+          path="/admin/feature-flags/metrics"
+          element={<FeatureFlagMetrics />}
+        />
+        <Route path="/admin/ia" element={<OpenAI />} />
+        <Route path="/admin/ia/chaves" element={<OpenAIKeys />} />
+        <Route path="/admin/ia/modelos" element={<OpenAIModels />} />
+        <Route path="/admin/ia/prompt-studio" element={<PromptStudio />} />
+        <Route path="/admin/ia/testes" element={<OpenAIPlayground />} />
+        <Route path="/admin/base-import" element={<ImportBase />} />
+        <Route path="/admin/base-import/test" element={<ValidationTest />} />
+        <Route path="/admin/base" element={<BaseRedirect />} />
+        <Route path="/admin/base/*" element={<BaseLayout />}>
+          <Route path="processos" element={<ProcessosTable />} />
+          <Route path="testemunhas" element={<TestemunhasTable />} />
         </Route>
+        <Route path="/admin/versoes" element={<Versions />} />
+        <Route path="/admin/org" element={<Organization />} />
+        <Route path="/admin/organization" element={<Organization />} />
+        <Route path="/admin/compliance" element={<Compliance />} />
+        <Route path="/admin/marketing" element={<MarketingCompliance />} />
+        <Route path="/admin/retencao" element={<DataRetention />} />
+        <Route path="/admin/config" element={<SystemConfig />} />
+        <Route
+          path="/import"
+          element={<Navigate to="/admin/base-import" replace />}
+        />
+        <Route
+          path="/relatorio"
+          element={
+            <FeatureFlagGuard flag="advanced-report">
+              <ReportDemo />
+            </FeatureFlagGuard>
+          }
+        />
+        <Route path="/account/2fa" element={<TwoFactorSetup />} />
 
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    );
-  }
+        {/* Profile and Settings routes */}
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/settings" element={<SettingsPage />} />
+      </Route>
+
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
 
 // React Query client configuration
 const queryClient = new QueryClient({
@@ -213,31 +239,35 @@ const App = () => (
                 <ConsentProvider>
                   <ConsentDialog />
                   <BrowserRouter
-                  future={{
-                    v7_startTransition: true,
-                    v7_relativeSplatPath: true,
-                  }}
-                >
-                  <SupabaseAuthProvider>
-                    <AuthErrorBoundary>
-                      <MultiTenantProvider>
-                        <OrganizationErrorBoundary>
-                          <div className="min-h-screen flex flex-col">
-                            <MaintenanceBanner />
-                            <StatusBanner />
-                            <main id="conteudo" className="flex-1">
-                              <Suspense fallback={<div className="p-4">Carregando...</div>}>
-                                <AppRoutes />
-                              </Suspense>
-                            </main>
-                            <HelpWidget />
-                          </div>
-                        </OrganizationErrorBoundary>
-                      </MultiTenantProvider>
-                    </AuthErrorBoundary>
-                  </SupabaseAuthProvider>
-                </BrowserRouter>
-              </ConsentProvider>
+                    future={{
+                      v7_startTransition: true,
+                      v7_relativeSplatPath: true,
+                    }}
+                  >
+                    <SupabaseAuthProvider>
+                      <AuthErrorBoundary>
+                        <MultiTenantProvider>
+                          <OrganizationErrorBoundary>
+                            <div className="min-h-screen flex flex-col">
+                              <MaintenanceBanner />
+                              <StatusBanner />
+                              <main id="conteudo" className="flex-1">
+                                <Suspense
+                                  fallback={
+                                    <div className="p-4">Carregando...</div>
+                                  }
+                                >
+                                  <AppRoutes />
+                                </Suspense>
+                              </main>
+                              <HelpWidget />
+                            </div>
+                          </OrganizationErrorBoundary>
+                        </MultiTenantProvider>
+                      </AuthErrorBoundary>
+                    </SupabaseAuthProvider>
+                  </BrowserRouter>
+                </ConsentProvider>
               </TooltipProvider>
             </FeatureFlagProvider>
           </AuthContextProvider>

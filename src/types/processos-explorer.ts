@@ -30,7 +30,7 @@ export type ProcessoRow = {
   observacoes?: string;
   created_at: string;
   updated_at: string;
-}
+};
 
 export type ProcessoQuery = {
   q?: string; // busca global
@@ -39,20 +39,20 @@ export type ProcessoQuery = {
   status?: string[];
   fase?: string[];
   testemunha?: string;
-  class?: ('Baixo'|'Médio'|'Alto')[];
+  class?: ("Baixo" | "Médio" | "Alto")[];
   scoreMin?: number;
   scoreMax?: number;
   flags?: {
     triang?: boolean;
-    troca?: boolean; 
-    prova?: boolean; 
-    duplo?: boolean 
+    troca?: boolean;
+    prova?: boolean;
+    duplo?: boolean;
   };
-  orderBy?: 'updated_at'|'score_risco'|'uf'|'comarca'|'cnj';
-  orderDir?: 'asc'|'desc';
+  orderBy?: "updated_at" | "score_risco" | "uf" | "comarca" | "cnj";
+  orderDir?: "asc" | "desc";
   page?: number;
   pageSize?: number; // 25/50/100
-}
+};
 
 export type ProcessoFiltersState = {
   search: string;
@@ -69,7 +69,7 @@ export type ProcessoFiltersState = {
     prova: boolean;
     duplo: boolean;
   };
-}
+};
 
 export type ColumnConfig = {
   key: string;
@@ -77,16 +77,16 @@ export type ColumnConfig = {
   visible: boolean;
   sortable?: boolean;
   width?: number;
-}
+};
 
-export type ExportFormat = 'csv' | 'pdf' | 'json';
+export type ExportFormat = "csv" | "pdf" | "json";
 
 export type ExportOptions = {
   format: ExportFormat;
   includeFilters: boolean;
   maskPII: boolean;
   selectedOnly: boolean;
-}
+};
 
 export type AuditLogEntry = {
   user_id: string;
@@ -97,10 +97,10 @@ export type AuditLogEntry = {
   pii_masked: boolean;
   records_count: number;
   timestamp: string;
-}
+};
 
 export type VersionInfo = {
   number: number;
   publishedAt: string;
   totalRecords: number;
-}
+};

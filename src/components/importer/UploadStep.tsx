@@ -1,16 +1,23 @@
-import React, { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { Upload, FileSpreadsheet, AlertCircle, CheckCircle, FileText, Download } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { detectFileStructure } from '@/lib/importer/detect';
-import { generateSessionId } from '@/lib/importer/utils';
-import { MappingDialog } from '@/components/importer/MappingDialog';
-import type { ImportSession, DetectedSheet } from '@/lib/importer/types';
+import React, { useState, useCallback } from "react";
+import { useDropzone } from "react-dropzone";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import {
+  Upload,
+  FileSpreadsheet,
+  AlertCircle,
+  CheckCircle,
+  FileText,
+  Download,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import { detectFileStructure } from "@/lib/importer/detect";
+import { generateSessionId } from "@/lib/importer/utils";
+import { MappingDialog } from "@/components/importer/MappingDialog";
+import type { ImportSession, DetectedSheet } from "@/lib/importer/types";
 
 interface UploadStepProps {
   onComplete: (session: ImportSession, file: File) => void; // Incluir arquivo no callback
@@ -36,7 +43,7 @@ export function UploadStep({ onComplete }: UploadStepProps) {
     try {
       // Simula progresso
       const progressInterval = setInterval(() => {
-        setProgress(prev => {
+        setProgress((prev) => {
           if (prev >= 90) {
             clearInterval(progressInterval);
             return 90;
@@ -47,14 +54,14 @@ export function UploadStep({ onComplete }: UploadStepProps) {
 
       // Detecta estrutura
       const sheets = await detectFileStructure(uploadedFile);
-      
+
       clearInterval(progressInterval);
       setProgress(100);
       setDetectedSheets(sheets);
 
       // Verifica se precisa de mapeamento manual
-      const hasAmbiguous = sheets.some(s => s.model === 'ambiguous');
-      
+      const hasAmbiguous = sheets.some((s) => s.model === "ambiguous");
+
       if (hasAmbiguous) {
         setShowMapping(true);
       } else {
@@ -62,7 +69,9 @@ export function UploadStep({ onComplete }: UploadStepProps) {
         handleContinue(sheets);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao processar arquivo');
+      setError(
+        err instanceof Error ? err.message : "Erro ao processar arquivo",
+      );
       setIsProcessing(false);
       setProgress(0);
     }
@@ -71,9 +80,11 @@ export function UploadStep({ onComplete }: UploadStepProps) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'application/vnd.ms-excel': ['.xls'],
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-      'text/csv': ['.csv']
+      "application/vnd.ms-excel": [".xls"],
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+        ".xlsx",
+      ],
+      "text/csv": [".csv"],
     },
     maxFiles: 1,
     maxSize: 50 * 1024 * 1024, // 50MB
@@ -87,7 +98,7 @@ export function UploadStep({ onComplete }: UploadStepProps) {
       fileSize: file.size,
       sheets,
       uploadedAt: new Date(),
-      sessionId: generateSessionId()
+      sessionId: generateSessionId(),
     };
 
     onComplete(session, file); // Passar arquivo junto com session
@@ -100,12 +111,24 @@ export function UploadStep({ onComplete }: UploadStepProps) {
 
   const getModelBadge = (model: string) => {
     switch (model) {
-      case 'testemunha':
-        return <Badge className="bg-primary/10 text-primary border-primary/20">Por Testemunha</Badge>;
-      case 'processo':
-        return <Badge className="bg-accent/10 text-accent border-accent/20">Por Processo</Badge>;
-      case 'ambiguous':
-        return <Badge className="bg-warning/10 text-warning-foreground border-warning/20">Ambíguo</Badge>;
+      case "testemunha":
+        return (
+          <Badge className="bg-primary/10 text-primary border-primary/20">
+            Por Testemunha
+          </Badge>
+        );
+      case "processo":
+        return (
+          <Badge className="bg-accent/10 text-accent border-accent/20">
+            Por Processo
+          </Badge>
+        );
+      case "ambiguous":
+        return (
+          <Badge className="bg-warning/10 text-warning-foreground border-warning/20">
+            Ambíguo
+          </Badge>
+        );
       default:
         return <Badge variant="secondary">Desconhecido</Badge>;
     }
@@ -126,9 +149,9 @@ export function UploadStep({ onComplete }: UploadStepProps) {
             <div
               {...getRootProps()}
               className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                isDragActive 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-muted-foreground/25 hover:border-primary hover:bg-muted/50'
+                isDragActive
+                  ? "border-primary bg-primary/5"
+                  : "border-muted-foreground/25 hover:border-primary hover:bg-muted/50"
               }`}
             >
               <input {...getInputProps()} />
@@ -137,7 +160,9 @@ export function UploadStep({ onComplete }: UploadStepProps) {
                 <p className="text-lg font-medium">Solte o arquivo aqui...</p>
               ) : (
                 <div className="space-y-2">
-                  <p className="text-lg font-medium">Arraste o arquivo ou clique para selecionar</p>
+                  <p className="text-lg font-medium">
+                    Arraste o arquivo ou clique para selecionar
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     Suporta: Excel (.xlsx, .xls) e CSV
                   </p>
@@ -145,7 +170,7 @@ export function UploadStep({ onComplete }: UploadStepProps) {
                     Tamanho máximo: 50MB
                   </p>
                   <div className="mt-4">
-                    <Link 
+                    <Link
                       to="/import/template"
                       className="inline-flex items-center text-sm text-primary hover:text-primary/80 font-medium"
                     >
@@ -181,9 +206,11 @@ export function UploadStep({ onComplete }: UploadStepProps) {
                   <div className="mt-4 space-y-2">
                     <Progress value={progress} className="w-full" />
                     <p className="text-sm text-muted-foreground">
-                      {progress < 50 ? 'Carregando arquivo...' : 
-                       progress < 90 ? 'Analisando estrutura...' : 
-                       'Finalizando detecção...'}
+                      {progress < 50
+                        ? "Carregando arquivo..."
+                        : progress < 90
+                          ? "Analisando estrutura..."
+                          : "Finalizando detecção..."}
                     </p>
                   </div>
                 )}
@@ -213,7 +240,8 @@ export function UploadStep({ onComplete }: UploadStepProps) {
                           {getModelBadge(sheet.model)}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {sheet.rows.toLocaleString()} linhas • {sheet.headers.length} colunas
+                          {sheet.rows.toLocaleString()} linhas •{" "}
+                          {sheet.headers.length} colunas
                         </p>
                         {sheet.hasListColumn && (
                           <p className="text-xs text-primary">
@@ -228,12 +256,15 @@ export function UploadStep({ onComplete }: UploadStepProps) {
 
               {!showMapping && (
                 <div className="space-y-4">
-                  <Button onClick={() => handleContinue(detectedSheets)} className="w-full">
+                  <Button
+                    onClick={() => handleContinue(detectedSheets)}
+                    className="w-full"
+                  >
                     Continuar para Validação
                   </Button>
-                  
+
                   <div className="text-center">
-                    <Link 
+                    <Link
                       to="/import/template"
                       className="inline-flex items-center text-sm text-primary hover:text-primary/80 font-medium"
                     >

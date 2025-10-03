@@ -1,6 +1,6 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Briefcase, TrendingUp, Users } from 'lucide-react';
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Building2, Briefcase, TrendingUp, Users } from "lucide-react";
 
 export function Audience() {
   return (
@@ -20,12 +20,16 @@ export function Audience() {
                 <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-primary flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Building2 className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-xl text-foreground">Empresas</CardTitle>
+                <CardTitle className="text-xl text-foreground">
+                  Empresas
+                </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Empresas com volume de processos judiciais, que buscam aumentar a governança, 
-                  mapear seu passivo, reduzir riscos, otimizar provisões e transformar dados em insights estratégicos.
+                  Empresas com volume de processos judiciais, que buscam
+                  aumentar a governança, mapear seu passivo, reduzir riscos,
+                  otimizar provisões e transformar dados em insights
+                  estratégicos.
                 </p>
               </CardContent>
             </Card>
@@ -36,12 +40,15 @@ export function Audience() {
                 <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-accent flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Briefcase className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-xl text-foreground">Escritórios de Advocacia</CardTitle>
+                <CardTitle className="text-xl text-foreground">
+                  Escritórios de Advocacia
+                </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Escritórios de advocacia que desejam aumentar eficiência, 
-                  fortalecer a governança e aplicar inteligência na condução do contencioso.
+                  Escritórios de advocacia que desejam aumentar eficiência,
+                  fortalecer a governança e aplicar inteligência na condução do
+                  contencioso.
                 </p>
               </CardContent>
             </Card>
@@ -52,12 +59,15 @@ export function Audience() {
                 <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-success to-success-light flex items-center justify-center group-hover:scale-110 transition-transform">
                   <TrendingUp className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-xl text-foreground">Investidores</CardTitle>
+                <CardTitle className="text-xl text-foreground">
+                  Investidores
+                </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Investidores que precisam de informações confiáveis, 
-                  transparência e previsibilidade para avaliar e estruturar oportunidades.
+                  Investidores que precisam de informações confiáveis,
+                  transparência e previsibilidade para avaliar e estruturar
+                  oportunidades.
                 </p>
               </CardContent>
             </Card>
@@ -68,12 +78,15 @@ export function Audience() {
                 <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Users className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-xl text-foreground">Advogados Autônomos</CardTitle>
+                <CardTitle className="text-xl text-foreground">
+                  Advogados Autônomos
+                </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Profissionais que atuam individualmente e desejam ganhar escala, 
-                  reduzir tempo operacional, competir com bancas maiores e entregar mais valor aos clientes.
+                  Profissionais que atuam individualmente e desejam ganhar
+                  escala, reduzir tempo operacional, competir com bancas maiores
+                  e entregar mais valor aos clientes.
                 </p>
               </CardContent>
             </Card>

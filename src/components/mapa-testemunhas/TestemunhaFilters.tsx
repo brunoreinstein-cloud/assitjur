@@ -1,17 +1,26 @@
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
 import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
 import { TestemunhaFilters as TestemunhaFiltersType } from "@/types/mapa-testemunhas";
 
 export function TestemunhaFilters() {
-  const { testemunhaFilters, setTestemunhaFilters, resetFilters } = useMapaTestemunhasStore();
+  const { testemunhaFilters, setTestemunhaFilters, resetFilters } =
+    useMapaTestemunhasStore();
 
-  const updateFilter = (key: keyof TestemunhaFiltersType, value: string | number | boolean | undefined) => {
-    if (value === '' || value === undefined || value === 'TODOS') {
+  const updateFilter = (
+    key: keyof TestemunhaFiltersType,
+    value: string | number | boolean | undefined,
+  ) => {
+    if (value === "" || value === undefined || value === "TODOS") {
       const newFilters = { ...testemunhaFilters };
       delete newFilters[key];
       setTestemunhaFilters(newFilters);
@@ -47,16 +56,25 @@ export function TestemunhaFilters() {
           <Input
             id="search"
             placeholder="Nome da testemunha..."
-            value={testemunhaFilters.search || ''}
-            onChange={(e) => updateFilter('search', e.target.value)}
+            value={testemunhaFilters.search || ""}
+            onChange={(e) => updateFilter("search", e.target.value)}
           />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="ambosPolos">Em Ambos os Polos</Label>
           <Select
-            value={testemunhaFilters.ambosPolos !== undefined ? testemunhaFilters.ambosPolos.toString() : 'TODOS'}
-            onValueChange={(value) => updateFilter('ambosPolos', value === 'TODOS' ? undefined : value === 'true')}
+            value={
+              testemunhaFilters.ambosPolos !== undefined
+                ? testemunhaFilters.ambosPolos.toString()
+                : "TODOS"
+            }
+            onValueChange={(value) =>
+              updateFilter(
+                "ambosPolos",
+                value === "TODOS" ? undefined : value === "true",
+              )
+            }
           >
             <SelectTrigger id="ambosPolos">
               <SelectValue placeholder="Selecione..." />
@@ -72,8 +90,17 @@ export function TestemunhaFilters() {
         <div className="space-y-2">
           <Label htmlFor="jaFoiReclamante">Já Foi Reclamante</Label>
           <Select
-            value={testemunhaFilters.jaFoiReclamante !== undefined ? testemunhaFilters.jaFoiReclamante.toString() : 'TODOS'}
-            onValueChange={(value) => updateFilter('jaFoiReclamante', value === 'TODOS' ? undefined : value === 'true')}
+            value={
+              testemunhaFilters.jaFoiReclamante !== undefined
+                ? testemunhaFilters.jaFoiReclamante.toString()
+                : "TODOS"
+            }
+            onValueChange={(value) =>
+              updateFilter(
+                "jaFoiReclamante",
+                value === "TODOS" ? undefined : value === "true",
+              )
+            }
           >
             <SelectTrigger id="jaFoiReclamante">
               <SelectValue placeholder="Selecione..." />
@@ -89,8 +116,17 @@ export function TestemunhaFilters() {
         <div className="space-y-2">
           <Label htmlFor="temTriangulacao">Participou Triangulação</Label>
           <Select
-            value={testemunhaFilters.temTriangulacao !== undefined ? testemunhaFilters.temTriangulacao.toString() : 'TODOS'}
-            onValueChange={(value) => updateFilter('temTriangulacao', value === 'TODOS' ? undefined : value === 'true')}
+            value={
+              testemunhaFilters.temTriangulacao !== undefined
+                ? testemunhaFilters.temTriangulacao.toString()
+                : "TODOS"
+            }
+            onValueChange={(value) =>
+              updateFilter(
+                "temTriangulacao",
+                value === "TODOS" ? undefined : value === "true",
+              )
+            }
           >
             <SelectTrigger id="temTriangulacao">
               <SelectValue placeholder="Selecione..." />
@@ -106,8 +142,17 @@ export function TestemunhaFilters() {
         <div className="space-y-2">
           <Label htmlFor="temTroca">Participou Troca</Label>
           <Select
-            value={testemunhaFilters.temTroca !== undefined ? testemunhaFilters.temTroca.toString() : 'TODOS'}
-            onValueChange={(value) => updateFilter('temTroca', value === 'TODOS' ? undefined : value === 'true')}
+            value={
+              testemunhaFilters.temTroca !== undefined
+                ? testemunhaFilters.temTroca.toString()
+                : "TODOS"
+            }
+            onValueChange={(value) =>
+              updateFilter(
+                "temTroca",
+                value === "TODOS" ? undefined : value === "true",
+              )
+            }
           >
             <SelectTrigger id="temTroca">
               <SelectValue placeholder="Selecione..." />
@@ -126,8 +171,13 @@ export function TestemunhaFilters() {
             id="qtdMin"
             type="number"
             placeholder="0"
-            value={testemunhaFilters.qtdDeposMin || ''}
-            onChange={(e) => updateFilter('qtdDeposMin', e.target.value ? Number(e.target.value) : undefined)}
+            value={testemunhaFilters.qtdDeposMin || ""}
+            onChange={(e) =>
+              updateFilter(
+                "qtdDeposMin",
+                e.target.value ? Number(e.target.value) : undefined,
+              )
+            }
           />
         </div>
 
@@ -137,8 +187,13 @@ export function TestemunhaFilters() {
             id="qtdMax"
             type="number"
             placeholder="∞"
-            value={testemunhaFilters.qtdDeposMax || ''}
-            onChange={(e) => updateFilter('qtdDeposMax', e.target.value ? Number(e.target.value) : undefined)}
+            value={testemunhaFilters.qtdDeposMax || ""}
+            onChange={(e) =>
+              updateFilter(
+                "qtdDeposMax",
+                e.target.value ? Number(e.target.value) : undefined,
+              )
+            }
           />
         </div>
       </div>

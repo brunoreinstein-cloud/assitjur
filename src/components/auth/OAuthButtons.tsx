@@ -15,16 +15,16 @@ export const OAuthButtons = ({ disabled, next }: OAuthButtonsProps) => {
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState<Record<string, number>>({});
 
-  const handleOAuthSignIn = async (provider: 'google', isRetry = false) => {
+  const handleOAuthSignIn = async (provider: "google", isRetry = false) => {
     if (!isRetry) {
       setLoadingProvider(provider);
     }
-    
+
     try {
       // Check if provider is enabled
       if (!AUTH_CONFIG.FEATURES.GOOGLE_OAUTH_ENABLED) {
         toast.error("OAuth não disponível", {
-          description: "Login com Google não está habilitado no momento."
+          description: "Login com Google não está habilitado no momento.",
         });
         return;
       }
@@ -32,7 +32,8 @@ export const OAuthButtons = ({ disabled, next }: OAuthButtonsProps) => {
       // Check if Supabase is configured
       if (!supabase) {
         toast.error("OAuth não configurado", {
-          description: "Login com provedores externos não está disponível no momento."
+          description:
+            "Login com provedores externos não está disponível no momento.",
         });
         return;
       }
@@ -44,8 +45,8 @@ export const OAuthButtons = ({ disabled, next }: OAuthButtonsProps) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo
-        }
+          redirectTo,
+        },
       });
 
       if (error) {
@@ -54,46 +55,56 @@ export const OAuthButtons = ({ disabled, next }: OAuthButtonsProps) => {
 
       // Show success feedback while redirecting
       toast.success("Redirecionando...", {
-        description: `Conectando com ${provider === 'google' ? 'Google' : provider}`,
-        duration: 2000
+        description: `Conectando com ${provider === "google" ? "Google" : provider}`,
+        duration: 2000,
       });
-      
     } catch (error: any) {
       console.error(`${provider} OAuth error:`, error);
-      
+
       // Handle network errors with retry
-      if (error.message?.includes('network') || error.message?.includes('fetch')) {
+      if (
+        error.message?.includes("network") ||
+        error.message?.includes("fetch")
+      ) {
         const currentRetries = retryCount[provider] || 0;
         if (currentRetries < 2) {
-          setRetryCount(prev => ({ ...prev, [provider]: currentRetries + 1 }));
+          setRetryCount((prev) => ({
+            ...prev,
+            [provider]: currentRetries + 1,
+          }));
           toast.info("Tentando novamente...", {
-            description: `Erro de conexão. Tentativa ${currentRetries + 2}/3`
+            description: `Erro de conexão. Tentativa ${currentRetries + 2}/3`,
           });
-          
+
           setTimeout(() => {
             handleOAuthSignIn(provider, true);
           }, 1500);
         } else {
           toast.error("Erro de conexão", {
-            description: "Verifique sua conexão com a internet e tente novamente."
+            description:
+              "Verifique sua conexão com a internet e tente novamente.",
           });
         }
         return;
       }
-      
+
       // Handle provider configuration errors
-      if (error.message?.includes('Provider') || error.message?.includes('client_id')) {
+      if (
+        error.message?.includes("Provider") ||
+        error.message?.includes("client_id")
+      ) {
         toast.error("Configuração OAuth", {
-          description: "Google OAuth não está configurado corretamente. Entre em contato com o suporte."
+          description:
+            "Google OAuth não está configurado corretamente. Entre em contato com o suporte.",
         });
       } else if (!supabase) {
         // Development fallback
         toast.info("Demo Mode", {
-          description: `OAuth ${provider} simulado. Use o usuário demo para testar.`
+          description: `OAuth ${provider} simulado. Use o usuário demo para testar.`,
         });
       } else {
         toast.error("Erro no login", {
-          description: `Não foi possível fazer login com ${provider === 'google' ? 'Google' : provider}. Tente novamente.`
+          description: `Não foi possível fazer login com ${provider === "google" ? "Google" : provider}. Tente novamente.`,
         });
       }
     } finally {
@@ -102,7 +113,7 @@ export const OAuthButtons = ({ disabled, next }: OAuthButtonsProps) => {
   };
 
   // Filter enabled providers
-  const enabledProviders = AUTH_CONFIG.OAUTH_PROVIDERS.filter(p => p.enabled);
+  const enabledProviders = AUTH_CONFIG.OAUTH_PROVIDERS.filter((p) => p.enabled);
 
   if (enabledProviders.length === 0) {
     return null;
@@ -120,17 +131,17 @@ export const OAuthButtons = ({ disabled, next }: OAuthButtonsProps) => {
           </span>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 gap-3">
         {AUTH_CONFIG.FEATURES.GOOGLE_OAUTH_ENABLED && (
           <Button
             variant="outline"
-            onClick={() => handleOAuthSignIn('google')}
+            onClick={() => handleOAuthSignIn("google")}
             disabled={disabled || loadingProvider !== null}
             className="w-full transition-all duration-200 hover:shadow-md"
             aria-label="Acessar área segura com Google"
           >
-            {loadingProvider === 'google' ? (
+            {loadingProvider === "google" ? (
               <div className="flex items-center space-x-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span>Conectando...</span>
@@ -169,16 +180,20 @@ export const OAuthButtons = ({ disabled, next }: OAuthButtonsProps) => {
         {AUTH_CONFIG.FEATURES.MICROSOFT_OAUTH_ENABLED && (
           <Button
             variant="outline"
-            onClick={() => toast.info("Em breve", { description: "Microsoft SSO será habilitado em breve" })}
+            onClick={() =>
+              toast.info("Em breve", {
+                description: "Microsoft SSO será habilitado em breve",
+              })
+            }
             disabled={true}
             className="w-full opacity-50"
             aria-label="Microsoft OAuth (em breve)"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="#f25022" d="M1 1h10v10H1z"/>
-              <path fill="#00a4ef" d="M13 1h10v10H13z"/>
-              <path fill="#7fba00" d="M1 13h10v10H1z"/>
-              <path fill="#ffb900" d="M13 13h10v10H13z"/>
+              <path fill="#f25022" d="M1 1h10v10H1z" />
+              <path fill="#00a4ef" d="M13 1h10v10H13z" />
+              <path fill="#7fba00" d="M1 13h10v10H1z" />
+              <path fill="#ffb900" d="M13 13h10v10H13z" />
             </svg>
             <span className="ml-2">Microsoft (em breve)</span>
           </Button>

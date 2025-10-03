@@ -1,4 +1,4 @@
-import { createContext, useContext, useRef, useState, ReactNode } from 'react';
+import { createContext, useContext, useRef, useState, ReactNode } from "react";
 
 interface ServiceHealthContextValue {
   execute<T>(action: () => Promise<T>): Promise<T>;
@@ -6,7 +6,9 @@ interface ServiceHealthContextValue {
   isUnavailable: boolean;
 }
 
-const ServiceHealthContext = createContext<ServiceHealthContextValue | undefined>(undefined);
+const ServiceHealthContext = createContext<
+  ServiceHealthContextValue | undefined
+>(undefined);
 
 const INITIAL_BACKOFF = 1000; // 1s
 const MAX_BACKOFF = 8000; // 8s
@@ -27,7 +29,11 @@ export function ServiceHealthProvider({ children }: { children: ReactNode }) {
       backoff.current = INITIAL_BACKOFF;
       return result;
     } catch (err: any) {
-      if (err?.status >= 500 || err?.name === 'AbortError' || err?.message?.includes('Network')) {
+      if (
+        err?.status >= 500 ||
+        err?.name === "AbortError" ||
+        err?.message?.includes("Network")
+      ) {
         setUnavailable(true);
       }
       throw err;
@@ -60,8 +66,9 @@ export function ServiceHealthProvider({ children }: { children: ReactNode }) {
 export function useServiceHealth() {
   const ctx = useContext(ServiceHealthContext);
   if (!ctx) {
-    throw new Error('useServiceHealth must be used within ServiceHealthProvider');
+    throw new Error(
+      "useServiceHealth must be used within ServiceHealthProvider",
+    );
   }
   return ctx;
 }
-

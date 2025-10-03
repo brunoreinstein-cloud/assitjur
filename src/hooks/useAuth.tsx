@@ -1,14 +1,14 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { ensureProfile } from '@/utils/ensureProfile';
-import { AuthErrorHandler } from '@/utils/authErrorHandler';
-import { useSessionMonitor } from '@/hooks/useSessionMonitor';
-import { getSessionContext, calculateRisk } from '@/security/sessionContext';
-import { getEnv } from '@/lib/getEnv';
-import { logError, logWarn } from '@/lib/logger';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { User, Session } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import { ensureProfile } from "@/utils/ensureProfile";
+import { AuthErrorHandler } from "@/utils/authErrorHandler";
+import { useSessionMonitor } from "@/hooks/useSessionMonitor";
+import { getSessionContext, calculateRisk } from "@/security/sessionContext";
+import { getEnv } from "@/lib/getEnv";
+import { logError, logWarn } from "@/lib/logger";
 
-export type UserRole = 'ADMIN' | 'ANALYST' | 'VIEWER';
+export type UserRole = "ADMIN" | "ANALYST" | "VIEWER";
 
 export interface SuperAdminInfo {
   is_super_admin: boolean;
@@ -28,7 +28,7 @@ export interface UserProfile {
   created_at: string;
   updated_at: string;
   last_login_at?: string | null;
-  data_access_level: 'FULL' | 'MASKED' | 'NONE';
+  data_access_level: "FULL" | "MASKED" | "NONE";
   two_factor_enabled?: boolean;
   two_factor_secret?: string | null;
   two_factor_backup_code?: string | null;
@@ -53,11 +53,16 @@ interface AuthContextType {
   signIn: (
     email: string,
     password: string,
-    role: 'OFFICE' | 'ADMIN',
+    role: "OFFICE" | "ADMIN",
     rememberMe?: boolean,
-    orgCode?: string
+    orgCode?: string,
   ) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, name?: string, orgCode?: string) => Promise<{ error: any }>;
+  signUp: (
+    email: string,
+    password: string,
+    name?: string,
+    orgCode?: string,
+  ) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   hasRole: (role: UserRole) => boolean;
@@ -69,12 +74,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -87,22 +94,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     enabled: !!session,
     checkInterval: 5, // Check every 5 minutes
     preemptiveRefresh: 10, // Refresh 10 minutes before expiry
-    inactivityTimeout: inactivity
+    inactivityTimeout: inactivity,
   });
 
   const checkSuperAdmin = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .rpc('get_super_admin_info', { _user_id: userId });
+      const { data, error } = await supabase.rpc("get_super_admin_info", {
+        _user_id: userId,
+      });
 
       if (error) {
-        logError('Error checking super admin status', { error: error.message || error }, 'useAuth');
+        logError(
+          "Error checking super admin status",
+          { error: error.message || error },
+          "useAuth",
+        );
         return false;
       }
 
       return data && data.length > 0 && data[0].is_super_admin === true;
     } catch (error) {
-      logError('Error checking super admin in catch', { error }, 'useAuth');
+      logError("Error checking super admin in catch", { error }, "useAuth");
       return false;
     }
   };
@@ -111,11 +123,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // ✅ Use new RPC to fetch profile with roles from members
       const { data, error } = await supabase
-        .rpc('get_user_profile_with_roles', { _user_id: userId })
+        .rpc("get_user_profile_with_roles", { _user_id: userId })
         .maybeSingle();
 
       if (error) {
-        logError('Error fetching profile', { error: error.message || error }, 'useAuth');
+        logError(
+          "Error fetching profile",
+          { error: error.message || error },
+          "useAuth",
+        );
         return null;
       }
 
@@ -126,93 +142,107 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return {
           ...data,
           roles: data.roles || [],
-          is_super_admin: superAdminStatus
+          is_super_admin: superAdminStatus,
         } as UserProfile;
       }
-      
+
       return data as UserProfile | null;
     } catch (error) {
-      logError('Error fetching profile in catch', { error }, 'useAuth');
+      logError("Error fetching profile in catch", { error }, "useAuth");
       return null;
     }
   };
 
-  const logAuthAttempt = async (email: string, action: string, result: string, metadata?: any) => {
+  const logAuthAttempt = async (
+    email: string,
+    action: string,
+    result: string,
+    metadata?: any,
+  ) => {
     try {
-      const { error } = await supabase
-        .from('audit_logs')
-        .insert({
-          email,
-          action,
-          result,
-          table_name: 'auth',
-          resource: 'authentication',
-          ip_address: null, // Would need server-side implementation for real IP
-          user_agent: navigator.userAgent,
-          metadata: metadata || {}
-        });
+      const { error } = await supabase.from("audit_logs").insert({
+        email,
+        action,
+        result,
+        table_name: "auth",
+        resource: "authentication",
+        ip_address: null, // Would need server-side implementation for real IP
+        user_agent: navigator.userAgent,
+        metadata: metadata || {},
+      });
 
       if (error) {
-        logError('Error logging auth attempt', { error: error.message || error }, 'useAuth');
+        logError(
+          "Error logging auth attempt",
+          { error: error.message || error },
+          "useAuth",
+        );
       }
     } catch (error) {
-      logError('Error logging auth attempt in catch', { error }, 'useAuth');
+      logError("Error logging auth attempt in catch", { error }, "useAuth");
     }
   };
 
   useEffect(() => {
     // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          // Defer profile fetching to avoid recursion
-          setTimeout(async () => {
-            try {
-              let profileData = await fetchProfile(session.user.id);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+
+      if (session?.user) {
+        // Defer profile fetching to avoid recursion
+        setTimeout(async () => {
+          try {
+            let profileData = await fetchProfile(session.user.id);
+            if (!profileData) {
+              // Use the safe database function to create profile
+              profileData = (await ensureProfile(session.user)) as any;
               if (!profileData) {
-                // Use the safe database function to create profile
-                profileData = (await ensureProfile(session.user)) as any;
-                if (!profileData) {
-                  logWarn('Profile creation failed during auth state change', {}, 'Authentication');
-                  setProfile(null);
-                  setLoading(false);
-                  return;
-                }
+                logWarn(
+                  "Profile creation failed during auth state change",
+                  {},
+                  "Authentication",
+                );
+                setProfile(null);
+                setLoading(false);
+                return;
               }
-              setProfile(profileData as UserProfile);
-              setLoading(false);
-            } catch (error) {
-              console.error('Profile error during auth state change:', error);
-              if (AuthErrorHandler.isAuthError(error)) {
-                await AuthErrorHandler.handleAuthError(error, { 
-                  showNotification: false // Avoid notification spam on initial load
-                });
-              } else {
-                logError('Profile fetch error', { error }, 'useAuth');
-              }
-              setProfile(null);
-              setLoading(false);
             }
-          }, 0);
-        } else {
-          setProfile(null);
-          setLoading(false);
-        }
+            setProfile(profileData as UserProfile);
+            setLoading(false);
+          } catch (error) {
+            console.error("Profile error during auth state change:", error);
+            if (AuthErrorHandler.isAuthError(error)) {
+              await AuthErrorHandler.handleAuthError(error, {
+                showNotification: false, // Avoid notification spam on initial load
+              });
+            } else {
+              logError("Profile fetch error", { error }, "useAuth");
+            }
+            setProfile(null);
+            setLoading(false);
+          }
+        }, 0);
+      } else {
+        setProfile(null);
+        setLoading(false);
       }
-    );
+    });
 
     // THEN check for existing session with enhanced error handling
     const initializeSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
+
         if (error) {
           if (AuthErrorHandler.isAuthError(error)) {
-            await AuthErrorHandler.handleAuthError(error, { 
-              showNotification: false 
+            await AuthErrorHandler.handleAuthError(error, {
+              showNotification: false,
             });
             return;
           }
@@ -221,7 +251,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
           setTimeout(async () => {
             try {
@@ -230,7 +260,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // Use the safe database function to create profile
                 profileData = (await ensureProfile(session.user)) as any;
                 if (!profileData) {
-                  logWarn('Profile creation failed during session init', {}, 'Authentication');
+                  logWarn(
+                    "Profile creation failed during session init",
+                    {},
+                    "Authentication",
+                  );
                   setProfile(null);
                   setLoading(false);
                   return;
@@ -239,13 +273,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setProfile(profileData as UserProfile);
               setLoading(false);
             } catch (error) {
-              console.error('Profile error during session init:', error);
+              console.error("Profile error during session init:", error);
               if (AuthErrorHandler.isAuthError(error)) {
-                await AuthErrorHandler.handleAuthError(error, { 
-                  showNotification: false
+                await AuthErrorHandler.handleAuthError(error, {
+                  showNotification: false,
                 });
               } else {
-                logError('Profile fetch error in session init', { error }, 'useAuth');
+                logError(
+                  "Profile fetch error in session init",
+                  { error },
+                  "useAuth",
+                );
               }
               setProfile(null);
               setLoading(false);
@@ -255,7 +293,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setLoading(false);
         }
       } catch (error) {
-        logError('Session initialization error', { error }, 'useAuth');
+        logError("Session initialization error", { error }, "useAuth");
         setLoading(false);
       }
     };
@@ -273,9 +311,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (
     email: string,
     password: string,
-    role: 'OFFICE' | 'ADMIN',
+    role: "OFFICE" | "ADMIN",
     rememberMe = true,
-    orgCode?: string
+    orgCode?: string,
   ) => {
     try {
       setLoading(true);
@@ -286,14 +324,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
-        await logAuthAttempt(email, 'login', 'failure', { role, error: error.message });
+        await logAuthAttempt(email, "login", "failure", {
+          role,
+          error: error.message,
+        });
 
-        if (error.message.includes('Invalid login credentials')) {
-          return { error: { message: 'E-mail ou senha incorretos.' } };
+        if (error.message.includes("Invalid login credentials")) {
+          return { error: { message: "E-mail ou senha incorretos." } };
         }
 
-        if (error.message.includes('Email not confirmed')) {
-          return { error: { message: 'E-mail não confirmado. Verifique sua caixa de entrada.' } };
+        if (error.message.includes("Email not confirmed")) {
+          return {
+            error: {
+              message: "E-mail não confirmado. Verifique sua caixa de entrada.",
+            },
+          };
         }
 
         return { error };
@@ -344,67 +389,111 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (risk >= 70) {
           // Log anomaly in audit log
-          await supabase.from('audit_logs').insert({
+          await supabase.from("audit_logs").insert({
             email,
-            action: 'SESSION_ANOMALY',
-            result: 'HIGH_RISK',
+            action: "SESSION_ANOMALY",
+            result: "HIGH_RISK",
             ip_address: null,
             user_agent: ctx.userAgent,
             metadata: { context: ctx, risk },
           } as any);
-          logWarn('High risk session detected; step-up authentication required', { risk, user_id: data.user.id }, 'useAuth');
+          logWarn(
+            "High risk session detected; step-up authentication required",
+            { risk, user_id: data.user.id },
+            "useAuth",
+          );
         }
 
         let orgId: string | undefined;
         if (orgCode) {
           const { data: orgData, error: orgError } = await supabase
-            .from('organizations')
-            .select('id')
-            .eq('code', orgCode)
+            .from("organizations")
+            .select("id")
+            .eq("code", orgCode)
             .maybeSingle(); // Use maybeSingle() to avoid coercion errors
 
           if (orgError || !orgData) {
-            await logAuthAttempt(email, 'login', 'failure', { role, orgCode, error: 'Invalid org code' });
-            return { error: { message: 'Código da organização não encontrado.' } };
+            await logAuthAttempt(email, "login", "failure", {
+              role,
+              orgCode,
+              error: "Invalid org code",
+            });
+            return {
+              error: { message: "Código da organização não encontrado." },
+            };
           }
           orgId = orgData.id;
         }
 
         const profileData = await ensureProfile(
           data.user,
-          role === 'ADMIN' ? 'ADMIN' : 'ANALYST',
-          orgId
+          role === "ADMIN" ? "ADMIN" : "ANALYST",
+          orgId,
         );
 
         if (!profileData) {
-          await logAuthAttempt(email, 'login', 'failure', { role, error: 'Profile creation failed' });
-          return { error: { message: 'Não foi possível criar ou recuperar o perfil de usuário. Tente novamente ou contate o suporte.' } };
+          await logAuthAttempt(email, "login", "failure", {
+            role,
+            error: "Profile creation failed",
+          });
+          return {
+            error: {
+              message:
+                "Não foi possível criar ou recuperar o perfil de usuário. Tente novamente ou contate o suporte.",
+            },
+          };
         }
 
         if (!profileData.is_active) {
-          await logAuthAttempt(email, 'login', 'failure', { role, error: 'Account deactivated' });
-          return { error: { message: 'Sua conta está desativada. Contate o Administrador.' } };
+          await logAuthAttempt(email, "login", "failure", {
+            role,
+            error: "Account deactivated",
+          });
+          return {
+            error: {
+              message: "Sua conta está desativada. Contate o Administrador.",
+            },
+          };
         }
 
-        if (role === 'ADMIN' && profileData.role !== 'ADMIN') {
-          await logAuthAttempt(email, 'login', 'failure', { role, error: 'Insufficient privileges' });
-          return { error: { message: 'Sua conta não possui o perfil Administrador. Tente "Entrar como Escritório" ou contate o responsável.' } };
+        if (role === "ADMIN" && profileData.role !== "ADMIN") {
+          await logAuthAttempt(email, "login", "failure", {
+            role,
+            error: "Insufficient privileges",
+          });
+          return {
+            error: {
+              message:
+                'Sua conta não possui o perfil Administrador. Tente "Entrar como Escritório" ou contate o responsável.',
+            },
+          };
         }
 
-        await logAuthAttempt(email, 'login', 'success', { role, user_role: profileData.role });
+        await logAuthAttempt(email, "login", "success", {
+          role,
+          user_role: profileData.role,
+        });
         setProfile(profileData);
       }
 
       return { error: null };
     } catch (error: any) {
-      await logAuthAttempt(email, 'login', 'failure', { role, error: error.message });
+      await logAuthAttempt(email, "login", "failure", {
+        role,
+        error: error.message,
+      });
       return { error };
     } finally {
       setLoading(false);
     }
   };
 
-  const signUp = async (email: string, password: string, name?: string, orgCode?: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    name?: string,
+    orgCode?: string,
+  ) => {
     try {
       setLoading(true);
       // Redirect users back to the login page with a confirmation flag
@@ -422,9 +511,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
-        await logAuthAttempt(email, 'signup', 'failure', { error: error.message });
-        if (error.message.includes('User already registered')) {
-          return { error: { message: 'E-mail já cadastrado. Faça login.' } };
+        await logAuthAttempt(email, "signup", "failure", {
+          error: error.message,
+        });
+        if (error.message.includes("User already registered")) {
+          return { error: { message: "E-mail já cadastrado. Faça login." } };
         }
         return { error };
       }
@@ -432,35 +523,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let orgId: string | undefined;
       if (orgCode) {
         const { data: orgData, error: orgError } = await supabase
-          .from('organizations')
-          .select('id')
-          .eq('code', orgCode)
+          .from("organizations")
+          .select("id")
+          .eq("code", orgCode)
           .maybeSingle(); // Use maybeSingle() to avoid coercion errors
 
         if (orgError || !orgData) {
-          await logAuthAttempt(email, 'signup', 'failure', { orgCode, error: 'Invalid org code' });
-          return { error: { message: 'Código da organização não encontrado.' } };
+          await logAuthAttempt(email, "signup", "failure", {
+            orgCode,
+            error: "Invalid org code",
+          });
+          return {
+            error: { message: "Código da organização não encontrado." },
+          };
         }
         orgId = orgData.id;
       }
 
       if (data.user) {
         try {
-          await ensureProfile(data.user, 'VIEWER', orgId);
-          await logAuthAttempt(email, 'signup', 'success', {});
+          await ensureProfile(data.user, "VIEWER", orgId);
+          await logAuthAttempt(email, "signup", "success", {});
         } catch (profileError) {
-          console.error('Profile creation error during signup:', profileError);
-          await logAuthAttempt(email, 'signup', 'partial_success', { 
-            message: 'User created but profile creation failed' 
+          console.error("Profile creation error during signup:", profileError);
+          await logAuthAttempt(email, "signup", "partial_success", {
+            message: "User created but profile creation failed",
           });
           // Don't fail the signup completely if profile creation fails
         }
       } else {
-        await logAuthAttempt(email, 'signup', 'success', {});
+        await logAuthAttempt(email, "signup", "success", {});
       }
       return { error: null };
     } catch (error: any) {
-      await logAuthAttempt(email, 'signup', 'failure', { error: error.message });
+      await logAuthAttempt(email, "signup", "failure", {
+        error: error.message,
+      });
       return { error };
     } finally {
       setLoading(false);
@@ -474,9 +572,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProfile(null);
       setSession(null);
       setIsSuperAdmin(false);
-      sessionStorage.removeItem('mfa_verified');
+      sessionStorage.removeItem("mfa_verified");
     } catch (error) {
-      logError('Error signing out', { error }, 'useAuth');
+      logError("Error signing out", { error }, "useAuth");
     }
   };
 
@@ -484,7 +582,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { siteUrl } = getEnv();
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${siteUrl}/reset-password`
+        redirectTo: `${siteUrl}/reset-password`,
       });
       return { error };
     } catch (error: any) {
@@ -494,15 +592,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const hasRole = (role: UserRole): boolean => {
     if (!profile || !profile.organization_id) return false;
-    
+
     // ✅ Use roles array from members as source of truth
-    const orgRole = profile.roles?.find(r => r.org_id === profile.organization_id);
+    const orgRole = profile.roles?.find(
+      (r) => r.org_id === profile.organization_id,
+    );
     return orgRole?.role === role;
   };
 
-  const isAdmin = profile?.roles?.some(
-    r => r.org_id === profile.organization_id && r.role === 'ADMIN'
-  ) ?? false;
+  const isAdmin =
+    profile?.roles?.some(
+      (r) => r.org_id === profile.organization_id && r.role === "ADMIN",
+    ) ?? false;
 
   const value: AuthContextType = {
     user,

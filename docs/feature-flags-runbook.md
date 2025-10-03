@@ -21,11 +21,11 @@ The `scripts/seed-flags.js` script contains an array of flags similar to:
 ```js
 const FLAGS = [
   {
-    id: '8e7b21bf-5024-4a0f-80bd-0cb2d040b59e',
-    flag: 'beta-dashboard',
+    id: "8e7b21bf-5024-4a0f-80bd-0cb2d040b59e",
+    flag: "beta-dashboard",
     enabled: false,
     rollout_percentage: 0,
-    environments: ['development', 'staging'],
+    environments: ["development", "staging"],
   },
 ];
 ```

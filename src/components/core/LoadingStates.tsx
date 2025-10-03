@@ -1,17 +1,20 @@
-import React from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import React from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 // Generic loading spinner
-export function LoadingSpinner({ size = 'default', className = '' }: { 
-  size?: 'sm' | 'default' | 'lg';
+export function LoadingSpinner({
+  size = "default",
+  className = "",
+}: {
+  size?: "sm" | "default" | "lg";
   className?: string;
 }) {
   const sizeClasses = {
-    sm: 'w-4 h-4',
-    default: 'w-6 h-6', 
-    lg: 'w-8 h-8'
+    sm: "w-4 h-4",
+    default: "w-6 h-6",
+    lg: "w-8 h-8",
   };
 
   return (
@@ -20,7 +23,11 @@ export function LoadingSpinner({ size = 'default', className = '' }: {
 }
 
 // Full page loading
-export function PageLoading({ message = 'Carregando...' }: { message?: string }) {
+export function PageLoading({
+  message = "Carregando...",
+}: {
+  message?: string;
+}) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-subtle">
       <div className="text-center space-y-4">
@@ -31,8 +38,14 @@ export function PageLoading({ message = 'Carregando...' }: { message?: string })
           <h3 className="text-lg font-semibold">{message}</h3>
           <div className="flex space-x-1 justify-center">
             <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div
+              className="w-2 h-2 bg-primary rounded-full animate-bounce"
+              style={{ animationDelay: "0.1s" }}
+            ></div>
+            <div
+              className="w-2 h-2 bg-primary rounded-full animate-bounce"
+              style={{ animationDelay: "0.2s" }}
+            ></div>
           </div>
         </div>
       </div>
@@ -45,11 +58,16 @@ export function MessageSkeleton() {
   return (
     <div className="space-y-4">
       {[...Array(3)].map((_, i) => (
-        <div key={i} className={`flex gap-4 ${i % 2 === 0 ? '' : 'flex-row-reverse'}`}>
+        <div
+          key={i}
+          className={`flex gap-4 ${i % 2 === 0 ? "" : "flex-row-reverse"}`}
+        >
           <Skeleton className="w-8 h-8 rounded-full" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-24" />
-            <div className={`p-4 rounded-lg ${i % 2 === 0 ? 'bg-card' : 'bg-primary/10'}`}>
+            <div
+              className={`p-4 rounded-lg ${i % 2 === 0 ? "bg-card" : "bg-primary/10"}`}
+            >
               <Skeleton className="h-4 w-full mb-2" />
               <Skeleton className="h-4 w-3/4 mb-2" />
               <Skeleton className="h-4 w-1/2" />
@@ -119,7 +137,13 @@ export function DataCardSkeleton() {
 }
 
 // Table loading skeleton
-export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
+export function TableSkeleton({
+  rows = 5,
+  cols = 4,
+}: {
+  rows?: number;
+  cols?: number;
+}) {
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -128,7 +152,7 @@ export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
           <Skeleton key={i} className="h-6 flex-1" />
         ))}
       </div>
-      
+
       {/* Rows */}
       {[...Array(rows)].map((_, rowIndex) => (
         <div key={rowIndex} className="flex gap-4">
@@ -142,7 +166,18 @@ export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
 }
 
 // Inline loading for buttons
-export function ButtonLoading({ children, isLoading, ...props }: any) {
+import { ButtonHTMLAttributes, ReactNode } from "react";
+
+interface ButtonLoadingProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  children: ReactNode;
+  isLoading: boolean;
+}
+
+export function ButtonLoading({
+  children,
+  isLoading,
+  ...props
+}: ButtonLoadingProps) {
   return (
     <button disabled={isLoading} {...props}>
       {isLoading && <LoadingSpinner size="sm" className="mr-2" />}

@@ -1,14 +1,14 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProcessosExplorer } from '@/components/admin/processos/ProcessosExplorer';
-import { AssistJurUploadWizard } from '@/components/assistjur/AssistJurUploadWizard';
-import { ReviewUpdateButton } from '@/components/admin/ReviewUpdateButton';
-import { BarChart3, FileSpreadsheet, RefreshCw, Upload } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ProcessosExplorer } from "@/components/admin/processos/ProcessosExplorer";
+import { AssistJurUploadWizard } from "@/components/assistjur/AssistJurUploadWizard";
+import { ReviewUpdateButton } from "@/components/admin/ReviewUpdateButton";
+import { BarChart3, FileSpreadsheet, RefreshCw, Upload } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function AssistJur() {
-  const { } = useAuth();
+  const {} = useAuth();
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -17,13 +17,12 @@ export default function AssistJur() {
         <div>
           <h1 className="text-3xl font-bold">AssistJur.IA</h1>
           <p className="text-muted-foreground mt-1">
-            Pipeline de análise inteligente de testemunhas e detecção de padrões suspeitos
+            Pipeline de análise inteligente de testemunhas e detecção de padrões
+            suspeitos
           </p>
         </div>
         <div className="flex gap-2">
-          <ReviewUpdateButton 
-            orgId="current-org-id"
-          />
+          <ReviewUpdateButton orgId="current-org-id" />
         </div>
       </div>
 
@@ -101,11 +100,11 @@ export default function AssistJur() {
           <TabsTrigger value="dados">Dados Processados</TabsTrigger>
           <TabsTrigger value="upload">Importar Excel</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="dados">
           <ProcessosExplorer />
         </TabsContent>
-        
+
         <TabsContent value="upload">
           <AssistJurUploadWizard />
         </TabsContent>
@@ -115,7 +114,9 @@ export default function AssistJur() {
       <Card className="bg-muted/30">
         <CardContent className="pt-6">
           <div className="text-sm text-muted-foreground">
-            <h4 className="font-medium mb-2">Pipeline AssistJur.IA - Funcionalidades:</h4>
+            <h4 className="font-medium mb-2">
+              Pipeline AssistJur.IA - Funcionalidades:
+            </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <strong>ETL & Validação:</strong>
@@ -129,7 +130,7 @@ export default function AssistJur() {
               <div>
                 <strong>Engine Analítico:</strong>
                 <ul className="mt-1 space-y-1">
-              <li>• Detecção de triangulação A-B-C-A</li>
+                  <li>• Detecção de triangulação A-B-C-A</li>
                   <li>• Análise de troca direta recíproca</li>
                   <li>• Identificação de duplo papel</li>
                   <li>• Prova emprestada (mais de 10 depoimentos)</li>
@@ -137,8 +138,9 @@ export default function AssistJur() {
               </div>
             </div>
             <p className="mt-4 text-xs bg-warning/10 p-2 rounded border-l-4 border-warning">
-              <strong>LGPD:</strong> Todos os dados são mascarados conforme políticas RLS. 
-              CPFs nunca são exibidos completos. Validação nos autos é sempre obrigatória.
+              <strong>LGPD:</strong> Todos os dados são mascarados conforme
+              políticas RLS. CPFs nunca são exibidos completos. Validação nos
+              autos é sempre obrigatória.
             </p>
           </div>
         </CardContent>

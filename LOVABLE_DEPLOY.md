@@ -21,6 +21,7 @@ npm run preview
 ```
 
 **Validações:**
+
 - ✅ Build completa sem erros críticos (TS6310 é cosmético)
 - ✅ `dist/index.html` e `dist/404.html` existem
 - ✅ Preview funciona em `http://localhost:4173`
@@ -31,6 +32,7 @@ npm run preview
 Acesse **Settings → Environment Variables** e adicione:
 
 #### Obrigatórias
+
 ```
 VITE_SUPABASE_URL=https://seu-projeto.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGc...sua-chave-anon
@@ -38,6 +40,7 @@ VITE_PUBLIC_SITE_URL=https://seu-site.lovable.app
 ```
 
 #### Opcionais (mas recomendadas)
+
 ```
 VITE_SENTRY_DSN=https://...@sentry.io/...
 VITE_INACTIVITY_TIMEOUT_MINUTES=30
@@ -50,15 +53,19 @@ VITE_ALLOWED_ORIGINS=https://seu-site.lovable.app
 ### 3. Validar Supabase
 
 #### RLS Policies
+
 Garanta que todas as tabelas sensíveis têm RLS ativo:
+
 ```sql
-SELECT tablename, rowsecurity 
-FROM pg_tables 
+SELECT tablename, rowsecurity
+FROM pg_tables
 WHERE schemaname = 'public' AND rowsecurity = false;
 ```
 
 #### CORS em Edge Functions
+
 Configure o secret `ALLOWED_ORIGINS` no Supabase:
+
 ```
 ALLOWED_ORIGINS=https://assistjur.com.br,https://*.lovable.app
 ```
@@ -104,12 +111,14 @@ ls -la dist/
 ### Página em branco após deploy
 
 **Causas comuns:**
+
 1. **Variáveis ENV faltando** → Verifique Settings → Environment Variables
 2. **Base path incorreto** → Confirme `base: '/'` no `vite.config.ts`
 3. **404.html ausente** → Verifique `dist/404.html` existe após build
 4. **CORS bloqueando API** → Configure `ALLOWED_ORIGINS` no Supabase
 
 **Debug:**
+
 ```bash
 # Console do navegador (F12)
 # Procure por erros de:
@@ -131,11 +140,13 @@ cat dist/404.html  # Deve ser idêntico ao index.html
 ### API calls falham (401/403)
 
 **Causas:**
+
 1. **RLS bloqueando** → Valide policies no Supabase
 2. **JWT inválido** → Verifique login do usuário
 3. **CORS bloqueado** → Configure `ALLOWED_ORIGINS`
 
 **Teste direto:**
+
 ```bash
 curl -X POST "https://seu-projeto.supabase.co/functions/v1/sua-function" \
   -H "Authorization: Bearer seu-jwt" \
@@ -152,6 +163,7 @@ curl -X POST "https://seu-projeto.supabase.co/functions/v1/sua-function" \
 Supabase Dashboard → Edge Functions → Logs
 
 Filtre por:
+
 - Erros 5xx (server errors)
 - Latência > 2s
 - CORS errors
@@ -159,11 +171,13 @@ Filtre por:
 ### Core Web Vitals
 
 Use Lighthouse ou PageSpeed Insights:
+
 ```bash
 npm run lh -- --url=https://seu-site.lovable.app
 ```
 
 Métricas alvo:
+
 - LCP < 2.5s
 - FID < 100ms
 - CLS < 0.1
@@ -200,6 +214,7 @@ Este projeto usa `"type": "module"` no `package.json`:
 - [Vite Docs](https://vitejs.dev/)
 
 Em caso de problemas persistentes, abra issue no repositório com:
+
 - Logs do console (F12)
 - Resposta do Network (XHR)
 - Passos para reproduzir

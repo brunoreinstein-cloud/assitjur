@@ -1,11 +1,16 @@
-import React from 'react';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertCircle, Clock, Database } from 'lucide-react';
+import React from "react";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle, AlertCircle, Clock, Database } from "lucide-react";
 
 interface ImportProgressMonitorProps {
   progress: number;
-  stage: 'validating' | 'creating-version' | 'importing' | 'publishing' | 'completed';
+  stage:
+    | "validating"
+    | "creating-version"
+    | "importing"
+    | "publishing"
+    | "completed";
   stats?: {
     total?: number;
     processed?: number;
@@ -14,44 +19,48 @@ interface ImportProgressMonitorProps {
   };
 }
 
-export function ImportProgressMonitor({ progress, stage, stats = {} }: ImportProgressMonitorProps) {
+export function ImportProgressMonitor({
+  progress,
+  stage,
+  stats = {},
+}: ImportProgressMonitorProps) {
   const getStageInfo = () => {
     switch (stage) {
-      case 'validating':
+      case "validating":
         return {
-          title: 'Validando dados',
-          description: 'Verificando estrutura e qualidade dos dados',
-          icon: <AlertCircle className="h-4 w-4 text-warning" />
+          title: "Validando dados",
+          description: "Verificando estrutura e qualidade dos dados",
+          icon: <AlertCircle className="h-4 w-4 text-warning" />,
         };
-      case 'creating-version':
+      case "creating-version":
         return {
-          title: 'Criando nova versão',
-          description: 'Preparando ambiente para importação',
-          icon: <Database className="h-4 w-4 text-primary" />
+          title: "Criando nova versão",
+          description: "Preparando ambiente para importação",
+          icon: <Database className="h-4 w-4 text-primary" />,
         };
-      case 'importing':
+      case "importing":
         return {
-          title: 'Importando dados',
-          description: 'Processando e salvando registros na base de dados',
-          icon: <Clock className="h-4 w-4 text-primary animate-spin" />
+          title: "Importando dados",
+          description: "Processando e salvando registros na base de dados",
+          icon: <Clock className="h-4 w-4 text-primary animate-spin" />,
         };
-      case 'publishing':
+      case "publishing":
         return {
-          title: 'Publicando versão',
-          description: 'Ativando nova versão da base de dados',
-          icon: <CheckCircle className="h-4 w-4 text-success" />
+          title: "Publicando versão",
+          description: "Ativando nova versão da base de dados",
+          icon: <CheckCircle className="h-4 w-4 text-success" />,
         };
-      case 'completed':
+      case "completed":
         return {
-          title: 'Importação concluída',
-          description: 'Todos os dados foram processados com sucesso',
-          icon: <CheckCircle className="h-4 w-4 text-success" />
+          title: "Importação concluída",
+          description: "Todos os dados foram processados com sucesso",
+          icon: <CheckCircle className="h-4 w-4 text-success" />,
         };
       default:
         return {
-          title: 'Processando...',
-          description: 'Aguarde',
-          icon: <Clock className="h-4 w-4 text-muted-foreground" />
+          title: "Processando...",
+          description: "Aguarde",
+          icon: <Clock className="h-4 w-4 text-muted-foreground" />,
         };
     }
   };
@@ -64,7 +73,9 @@ export function ImportProgressMonitor({ progress, stage, stats = {} }: ImportPro
         {stageInfo.icon}
         <div className="flex-1">
           <h4 className="font-medium">{stageInfo.title}</h4>
-          <p className="text-sm text-muted-foreground">{stageInfo.description}</p>
+          <p className="text-sm text-muted-foreground">
+            {stageInfo.description}
+          </p>
         </div>
         <Badge variant={progress === 100 ? "default" : "secondary"}>
           {Math.round(progress)}%
@@ -83,28 +94,35 @@ export function ImportProgressMonitor({ progress, stage, stats = {} }: ImportPro
           )}
           {stats.processed && (
             <div className="bg-success/10 p-2 rounded text-center border border-success/20">
-              <div className="font-medium text-success">{stats.processed.toLocaleString()}</div>
+              <div className="font-medium text-success">
+                {stats.processed.toLocaleString()}
+              </div>
               <div className="text-xs text-success/80">Processados</div>
             </div>
           )}
           {stats.errors !== undefined && (
             <div className="bg-destructive/10 p-2 rounded text-center border border-destructive/20">
-              <div className="font-medium text-destructive">{stats.errors.toLocaleString()}</div>
+              <div className="font-medium text-destructive">
+                {stats.errors.toLocaleString()}
+              </div>
               <div className="text-xs text-destructive/80">Erros</div>
             </div>
           )}
           {stats.warnings !== undefined && (
             <div className="bg-warning/10 p-2 rounded text-center border border-warning/20">
-              <div className="font-medium text-warning">{stats.warnings.toLocaleString()}</div>
+              <div className="font-medium text-warning">
+                {stats.warnings.toLocaleString()}
+              </div>
               <div className="text-xs text-warning/80">Avisos</div>
             </div>
           )}
         </div>
       )}
 
-      {stage === 'importing' && stats.processed && stats.total && (
+      {stage === "importing" && stats.processed && stats.total && (
         <div className="text-xs text-muted-foreground text-center">
-          Processando registros... ({stats.processed.toLocaleString()} de {stats.total.toLocaleString()})
+          Processando registros... ({stats.processed.toLocaleString()} de{" "}
+          {stats.total.toLocaleString()})
         </div>
       )}
     </div>

@@ -7,7 +7,9 @@ interface DatabaseCleanupButtonProps {
   className?: string;
 }
 
-export function DatabaseCleanupButton({ className }: DatabaseCleanupButtonProps) {
+export function DatabaseCleanupButton({
+  className,
+}: DatabaseCleanupButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -22,10 +24,7 @@ export function DatabaseCleanupButton({ className }: DatabaseCleanupButtonProps)
         Limpar Base
       </Button>
 
-      <CleanupModal 
-        open={isModalOpen} 
-        onOpenChange={setIsModalOpen} 
-      />
+      <CleanupModal open={isModalOpen} onOpenChange={setIsModalOpen} />
     </>
   );
 }

@@ -3,41 +3,48 @@
 ## ✅ Critical Security Issues Fixed
 
 ### 1. **Financial Data Protection**
+
 - **Issue**: Financial tables (cogs_monthly, invoices, opex_monthly) were publicly accessible
 - **Fix**: Added RLS policies restricting access to super admins only (ADMIN role + FULL data access)
 - **Impact**: Prevents unauthorized access to sensitive financial information
 
 ### 2. **RLS Policy Cleanup**
+
 - **Issue**: 28+ overlapping and conflicting RLS policies on `processos` table created security vulnerabilities
 - **Fix**: Removed redundant policies, kept only essential: `processos_admin_full_access` and `processos_authorized_read_only`
 - **Impact**: Simplified security model, eliminated potential bypass vulnerabilities
 
 ### 3. **Audit Log Security**
+
 - **Issue**: Regular users could access their own audit logs
 - **Fix**: Restricted audit log access to super admins only
 - **Impact**: Prevents security log tampering and unauthorized monitoring
 
 ### 4. **Database Function Security**
+
 - **Issue**: Multiple functions missing `SET search_path = 'public'` protection
 - **Fix**: Updated all security definer functions with proper search path
 - **Functions fixed**: `sanitize_input`, `mask_name`, `can_access_sensitive_data`, `is_org_admin_simple`, `is_admin_simple`, `has_financial_access`, `get_current_user_profile`, `generate_invitation_token`, `get_next_version_number`, `get_mrr_by_month_secure`
 
 ### 5. **Password Policy Enhancement**
+
 - **Issue**: Weak password policy (6 characters minimum)
 - **Fix**: Strengthened to 12+ characters with complexity requirements:
   - At least 1 uppercase letter
-  - At least 1 lowercase letter  
+  - At least 1 lowercase letter
   - At least 1 number
   - At least 1 special character
 - **Impact**: Significantly improved account security
 
 ### 6. **CORS Security Hardening**
+
 - **Issue**: Wildcard CORS allowed requests from any origin
 - **Fix**: Implemented domain-specific CORS with allowed origins list
 - **Added headers**: Security headers including XSS protection, frame options, content type protection
 - **Impact**: Prevents cross-origin attacks and data exposure
 
 ### 7. **Staging Table Protection**
+
 - **Issue**: Staging tables missing RLS policies
 - **Fix**: Added organization-based access policies for `assistjur.por_processo_staging` and `assistjur.por_testemunha_staging`
 - **Impact**: Prevents cross-tenant data access in staging environment
@@ -69,5 +76,5 @@
 
 ---
 
-*Security fixes implemented: 2025-09-15*
-*Last security audit: 2025-09-15*
+_Security fixes implemented: 2025-09-15_
+_Last security audit: 2025-09-15_

@@ -1,55 +1,69 @@
-import { useState, useRef } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
-import { useToast } from '@/hooks/use-toast'
-import { VALIDATION_PATTERNS } from '@/utils/security'
-import { formatCNPJ, formatOAB } from '@/utils/inputMasks'
-import { Loader2 } from 'lucide-react'
+import { useState, useRef } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { useToast } from "@/hooks/use-toast";
+import { VALIDATION_PATTERNS } from "@/utils/security";
+import { formatCNPJ, formatOAB } from "@/utils/inputMasks";
+import { Loader2 } from "lucide-react";
 
 const schema = z.object({
-  cnpj: z.string().regex(VALIDATION_PATTERNS.CNPJ, 'CNPJ inválido'),
-  oab: z.string().regex(VALIDATION_PATTERNS.OAB, 'OAB inválida')
-})
+  cnpj: z.string().regex(VALIDATION_PATTERNS.CNPJ, "CNPJ inválido"),
+  oab: z.string().regex(VALIDATION_PATTERNS.OAB, "OAB inválida"),
+});
 
-type FormData = z.infer<typeof schema>
+type FormData = z.infer<typeof schema>;
 
 export function CnpjOabForm() {
-  const { toast } = useToast()
-  const [isPending, setIsPending] = useState(false)
-  const lastSubmitRef = useRef(0)
+  const { toast } = useToast();
+  const [isPending, setIsPending] = useState(false);
+  const lastSubmitRef = useRef(0);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { cnpj: '', oab: '' }
-  })
+    defaultValues: { cnpj: "", oab: "" },
+  });
 
   const onSubmit = async (data: FormData) => {
-    const now = Date.now()
-    if (now - lastSubmitRef.current < 1000) return
-    lastSubmitRef.current = now
-    setIsPending(true)
+    const now = Date.now();
+    if (now - lastSubmitRef.current < 1000) return;
+    lastSubmitRef.current = now;
+    setIsPending(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500))
-      toast({ title: 'Dados enviados', description: 'CNPJ e OAB salvos com sucesso.' })
-      form.reset()
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      toast({
+        title: "Dados enviados",
+        description: "CNPJ e OAB salvos com sucesso.",
+      });
+      form.reset();
     } catch (e) {
-      toast({ title: 'Erro ao enviar', description: 'Tente novamente.', variant: 'destructive' })
+      toast({
+        title: "Erro ao enviar",
+        description: "Tente novamente.",
+        variant: "destructive",
+      });
     } finally {
-      setIsPending(false)
+      setIsPending(false);
     }
-  }
+  };
 
   const handleCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    form.setValue('cnpj', formatCNPJ(e.target.value))
-  }
+    form.setValue("cnpj", formatCNPJ(e.target.value));
+  };
 
   const handleOABChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    form.setValue('oab', formatOAB(e.target.value))
-  }
+    form.setValue("oab", formatOAB(e.target.value));
+  };
 
   return (
     <Form {...form}>
@@ -61,7 +75,11 @@ export function CnpjOabForm() {
             <FormItem>
               <FormLabel>CNPJ</FormLabel>
               <FormControl>
-                <Input {...field} onChange={handleCNPJChange} disabled={isPending} />
+                <Input
+                  {...field}
+                  onChange={handleCNPJChange}
+                  disabled={isPending}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -74,7 +92,11 @@ export function CnpjOabForm() {
             <FormItem>
               <FormLabel>OAB</FormLabel>
               <FormControl>
-                <Input {...field} onChange={handleOABChange} disabled={isPending} />
+                <Input
+                  {...field}
+                  onChange={handleOABChange}
+                  disabled={isPending}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -86,5 +108,5 @@ export function CnpjOabForm() {
         </Button>
       </form>
     </Form>
-  )
+  );
 }

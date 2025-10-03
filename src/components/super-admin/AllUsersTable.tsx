@@ -1,16 +1,29 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Users } from 'lucide-react';
-import { UserActionsMenu } from './UserActionsMenu';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Search, Users } from "lucide-react";
+import { UserActionsMenu } from "./UserActionsMenu";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface UserSummary {
   user_id: string;
@@ -27,46 +40,51 @@ interface UserSummary {
 }
 
 export function AllUsersTable() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const { data: users, isLoading, refetch } = useQuery({
-    queryKey: ['all-users'],
+  const {
+    data: users,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["all-users"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_all_users_summary');
+      const { data, error } = await supabase.rpc("get_all_users_summary");
       if (error) throw error;
       return data as UserSummary[];
     },
   });
 
-  const filteredUsers = users?.filter(user => {
-    const matchesSearch = 
+  const filteredUsers = users?.filter((user) => {
+    const matchesSearch =
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.organization_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-    const matchesStatus = statusFilter === 'all' || 
-      (statusFilter === 'active' && user.is_active) ||
-      (statusFilter === 'inactive' && !user.is_active);
+
+    const matchesRole = roleFilter === "all" || user.role === roleFilter;
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "active" && user.is_active) ||
+      (statusFilter === "inactive" && !user.is_active);
 
     return matchesSearch && matchesRole && matchesStatus;
   });
 
   const getRoleBadge = (role: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'outline'> = {
-      ADMIN: 'default',
-      ANALYST: 'secondary',
-      VIEWER: 'outline',
+    const variants: Record<string, "default" | "secondary" | "outline"> = {
+      ADMIN: "default",
+      ANALYST: "secondary",
+      VIEWER: "outline",
     };
-    return <Badge variant={variants[role] || 'outline'}>{role}</Badge>;
+    return <Badge variant={variants[role] || "outline"}>{role}</Badge>;
   };
 
   const getStatusBadge = (isActive: boolean) => {
     return (
-      <Badge variant={isActive ? 'default' : 'destructive'}>
-        {isActive ? 'Ativo' : 'Inativo'}
+      <Badge variant={isActive ? "default" : "destructive"}>
+        {isActive ? "Ativo" : "Inativo"}
       </Badge>
     );
   };
@@ -155,26 +173,37 @@ export function AllUsersTable() {
               <TableBody>
                 {filteredUsers?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableCell
+                      colSpan={7}
+                      className="text-center py-8 text-muted-foreground"
+                    >
                       Nenhum usuário encontrado
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredUsers?.map((user) => (
                     <TableRow key={user.user_id}>
-                      <TableCell className="font-medium">{user.email}</TableCell>
-                      <TableCell>{user.full_name || '—'}</TableCell>
+                      <TableCell className="font-medium">
+                        {user.email}
+                      </TableCell>
+                      <TableCell>{user.full_name || "—"}</TableCell>
                       <TableCell>
                         {user.organization_name || (
-                          <span className="text-muted-foreground italic">Sem organização</span>
+                          <span className="text-muted-foreground italic">
+                            Sem organização
+                          </span>
                         )}
                       </TableCell>
                       <TableCell>{getRoleBadge(user.role)}</TableCell>
                       <TableCell>{getStatusBadge(user.is_active)}</TableCell>
                       <TableCell>
                         {user.last_login_at
-                          ? format(new Date(user.last_login_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
-                          : '—'}
+                          ? format(
+                              new Date(user.last_login_at),
+                              "dd/MM/yyyy 'às' HH:mm",
+                              { locale: ptBR },
+                            )
+                          : "—"}
                       </TableCell>
                       <TableCell>
                         <UserActionsMenu user={user} onSuccess={refetch} />

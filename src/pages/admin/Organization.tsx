@@ -1,19 +1,25 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { 
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { 
+} from "@/components/ui/table";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -21,31 +27,31 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { 
+} from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { 
-  Users, 
-  Plus, 
-  Settings, 
-  Mail, 
+} from "@/components/ui/select";
+import {
+  Users,
+  Plus,
+  Settings,
+  Mail,
   UserCheck,
   UserX,
   Shield,
   Loader2,
   Search,
-  Filter
-} from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import RoleChangeModal from '@/components/admin/RoleChangeModal';
-import ConfirmActionModal from '@/components/admin/ConfirmActionModal';
+  Filter,
+} from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import RoleChangeModal from "@/components/admin/RoleChangeModal";
+import ConfirmActionModal from "@/components/admin/ConfirmActionModal";
 
 interface OrganizationData {
   id: string;
@@ -61,8 +67,8 @@ interface UserProfile {
   id: string;
   user_id: string;
   email: string;
-  role: 'ADMIN' | 'ANALYST' | 'VIEWER';
-  data_access_level: 'FULL' | 'MASKED' | 'NONE';
+  role: "ADMIN" | "ANALYST" | "VIEWER";
+  data_access_level: "FULL" | "MASKED" | "NONE";
   is_active: boolean;
   created_at: string;
   last_login_at?: string;
@@ -71,25 +77,35 @@ interface UserProfile {
 const Organization = () => {
   const { profile } = useAuth();
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<'ADMIN' | 'ANALYST' | 'VIEWER'>('VIEWER');
-  const [inviteDataAccess, setInviteDataAccess] = useState<'FULL' | 'MASKED' | 'NONE'>('NONE');
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"ADMIN" | "ANALYST" | "VIEWER">(
+    "VIEWER",
+  );
+  const [inviteDataAccess, setInviteDataAccess] = useState<
+    "FULL" | "MASKED" | "NONE"
+  >("NONE");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [orgData, setOrgData] = useState<OrganizationData | null>(null);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [roleFilter, setRoleFilter] = useState<'all' | 'ADMIN' | 'ANALYST' | 'VIEWER'>('all');
-  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "inactive"
+  >("all");
+  const [roleFilter, setRoleFilter] = useState<
+    "all" | "ADMIN" | "ANALYST" | "VIEWER"
+  >("all");
+
   // Modal states
-  const [roleChangeUser, setRoleChangeUser] = useState<UserProfile | null>(null);
+  const [roleChangeUser, setRoleChangeUser] = useState<UserProfile | null>(
+    null,
+  );
   const [isRoleChangeModalOpen, setIsRoleChangeModalOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{
     user: UserProfile;
-    action: 'activate' | 'deactivate' | 'delete';
+    action: "activate" | "deactivate" | "delete";
     title: string;
     description: string;
   } | null>(null);
@@ -104,9 +120,9 @@ const Organization = () => {
   const fetchOrganizationData = async () => {
     try {
       const { data, error } = await supabase
-        .from('organizations')
-        .select('*')
-        .eq('id', profile?.organization_id)
+        .from("organizations")
+        .select("*")
+        .eq("id", profile?.organization_id)
         .single();
 
       if (error) throw error;
@@ -115,7 +131,7 @@ const Organization = () => {
       toast({
         title: "Erro",
         description: "Não foi possível carregar dados da organização",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -125,10 +141,10 @@ const Organization = () => {
   const fetchUsers = async () => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('organization_id', profile?.organization_id)
-        .order('created_at', { ascending: false });
+        .from("profiles")
+        .select("*")
+        .eq("organization_id", profile?.organization_id)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setUsers(data || []);
@@ -137,7 +153,7 @@ const Organization = () => {
       toast({
         title: "Erro",
         description: "Não foi possível carregar usuários",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -147,20 +163,21 @@ const Organization = () => {
     let filtered = users;
 
     if (searchTerm) {
-      filtered = filtered.filter(user =>
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.user_id.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (user) =>
+          user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.user_id.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(user =>
-        statusFilter === 'active' ? user.is_active : !user.is_active
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((user) =>
+        statusFilter === "active" ? user.is_active : !user.is_active,
       );
     }
 
-    if (roleFilter !== 'all') {
-      filtered = filtered.filter(user => user.role === roleFilter);
+    if (roleFilter !== "all") {
+      filtered = filtered.filter((user) => user.role === roleFilter);
     }
 
     setFilteredUsers(filtered);
@@ -168,11 +185,11 @@ const Organization = () => {
 
   const handleSaveOrganization = async () => {
     if (!orgData || !profile?.organization_id) return;
-    
+
     setSaving(true);
     try {
       const { error } = await supabase
-        .from('organizations')
+        .from("organizations")
         .update({
           name: orgData.name,
           domain: orgData.domain,
@@ -180,7 +197,7 @@ const Organization = () => {
           export_limit: orgData.export_limit,
           retention_months: orgData.retention_months,
         })
-        .eq('id', profile.organization_id);
+        .eq("id", profile.organization_id);
 
       if (error) throw error;
 
@@ -192,7 +209,7 @@ const Organization = () => {
       toast({
         title: "Erro",
         description: "Não foi possível salvar os dados",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setSaving(false);
@@ -201,30 +218,33 @@ const Organization = () => {
 
   const handleInviteUser = async () => {
     if (!inviteEmail || !profile?.organization_id) return;
-    
+
     setActionLoading(true);
     try {
       // Validate domain if set
       if (orgData?.domain) {
-        const emailDomain = inviteEmail.split('@')[1];
+        const emailDomain = inviteEmail.split("@")[1];
         if (emailDomain !== orgData.domain) {
           toast({
             title: "Erro",
             description: `E-mail deve ser do domínio ${orgData.domain}`,
-            variant: "destructive"
+            variant: "destructive",
           });
           return;
         }
       }
 
-      const { data, error } = await supabase.functions.invoke('user-invitations', {
-        body: {
-          email: inviteEmail,
-          role: inviteRole,
-          data_access_level: inviteDataAccess,
-          org_id: profile.organization_id
-        }
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "user-invitations",
+        {
+          body: {
+            email: inviteEmail,
+            role: inviteRole,
+            data_access_level: inviteDataAccess,
+            org_id: profile.organization_id,
+          },
+        },
+      );
 
       if (error) throw error;
 
@@ -232,31 +252,37 @@ const Organization = () => {
         title: "Convite enviado",
         description: `Convite enviado para ${inviteEmail} com perfil ${inviteRole}`,
       });
-      
+
       setIsInviteDialogOpen(false);
-      setInviteEmail('');
-      setInviteRole('VIEWER');
-      setInviteDataAccess('NONE');
+      setInviteEmail("");
+      setInviteRole("VIEWER");
+      setInviteDataAccess("NONE");
     } catch (error: any) {
       toast({
         title: "Erro",
         description: error.message || "Não foi possível enviar o convite",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleUserAction = async (action: 'activate' | 'deactivate' | 'delete', userId: string) => {
+  const handleUserAction = async (
+    action: "activate" | "deactivate" | "delete",
+    userId: string,
+  ) => {
     setActionLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('manage-user-roles', {
-        body: {
-          action,
-          user_id: userId
-        }
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "manage-user-roles",
+        {
+          body: {
+            action,
+            user_id: userId,
+          },
+        },
+      );
 
       if (error) throw error;
 
@@ -271,7 +297,7 @@ const Organization = () => {
       toast({
         title: "Erro",
         description: error.message || "Não foi possível executar a ação",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setActionLoading(false);
@@ -279,17 +305,24 @@ const Organization = () => {
     }
   };
 
-  const handleRoleChange = async (userId: string, role: 'ADMIN' | 'ANALYST' | 'VIEWER', dataAccessLevel: 'FULL' | 'MASKED' | 'NONE') => {
+  const handleRoleChange = async (
+    userId: string,
+    role: "ADMIN" | "ANALYST" | "VIEWER",
+    dataAccessLevel: "FULL" | "MASKED" | "NONE",
+  ) => {
     setActionLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('manage-user-roles', {
-        body: {
-          action: 'change_role',
-          user_id: userId,
-          role,
-          data_access_level: dataAccessLevel
-        }
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "manage-user-roles",
+        {
+          body: {
+            action: "change_role",
+            user_id: userId,
+            role,
+            data_access_level: dataAccessLevel,
+          },
+        },
+      );
 
       if (error) throw error;
 
@@ -304,33 +337,36 @@ const Organization = () => {
       toast({
         title: "Erro",
         description: error.message || "Não foi possível alterar o papel",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setActionLoading(false);
     }
   };
 
-  const openConfirmAction = (user: UserProfile, action: 'activate' | 'deactivate' | 'delete') => {
+  const openConfirmAction = (
+    user: UserProfile,
+    action: "activate" | "deactivate" | "delete",
+  ) => {
     const actionTexts = {
       activate: {
-        title: 'Ativar Usuário',
-        description: `Tem certeza que deseja ativar o usuário ${user.email}? Ele poderá acessar o sistema novamente.`
+        title: "Ativar Usuário",
+        description: `Tem certeza que deseja ativar o usuário ${user.email}? Ele poderá acessar o sistema novamente.`,
       },
       deactivate: {
-        title: 'Desativar Usuário',
-        description: `Tem certeza que deseja desativar o usuário ${user.email}? Ele perderá acesso ao sistema.`
+        title: "Desativar Usuário",
+        description: `Tem certeza que deseja desativar o usuário ${user.email}? Ele perderá acesso ao sistema.`,
       },
       delete: {
-        title: 'Revogar Acesso',
-        description: `Tem certeza que deseja revogar completamente o acesso de ${user.email}? Esta ação não pode ser desfeita.`
-      }
+        title: "Revogar Acesso",
+        description: `Tem certeza que deseja revogar completamente o acesso de ${user.email}? Esta ação não pode ser desfeita.`,
+      },
     };
 
     setConfirmAction({
       user,
       action,
-      ...actionTexts[action]
+      ...actionTexts[action],
     });
   };
 
@@ -345,18 +381,26 @@ const Organization = () => {
   if (!orgData) {
     return (
       <div className="text-center py-8">
-        <p className="text-muted-foreground">Não foi possível carregar dados da organização</p>
+        <p className="text-muted-foreground">
+          Não foi possível carregar dados da organização
+        </p>
       </div>
     );
   }
 
   const getRoleBadge = (role: string) => {
     switch (role) {
-      case 'ADMIN':
-        return <Badge className="bg-destructive text-destructive-foreground">Admin</Badge>;
-      case 'ANALYST':
-        return <Badge className="bg-primary text-primary-foreground">Analista</Badge>;
-      case 'VIEWER':
+      case "ADMIN":
+        return (
+          <Badge className="bg-destructive text-destructive-foreground">
+            Admin
+          </Badge>
+        );
+      case "ANALYST":
+        return (
+          <Badge className="bg-primary text-primary-foreground">Analista</Badge>
+        );
+      case "VIEWER":
         return <Badge variant="secondary">Visualizador</Badge>;
       default:
         return <Badge variant="outline">{role}</Badge>;
@@ -365,7 +409,9 @@ const Organization = () => {
 
   const getStatusBadge = (isActive: boolean) => {
     if (isActive) {
-      return <Badge className="bg-success text-success-foreground">Ativo</Badge>;
+      return (
+        <Badge className="bg-success text-success-foreground">Ativo</Badge>
+      );
     } else {
       return <Badge variant="secondary">Inativo</Badge>;
     }
@@ -374,7 +420,9 @@ const Organization = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Organização & Acessos</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Organização & Acessos
+        </h1>
         <p className="text-muted-foreground">
           Gerencie dados da organização, usuários e políticas de acesso
         </p>
@@ -395,10 +443,12 @@ const Organization = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="orgName">Nome da Organização</Label>
-                <Input 
-                  id="orgName" 
-                  value={orgData.name} 
-                  onChange={(e) => setOrgData({...orgData, name: e.target.value})}
+                <Input
+                  id="orgName"
+                  value={orgData.name}
+                  onChange={(e) =>
+                    setOrgData({ ...orgData, name: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -406,29 +456,36 @@ const Organization = () => {
                 <Input id="orgCode" value={orgData.code} disabled />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="domain">Domínio Permitido</Label>
-              <Input 
-                id="domain" 
-                value={orgData.domain || ''} 
+              <Input
+                id="domain"
+                value={orgData.domain || ""}
                 placeholder="exemplo.com"
-                onChange={(e) => setOrgData({...orgData, domain: e.target.value})}
+                onChange={(e) =>
+                  setOrgData({ ...orgData, domain: e.target.value })
+                }
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="retention">Retenção de Dados (meses)</Label>
-              <Input 
-                id="retention" 
-                type="number" 
+              <Input
+                id="retention"
+                type="number"
                 value={orgData.retention_months}
-                onChange={(e) => setOrgData({...orgData, retention_months: parseInt(e.target.value)})}
+                onChange={(e) =>
+                  setOrgData({
+                    ...orgData,
+                    retention_months: parseInt(e.target.value),
+                  })
+                }
               />
             </div>
 
-            <Button 
-              className="w-full" 
+            <Button
+              className="w-full"
               onClick={handleSaveOrganization}
               disabled={saving}
             >
@@ -453,17 +510,21 @@ const Organization = () => {
                   Obrigatório para todos os usuários
                 </p>
               </div>
-              <Switch 
-                checked={orgData.require_2fa} 
-                onCheckedChange={(checked) => setOrgData({...orgData, require_2fa: checked})}
+              <Switch
+                checked={orgData.require_2fa}
+                onCheckedChange={(checked) =>
+                  setOrgData({ ...orgData, require_2fa: checked })
+                }
               />
             </div>
 
             <div className="space-y-2">
               <Label>Limite de Export</Label>
-              <Select 
+              <Select
                 value={orgData.export_limit}
-                onValueChange={(value) => setOrgData({...orgData, export_limit: value})}
+                onValueChange={(value) =>
+                  setOrgData({ ...orgData, export_limit: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -504,7 +565,10 @@ const Organization = () => {
               <Users className="h-5 w-5" />
               Usuários & Acessos
             </div>
-            <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
+            <Dialog
+              open={isInviteDialogOpen}
+              onOpenChange={setIsInviteDialogOpen}
+            >
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
@@ -529,48 +593,57 @@ const Organization = () => {
                       placeholder="usuario@exemplo.com"
                     />
                   </div>
-                   <div className="space-y-2">
-                     <Label>Papel Inicial</Label>
-                      <Select 
-                       value={inviteRole} 
-                       onValueChange={(value: 'ADMIN' | 'ANALYST' | 'VIEWER') => setInviteRole(value)}
-                     >
-                       <SelectTrigger>
-                         <SelectValue />
-                       </SelectTrigger>
-                       <SelectContent>
-                         <SelectItem value="VIEWER">Visualizador</SelectItem>
-                         <SelectItem value="ANALYST">Analista</SelectItem>
-                         <SelectItem value="ADMIN">Administrador</SelectItem>
-                       </SelectContent>
-                     </Select>
-                   </div>
-                   <div className="space-y-2">
-                     <Label>Nível de Acesso aos Dados</Label>
-                      <Select 
-                       value={inviteDataAccess} 
-                       onValueChange={(value: 'FULL' | 'MASKED' | 'NONE') => setInviteDataAccess(value)}
-                     >
-                       <SelectTrigger>
-                         <SelectValue />
-                       </SelectTrigger>
-                       <SelectContent>
-                         <SelectItem value="NONE">Sem Acesso</SelectItem>
-                         <SelectItem value="MASKED">Dados Mascarados</SelectItem>
-                         <SelectItem value="FULL">Acesso Completo</SelectItem>
-                       </SelectContent>
-                     </Select>
-                   </div>
+                  <div className="space-y-2">
+                    <Label>Papel Inicial</Label>
+                    <Select
+                      value={inviteRole}
+                      onValueChange={(value: "ADMIN" | "ANALYST" | "VIEWER") =>
+                        setInviteRole(value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="VIEWER">Visualizador</SelectItem>
+                        <SelectItem value="ANALYST">Analista</SelectItem>
+                        <SelectItem value="ADMIN">Administrador</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Nível de Acesso aos Dados</Label>
+                    <Select
+                      value={inviteDataAccess}
+                      onValueChange={(value: "FULL" | "MASKED" | "NONE") =>
+                        setInviteDataAccess(value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="NONE">Sem Acesso</SelectItem>
+                        <SelectItem value="MASKED">Dados Mascarados</SelectItem>
+                        <SelectItem value="FULL">Acesso Completo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsInviteDialogOpen(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsInviteDialogOpen(false)}
+                  >
                     Cancelar
                   </Button>
-                   <Button onClick={handleInviteUser} disabled={actionLoading}>
-                     {actionLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                     {!actionLoading && <Mail className="h-4 w-4 mr-2" />}
-                     Enviar Convite
-                   </Button>
+                  <Button onClick={handleInviteUser} disabled={actionLoading}>
+                    {actionLoading && (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    )}
+                    {!actionLoading && <Mail className="h-4 w-4 mr-2" />}
+                    Enviar Convite
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -593,7 +666,12 @@ const Organization = () => {
                 />
               </div>
             </div>
-            <Select value={statusFilter} onValueChange={(value: 'all' | 'active' | 'inactive') => setStatusFilter(value)}>
+            <Select
+              value={statusFilter}
+              onValueChange={(value: "all" | "active" | "inactive") =>
+                setStatusFilter(value)
+              }
+            >
               <SelectTrigger className="w-[150px]">
                 <SelectValue />
               </SelectTrigger>
@@ -603,7 +681,12 @@ const Organization = () => {
                 <SelectItem value="inactive">Inativos</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={roleFilter} onValueChange={(value: 'all' | 'ADMIN' | 'ANALYST' | 'VIEWER') => setRoleFilter(value)}>
+            <Select
+              value={roleFilter}
+              onValueChange={(value: "all" | "ADMIN" | "ANALYST" | "VIEWER") =>
+                setRoleFilter(value)
+              }
+            >
               <SelectTrigger className="w-[150px]">
                 <SelectValue />
               </SelectTrigger>
@@ -632,10 +715,11 @@ const Organization = () => {
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8">
                     <p className="text-muted-foreground">
-                      {searchTerm || statusFilter !== 'all' || roleFilter !== 'all' 
-                        ? 'Nenhum usuário encontrado com os filtros aplicados'
-                        : 'Nenhum usuário encontrado'
-                      }
+                      {searchTerm ||
+                      statusFilter !== "all" ||
+                      roleFilter !== "all"
+                        ? "Nenhum usuário encontrado com os filtros aplicados"
+                        : "Nenhum usuário encontrado"}
                     </p>
                   </TableCell>
                 </TableRow>
@@ -643,7 +727,7 @@ const Organization = () => {
                 filteredUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">
-                      {user.email.split('@')[0]}
+                      {user.email.split("@")[0]}
                     </TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
@@ -654,15 +738,21 @@ const Organization = () => {
                         </Badge>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      {getStatusBadge(user.is_active)}
-                    </TableCell>
+                    <TableCell>{getStatusBadge(user.is_active)}</TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        <div>Criado: {new Date(user.created_at).toLocaleDateString('pt-BR')}</div>
+                        <div>
+                          Criado:{" "}
+                          {new Date(user.created_at).toLocaleDateString(
+                            "pt-BR",
+                          )}
+                        </div>
                         {user.last_login_at && (
                           <div className="text-muted-foreground text-xs">
-                            Login: {new Date(user.last_login_at).toLocaleDateString('pt-BR')}
+                            Login:{" "}
+                            {new Date(user.last_login_at).toLocaleDateString(
+                              "pt-BR",
+                            )}
                           </div>
                         )}
                       </div>
@@ -670,31 +760,35 @@ const Organization = () => {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {!user.is_active ? (
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             title="Ativar usuário"
-                            onClick={() => openConfirmAction(user, 'activate')}
+                            onClick={() => openConfirmAction(user, "activate")}
                             disabled={actionLoading}
                           >
                             <UserCheck className="h-4 w-4" />
                           </Button>
                         ) : (
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-destructive hover:text-destructive-foreground hover:bg-destructive/10" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive-foreground hover:bg-destructive/10"
                             title="Desativar usuário"
-                            onClick={() => openConfirmAction(user, 'deactivate')}
-                            disabled={actionLoading || user.user_id === profile?.user_id}
+                            onClick={() =>
+                              openConfirmAction(user, "deactivate")
+                            }
+                            disabled={
+                              actionLoading || user.user_id === profile?.user_id
+                            }
                           >
                             <UserX className="h-4 w-4" />
                           </Button>
                         )}
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-primary hover:text-primary-foreground hover:bg-primary/10" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-primary hover:text-primary-foreground hover:bg-primary/10"
                           title="Alterar papel"
                           onClick={() => {
                             setRoleChangeUser(user);
@@ -731,11 +825,20 @@ const Organization = () => {
         <ConfirmActionModal
           isOpen={!!confirmAction}
           onClose={() => setConfirmAction(null)}
-          onConfirm={() => handleUserAction(confirmAction.action, confirmAction.user.user_id)}
+          onConfirm={() =>
+            handleUserAction(confirmAction.action, confirmAction.user.user_id)
+          }
           title={confirmAction.title}
           description={confirmAction.description}
-          confirmText={confirmAction.action === 'delete' ? 'Revogar Acesso' : 'Confirmar'}
-          variant={confirmAction.action === 'deactivate' || confirmAction.action === 'delete' ? 'destructive' : 'default'}
+          confirmText={
+            confirmAction.action === "delete" ? "Revogar Acesso" : "Confirmar"
+          }
+          variant={
+            confirmAction.action === "deactivate" ||
+            confirmAction.action === "delete"
+              ? "destructive"
+              : "default"
+          }
           loading={actionLoading}
         />
       )}

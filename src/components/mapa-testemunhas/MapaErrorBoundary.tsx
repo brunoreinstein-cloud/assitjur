@@ -1,8 +1,14 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
-import { logger } from '@/lib/logger';
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import { logger } from "@/lib/logger";
 
 interface Props {
   children: ReactNode;
@@ -29,9 +35,9 @@ export class MapaErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const errorCount = this.state.errorCount + 1;
-    
+
     // Log detalhado para debug
-    logger.error('🔴 [MapaErrorBoundary] Erro capturado', {
+    logger.error("🔴 [MapaErrorBoundary] Erro capturado", {
       error: error.message,
       stack: error.stack,
       componentStack: errorInfo.componentStack,
@@ -49,7 +55,7 @@ export class MapaErrorBoundary extends Component<Props, State> {
 
     // Detectar loop infinito de erros
     if (errorCount > 3) {
-      logger.error('⛔ [MapaErrorBoundary] Loop de erros detectado', {
+      logger.error("⛔ [MapaErrorBoundary] Loop de erros detectado", {
         errorCount,
         lastError: error.message,
       });
@@ -57,7 +63,7 @@ export class MapaErrorBoundary extends Component<Props, State> {
   }
 
   private handleReset = () => {
-    logger.info('🔄 [MapaErrorBoundary] Resetando estado de erro');
+    logger.info("🔄 [MapaErrorBoundary] Resetando estado de erro");
     this.setState({
       hasError: false,
       error: null,
@@ -67,8 +73,8 @@ export class MapaErrorBoundary extends Component<Props, State> {
   };
 
   private handleGoHome = () => {
-    logger.info('🏠 [MapaErrorBoundary] Navegando para home');
-    window.location.href = '/';
+    logger.info("🏠 [MapaErrorBoundary] Navegando para home");
+    window.location.href = "/";
   };
 
   public render() {
@@ -86,9 +92,9 @@ export class MapaErrorBoundary extends Component<Props, State> {
                     Erro no Mapa de Testemunhas
                   </CardTitle>
                   <CardDescription>
-                    {errorCount > 1 
+                    {errorCount > 1
                       ? `Ocorreram ${errorCount} erros consecutivos`
-                      : 'Ocorreu um erro inesperado'}
+                      : "Ocorreu um erro inesperado"}
                   </CardDescription>
                 </div>
               </div>
@@ -101,13 +107,13 @@ export class MapaErrorBoundary extends Component<Props, State> {
                 </h3>
                 <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
                   <p className="text-sm text-destructive font-mono">
-                    {error?.message || 'Erro desconhecido'}
+                    {error?.message || "Erro desconhecido"}
                   </p>
                 </div>
               </div>
 
               {/* Detalhes técnicos (debug) */}
-              {process.env.NODE_ENV === 'development' && errorInfo && (
+              {process.env.NODE_ENV === "development" && errorInfo && (
                 <details className="space-y-2">
                   <summary className="cursor-pointer font-semibold text-sm text-muted-foreground hover:text-foreground">
                     Detalhes Técnicos (Dev)
@@ -141,8 +147,8 @@ export class MapaErrorBoundary extends Component<Props, State> {
                     Tentar Novamente
                   </Button>
                 )}
-                <Button 
-                  onClick={this.handleGoHome} 
+                <Button
+                  onClick={this.handleGoHome}
                   variant="outline"
                   className="flex-1"
                 >
@@ -154,7 +160,8 @@ export class MapaErrorBoundary extends Component<Props, State> {
               {errorCount > 3 && (
                 <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-md">
                   <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                    ⚠️ Múltiplas tentativas falharam. Por favor, entre em contato com o suporte.
+                    ⚠️ Múltiplas tentativas falharam. Por favor, entre em
+                    contato com o suporte.
                   </p>
                 </div>
               )}

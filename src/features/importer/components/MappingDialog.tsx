@@ -1,11 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, CheckCircle } from 'lucide-react';
-import type { DetectedSheet, SheetModel } from '@/lib/importer/types';
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertCircle, CheckCircle } from "lucide-react";
+import type { DetectedSheet, SheetModel } from "@/lib/importer/types";
 
 interface MappingDialogProps {
   open: boolean;
@@ -14,7 +26,12 @@ interface MappingDialogProps {
   onCancel: () => void;
 }
 
-export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDialogProps) {
+export function MappingDialog({
+  open,
+  sheets,
+  onComplete,
+  onCancel,
+}: MappingDialogProps) {
   const [mappedSheets, setMappedSheets] = useState<DetectedSheet[]>(sheets);
 
   // Sincronizar com as props sheets quando elas mudarem
@@ -28,20 +45,26 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
     setMappedSheets(updated);
   };
 
-  const canComplete = mappedSheets.every(sheet => 
-    sheet.model !== 'ambiguous'
+  const canComplete = mappedSheets.every(
+    (sheet) => sheet.model !== "ambiguous",
   );
 
   const hasRequiredSheets = () => {
     // Considerar apenas abas que não foram ignoradas
-    const validSheets = mappedSheets.filter(sheet => sheet.model !== 'ignore');
-    return validSheets.some(s => s.model === 'processo' || s.model === 'testemunha');
+    const validSheets = mappedSheets.filter(
+      (sheet) => sheet.model !== "ignore",
+    );
+    return validSheets.some(
+      (s) => s.model === "processo" || s.model === "testemunha",
+    );
   };
 
   const handleComplete = () => {
     if (canComplete && hasRequiredSheets()) {
       // Filtrar abas ignoradas antes de passar para o próximo passo
-      const validSheets = mappedSheets.filter(sheet => sheet.model !== 'ignore');
+      const validSheets = mappedSheets.filter(
+        (sheet) => sheet.model !== "ignore",
+      );
       onComplete(validSheets);
     }
   };
@@ -52,27 +75,46 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
         <DialogHeader>
           <DialogTitle>Mapeamento de Abas</DialogTitle>
           <DialogDescription>
-            Algumas abas precisam de mapeamento manual. Selecione o tipo correto para cada aba.
+            Algumas abas precisam de mapeamento manual. Selecione o tipo correto
+            para cada aba.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {mappedSheets.map((sheet, index) => (
-            <Card key={index} className={sheet.model === 'ambiguous' ? 'border-warning' : sheet.model === 'ignore' ? 'border-muted opacity-75' : ''}>
+            <Card
+              key={index}
+              className={
+                sheet.model === "ambiguous"
+                  ? "border-warning"
+                  : sheet.model === "ignore"
+                    ? "border-muted opacity-75"
+                    : ""
+              }
+            >
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
                   {sheet.name}
-                  {sheet.model === 'ambiguous' ? (
-                    <Badge variant="outline" className="text-warning border-warning">
+                  {sheet.model === "ambiguous" ? (
+                    <Badge
+                      variant="outline"
+                      className="text-warning border-warning"
+                    >
                       <AlertCircle className="h-3 w-3 mr-1" />
                       Requer mapeamento
                     </Badge>
-                  ) : sheet.model === 'ignore' ? (
-                    <Badge variant="outline" className="text-muted-foreground border-muted">
+                  ) : sheet.model === "ignore" ? (
+                    <Badge
+                      variant="outline"
+                      className="text-muted-foreground border-muted"
+                    >
                       Ignorada
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="text-success border-success">
+                    <Badge
+                      variant="outline"
+                      className="text-success border-success"
+                    >
                       <CheckCircle className="h-3 w-3 mr-1" />
                       Mapeada
                     </Badge>
@@ -84,27 +126,33 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
                   <div className="text-sm text-muted-foreground">
                     {sheet.rows} linhas • {sheet.headers.length} colunas
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">Tipo:</span>
                     <Select
                       value={sheet.model}
-                      onValueChange={(value) => handleModelChange(index, value as SheetModel)}
+                      onValueChange={(value) =>
+                        handleModelChange(index, value as SheetModel)
+                      }
                     >
                       <SelectTrigger className="w-[200px]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="processo">Por Processo</SelectItem>
-                        <SelectItem value="testemunha">Por Testemunha</SelectItem>
+                        <SelectItem value="testemunha">
+                          Por Testemunha
+                        </SelectItem>
                         <SelectItem value="ignore">Ignorar esta aba</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="text-xs text-muted-foreground">
-                    <strong>Colunas detectadas:</strong> {sheet.headers.slice(0, 5).join(', ')}
-                    {sheet.headers.length > 5 && ` e mais ${sheet.headers.length - 5}...`}
+                    <strong>Colunas detectadas:</strong>{" "}
+                    {sheet.headers.slice(0, 5).join(", ")}
+                    {sheet.headers.length > 5 &&
+                      ` e mais ${sheet.headers.length - 5}...`}
                   </div>
                 </div>
               </CardContent>
@@ -117,7 +165,8 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
                 <div className="flex items-center gap-2 text-destructive">
                   <AlertCircle className="h-4 w-4" />
                   <span className="text-sm font-medium">
-                    É necessário ter pelo menos uma aba mapeada como "Por Processo" ou "Por Testemunha"
+                    É necessário ter pelo menos uma aba mapeada como "Por
+                    Processo" ou "Por Testemunha"
                   </span>
                 </div>
               </CardContent>
@@ -129,7 +178,7 @@ export function MappingDialog({ open, sheets, onComplete, onCancel }: MappingDia
           <Button variant="outline" onClick={onCancel}>
             Cancelar
           </Button>
-          <Button 
+          <Button
             onClick={handleComplete}
             disabled={!canComplete || !hasRequiredSheets()}
           >

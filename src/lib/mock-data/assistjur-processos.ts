@@ -1,4 +1,4 @@
-import { AssistJurProcesso } from '@/hooks/useAssistJurProcessos';
+import { AssistJurProcesso } from "@/hooks/useAssistJurProcessos";
 
 export const mockProcessosData: AssistJurProcesso[] = [
   {
@@ -10,18 +10,22 @@ export const mockProcessosData: AssistJurProcesso[] = [
     qtd_testemunhas: 4,
     classificacao: "Atenção",
     classificacao_estrategica: "Média complexidade",
-    created_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
   },
   {
     cnj: "5001235-13.2024.5.02.0001",
     reclamante: "Ana Paula Ferreira",
     reclamada: "Tech Solutions S.A.",
     testemunhas_ativas: ["Roberto Silva"],
-    testemunhas_passivas: ["Lucia Santos", "Fernando Costa", "Mariana Oliveira"],
+    testemunhas_passivas: [
+      "Lucia Santos",
+      "Fernando Costa",
+      "Mariana Oliveira",
+    ],
     qtd_testemunhas: 4,
     classificacao: "Crítico",
     classificacao_estrategica: "Alta complexidade",
-    created_at: new Date(Date.now() - 86400000).toISOString()
+    created_at: new Date(Date.now() - 86400000).toISOString(),
   },
   {
     cnj: "5001236-14.2024.5.02.0001",
@@ -32,8 +36,8 @@ export const mockProcessosData: AssistJurProcesso[] = [
     qtd_testemunhas: 2,
     classificacao: "Normal",
     classificacao_estrategica: "Baixa complexidade",
-    created_at: new Date(Date.now() - 172800000).toISOString()
-  }
+    created_at: new Date(Date.now() - 172800000).toISOString(),
+  },
 ];
 
 export const mockStatsData = {
@@ -42,5 +46,5 @@ export const mockStatsData = {
   atencao: 45,
   observacao: 35,
   normais: 45,
-  percentualCritico: "16.7"
+  percentualCritico: "16.7",
 };

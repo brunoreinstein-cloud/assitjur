@@ -1,31 +1,71 @@
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
 import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
 import { ProcessoFilters as ProcessoFiltersType } from "@/types/mapa-testemunhas";
 
 const UF_OPTIONS = [
-  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
-  'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
-  'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+  "AC",
+  "AL",
+  "AP",
+  "AM",
+  "BA",
+  "CE",
+  "DF",
+  "ES",
+  "GO",
+  "MA",
+  "MT",
+  "MS",
+  "MG",
+  "PA",
+  "PB",
+  "PR",
+  "PE",
+  "PI",
+  "RJ",
+  "RN",
+  "RS",
+  "RO",
+  "RR",
+  "SC",
+  "SP",
+  "SE",
+  "TO",
 ];
 
 const STATUS_OPTIONS = [
-  'Ativo', 'Arquivado', 'Suspenso', 'Baixado', 'Cancelado'
+  "Ativo",
+  "Arquivado",
+  "Suspenso",
+  "Baixado",
+  "Cancelado",
 ];
 
-const FASE_OPTIONS = [
-  'Conhecimento', 'Execução', 'Recursal', 'Liquidação'
-];
+const FASE_OPTIONS = ["Conhecimento", "Execução", "Recursal", "Liquidação"];
 
 export function ProcessoFilters() {
-  const { processoFilters, setProcessoFilters, resetFilters } = useMapaTestemunhasStore();
+  const { processoFilters, setProcessoFilters, resetFilters } =
+    useMapaTestemunhasStore();
 
-  const updateFilter = (key: keyof ProcessoFiltersType, value: string | number | undefined) => {
-    if (value === '' || value === undefined || value === 'TODAS' || value === 'TODOS') {
+  const updateFilter = (
+    key: keyof ProcessoFiltersType,
+    value: string | number | undefined,
+  ) => {
+    if (
+      value === "" ||
+      value === undefined ||
+      value === "TODAS" ||
+      value === "TODOS"
+    ) {
       const newFilters = { ...processoFilters };
       delete newFilters[key];
       setProcessoFilters(newFilters);
@@ -61,8 +101,8 @@ export function ProcessoFilters() {
           <Input
             id="search"
             placeholder="CNJ, comarca, reclamante..."
-            value={processoFilters.search || ''}
-            onChange={(e) => updateFilter('search', e.target.value)}
+            value={processoFilters.search || ""}
+            onChange={(e) => updateFilter("search", e.target.value)}
           />
         </div>
 
@@ -71,16 +111,16 @@ export function ProcessoFilters() {
           <Input
             id="testemunha"
             placeholder="Nome da testemunha..."
-            value={processoFilters.testemunha || ''}
-            onChange={(e) => updateFilter('testemunha', e.target.value)}
+            value={processoFilters.testemunha || ""}
+            onChange={(e) => updateFilter("testemunha", e.target.value)}
           />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="uf">UF</Label>
           <Select
-            value={processoFilters.uf || 'TODAS'}
-            onValueChange={(value) => updateFilter('uf', value)}
+            value={processoFilters.uf || "TODAS"}
+            onValueChange={(value) => updateFilter("uf", value)}
           >
             <SelectTrigger id="uf">
               <SelectValue placeholder="Selecione..." />
@@ -99,8 +139,8 @@ export function ProcessoFilters() {
         <div className="space-y-2">
           <Label htmlFor="status">Status</Label>
           <Select
-            value={processoFilters.status || 'TODOS'}
-            onValueChange={(value) => updateFilter('status', value)}
+            value={processoFilters.status || "TODOS"}
+            onValueChange={(value) => updateFilter("status", value)}
           >
             <SelectTrigger id="status">
               <SelectValue placeholder="Selecione..." />
@@ -119,8 +159,8 @@ export function ProcessoFilters() {
         <div className="space-y-2">
           <Label htmlFor="fase">Fase</Label>
           <Select
-            value={processoFilters.fase || 'TODAS'}
-            onValueChange={(value) => updateFilter('fase', value)}
+            value={processoFilters.fase || "TODAS"}
+            onValueChange={(value) => updateFilter("fase", value)}
           >
             <SelectTrigger id="fase">
               <SelectValue placeholder="Selecione..." />
@@ -142,8 +182,13 @@ export function ProcessoFilters() {
             id="qtdMin"
             type="number"
             placeholder="0"
-            value={processoFilters.qtdDeposMin || ''}
-            onChange={(e) => updateFilter('qtdDeposMin', e.target.value ? Number(e.target.value) : undefined)}
+            value={processoFilters.qtdDeposMin || ""}
+            onChange={(e) =>
+              updateFilter(
+                "qtdDeposMin",
+                e.target.value ? Number(e.target.value) : undefined,
+              )
+            }
           />
         </div>
 
@@ -153,8 +198,13 @@ export function ProcessoFilters() {
             id="qtdMax"
             type="number"
             placeholder="∞"
-            value={processoFilters.qtdDeposMax || ''}
-            onChange={(e) => updateFilter('qtdDeposMax', e.target.value ? Number(e.target.value) : undefined)}
+            value={processoFilters.qtdDeposMax || ""}
+            onChange={(e) =>
+              updateFilter(
+                "qtdDeposMax",
+                e.target.value ? Number(e.target.value) : undefined,
+              )
+            }
           />
         </div>
       </div>

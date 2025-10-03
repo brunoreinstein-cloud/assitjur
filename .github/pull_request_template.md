@@ -16,7 +16,7 @@ Marque o tipo de mudança que se aplica:
 - [ ] ci
 - [ ] perf
 - [ ] style
-- [ ] outro: __________
+- [ ] outro: ****\_\_****
 
 ## Screenshots/Logs
 

@@ -1,40 +1,49 @@
-import { useState, useEffect, useMemo, memo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useDebounce } from '@/hooks/useDebounce';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { AlertCircle, Database, RefreshCw } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import { ProcessosToolbar } from '@/components/admin/processos/ProcessosToolbar';
-import { ProcessosGrid } from '@/components/admin/processos/ProcessosGrid';
-import { ProcessoDetailDrawer } from '@/components/admin/processos/ProcessoDetailDrawer';
-import { ExportManager } from '@/components/admin/processos/ExportManager';
-import { ProcessosKPIs } from '@/components/admin/processos/ProcessosKPIs';
-import { ProcessoRow, ProcessoQuery, ProcessoFiltersState, VersionInfo } from '@/types/processos-explorer';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useState, useEffect, useMemo, memo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useDebounce } from "@/hooks/useDebounce";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, Database, RefreshCw } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { ProcessosToolbar } from "@/components/admin/processos/ProcessosToolbar";
+import { ProcessosGrid } from "@/components/admin/processos/ProcessosGrid";
+import { ProcessoDetailDrawer } from "@/components/admin/processos/ProcessoDetailDrawer";
+import { ExportManager } from "@/components/admin/processos/ExportManager";
+import { ProcessosKPIs } from "@/components/admin/processos/ProcessosKPIs";
+import {
+  ProcessoRow,
+  ProcessoQuery,
+  ProcessoFiltersState,
+  VersionInfo,
+} from "@/types/processos-explorer";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ProcessosExplorerProps {
   className?: string;
 }
 
-export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: ProcessosExplorerProps) {
+export const ProcessosExplorer = memo(function ProcessosExplorer({
+  className,
+}: ProcessosExplorerProps) {
   const { profile } = useAuth();
 
   // UI State
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
-  const [selectedProcesso, setSelectedProcesso] = useState<ProcessoRow | null>(null);
+  const [selectedProcesso, setSelectedProcesso] = useState<ProcessoRow | null>(
+    null,
+  );
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isPiiMasked, setIsPiiMasked] = useState(() => {
-    return localStorage.getItem('processos_pii_masked') === 'true';
+    return localStorage.getItem("processos_pii_masked") === "true";
   });
 
   // Filters State
   const [filters, setFilters] = useState<ProcessoFiltersState>({
-    search: '',
-    testemunha: '',
+    search: "",
+    testemunha: "",
     uf: [],
     comarca: [],
     status: [],
@@ -45,8 +54,8 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
       triangulacao: false,
       troca: false,
       prova: false,
-      duplo: false
-    }
+      duplo: false,
+    },
   });
 
   // Pagination State
@@ -54,15 +63,17 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   const [items, setItems] = useState<ProcessoRow[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [orderBy, setOrderBy] = useState<'updated_at'|'score_risco'|'uf'|'comarca'|'cnj'>('updated_at');
-  const [orderDir, setOrderDir] = useState<'asc'|'desc'>('desc');
+  const [orderBy, setOrderBy] = useState<
+    "updated_at" | "score_risco" | "uf" | "comarca" | "cnj"
+  >("updated_at");
+  const [orderDir, setOrderDir] = useState<"asc" | "desc">("desc");
   const [totalCount, setTotalCount] = useState(0);
   const [error, setError] = useState<Error | null>(null);
   const limit = 25;
 
   // Save PII mask preference
   useEffect(() => {
-    localStorage.setItem('processos_pii_masked', isPiiMasked.toString());
+    localStorage.setItem("processos_pii_masked", isPiiMasked.toString());
   }, [isPiiMasked]);
 
   // Debounce search to avoid excessive queries
@@ -73,7 +84,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   const buildQuery = useMemo((): ProcessoQuery => {
     const query: ProcessoQuery = {
       orderBy,
-      orderDir
+      orderDir,
     };
 
     if (debouncedSearch.trim()) {
@@ -83,8 +94,10 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
     if (filters.comarca.length > 0) query.comarca = filters.comarca;
     if (filters.status.length > 0) query.status = filters.status;
     if (filters.fase.length > 0) query.fase = filters.fase;
-    if (debouncedTestemunha.trim()) query.testemunha = debouncedTestemunha.trim();
-    if (filters.classificacao.length > 0) query.class = filters.classificacao as any;
+    if (debouncedTestemunha.trim())
+      query.testemunha = debouncedTestemunha.trim();
+    if (filters.classificacao.length > 0)
+      query.class = filters.classificacao as any;
     if (filters.scoreRange[0] > 0 || filters.scoreRange[1] < 100) {
       query.scoreMin = filters.scoreRange[0];
       query.scoreMax = filters.scoreRange[1];
@@ -94,7 +107,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
     const activeFlags = Object.entries(filters.flags)
       .filter(([_, active]) => active)
       .reduce((acc, [key]) => ({ ...acc, [key]: true }), {});
-    
+
     if (Object.keys(activeFlags).length > 0) {
       query.flags = activeFlags as any;
     }
@@ -104,44 +117,44 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
 
   // Fetch version info
   const { data: versionInfo } = useQuery<VersionInfo>({
-    queryKey: ['version-info', profile?.organization_id],
+    queryKey: ["version-info", profile?.organization_id],
     queryFn: async () => {
-      if (!profile?.organization_id) throw new Error('No organization');
+      if (!profile?.organization_id) throw new Error("No organization");
 
       const { data, error } = await supabase
-        .from('versions')
-        .select('number, published_at, summary')
-        .eq('org_id', profile.organization_id)
-        .eq('status', 'published')
-        .order('number', { ascending: false })
+        .from("versions")
+        .select("number, published_at, summary")
+        .eq("org_id", profile.organization_id)
+        .eq("status", "published")
+        .order("number", { ascending: false })
         .limit(1)
         .single();
 
       if (error) throw error;
-      
+
       return {
         number: data.number,
         publishedAt: data.published_at,
-        totalRecords: 0 // TODO: extract from summary when available
+        totalRecords: 0, // TODO: extract from summary when available
       };
     },
     enabled: !!profile?.organization_id,
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Fetch processos data
   const fetchProcessos = async (pageNum: number) => {
-    if (!profile?.organization_id) throw new Error('No organization');
-    
+    if (!profile?.organization_id) throw new Error("No organization");
+
     const { data, error, count } = await supabase
-      .from('assistjur.por_processo_view')
-      .select('*', { count: 'exact' })
-      .eq('org_id', profile.organization_id!)
+      .from("assistjur.por_processo_view")
+      .select("*", { count: "exact" })
+      .eq("org_id", profile.organization_id!)
       .range((pageNum - 1) * limit, pageNum * limit - 1)
-      .order('numero', { ascending: false });
-    
+      .order("numero", { ascending: false });
+
     if (error) throw error;
-    
+
     if (count !== null) setTotalCount(count);
     return data || [];
   };
@@ -183,7 +196,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
     try {
       const nextPage = page + 1;
       const data = await fetchProcessos(nextPage);
-      setItems(prev => [...prev, ...data]);
+      setItems((prev) => [...prev, ...data]);
       setPage(nextPage);
     } catch (err) {
       setError(err as Error);
@@ -205,7 +218,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
 
   const handleSelectAll = (selected: boolean) => {
     if (selected) {
-      setSelectedRows(new Set(items.map(p => p.id)));
+      setSelectedRows(new Set(items.map((p) => p.id)));
     } else {
       setSelectedRows(new Set());
     }
@@ -218,18 +231,20 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
   };
 
   // Handle KPI filter application
-  const handleKPIFilterApply = (partialFilters: Partial<ProcessoFiltersState>) => {
-    setFilters(prevFilters => ({
+  const handleKPIFilterApply = (
+    partialFilters: Partial<ProcessoFiltersState>,
+  ) => {
+    setFilters((prevFilters) => ({
       ...prevFilters,
-      ...partialFilters
+      ...partialFilters,
     }));
   };
 
   // Clear filters
   const handleClearFilters = () => {
     setFilters({
-      search: '',
-      testemunha: '',
+      search: "",
+      testemunha: "",
       uf: [],
       comarca: [],
       status: [],
@@ -240,15 +255,15 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
         triangulacao: false,
         troca: false,
         prova: false,
-        duplo: false
-      }
+        duplo: false,
+      },
     });
   };
 
   const hasActiveFilters = () => {
     return (
-      filters.search.trim() !== '' ||
-      filters.testemunha.trim() !== '' ||
+      filters.search.trim() !== "" ||
+      filters.testemunha.trim() !== "" ||
       filters.uf.length > 0 ||
       filters.comarca.length > 0 ||
       filters.status.length > 0 ||
@@ -271,7 +286,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            {error instanceof Error ? error.message : 'Erro desconhecido'}
+            {error instanceof Error ? error.message : "Erro desconhecido"}
           </p>
           <Button variant="outline" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -292,19 +307,21 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
               <Database className="h-8 w-8 text-primary" />
               Explorar Dados
             </h1>
-            <p className="text-muted-foreground">Processos (versão {versionInfo?.number || '—'})</p>
+            <p className="text-muted-foreground">
+              Processos (versão {versionInfo?.number || "—"})
+            </p>
           </div>
-          
+
           <div className="flex items-center gap-2">
             {versionInfo && (
               <Badge variant="outline" className="text-xs">
-                Versão v{versionInfo.number} • Última atualização: {' '}
-                {new Date(versionInfo.publishedAt).toLocaleDateString('pt-BR', {
-                  day: '2-digit',
-                  month: '2-digit', 
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
+                Versão v{versionInfo.number} • Última atualização:{" "}
+                {new Date(versionInfo.publishedAt).toLocaleDateString("pt-BR", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
                 })}
               </Badge>
             )}
@@ -360,9 +377,9 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
           orderDir={orderDir}
           onSort={(field, direction) => {
             setOrderBy(field);
-              setOrderDir(direction);
-              setItems([]);
-              setPage(1);
+            setOrderDir(direction);
+            setItems([]);
+            setPage(1);
           }}
           isPiiMasked={isPiiMasked}
           onLoadMore={handleLoadMore}
@@ -377,12 +394,13 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
         <Card>
           <CardContent className="p-8 text-center">
             <Database className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Nenhum processo encontrado</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              Nenhum processo encontrado
+            </h3>
             <p className="text-muted-foreground mb-4">
               {hasActiveFilters()
-                ? 'Nenhum processo corresponde aos filtros aplicados.'
-                : 'Não há dados disponíveis na versão publicada.'
-              }
+                ? "Nenhum processo corresponde aos filtros aplicados."
+                : "Não há dados disponíveis na versão publicada."}
             </p>
             {hasActiveFilters() && (
               <Button variant="outline" onClick={handleClearFilters}>
@@ -409,7 +427,7 @@ export const ProcessosExplorer = memo(function ProcessosExplorer({ className }: 
         open={isExportOpen}
         onClose={() => setIsExportOpen(false)}
         data={items}
-        selectedData={items.filter(p => selectedRows.has(p.id))}
+        selectedData={items.filter((p) => selectedRows.has(p.id))}
         filters={buildQuery}
         isPiiMasked={isPiiMasked}
       />

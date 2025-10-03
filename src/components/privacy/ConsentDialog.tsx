@@ -1,38 +1,38 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
-import { useConsent } from '@/hooks/useConsent'
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { useConsent } from "@/hooks/useConsent";
 
 export function ConsentDialog() {
-  const { open, setOpen, preferences, save } = useConsent()
-  const [analytics, setAnalytics] = useState(false)
-  const [ads, setAds] = useState(false)
+  const { open, setOpen, preferences, save } = useConsent();
+  const [analytics, setAnalytics] = useState(false);
+  const [ads, setAds] = useState(false);
 
   useEffect(() => {
     if (preferences) {
-      setAnalytics(preferences.analytics)
-      setAds(preferences.ads)
+      setAnalytics(preferences.analytics);
+      setAds(preferences.ads);
     } else {
-      setAnalytics(false)
-      setAds(false)
+      setAnalytics(false);
+      setAds(false);
     }
-  }, [preferences, open])
+  }, [preferences, open]);
 
   const handleSave = (prefs: { analytics: boolean; ads: boolean }) => {
-    save(prefs)
-    setOpen(false)
-  }
+    save(prefs);
+    setOpen(false);
+  };
 
-  const acceptAll = () => handleSave({ analytics: true, ads: true })
-  const rejectAll = () => handleSave({ analytics: false, ads: false })
-  const savePrefs = () => handleSave({ analytics, ads })
+  const acceptAll = () => handleSave({ analytics: true, ads: true });
+  const rejectAll = () => handleSave({ analytics: false, ads: false });
+  const savePrefs = () => handleSave({ analytics, ads });
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -47,8 +47,9 @@ export function ConsentDialog() {
             Controle como usamos seus dados
           </DialogTitle>
           <DialogDescription id="consent-desc" className="text-sm leading-snug">
-            Usamos cookies essenciais para o site funcionar. Com sua permissão, também usamos dados para Medição e Publicidade.
-            Você pode aceitar, rejeitar ou personalizar.
+            Usamos cookies essenciais para o site funcionar. Com sua permissão,
+            também usamos dados para Medição e Publicidade. Você pode aceitar,
+            rejeitar ou personalizar.
           </DialogDescription>
         </DialogHeader>
 
@@ -56,7 +57,10 @@ export function ConsentDialog() {
           <div className="flex items-start justify-between gap-3">
             <div className="text-sm leading-snug">
               <p className="font-medium">Essenciais</p>
-              <p className="text-muted-foreground">Necessários para segurança e navegação. Não usados para marketing.</p>
+              <p className="text-muted-foreground">
+                Necessários para segurança e navegação. Não usados para
+                marketing.
+              </p>
             </div>
             <span className="text-xs text-muted-foreground">Sempre ativo</span>
           </div>
@@ -64,7 +68,9 @@ export function ConsentDialog() {
           <div className="flex items-start justify-between gap-3">
             <div className="text-sm leading-snug">
               <p className="font-medium">Medição</p>
-              <p className="text-muted-foreground">Métricas para melhorar sua experiência.</p>
+              <p className="text-muted-foreground">
+                Métricas para melhorar sua experiência.
+              </p>
             </div>
             <Switch
               className="origin-right scale-90"
@@ -77,7 +83,9 @@ export function ConsentDialog() {
           <div className="flex items-start justify-between gap-3">
             <div className="text-sm leading-snug">
               <p className="font-medium">Publicidade</p>
-              <p className="text-muted-foreground">Anúncios relevantes e medição de campanhas.</p>
+              <p className="text-muted-foreground">
+                Anúncios relevantes e medição de campanhas.
+              </p>
             </div>
             <Switch
               className="origin-right scale-90"
@@ -112,7 +120,7 @@ export function ConsentDialog() {
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
-export default ConsentDialog
+export default ConsentDialog;

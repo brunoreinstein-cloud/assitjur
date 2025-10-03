@@ -1,6 +1,6 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useLocation } from 'react-router-dom';
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
 
 interface PageTransitionProps {
   children: React.ReactNode;
@@ -31,9 +31,11 @@ const pageVariants = {
 
 export function PageTransition({ children }: PageTransitionProps) {
   const location = useLocation();
-  
+
   // Respect user's motion preferences
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
 
   if (prefersReducedMotion) {
     return <>{children}</>;

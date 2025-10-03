@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,8 +8,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Loader2 } from 'lucide-react';
+} from "@/components/ui/alert-dialog";
+import { Loader2 } from "lucide-react";
 
 interface ConfirmActionModalProps {
   isOpen: boolean;
@@ -18,7 +18,7 @@ interface ConfirmActionModalProps {
   title: string;
   description: string;
   confirmText?: string;
-  variant?: 'default' | 'destructive';
+  variant?: "default" | "destructive";
   loading?: boolean;
 }
 
@@ -28,25 +28,27 @@ const ConfirmActionModal: React.FC<ConfirmActionModalProps> = ({
   onConfirm,
   title,
   description,
-  confirmText = 'Confirmar',
-  variant = 'default',
-  loading = false
+  confirmText = "Confirmar",
+  variant = "default",
+  loading = false,
 }) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {description}
-          </AlertDialogDescription>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={loading}>Cancelar</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             disabled={loading}
-            className={variant === 'destructive' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : ''}
+            className={
+              variant === "destructive"
+                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                : ""
+            }
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {confirmText}

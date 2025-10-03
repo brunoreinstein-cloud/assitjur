@@ -13,7 +13,7 @@ import { getEnv } from "@/lib/getEnv";
 import { ErrorHandler } from "@/lib/error-handling";
 
 const magicLinkSchema = z.object({
-  email: z.string().email('Formato de email inválido')
+  email: z.string().email("Formato de email inválido"),
 });
 
 type MagicLinkFormData = z.infer<typeof magicLinkSchema>;
@@ -29,85 +29,103 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
 
   const form = useForm<MagicLinkFormData>({
     resolver: zodResolver(magicLinkSchema),
-    mode: 'onChange',
-    reValidateMode: 'onChange',
+    mode: "onChange",
+    reValidateMode: "onChange",
     defaultValues: {
-      email: ''
-    }
+      email: "",
+    },
   });
 
   // Debounce email validation to prevent excessive API calls
-  const debouncedEmail = useDebounce(form.watch('email'), 500);
+  const debouncedEmail = useDebounce(form.watch("email"), 500);
 
-  const handleSendMagicLink = useCallback(async (data: MagicLinkFormData) => {
-    // Rate limiting check on client side
-    const now = Date.now();
-    if (lastAttempt && now - lastAttempt < 60000) { // 1 minute cooldown
-      toast.error("Aguarde um momento", {
-        description: "Aguarde pelo menos 1 minuto entre tentativas."
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    setLastAttempt(now);
-    
-    try {
-      if (!supabase) {
-        // Mock magic link for development
-        toast.success("Link enviado!", {
-          description: "Verifique seu e-mail (modo demo - use o login normal)"
+  const handleSendMagicLink = useCallback(
+    async (data: MagicLinkFormData) => {
+      // Rate limiting check on client side
+      const now = Date.now();
+      if (lastAttempt && now - lastAttempt < 60000) {
+        // 1 minute cooldown
+        toast.error("Aguarde um momento", {
+          description: "Aguarde pelo menos 1 minuto entre tentativas.",
         });
+        return;
+      }
+
+      setIsLoading(true);
+      setLastAttempt(now);
+
+      try {
+        if (!supabase) {
+          // Mock magic link for development
+          toast.success("Link enviado!", {
+            description:
+              "Verifique seu e-mail (modo demo - use o login normal)",
+          });
+          setEmailSent(true);
+          return;
+        }
+
+        const { siteUrl } = getEnv();
+        const { error } = await supabase.auth.signInWithOtp({
+          email: data.email,
+          options: {
+            emailRedirectTo: `${siteUrl}/`,
+          },
+        });
+
+        if (error) {
+          const handledError = ErrorHandler.handle(
+            error,
+            "MagicLinkForm.signInWithOtp",
+          );
+
+          if (
+            error.message.includes("rate") ||
+            error.message.includes("limit") ||
+            error?.status === 429
+          ) {
+            toast.error("Limite de tentativas atingido", {
+              description:
+                "Muitas tentativas de login. Tente novamente em alguns minutos.",
+            });
+          } else if (error.message.includes("email")) {
+            toast.error("Email inválido", {
+              description: "Verifique se o email foi digitado corretamente.",
+            });
+          } else {
+            toast.error("Erro ao enviar link", {
+              description:
+                handledError.userMessage ||
+                "Não foi possível enviar o link de acesso. Tente novamente.",
+            });
+          }
+          return;
+        }
+
+        toast.success("Link de acesso enviado!", {
+          description:
+            "Verifique sua caixa de entrada e clique no link para entrar.",
+        });
+
         setEmailSent(true);
-        return;
-      }
+      } catch (error: any) {
+        const handledError = ErrorHandler.handleAndNotify(
+          error,
+          "MagicLinkForm.handleSendMagicLink",
+        );
 
-      const { siteUrl } = getEnv();
-      const { error } = await supabase.auth.signInWithOtp({
-        email: data.email,
-        options: {
-          emailRedirectTo: `${siteUrl}/`
-        }
-      });
-
-      if (error) {
-        const handledError = ErrorHandler.handle(error, 'MagicLinkForm.signInWithOtp');
-        
-        if (error.message.includes('rate') || error.message.includes('limit') || error?.status === 429) {
-          toast.error('Limite de tentativas atingido', {
-            description: 'Muitas tentativas de login. Tente novamente em alguns minutos.'
-          });
-        } else if (error.message.includes('email')) {
-          toast.error('Email inválido', {
-            description: 'Verifique se o email foi digitado corretamente.'
-          });
-        } else {
-          toast.error("Erro ao enviar link", {
-            description: handledError.userMessage || "Não foi possível enviar o link de acesso. Tente novamente."
+        if (error?.status === 429) {
+          toast.error("Muitas tentativas", {
+            description: "Tente novamente mais tarde.",
           });
         }
-        return;
+        // Other error notifications handled by ErrorHandler.handleAndNotify
+      } finally {
+        setIsLoading(false);
       }
-
-      toast.success("Link de acesso enviado!", {
-        description: "Verifique sua caixa de entrada e clique no link para entrar."
-      });
-
-      setEmailSent(true);
-
-    } catch (error: any) {
-      const handledError = ErrorHandler.handleAndNotify(error, 'MagicLinkForm.handleSendMagicLink');
-      
-      if (error?.status === 429) {
-        toast.error('Muitas tentativas', {
-          description: 'Tente novamente mais tarde.'
-        });
-      }
-      // Other error notifications handled by ErrorHandler.handleAndNotify
-    } finally {
-      setIsLoading(false);
-    }
-  }, [lastAttempt]);
+    },
+    [lastAttempt],
+  );
 
   const handleResend = () => {
     setEmailSent(false);
@@ -120,14 +138,15 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
         <div className="mx-auto p-3 bg-success/10 rounded-full w-fit">
           <CheckCircle className="h-8 w-8 text-success" />
         </div>
-        
+
         <div className="space-y-2">
           <h3 className="text-lg font-semibold">Link enviado!</h3>
           <p className="text-sm text-muted-foreground">
-            Verifique sua caixa de entrada e clique no link para fazer login automaticamente.
+            Verifique sua caixa de entrada e clique no link para fazer login
+            automaticamente.
           </p>
           <p className="text-xs text-muted-foreground">
-            Enviado para: <strong>{form.getValues('email')}</strong>
+            Enviado para: <strong>{form.getValues("email")}</strong>
           </p>
         </div>
 
@@ -144,15 +163,11 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
                 Reenviando...
               </>
             ) : (
-              'Reenviar link'
+              "Reenviar link"
             )}
           </Button>
-          
-          <Button
-            variant="ghost"
-            onClick={onBack}
-            className="w-full"
-          >
+
+          <Button variant="ghost" onClick={onBack} className="w-full">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar ao login
           </Button>
@@ -173,28 +188,33 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
         </p>
       </div>
 
-      <form onSubmit={form.handleSubmit(handleSendMagicLink)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit(handleSendMagicLink)}
+        className="space-y-4"
+      >
         <div className="space-y-2">
           <Label htmlFor="email">E-mail</Label>
           <Input
             id="email"
             type="email"
             placeholder="seu@email.com"
-            {...form.register('email')}
-            className={form.formState.errors.email ? 'border-destructive' : ''}
+            {...form.register("email")}
+            className={form.formState.errors.email ? "border-destructive" : ""}
             autoFocus
           />
           {form.formState.errors.email && (
-            <p className="text-sm text-destructive" role="alert" aria-live="polite">{form.formState.errors.email.message}</p>
+            <p
+              className="text-sm text-destructive"
+              role="alert"
+              aria-live="polite"
+            >
+              {form.formState.errors.email.message}
+            </p>
           )}
         </div>
 
         <div className="space-y-3">
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={isLoading}
-          >
+          <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />

@@ -1,4 +1,4 @@
-import { serve } from '../_shared/observability.ts';
+import { serve } from "../_shared/observability.ts";
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { z } from "npm:zod@3.23.8";
@@ -27,11 +27,13 @@ const ReqSchema = z.object({
   organizacao: z.string(),
   necessidades: z.array(z.string()),
   outro_texto: z.string().optional(),
-  utm: z.object({
-    source: z.string().optional(),
-    medium: z.string().optional(),
-    campaign: z.string().optional(),
-  }).optional(),
+  utm: z
+    .object({
+      source: z.string().optional(),
+      medium: z.string().optional(),
+      campaign: z.string().optional(),
+    })
+    .optional(),
   created_at: z.string().optional(),
   honeypot: z.string().optional(),
 });
@@ -44,7 +46,12 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     if (req.method !== "POST") {
-      return jsonError(405, "Method not allowed", { requestId }, { ...ch, "x-request-id": requestId });
+      return jsonError(
+        405,
+        "Method not allowed",
+        { requestId },
+        { ...ch, "x-request-id": requestId },
+      );
     }
 
     const payload = await req.json().catch(() => ({}));
@@ -60,7 +67,12 @@ const handler = async (req: Request): Promise<Response> => {
     const body = result.data;
 
     if (body.honeypot) {
-      return jsonError(400, "Bot detectado", { requestId }, { ...ch, "x-request-id": requestId });
+      return jsonError(
+        400,
+        "Bot detectado",
+        { requestId },
+        { ...ch, "x-request-id": requestId },
+      );
     }
 
     const domain = body.email.split("@")[1]?.toLowerCase();
@@ -74,7 +86,13 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const ip = req.headers.get("x-forwarded-for") ?? "unknown";
-    const allowed = await checkRateLimit(supabase, `beta-signup:${ip}`, 5, 60_000, requestId);
+    const allowed = await checkRateLimit(
+      supabase,
+      `beta-signup:${ip}`,
+      5,
+      60_000,
+      requestId,
+    );
     if (!allowed) {
       return jsonError(
         429,
@@ -103,7 +121,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (error) {
       console.error(JSON.stringify({ requestId, error: String(error) }));
-      return jsonError(500, "Erro ao salvar dados", { requestId }, { ...ch, "x-request-id": requestId });
+      return jsonError(
+        500,
+        "Erro ao salvar dados",
+        { requestId },
+        { ...ch, "x-request-id": requestId },
+      );
     }
 
     if (!data.success) {
@@ -127,7 +150,11 @@ const handler = async (req: Request): Promise<Response> => {
     // TODO: Send welcome email
     // await sendWelcomeEmail(data.email, data.nome);
 
-    return json(201, { message: data.message, success: true, requestId }, { ...ch, "x-request-id": requestId });
+    return json(
+      201,
+      { message: data.message, success: true, requestId },
+      { ...ch, "x-request-id": requestId },
+    );
   } catch (error: any) {
     console.error(JSON.stringify({ requestId, err: String(error) }));
     return jsonError(
@@ -139,4 +166,4 @@ const handler = async (req: Request): Promise<Response> => {
   }
 };
 
-serve('beta-signup', handler);
+serve("beta-signup", handler);

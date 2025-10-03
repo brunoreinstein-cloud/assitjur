@@ -6,18 +6,18 @@ export const TrustBand = () => {
     {
       icon: Shield,
       text: "LGPD by design",
-      variant: "secondary" as const
+      variant: "secondary" as const,
     },
     {
       icon: CheckCircle2,
       text: "Auditoria de acesso",
-      variant: "secondary" as const
+      variant: "secondary" as const,
     },
     {
       icon: Eye,
       text: "Máscara automática de PII",
-      variant: "secondary" as const
-    }
+      variant: "secondary" as const,
+    },
   ];
 
   return (
@@ -27,7 +27,7 @@ export const TrustBand = () => {
         {badges.map((badge, index) => {
           const Icon = badge.icon;
           return (
-            <Badge 
+            <Badge
               key={index}
               variant={badge.variant}
               className="px-4 py-2 text-sm font-medium bg-muted/50 hover:bg-muted/70 transition-colors"
@@ -46,7 +46,7 @@ export const TrustBand = () => {
         </p>
         <div className="flex justify-center items-center gap-8 opacity-50">
           {[1, 2, 3, 4].map((i) => (
-            <div 
+            <div
               key={i}
               className="w-24 h-12 bg-muted/30 rounded-lg flex items-center justify-center"
             >

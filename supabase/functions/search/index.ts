@@ -1,26 +1,26 @@
-import { serve } from '../_shared/observability.ts';
-import { corsHeaders, handlePreflight } from '../_shared/cors.ts';
-import { getAuth } from '../_shared/auth.ts';
-import { json, jsonError } from '../_shared/http.ts';
-import { logger } from '../_shared/logger.ts';
+import { serve } from "../_shared/observability.ts";
+import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
+import { getAuth } from "../_shared/auth.ts";
+import { json, jsonError } from "../_shared/http.ts";
+import { logger } from "../_shared/logger.ts";
 
 const ENTITY_TYPE_LABELS_MAP: Record<string, string> = {
-  process: 'Processos',
-  witness: 'Testemunhas',
-  claimant: 'Reclamantes',
-  lawyer: 'Advogados',
-  comarca: 'Comarcas',
+  process: "Processos",
+  witness: "Testemunhas",
+  claimant: "Reclamantes",
+  lawyer: "Advogados",
+  comarca: "Comarcas",
 };
 
 interface SearchQuery {
   q: string;
-  scope?: 'all' | 'process' | 'witness' | 'claimant' | 'lawyer' | 'comarca';
+  scope?: "all" | "process" | "witness" | "claimant" | "lawyer" | "comarca";
   limit?: number;
 }
 
 interface SearchResult {
   id: string;
-  type: 'process' | 'witness' | 'claimant' | 'lawyer' | 'comarca';
+  type: "process" | "witness" | "claimant" | "lawyer" | "comarca";
   title: string;
   subtitle?: string;
   highlights: string[];
@@ -36,7 +36,7 @@ interface SearchResponse {
   results: SearchResult[];
   total: number;
   isAmbiguous?: boolean;
-  ambiguityType?: 'generic_name' | 'multiple_matches';
+  ambiguityType?: "generic_name" | "multiple_matches";
   suggestions?: {
     message: string;
     counts: Record<string, number>;
@@ -62,7 +62,7 @@ function parseSearchQuery(query: string) {
     const match = cleanQuery.match(pattern);
     if (match) {
       filters[key] = match[1] || true;
-      cleanQuery = cleanQuery.replace(match[0], '').trim();
+      cleanQuery = cleanQuery.replace(match[0], "").trim();
     }
   });
 
@@ -70,9 +70,9 @@ function parseSearchQuery(query: string) {
   const cnjPattern = /\d{7}-?\d{2}\.?\d{4}\.?\d\.?\d{2}\.?\d{4}/;
   const cnjMatch = cleanQuery.match(cnjPattern);
   if (cnjMatch) {
-    filters.cnj = cnjMatch[0].replace(/[^\d.-]/g, '');
-    filters.type = 'process';
-    cleanQuery = cleanQuery.replace(cnjMatch[0], '').trim();
+    filters.cnj = cnjMatch[0].replace(/[^\d.-]/g, "");
+    filters.type = "process";
+    cleanQuery = cleanQuery.replace(cnjMatch[0], "").trim();
   }
 
   // Detectar CPF/CNPJ mascarado
@@ -94,31 +94,34 @@ function inferirStatus(p: any): { status: string; inferido: boolean } {
   // Se tem situacao/categoria explícita, usar
   if (p.situacao) return { status: p.situacao, inferido: false };
   if (p.categoria) return { status: p.categoria, inferido: false };
-  
+
   // Inferir por classificacao_final
-  const classif = (p.classificacao_final || '').toLowerCase();
-  if (classif.includes('descartar')) return { status: 'Arquivado', inferido: true };
-  if (classif.includes('conhecer')) return { status: 'Aguardando movimentação', inferido: true };
-  
+  const classif = (p.classificacao_final || "").toLowerCase();
+  if (classif.includes("descartar"))
+    return { status: "Arquivado", inferido: true };
+  if (classif.includes("conhecer"))
+    return { status: "Aguardando movimentação", inferido: true };
+
   // Inferir por quantidade de movimentos/documentos
   const movs = p.quantidade_movimentos || 0;
   const docs = p.quantidade_documentos || 0;
-  if (movs === 0 && docs === 0) return { status: 'Aguardando distribuição', inferido: true };
-  if (movs > 10) return { status: 'Em fase instrutória', inferido: true };
-  
-  return { status: 'Em andamento', inferido: true };
+  if (movs === 0 && docs === 0)
+    return { status: "Aguardando distribuição", inferido: true };
+  if (movs > 10) return { status: "Em fase instrutória", inferido: true };
+
+  return { status: "Em andamento", inferido: true };
 }
 
 // SINCRONIZADO COM: src/lib/data-quality.ts - normalizarClassificacao()
 // IMPORTANTE: Manter manualmente sincronizado após alterações
 function normalizarClassificacao(classificacao: any): string {
-  if (!classificacao) return 'Normal';
-  
+  if (!classificacao) return "Normal";
+
   let normalized = String(classificacao)
-    .replace(/[\[\]]/g, '')  // Remove colchetes
+    .replace(/[\[\]]/g, "") // Remove colchetes
     .trim()
     .toLowerCase();
-  
+
   // Capitalizar primeira letra
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
@@ -126,28 +129,35 @@ function normalizarClassificacao(classificacao: any): string {
 // Cálculo de confiança baseado na completude dos dados REAIS
 function calculateDataConfidence(data: any, requiredFields: string[]): number {
   if (!data) return 0;
-  
-  const validFields = requiredFields.filter(field => {
+
+  const validFields = requiredFields.filter((field) => {
     const value = data[field];
-    return value !== null && value !== undefined && value !== '' && value !== 'nan' && value !== 'null';
+    return (
+      value !== null &&
+      value !== undefined &&
+      value !== "" &&
+      value !== "nan" &&
+      value !== "null"
+    );
   });
-  
+
   return validFields.length / requiredFields.length;
 }
 
 // Scoring unificado
 function calculateScore(
-  matchType: 'exact' | 'partial' | 'fuzzy',
+  matchType: "exact" | "partial" | "fuzzy",
   entityType: string,
   signals: {
     bothPoles?: boolean;
     highRiskLinks?: number;
     evidenceCount?: number;
     localMatch?: boolean;
-  }
+  },
 ): number {
   // Score base por tipo de match
-  let baseScore = matchType === 'exact' ? 1.0 : matchType === 'partial' ? 0.7 : 0.5;
+  let baseScore =
+    matchType === "exact" ? 1.0 : matchType === "partial" ? 0.7 : 0.5;
 
   // Peso por tipo de entidade
   const typeWeights: Record<string, number> = {
@@ -169,8 +179,8 @@ function calculateScore(
   return Math.min(baseScore, 1.0);
 }
 
-serve('search', async (req) => {
-  const requestId = req.headers.get('x-request-id') ?? crypto.randomUUID();
+serve("search", async (req) => {
+  const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();
   const ch = corsHeaders(req);
   const pre = handlePreflight(req, requestId);
   if (pre) return pre;
@@ -178,13 +188,21 @@ serve('search', async (req) => {
   try {
     const { user, organization_id, supa } = await getAuth(req);
     if (!user || !organization_id) {
-      return json(401, { error: 'Unauthorized' }, { ...ch, 'x-request-id': requestId });
+      return json(
+        401,
+        { error: "Unauthorized" },
+        { ...ch, "x-request-id": requestId },
+      );
     }
 
-    const { q, scope = 'all', limit = 20 }: SearchQuery = await req.json();
+    const { q, scope = "all", limit = 20 }: SearchQuery = await req.json();
 
     if (!q || q.length < 2) {
-      return json(400, { error: 'Query too short' }, { ...ch, 'x-request-id': requestId });
+      return json(
+        400,
+        { error: "Query too short" },
+        { ...ch, "x-request-id": requestId },
+      );
     }
 
     logger.info(`🔍 Busca unificada: q="${q}", scope="${scope}"`, requestId);
@@ -195,53 +213,76 @@ serve('search', async (req) => {
     const results: SearchResult[] = [];
 
     // Busca em processos (via RPC - mesma fonte que as tabelas)
-    if (scope === 'all' || scope === 'process' || parsed.filters.type === 'process') {
-      const { data: rpcResult, error: processError } = await supa.rpc('rpc_get_assistjur_processos', {
-        p_org_id: organization_id,
-        p_filters: { 
-          search: parsed.cleanQuery,
-          classificacao: parsed.filters.risco ? [parsed.filters.risco] : undefined
+    if (
+      scope === "all" ||
+      scope === "process" ||
+      parsed.filters.type === "process"
+    ) {
+      const { data: rpcResult, error: processError } = await supa.rpc(
+        "rpc_get_assistjur_processos",
+        {
+          p_org_id: organization_id,
+          p_filters: {
+            search: parsed.cleanQuery,
+            classificacao: parsed.filters.risco
+              ? [parsed.filters.risco]
+              : undefined,
+          },
+          p_page: 1,
+          p_limit: limit,
         },
-        p_page: 1,
-        p_limit: limit
-      });
+      );
 
       if (processError) {
-        logger.error(`❌ Erro ao buscar processos: ${processError.message}`, requestId);
+        logger.error(
+          `❌ Erro ao buscar processos: ${processError.message}`,
+          requestId,
+        );
       }
 
       const processos = rpcResult?.[0]?.data || [];
-      logger.info(`📊 Processos encontrados via RPC: ${processos.length}`, requestId);
+      logger.info(
+        `📊 Processos encontrados via RPC: ${processos.length}`,
+        requestId,
+      );
 
       if (processos.length > 0) {
         processos.forEach((p: any) => {
-          const matchType = parsed.filters.cnj && p.cnj?.includes(parsed.filters.cnj) ? 'exact' : 'partial';
-          
+          const matchType =
+            parsed.filters.cnj && p.cnj?.includes(parsed.filters.cnj)
+              ? "exact"
+              : "partial";
+
           // Inferir status inteligente
           const { status, inferido } = inferirStatus(p);
-          
+
           // Normalizar classificação
           const classificacaoNormalizada = normalizarClassificacao(
-            p.classificacao || p.classificacao_estrategica || p.insight_estrategico
+            p.classificacao ||
+              p.classificacao_estrategica ||
+              p.insight_estrategico,
           );
-          
+
           // Calcular confiança com campos REAIS da tabela
           const confidence = calculateDataConfidence(p, [
-            'cnj', 
-            'reclamante', 
-            'reclamada', 
-            'classificacao',
-            'insight_estrategico'
+            "cnj",
+            "reclamante",
+            "reclamada",
+            "classificacao",
+            "insight_estrategico",
           ]);
-          
-          logger.info(`🔍 Processo: cnj=${p.cnj}, status=${status}${inferido ? ' [INFERIDO]' : ''}, classificacao=${classificacaoNormalizada}, confidence=${Math.round(confidence * 100)}%`, requestId);
-          
+
+          logger.info(
+            `🔍 Processo: cnj=${p.cnj}, status=${status}${inferido ? " [INFERIDO]" : ""}, classificacao=${classificacaoNormalizada}, confidence=${Math.round(confidence * 100)}%`,
+            requestId,
+          );
+
           results.push({
             id: p.cnj || `proc_${Math.random()}`,
-            type: 'process',
-            title: p.cnj || 'CNJ não disponível',
-            subtitle: `${p.reclamante || 'N/A'} × ${p.reclamada || 'N/A'}`,
-            highlights: [p.cnj || '', p.reclamante || '', p.reclamada || ''],
+            type: "process",
+            title: p.cnj || "CNJ não disponível",
+            subtitle: `${p.reclamante || "N/A"} × ${p.reclamada || "N/A"}`,
+            highlights: [p.cnj || "", p.reclamante || "", p.reclamada || ""],
             meta: {
               status,
               statusInferido: inferido,
@@ -250,71 +291,98 @@ serve('search', async (req) => {
               testemunhas: p.qtd_testemunhas || 0,
               confidence,
             },
-            score: calculateScore(matchType, 'process', {}),
+            score: calculateScore(matchType, "process", {}),
           });
         });
       }
     }
 
     // Busca em testemunhas (via RPC)
-    if (scope === 'all' || scope === 'witness') {
-      const { data: rpcResult, error: witnessError } = await supa.rpc('rpc_get_assistjur_testemunhas', {
-        p_org_id: organization_id,
-        p_filters: { search: parsed.cleanQuery },
-        p_page: 1,
-        p_limit: limit
-      });
+    if (scope === "all" || scope === "witness") {
+      const { data: rpcResult, error: witnessError } = await supa.rpc(
+        "rpc_get_assistjur_testemunhas",
+        {
+          p_org_id: organization_id,
+          p_filters: { search: parsed.cleanQuery },
+          p_page: 1,
+          p_limit: limit,
+        },
+      );
 
       if (witnessError) {
-        logger.error(`❌ Erro ao buscar testemunhas: ${witnessError.message}`, requestId);
+        logger.error(
+          `❌ Erro ao buscar testemunhas: ${witnessError.message}`,
+          requestId,
+        );
       }
 
       const testemunhas = rpcResult?.[0]?.data || [];
-      logger.info(`📊 Testemunhas encontradas: ${testemunhas.length}`, requestId);
+      logger.info(
+        `📊 Testemunhas encontradas: ${testemunhas.length}`,
+        requestId,
+      );
 
       if (testemunhas.length > 0) {
         testemunhas.forEach((t: any, idx: number) => {
           const bothPoles = t.foi_testemunha_em_ambos_polos === true;
           const qtdDepoimentos = t.qtd_depoimentos || 0;
-          const classificacaoNormalizada = normalizarClassificacao(t.classificacao);
-          const confidence = calculateDataConfidence(t, ['nome_testemunha', 'qtd_depoimentos', 'classificacao']);
-          
-          logger.info(`🔍 Testemunha: nome=${t.nome_testemunha}, qtd=${qtdDepoimentos}, classificacao=${classificacaoNormalizada}, confidence=${Math.round(confidence * 100)}%`, requestId);
-          
+          const classificacaoNormalizada = normalizarClassificacao(
+            t.classificacao,
+          );
+          const confidence = calculateDataConfidence(t, [
+            "nome_testemunha",
+            "qtd_depoimentos",
+            "classificacao",
+          ]);
+
+          logger.info(
+            `🔍 Testemunha: nome=${t.nome_testemunha}, qtd=${qtdDepoimentos}, classificacao=${classificacaoNormalizada}, confidence=${Math.round(confidence * 100)}%`,
+            requestId,
+          );
+
           results.push({
             id: `w_${idx}`,
-            type: 'witness',
-            title: t.nome_testemunha || 'Nome não disponível',
+            type: "witness",
+            title: t.nome_testemunha || "Nome não disponível",
             subtitle: `${qtdDepoimentos} depoimentos`,
-            highlights: [t.nome_testemunha || ''],
+            highlights: [t.nome_testemunha || ""],
             meta: {
-              status: 'Ativa',
+              status: "Ativa",
               depoimentos: qtdDepoimentos,
               ambosPoles: bothPoles,
               classificacao: classificacaoNormalizada,
               confidence,
             },
-            score: calculateScore('partial', 'witness', { bothPoles }),
+            score: calculateScore("partial", "witness", { bothPoles }),
           });
         });
       }
     }
 
     // Busca em reclamantes (via RPC de processos)
-    if (scope === 'all' || scope === 'claimant') {
-      const { data: rpcResult, error: claimantError } = await supa.rpc('rpc_get_assistjur_processos', {
-        p_org_id: organization_id,
-        p_filters: { search: parsed.cleanQuery },
-        p_page: 1,
-        p_limit: limit
-      });
+    if (scope === "all" || scope === "claimant") {
+      const { data: rpcResult, error: claimantError } = await supa.rpc(
+        "rpc_get_assistjur_processos",
+        {
+          p_org_id: organization_id,
+          p_filters: { search: parsed.cleanQuery },
+          p_page: 1,
+          p_limit: limit,
+        },
+      );
 
       if (claimantError) {
-        logger.error(`❌ Erro ao buscar reclamantes: ${claimantError.message}`, requestId);
+        logger.error(
+          `❌ Erro ao buscar reclamantes: ${claimantError.message}`,
+          requestId,
+        );
       }
 
       const processos = rpcResult?.[0]?.data || [];
-      logger.info(`📊 Processos para reclamantes encontrados: ${processos.length}`, requestId);
+      logger.info(
+        `📊 Processos para reclamantes encontrados: ${processos.length}`,
+        requestId,
+      );
 
       if (processos.length > 0) {
         const uniqueClaimants = new Map<string, any>();
@@ -328,16 +396,16 @@ serve('search', async (req) => {
         uniqueClaimants.forEach((p: any, name: string) => {
           results.push({
             id: `c_${name}`,
-            type: 'claimant',
+            type: "claimant",
             title: name,
-            subtitle: 'Reclamante',
+            subtitle: "Reclamante",
             highlights: [name],
             meta: {
-              cnj: p.cnj || '',
-              status: 'Ativo',
-              confidence: calculateDataConfidence(p, ['reclamante']),
+              cnj: p.cnj || "",
+              status: "Ativo",
+              confidence: calculateDataConfidence(p, ["reclamante"]),
             },
-            score: calculateScore('partial', 'claimant', {}),
+            score: calculateScore("partial", "claimant", {}),
           });
         });
       }
@@ -351,19 +419,33 @@ serve('search', async (req) => {
 
     // Detectar ambiguidade
     let isAmbiguous = false;
-    let ambiguityType: 'generic_name' | 'multiple_matches' | undefined;
-    let suggestions: { message: string; counts: Record<string, number> } | undefined;
+    let ambiguityType: "generic_name" | "multiple_matches" | undefined;
+    let suggestions:
+      | { message: string; counts: Record<string, number> }
+      | undefined;
 
     // Critérios de ambiguidade
-    const hasMultipleWitnesses = finalResults.filter((r) => r.type === 'witness').length > 1;
-    const hasMultipleClaimants = finalResults.filter((r) => r.type === 'claimant').length > 1;
-    const isGenericQuery = parsed.cleanQuery.length > 0 && parsed.cleanQuery.split(' ').length <= 2 && !parsed.filters.cnj;
+    const hasMultipleWitnesses =
+      finalResults.filter((r) => r.type === "witness").length > 1;
+    const hasMultipleClaimants =
+      finalResults.filter((r) => r.type === "claimant").length > 1;
+    const isGenericQuery =
+      parsed.cleanQuery.length > 0 &&
+      parsed.cleanQuery.split(" ").length <= 2 &&
+      !parsed.filters.cnj;
     const totalResults = finalResults.length;
 
-    if (isGenericQuery && (hasMultipleWitnesses || hasMultipleClaimants) && totalResults >= 3) {
+    if (
+      isGenericQuery &&
+      (hasMultipleWitnesses || hasMultipleClaimants) &&
+      totalResults >= 3
+    ) {
       isAmbiguous = true;
-      ambiguityType = hasMultipleWitnesses || hasMultipleClaimants ? 'multiple_matches' : 'generic_name';
-      
+      ambiguityType =
+        hasMultipleWitnesses || hasMultipleClaimants
+          ? "multiple_matches"
+          : "generic_name";
+
       const counts: Record<string, number> = {};
       finalResults.forEach((r) => {
         const label = ENTITY_TYPE_LABELS_MAP[r.type] || r.type;
@@ -372,7 +454,7 @@ serve('search', async (req) => {
 
       const countText = Object.entries(counts)
         .map(([type, count]) => `${count} ${type.toLowerCase()}`)
-        .join(', ');
+        .join(", ");
 
       suggestions = {
         message: `${totalResults} resultados encontrados (${countText}). Selecione uma opção ou refine sua busca.`,
@@ -380,7 +462,10 @@ serve('search', async (req) => {
       };
     }
 
-    logger.info(`✅ Retornando ${finalResults.length} resultados${isAmbiguous ? ' [AMBÍGUO]' : ''}`, requestId);
+    logger.info(
+      `✅ Retornando ${finalResults.length} resultados${isAmbiguous ? " [AMBÍGUO]" : ""}`,
+      requestId,
+    );
 
     const response: SearchResponse = {
       query: q,
@@ -397,9 +482,14 @@ serve('search', async (req) => {
       response.suggestions = suggestions;
     }
 
-    return json(200, response, { ...ch, 'x-request-id': requestId });
+    return json(200, response, { ...ch, "x-request-id": requestId });
   } catch (error) {
     logger.error(`❌ Erro na busca: ${error.message}`, requestId);
-    return jsonError(500, error.message, { requestId }, { ...ch, 'x-request-id': requestId });
+    return jsonError(
+      500,
+      error.message,
+      { requestId },
+      { ...ch, "x-request-id": requestId },
+    );
   }
 });

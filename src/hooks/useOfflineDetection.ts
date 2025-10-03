@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export function useOfflineDetection() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -28,16 +28,16 @@ export function useOfflineDetection() {
     // Check API availability
     const checkApiHealth = async () => {
       try {
-        const response = await fetch('/api/health', { 
-          method: 'GET',
-          signal: AbortSignal.timeout(5000)
+        const response = await fetch("/api/health", {
+          method: "GET",
+          signal: AbortSignal.timeout(5000),
         });
-        
+
         const wasAvailable = apiAvailable;
         const nowAvailable = response.ok;
-        
+
         setApiAvailable(nowAvailable);
-        
+
         // Show notification on status change
         if (!wasAvailable && nowAvailable) {
           toast({
@@ -71,19 +71,19 @@ export function useOfflineDetection() {
     const healthCheckInterval = setInterval(checkApiHealth, 30000);
 
     // Network event listeners
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
       clearInterval(healthCheckInterval);
     };
   }, [apiAvailable, toast]);
 
-  return { 
-    isOnline, 
-    apiAvailable, 
-    isFullyOnline: isOnline && apiAvailable 
+  return {
+    isOnline,
+    apiAvailable,
+    isFullyOnline: isOnline && apiAvailable,
   };
 }

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { ArrowUp } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowUp } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface BackToTopFABProps {
   className?: string;
@@ -12,13 +12,13 @@ export function BackToTopFAB({ className }: BackToTopFABProps) {
 
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 600);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const scrollToTop = () => {
-    const heading = document.getElementById('main-heading');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const heading = document.getElementById("main-heading");
+    window.scrollTo({ top: 0, behavior: "smooth" });
     if (heading) {
       setTimeout(() => heading.focus(), 500);
     }
@@ -31,8 +31,8 @@ export function BackToTopFAB({ className }: BackToTopFABProps) {
       size="icon"
       aria-label="Voltar ao topo"
       className={cn(
-        'fixed bottom-6 right-6 rounded-full shadow-lg z-50',
-        className
+        "fixed bottom-6 right-6 rounded-full shadow-lg z-50",
+        className,
       )}
       onClick={scrollToTop}
     >

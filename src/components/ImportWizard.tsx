@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import Papa from 'papaparse';
-import { z } from 'zod';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { validateCNJ } from '@/lib/validation/unified-cnj';
+import React, { useState } from "react";
+import Papa from "papaparse";
+import { z } from "zod";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { validateCNJ } from "@/lib/validation/unified-cnj";
 
 // Schema for each CSV row
 const rowSchema = z.object({
-  CNJ: z.string().min(1, 'CNJ é obrigatório'),
+  CNJ: z.string().min(1, "CNJ é obrigatório"),
   Reclamante: z.string(),
   Reclamada: z.string(),
 });
@@ -22,16 +22,21 @@ interface ErrorLog {
 }
 
 export function ImportWizard() {
-  const [cnj, setCnj] = useState('');
-  const [cnjStatus, setCnjStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [cnjMessage, setCnjMessage] = useState('');
+  const [cnj, setCnj] = useState("");
+  const [cnjStatus, setCnjStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [cnjMessage, setCnjMessage] = useState("");
 
   const [progress, setProgress] = useState(0);
   const [errors, setErrors] = useState<ErrorLog[]>([]);
-  const [summary, setSummary] = useState<{ included: number; ignored: number } | null>(null);
+  const [summary, setSummary] = useState<{
+    included: number;
+    ignored: number;
+  } | null>(null);
 
   const maskCNJ = (value: string) => {
-    const digits = value.replace(/\D/g, '').slice(0, 20);
+    const digits = value.replace(/\D/g, "").slice(0, 20);
     const parts = [
       digits.slice(0, 7),
       digits.slice(7, 9),
@@ -40,38 +45,38 @@ export function ImportWizard() {
       digits.slice(14, 16),
       digits.slice(16, 20),
     ];
-    let result = parts[0] || '';
+    let result = parts[0] || "";
     if (digits.length > 7) result += `-${parts[1]}`;
     if (digits.length > 9) result += `.${parts[2]}`;
     if (digits.length > 13) result += `.${parts[3]}`;
     if (digits.length > 14) result += `.${parts[4]}`;
     if (digits.length > 16) result += `.${parts[5]}`;
     return result;
-    };
+  };
 
   const handleCnjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCnj(maskCNJ(e.target.value));
-    setCnjStatus('idle');
-    setCnjMessage('');
+    setCnjStatus("idle");
+    setCnjMessage("");
   };
 
   const handleCnjImport = async () => {
-    const validation = validateCNJ(cnj, 'final');
+    const validation = validateCNJ(cnj, "final");
     if (!validation.isValid) {
-      setCnjStatus('error');
-      setCnjMessage(validation.errors[0] || 'CNJ inválido');
+      setCnjStatus("error");
+      setCnjMessage(validation.errors[0] || "CNJ inválido");
       return;
     }
     setCnj(validation.formatted);
-    setCnjStatus('loading');
-    setCnjMessage('');
-    await new Promise(resolve => setTimeout(resolve, 300));
-    if (validation.cleaned === '00000000000000000000') {
-      setCnjStatus('success');
-      setCnjMessage('Processo importado com sucesso');
+    setCnjStatus("loading");
+    setCnjMessage("");
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    if (validation.cleaned === "00000000000000000000") {
+      setCnjStatus("success");
+      setCnjMessage("Processo importado com sucesso");
     } else {
-      setCnjStatus('error');
-      setCnjMessage('Processo não encontrado');
+      setCnjStatus("error");
+      setCnjMessage("Processo não encontrado");
     }
   };
 
@@ -80,16 +85,20 @@ export function ImportWizard() {
     setErrors([]);
     setSummary(null);
 
-    file.text().then(text => {
+    file.text().then((text) => {
       Papa.parse(text, {
         header: true,
         skipEmptyLines: true,
-        complete: results => {
+        complete: (results) => {
           const required = Object.keys(rowSchema.shape);
-          const missing = required.filter(h => !(results.meta.fields || []).includes(h));
+          const missing = required.filter(
+            (h) => !(results.meta.fields || []).includes(h),
+          );
           const log: ErrorLog[] = [];
           if (missing.length > 0) {
-            missing.forEach(m => log.push({ line: 1, column: m, message: `Coluna ${m} ausente` }));
+            missing.forEach((m) =>
+              log.push({ line: 1, column: m, message: `Coluna ${m} ausente` }),
+            );
             setErrors(log);
             setSummary({ included: 0, ignored: results.data.length });
             setProgress(100);
@@ -97,19 +106,19 @@ export function ImportWizard() {
           }
 
           let included = 0;
-interface CsvRow {
-  [key: string]: string | number | boolean;
-}
+          interface CsvRow {
+            [key: string]: string | number | boolean;
+          }
 
           (results.data as CsvRow[]).forEach((row, index) => {
             const parsed = rowSchema.safeParse(row);
             if (parsed.success) {
               included++;
             } else {
-              parsed.error.issues.forEach(issue => {
+              parsed.error.issues.forEach((issue) => {
                 log.push({
                   line: index + 2,
-                  column: issue.path.join('.') || 'desconhecida',
+                  column: issue.path.join(".") || "desconhecida",
                   message: issue.message,
                 });
               });
@@ -139,17 +148,20 @@ interface CsvRow {
               value={cnj}
               onChange={handleCnjChange}
             />
-            <Button onClick={handleCnjImport} disabled={cnjStatus === 'loading'}>
+            <Button
+              onClick={handleCnjImport}
+              disabled={cnjStatus === "loading"}
+            >
               Importar
             </Button>
           </div>
-          {cnjStatus === 'loading' && <Progress value={50} />}
-          {cnjStatus === 'error' && (
+          {cnjStatus === "loading" && <Progress value={50} />}
+          {cnjStatus === "error" && (
             <Alert variant="destructive">
               <AlertDescription>{cnjMessage}</AlertDescription>
             </Alert>
           )}
-          {cnjStatus === 'success' && (
+          {cnjStatus === "success" && (
             <Alert>
               <AlertDescription>{cnjMessage}</AlertDescription>
             </Alert>
@@ -162,7 +174,7 @@ interface CsvRow {
             id="file"
             type="file"
             accept=".csv"
-            onChange={e => {
+            onChange={(e) => {
               const f = e.target.files?.[0];
               if (f) handleFile(f);
             }}
@@ -190,4 +202,3 @@ interface CsvRow {
 }
 
 export default ImportWizard;
-

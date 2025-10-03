@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { GlobalMetrics } from '@/components/super-admin/GlobalMetrics';
-import { OrgList } from '@/components/super-admin/OrgList';
-import { Shield, Activity, Users } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { GlobalMetrics } from "@/components/super-admin/GlobalMetrics";
+import { OrgList } from "@/components/super-admin/OrgList";
+import { Shield, Activity, Users } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function SuperAdminDashboard() {
   const { isSuperAdmin } = useAuth();
@@ -23,7 +23,7 @@ export default function SuperAdminDashboard() {
         description: "Você não tem permissão para acessar esta área.",
         variant: "destructive",
       });
-      navigate('/dashboard');
+      navigate("/dashboard");
     } else {
       setLoading(false);
     }
@@ -53,7 +53,10 @@ export default function SuperAdminDashboard() {
             </p>
           </div>
         </div>
-        <Button onClick={() => navigate('/super-admin/users')} className="gap-2">
+        <Button
+          onClick={() => navigate("/super-admin/users")}
+          className="gap-2"
+        >
           <Users className="h-4 w-4" />
           Gerenciar Usuários
         </Button>

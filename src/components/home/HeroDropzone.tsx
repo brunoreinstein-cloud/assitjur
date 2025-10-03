@@ -18,14 +18,14 @@ export const HeroDropzone = () => {
   const steps = [
     { number: 1, text: "Envie planilha" },
     { number: 2, text: "Sistema cruza vínculos" },
-    { number: 3, text: "Receba alertas de risco" }
+    { number: 3, text: "Receba alertas de risco" },
   ];
 
   const handleStartAnalysis = () => {
     if (user) {
-      navigate('/dados/mapa');
+      navigate("/dados/mapa");
     } else {
-      navigate('/login');
+      navigate("/login");
     }
   };
 
@@ -36,7 +36,7 @@ export const HeroDropzone = () => {
         className="relative bg-cover bg-center rounded-3xl shadow-premium overflow-hidden"
         style={{
           backgroundImage: `linear-gradient(135deg, hsl(var(--primary) / 0.95), hsl(var(--primary-light) / 0.85)), image-set(url(${heroImageAvif}) type('image/avif'), url(${heroImageWebp}) type('image/webp'), url(${heroImageJpg}) type('image/jpeg'))`,
-          minHeight: '600px'
+          minHeight: "600px",
         }}
       >
         <div className="relative p-16 text-center text-primary-foreground">
@@ -46,15 +46,17 @@ export const HeroDropzone = () => {
               Testemunhas
             </span>
           </h1>
-          
+
           <p className="text-xl md:text-2xl mb-12 max-w-4xl mx-auto opacity-95 leading-relaxed">
-            Detecte automaticamente <strong>triangulações</strong>, <strong>trocas diretas</strong> e <strong>provas emprestadas</strong> 
+            Detecte automaticamente <strong>triangulações</strong>,{" "}
+            <strong>trocas diretas</strong> e{" "}
+            <strong>provas emprestadas</strong>
             com precisão e velocidade incomparáveis.
           </p>
-          
+
           {/* Primary CTA */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-            <Button 
+            <Button
               size="lg"
               onClick={handleStartAnalysis}
               className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-xl text-xl px-12 py-4 font-semibold"
@@ -62,8 +64,8 @@ export const HeroDropzone = () => {
               <ArrowRight className="w-6 h-6 mr-3" />
               Começar Análise Grátis
             </Button>
-            
-            <Button 
+
+            <Button
               variant="outline"
               size="lg"
               onClick={() => setUploadOpen(true)}
@@ -73,7 +75,7 @@ export const HeroDropzone = () => {
               Upload Rápido
             </Button>
           </div>
-          
+
           {/* How it works steps */}
           <div className="flex flex-col lg:flex-row gap-6 justify-center items-center max-w-4xl mx-auto">
             {steps.map((step, index) => (
@@ -92,7 +94,7 @@ export const HeroDropzone = () => {
               </div>
             ))}
           </div>
-          
+
           {/* Additional info */}
           <div className="mt-12 text-sm opacity-90">
             <div className="flex flex-wrap justify-center gap-8">

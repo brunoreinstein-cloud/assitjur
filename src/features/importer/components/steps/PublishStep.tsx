@@ -1,26 +1,32 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { EdgeFunctionTester } from '@/components/admin/EdgeFunctionTester';
-import { CheckCircle, AlertCircle, RefreshCw, PartyPopper } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useImportStore } from '@/features/importer/store/useImportStore';
+import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import { EdgeFunctionTester } from "@/components/admin/EdgeFunctionTester";
+import { CheckCircle, AlertCircle, RefreshCw, PartyPopper } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useImportStore } from "@/features/importer/store/useImportStore";
 
 export function PublishStep() {
-  const { 
-    session, 
-    file, 
-    validationResult, 
+  const {
+    session,
+    file,
+    validationResult,
     resetWizard,
-    isProcessing, 
-    setIsProcessing, 
-    uploadProgress, 
-    setUploadProgress 
+    isProcessing,
+    setIsProcessing,
+    uploadProgress,
+    setUploadProgress,
   } = useImportStore();
-  
+
   const [isPublished, setIsPublished] = useState(false);
   const [publishResult, setPublishResult] = useState<any>(null);
 
@@ -32,108 +38,129 @@ export function PublishStep() {
 
     try {
       // Get session token for authorization
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const jwt = session?.access_token;
       if (!jwt) throw new Error("Sem sessão");
-      
+
       // Test direct connectivity to create-version
       try {
-        const testResponse = await fetch(`https://fgjypmlszuzkgvhuszxn.functions.supabase.co/create-version`, {
-          method: 'OPTIONS',
-          headers: {
-            'Origin': window.location.origin,
-            'Authorization': `Bearer ${jwt}`,
-            'Access-Control-Request-Method': 'POST',
-            'Access-Control-Request-Headers': 'authorization, content-type, apikey, x-retry-count'
-          }
-        });
+        const testResponse = await fetch(
+          `https://fgjypmlszuzkgvhuszxn.functions.supabase.co/create-version`,
+          {
+            method: "OPTIONS",
+            headers: {
+              Origin: window.location.origin,
+              Authorization: `Bearer ${jwt}`,
+              "Access-Control-Request-Method": "POST",
+              "Access-Control-Request-Headers":
+                "authorization, content-type, apikey, x-retry-count",
+            },
+          },
+        );
       } catch (testError) {
         // Silently handle preflight test error in production
       }
 
       // Step 1: Create new version with improved error handling
       setUploadProgress(10);
-      const { data: versionData, error: versionError } = await supabase.functions.invoke('create-version', {
-        headers: { 'x-retry-count': retryCount.toString() }
-      });
-      
+      const { data: versionData, error: versionError } =
+        await supabase.functions.invoke("create-version", {
+          headers: { "x-retry-count": retryCount.toString() },
+        });
+
       if (versionError) {
-        throw new Error('Falha ao criar nova versão: ' + versionError.message);
+        throw new Error("Falha ao criar nova versão: " + versionError.message);
       }
 
       if (!versionData || !versionData.versionId) {
-        throw new Error('Resposta inválida da criação de versão: ' + JSON.stringify(versionData));
+        throw new Error(
+          "Resposta inválida da criação de versão: " +
+            JSON.stringify(versionData),
+        );
       }
 
       // Step 2: Extract and validate data from validation result
 
       const processos = validationResult.normalizedData?.processos || [];
       const testemunhas = validationResult.normalizedData?.testemunhas || [];
-      
+
       // Validate data before sending
       if (processos.length === 0 && testemunhas.length === 0) {
-        throw new Error(`Nenhum dado válido encontrado para importação. Verifique se o arquivo contém dados no formato correto.`);
+        throw new Error(
+          `Nenhum dado válido encontrado para importação. Verifique se o arquivo contém dados no formato correto.`,
+        );
       }
-      
-      
+
       // Step 3: Import data with enhanced diagnostics and retry logic
 
       // Step 3: Import data with timeout handling
       setUploadProgress(30);
-      
-      const importPromise = supabase.functions.invoke('import-into-version', {
+
+      const importPromise = supabase.functions.invoke("import-into-version", {
         body: {
           versionId: versionData.versionId,
           processos,
           testemunhas,
-          fileChecksum: session?.user?.id || 'unknown',
-          filename: file.name
-        }
+          fileChecksum: session?.user?.id || "unknown",
+          filename: file.name,
+        },
       });
 
       // Timeout handling (8 minutos para grandes arquivos)
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout na importação - arquivo muito grande ou conexão lenta')), 480000)
+        setTimeout(
+          () =>
+            reject(
+              new Error(
+                "Timeout na importação - arquivo muito grande ou conexão lenta",
+              ),
+            ),
+          480000,
+        ),
       );
 
-      const { data: importData, error: importError } = await Promise.race([
+      const { data: importData, error: importError } = (await Promise.race([
         importPromise,
-        timeoutPromise
-      ]) as any;
+        timeoutPromise,
+      ])) as any;
 
       if (importError) {
         // Check if it's a timeout or network error that might benefit from retry
-        if ((importError.message?.includes('timeout') || 
-             importError.message?.includes('network') || 
-             importError.message?.includes('504') ||
-             importError.message?.includes('502')) && retryCount < 2) {
-          
-          
+        if (
+          (importError.message?.includes("timeout") ||
+            importError.message?.includes("network") ||
+            importError.message?.includes("504") ||
+            importError.message?.includes("502")) &&
+          retryCount < 2
+        ) {
           toast({
             title: "Conectividade instável",
             description: `Tentativa ${retryCount + 1}/3 - Tentando novamente...`,
           });
-          
+
           // Wait before retry
-          await new Promise(resolve => setTimeout(resolve, 5000));
+          await new Promise((resolve) => setTimeout(resolve, 5000));
           return handlePublish(retryCount + 1);
         }
-        
-        throw new Error('Falha na importação: ' + importError.message);
+
+        throw new Error("Falha na importação: " + importError.message);
       }
 
       if (!importData || !importData.summary) {
-        throw new Error('Resposta inválida da importação');
+        throw new Error("Resposta inválida da importação");
       }
 
       // Step 4: Publish the version
       setUploadProgress(80);
-      const { data: publishData, error: publishError } = await supabase.functions.invoke('publish-version', {
-        body: { versionId: versionData.versionId }
-      });
+      const { data: publishData, error: publishError } =
+        await supabase.functions.invoke("publish-version", {
+          body: { versionId: versionData.versionId },
+        });
 
       if (publishError) {
-        throw new Error('Falha ao publicar versão: ' + publishError.message);
+        throw new Error("Falha ao publicar versão: " + publishError.message);
       }
 
       setUploadProgress(100);
@@ -144,8 +171,8 @@ export function PublishStep() {
         version: {
           id: versionData.versionId,
           number: versionData.number,
-          publishedAt: publishData.publishedAt
-        }
+          publishedAt: publishData.publishedAt,
+        },
       });
       setIsPublished(true);
 
@@ -155,27 +182,27 @@ export function PublishStep() {
       });
 
       // Signal that import is complete to refresh other views
-      localStorage.setItem('import_completed', Date.now().toString());
-      window.dispatchEvent(new Event('storage'));
-
+      localStorage.setItem("import_completed", Date.now().toString());
+      window.dispatchEvent(new Event("storage"));
     } catch (error: any) {
-      
       // More specific error messages
       let errorMessage = error.message || "Falha ao publicar dados";
       let errorTitle = "Erro na publicação";
-      
-      if (error.message?.includes('timeout')) {
+
+      if (error.message?.includes("timeout")) {
         errorTitle = "Timeout na operação";
-        errorMessage = "A operação demorou muito para completar. Tente novamente com um arquivo menor ou verifique sua conexão.";
-      } else if (error.message?.includes('504')) {
+        errorMessage =
+          "A operação demorou muito para completar. Tente novamente com um arquivo menor ou verifique sua conexão.";
+      } else if (error.message?.includes("504")) {
         errorTitle = "Servidor sobrecarregado";
-        errorMessage = "O servidor está processando muitos dados. Aguarde um momento e tente novamente.";
+        errorMessage =
+          "O servidor está processando muitos dados. Aguarde um momento e tente novamente.";
       }
-      
+
       toast({
         title: errorTitle,
         description: errorMessage,
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsProcessing(false);
@@ -217,7 +244,8 @@ export function PublishStep() {
           <Alert className="border-success bg-success/5">
             <CheckCircle className="h-4 w-4 text-success" />
             <AlertDescription className="text-success">
-              ✅ Importação realizada com sucesso! Os dados estão agora disponíveis para consulta.
+              ✅ Importação realizada com sucesso! Os dados estão agora
+              disponíveis para consulta.
             </AlertDescription>
           </Alert>
 
@@ -228,21 +256,22 @@ export function PublishStep() {
                 <strong>Arquivo:</strong> {file.name}
               </div>
               <div>
-                <strong>Tamanho:</strong> {(file.size / 1024 / 1024).toFixed(2)} MB
+                <strong>Tamanho:</strong> {(file.size / 1024 / 1024).toFixed(2)}{" "}
+                MB
               </div>
               <div>
                 <strong>Registros importados:</strong>
                 <span className="text-success font-semibold ml-1">
-                  {publishResult.summary?.valid_rows || validationResult.summary.valid}
+                  {publishResult.summary?.valid_rows ||
+                    validationResult.summary.valid}
                 </span>
               </div>
               <div>
                 <strong>Taxa de sucesso:</strong>
                 <span className="text-success ml-1">
-                  {validationResult.summary.analyzed > 0 
+                  {validationResult.summary.analyzed > 0
                     ? `${Math.round((validationResult.summary.valid / validationResult.summary.analyzed) * 100)}%`
-                    : '0%'
-                  }
+                    : "0%"}
                 </span>
               </div>
             </div>
@@ -250,9 +279,18 @@ export function PublishStep() {
             {publishResult.version && (
               <div className="mt-4 p-3 bg-success/10 rounded-lg border border-success/20">
                 <div className="text-sm space-y-1">
-                  <p><strong>Versão:</strong> v{publishResult.version.number}</p>
-                  <p><strong>ID da versão:</strong> {publishResult.version.id}</p>
-                  <p><strong>Publicada em:</strong> {new Date(publishResult.version.publishedAt).toLocaleString('pt-BR')}</p>
+                  <p>
+                    <strong>Versão:</strong> v{publishResult.version.number}
+                  </p>
+                  <p>
+                    <strong>ID da versão:</strong> {publishResult.version.id}
+                  </p>
+                  <p>
+                    <strong>Publicada em:</strong>{" "}
+                    {new Date(publishResult.version.publishedAt).toLocaleString(
+                      "pt-BR",
+                    )}
+                  </p>
                 </div>
               </div>
             )}
@@ -260,10 +298,24 @@ export function PublishStep() {
             {publishResult.summary && (
               <div className="mt-4 p-3 bg-primary/10 rounded-lg">
                 <div className="text-sm space-y-1">
-                  <p><strong>Processos:</strong> {publishResult.summary.processos_count || publishResult.imported || 0}</p>
-                  <p><strong>Testemunhas:</strong> {publishResult.summary.testemunhas_count || 0}</p>
-                  <p><strong>Stubs criados:</strong> {publishResult.summary.stubs_created || 0}</p>
-                  <p><strong>Flags detectadas:</strong> {publishResult.summary.flags_detected || 0}</p>
+                  <p>
+                    <strong>Processos:</strong>{" "}
+                    {publishResult.summary.processos_count ||
+                      publishResult.imported ||
+                      0}
+                  </p>
+                  <p>
+                    <strong>Testemunhas:</strong>{" "}
+                    {publishResult.summary.testemunhas_count || 0}
+                  </p>
+                  <p>
+                    <strong>Stubs criados:</strong>{" "}
+                    {publishResult.summary.stubs_created || 0}
+                  </p>
+                  <p>
+                    <strong>Flags detectadas:</strong>{" "}
+                    {publishResult.summary.flags_detected || 0}
+                  </p>
                 </div>
               </div>
             )}
@@ -273,13 +325,13 @@ export function PublishStep() {
             <Button onClick={handleStartOver} className="flex-1">
               Nova Importação
             </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => window.location.href = '/admin/versoes'}
-                className="flex-1"
-              >
-                Ver Versões
-              </Button>
+            <Button
+              variant="outline"
+              onClick={() => (window.location.href = "/admin/versoes")}
+              className="flex-1"
+            >
+              Ver Versões
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -304,7 +356,7 @@ export function PublishStep() {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Esta ação irá importar os dados validados para a base ativa. 
+                  Esta ação irá importar os dados validados para a base ativa.
                   Todas as consultas passarão a incluir os novos registros.
                 </AlertDescription>
               </Alert>
@@ -316,7 +368,8 @@ export function PublishStep() {
                     <strong>Arquivo:</strong> {file.name}
                   </div>
                   <div>
-                    <strong>Tamanho:</strong> {(file.size / 1024 / 1024).toFixed(2)} MB
+                    <strong>Tamanho:</strong>{" "}
+                    {(file.size / 1024 / 1024).toFixed(2)} MB
                   </div>
                   <div>
                     <strong>Registros válidos:</strong>
@@ -327,37 +380,40 @@ export function PublishStep() {
                   <div>
                     <strong>Problemas:</strong>
                     <span className="text-warning ml-1">
-                      {validationResult.summary.errors + validationResult.summary.warnings}
+                      {validationResult.summary.errors +
+                        validationResult.summary.warnings}
                     </span>
                     <span className="text-xs text-muted-foreground ml-1">
-                      ({validationResult.summary.errors} erros, {validationResult.summary.warnings} avisos)
+                      ({validationResult.summary.errors} erros,{" "}
+                      {validationResult.summary.warnings} avisos)
                     </span>
                   </div>
                 </div>
 
                 <div className="mt-4 p-3 bg-gradient-to-r from-success/10 to-primary/10 rounded-lg">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Qualidade dos Dados:</span>
+                    <span className="text-sm font-medium">
+                      Qualidade dos Dados:
+                    </span>
                     <span className="text-sm font-bold text-success">
                       {validationResult.summary.analyzed > 0
                         ? `${Math.round((validationResult.summary.valid / validationResult.summary.analyzed) * 100)}% aprovado`
-                        : '0% aprovado'
-                      }
+                        : "0% aprovado"}
                     </span>
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <Button 
-                  variant="outline" 
-                  onClick={() => window.history.back()}
-                >
+                <Button variant="outline" onClick={() => window.history.back()}>
                   Cancelar
                 </Button>
-                <Button 
-                  onClick={() => handlePublish()} 
-                  disabled={validationResult.summary.errors > 0 || validationResult.summary.valid === 0}
+                <Button
+                  onClick={() => handlePublish()}
+                  disabled={
+                    validationResult.summary.errors > 0 ||
+                    validationResult.summary.valid === 0
+                  }
                   className="bg-success hover:bg-success/90"
                 >
                   Confirmar Publicação
@@ -369,12 +425,15 @@ export function PublishStep() {
               <RefreshCw className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
               <p className="font-medium">Publicando base de dados...</p>
               <p className="text-sm text-muted-foreground mt-2">
-                Processando e importando todos os registros. Isso pode levar alguns minutos.
+                Processando e importando todos os registros. Isso pode levar
+                alguns minutos.
               </p>
               <div className="mt-4">
                 <Progress value={uploadProgress} className="w-full" />
                 <p className="text-sm text-muted-foreground mt-1">
-                  {uploadProgress < 100 ? `Processando... ${Math.round(uploadProgress)}%` : 'Finalizando...'}
+                  {uploadProgress < 100
+                    ? `Processando... ${Math.round(uploadProgress)}%`
+                    : "Finalizando..."}
                 </p>
               </div>
             </div>

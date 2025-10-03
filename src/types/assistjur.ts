@@ -21,7 +21,7 @@ export interface AssistJurProcessoRow {
   testemunhas_ativo?: string[];
   testemunhas_passivo?: string[];
   todas_testemunhas?: string[];
-  
+
   // Flags analíticas derivadas
   triangulacao_confirmada?: boolean;
   desenho_triangulacao?: string;
@@ -62,7 +62,7 @@ export interface ValidationIssue {
   sheet: string;
   row: number;
   column?: string;
-  severity: 'error' | 'warning' | 'info';
+  severity: "error" | "warning" | "info";
   rule: string;
   message: string;
   original?: any;
@@ -104,7 +104,7 @@ export interface ImportJob {
   upload_id: string;
   filename: string;
   file_size?: number;
-  status: 'processing' | 'completed' | 'completed_with_errors' | 'failed';
+  status: "processing" | "completed" | "completed_with_errors" | "failed";
   total_sheets: number;
   total_rows: number;
   valid_rows: number;

@@ -1,60 +1,60 @@
-import { render, RenderOptions } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
-import { vi } from 'vitest';
-import { AuthProvider } from '@/hooks/useAuth';
-import { MultiTenantProvider } from '@/contexts/MultiTenantContext';
-import type { ReactElement, ReactNode } from 'react';
+import { render, RenderOptions } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter } from "react-router-dom";
+import { vi } from "vitest";
+import { AuthProvider } from "@/hooks/useAuth";
+import { MultiTenantProvider } from "@/contexts/MultiTenantContext";
+import type { ReactElement, ReactNode } from "react";
 
 // Create a fresh QueryClient for each test
-export const createTestQueryClient = () => new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-      gcTime: 0,
+export const createTestQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: 0,
+      },
+      mutations: {
+        retry: false,
+      },
     },
-    mutations: {
-      retry: false,
-    },
-  },
-});
+  });
 
 interface TestProvidersProps {
   children: ReactNode;
   queryClient?: QueryClient;
 }
 
-export const TestProviders = ({ children, queryClient }: TestProvidersProps) => {
+export const TestProviders = ({
+  children,
+  queryClient,
+}: TestProvidersProps) => {
   const client = queryClient || createTestQueryClient();
-  
+
   return (
     <QueryClientProvider client={client}>
       <BrowserRouter>
         <AuthProvider>
-          <MultiTenantProvider>
-            {children}
-          </MultiTenantProvider>
+          <MultiTenantProvider>{children}</MultiTenantProvider>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );
 };
 
-interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
+interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
   queryClient?: QueryClient;
 }
 
 export const renderWithProviders = (
   ui: ReactElement,
-  options?: CustomRenderOptions
+  options?: CustomRenderOptions,
 ) => {
   const { queryClient, ...renderOptions } = options || {};
-  
+
   return render(ui, {
     wrapper: ({ children }) => (
-      <TestProviders queryClient={queryClient}>
-        {children}
-      </TestProviders>
+      <TestProviders queryClient={queryClient}>{children}</TestProviders>
     ),
     ...renderOptions,
   });
@@ -63,10 +63,12 @@ export const renderWithProviders = (
 // Mock Supabase client for tests
 export const createMockSupabaseClient = () => ({
   auth: {
-    getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+    getSession: vi
+      .fn()
+      .mockResolvedValue({ data: { session: null }, error: null }),
     getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
     onAuthStateChange: vi.fn().mockReturnValue({
-      data: { subscription: { unsubscribe: vi.fn() } }
+      data: { subscription: { unsubscribe: vi.fn() } },
     }),
     signInWithPassword: vi.fn(),
     signOut: vi.fn(),
@@ -81,8 +83,8 @@ export const createMockSupabaseClient = () => ({
 });
 
 // Wait for async operations
-export const waitForLoadingToFinish = () => 
-  new Promise(resolve => setTimeout(resolve, 0));
+export const waitForLoadingToFinish = () =>
+  new Promise((resolve) => setTimeout(resolve, 0));
 
 // Helper to mock organization service
 export const mockOrganizationService = {

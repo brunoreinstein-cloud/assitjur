@@ -1,35 +1,45 @@
-import React, { useMemo, useState } from 'react';
-import { Search, Filter, SlidersHorizontal, X, Upload, Eye, EyeOff, Users, MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import React, { useMemo, useState } from "react";
+import {
+  Search,
+  Filter,
+  SlidersHorizontal,
+  X,
+  Upload,
+  Eye,
+  EyeOff,
+  Users,
+  MoreHorizontal,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
+} from "@/components/ui/popover";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Separator } from '@/components/ui/separator';
-import { ProcessoFiltersState } from '@/types/processos-explorer';
-import { useDebounce } from '@/hooks/useDebounce';
-import { ProcessosSavedFilters } from '@/components/admin/processos/ProcessosSavedFilters';
-import { ProcessosDeleteConfirmModal } from '@/components/admin/processos/ProcessosDeleteConfirmModal';
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import { ProcessoFiltersState } from "@/types/processos-explorer";
+import { useDebounce } from "@/hooks/useDebounce";
+import { ProcessosSavedFilters } from "@/components/admin/processos/ProcessosSavedFilters";
+import { ProcessosDeleteConfirmModal } from "@/components/admin/processos/ProcessosDeleteConfirmModal";
 
 interface ProcessosToolbarProps {
   filters: ProcessoFiltersState;
@@ -46,13 +56,38 @@ interface ProcessosToolbarProps {
 }
 
 const UF_OPTIONS = [
-  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
-  'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+  "AC",
+  "AL",
+  "AP",
+  "AM",
+  "BA",
+  "CE",
+  "DF",
+  "ES",
+  "GO",
+  "MA",
+  "MT",
+  "MS",
+  "MG",
+  "PA",
+  "PB",
+  "PR",
+  "PE",
+  "PI",
+  "RJ",
+  "RN",
+  "RS",
+  "RO",
+  "RR",
+  "SC",
+  "SP",
+  "SE",
+  "TO",
 ];
 
-const STATUS_OPTIONS = ['Ativo', 'Arquivado', 'Suspenso', 'Baixado'];
-const FASE_OPTIONS = ['Conhecimento', 'Execução', 'Recursal', 'Liquidação'];
-const CLASSIFICACAO_OPTIONS = ['Baixo', 'Médio', 'Alto'];
+const STATUS_OPTIONS = ["Ativo", "Arquivado", "Suspenso", "Baixado"];
+const FASE_OPTIONS = ["Conhecimento", "Execução", "Recursal", "Liquidação"];
+const CLASSIFICACAO_OPTIONS = ["Baixo", "Médio", "Alto"];
 
 export function ProcessosToolbar({
   filters,
@@ -65,14 +100,14 @@ export function ProcessosToolbar({
   selectedCount,
   totalCount,
   onBulkDelete,
-  processos = []
+  processos = [],
 }: ProcessosToolbarProps) {
   const [searchTerm, setSearchTerm] = useState(filters.search);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const debouncedSearch = useDebounce(searchTerm, 300);
 
-  // Debounced search effect  
+  // Debounced search effect
   React.useEffect(() => {
     onFiltersChange({ ...filters, search: debouncedSearch });
   }, [debouncedSearch]);
@@ -81,9 +116,9 @@ export function ProcessosToolbar({
     onFiltersChange({ ...filters, ...updates });
   };
 
-  const toggleFlag = (flag: keyof ProcessoFiltersState['flags']) => {
+  const toggleFlag = (flag: keyof ProcessoFiltersState["flags"]) => {
     updateFilters({
-      flags: { ...filters.flags, [flag]: !filters.flags[flag] }
+      flags: { ...filters.flags, [flag]: !filters.flags[flag] },
     });
   };
 
@@ -130,13 +165,23 @@ export function ProcessosToolbar({
 
           {/* Filtro de Testemunhas Rápido */}
           <Select
-            value={filters.search.includes('testemunhas:') ? filters.search.split('testemunhas:')[1] : 'todas'}
+            value={
+              filters.search.includes("testemunhas:")
+                ? filters.search.split("testemunhas:")[1]
+                : "todas"
+            }
             onValueChange={(value) => {
-              if (value === 'todas') {
-                updateFilters({ search: filters.search.replace(/testemunhas:\w+/g, '').trim() });
+              if (value === "todas") {
+                updateFilters({
+                  search: filters.search.replace(/testemunhas:\w+/g, "").trim(),
+                });
               } else {
-                const cleanSearch = filters.search.replace(/testemunhas:\w+/g, '').trim();
-                updateFilters({ search: `${cleanSearch} testemunhas:${value}`.trim() });
+                const cleanSearch = filters.search
+                  .replace(/testemunhas:\w+/g, "")
+                  .trim();
+                updateFilters({
+                  search: `${cleanSearch} testemunhas:${value}`.trim(),
+                });
               }
             }}
           >
@@ -159,8 +204,8 @@ export function ProcessosToolbar({
                 <Filter className="h-4 w-4 mr-2" />
                 Filtros
                 {activeFiltersCount > 0 && (
-                  <Badge 
-                    variant="secondary" 
+                  <Badge
+                    variant="secondary"
                     className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
                   >
                     {activeFiltersCount}
@@ -186,7 +231,9 @@ export function ProcessosToolbar({
                   <Input
                     placeholder="Nome da testemunha"
                     value={filters.testemunha}
-                    onChange={(e) => updateFilters({ testemunha: e.target.value })}
+                    onChange={(e) =>
+                      updateFilters({ testemunha: e.target.value })
+                    }
                   />
                 </div>
 
@@ -194,15 +241,19 @@ export function ProcessosToolbar({
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">UF</Label>
                   <Select
-                    value={filters.uf[0] || ''}
-                    onValueChange={(value) => updateFilters({ uf: value ? [value] : [] })}
+                    value={filters.uf[0] || ""}
+                    onValueChange={(value) =>
+                      updateFilters({ uf: value ? [value] : [] })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione um estado" />
                     </SelectTrigger>
                     <SelectContent>
                       {UF_OPTIONS.map((uf) => (
-                        <SelectItem key={uf} value={uf}>{uf}</SelectItem>
+                        <SelectItem key={uf} value={uf}>
+                          {uf}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -212,15 +263,19 @@ export function ProcessosToolbar({
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Status</Label>
                   <Select
-                    value={filters.status[0] || ''}
-                    onValueChange={(value) => updateFilters({ status: value ? [value] : [] })}
+                    value={filters.status[0] || ""}
+                    onValueChange={(value) =>
+                      updateFilters({ status: value ? [value] : [] })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione um status" />
                     </SelectTrigger>
                     <SelectContent>
                       {STATUS_OPTIONS.map((status) => (
-                        <SelectItem key={status} value={status}>{status}</SelectItem>
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -230,15 +285,19 @@ export function ProcessosToolbar({
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Fase</Label>
                   <Select
-                    value={filters.fase[0] || ''}
-                    onValueChange={(value) => updateFilters({ fase: value ? [value] : [] })}
+                    value={filters.fase[0] || ""}
+                    onValueChange={(value) =>
+                      updateFilters({ fase: value ? [value] : [] })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione uma fase" />
                     </SelectTrigger>
                     <SelectContent>
                       {FASE_OPTIONS.map((fase) => (
-                        <SelectItem key={fase} value={fase}>{fase}</SelectItem>
+                        <SelectItem key={fase} value={fase}>
+                          {fase}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -248,15 +307,19 @@ export function ProcessosToolbar({
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Classificação</Label>
                   <Select
-                    value={filters.classificacao[0] || ''}
-                    onValueChange={(value) => updateFilters({ classificacao: value ? [value] : [] })}
+                    value={filters.classificacao[0] || ""}
+                    onValueChange={(value) =>
+                      updateFilters({ classificacao: value ? [value] : [] })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione uma classificação" />
                     </SelectTrigger>
                     <SelectContent>
                       {CLASSIFICACAO_OPTIONS.map((class_) => (
-                        <SelectItem key={class_} value={class_}>{class_}</SelectItem>
+                        <SelectItem key={class_} value={class_}>
+                          {class_}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -265,11 +328,14 @@ export function ProcessosToolbar({
                 {/* Score Range */}
                 <div className="space-y-3">
                   <Label className="text-sm font-medium">
-                    Score de Risco ({filters.scoreRange[0]} - {filters.scoreRange[1]})
+                    Score de Risco ({filters.scoreRange[0]} -{" "}
+                    {filters.scoreRange[1]})
                   </Label>
                   <Slider
                     value={filters.scoreRange}
-                    onValueChange={(value) => updateFilters({ scoreRange: value as [number, number] })}
+                    onValueChange={(value) =>
+                      updateFilters({ scoreRange: value as [number, number] })
+                    }
                     max={100}
                     min={0}
                     step={5}
@@ -285,9 +351,12 @@ export function ProcessosToolbar({
                       <Checkbox
                         id="triangulacao"
                         checked={filters.flags.triangulacao}
-                        onCheckedChange={() => toggleFlag('triangulacao')}
+                        onCheckedChange={() => toggleFlag("triangulacao")}
                       />
-                      <Label htmlFor="triangulacao" className="text-sm cursor-pointer">
+                      <Label
+                        htmlFor="triangulacao"
+                        className="text-sm cursor-pointer"
+                      >
                         Triangulação
                       </Label>
                     </div>
@@ -295,7 +364,7 @@ export function ProcessosToolbar({
                       <Checkbox
                         id="troca"
                         checked={filters.flags.troca}
-                        onCheckedChange={() => toggleFlag('troca')}
+                        onCheckedChange={() => toggleFlag("troca")}
                       />
                       <Label htmlFor="troca" className="text-sm cursor-pointer">
                         Troca Direta
@@ -305,7 +374,7 @@ export function ProcessosToolbar({
                       <Checkbox
                         id="prova"
                         checked={filters.flags.prova}
-                        onCheckedChange={() => toggleFlag('prova')}
+                        onCheckedChange={() => toggleFlag("prova")}
                       />
                       <Label htmlFor="prova" className="text-sm cursor-pointer">
                         Prova Emprestada
@@ -315,7 +384,7 @@ export function ProcessosToolbar({
                       <Checkbox
                         id="duplo"
                         checked={filters.flags.duplo}
-                        onCheckedChange={() => toggleFlag('duplo')}
+                        onCheckedChange={() => toggleFlag("duplo")}
                       />
                       <Label htmlFor="duplo" className="text-sm cursor-pointer">
                         Duplo Papel
@@ -332,8 +401,11 @@ export function ProcessosToolbar({
         <div className="flex items-center gap-2">
           {/* PII Mask Toggle */}
           <div className="flex items-center gap-2 px-3 py-2 border rounded-lg bg-background">
-            <Label htmlFor="pii-mask" className="text-sm font-medium cursor-pointer">
-              PII: {isPiiMasked ? 'ON' : 'OFF'}
+            <Label
+              htmlFor="pii-mask"
+              className="text-sm font-medium cursor-pointer"
+            >
+              PII: {isPiiMasked ? "ON" : "OFF"}
             </Label>
             <Switch
               id="pii-mask"
@@ -376,15 +448,14 @@ export function ProcessosToolbar({
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm text-muted-foreground">Filtros ativos:</span>
-          
+
           {filters.search.trim() && (
             <Badge variant="secondary" className="gap-1">
-              <Search className="h-3 w-3" />
-              "{filters.search}"
+              <Search className="h-3 w-3" />"{filters.search}"
               <button
                 onClick={() => {
-                  setSearchTerm('');
-                  updateFilters({ search: '' });
+                  setSearchTerm("");
+                  updateFilters({ search: "" });
                 }}
                 className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
               >
@@ -398,7 +469,7 @@ export function ProcessosToolbar({
               <Users className="h-3 w-3" />
               Testemunha: {filters.testemunha}
               <button
-                onClick={() => updateFilters({ testemunha: '' })}
+                onClick={() => updateFilters({ testemunha: "" })}
                 className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
               >
                 <X className="h-3 w-3" />
@@ -410,7 +481,9 @@ export function ProcessosToolbar({
             <Badge key={uf} variant="secondary" className="gap-1">
               UF: {uf}
               <button
-                onClick={() => updateFilters({ uf: filters.uf.filter(u => u !== uf) })}
+                onClick={() =>
+                  updateFilters({ uf: filters.uf.filter((u) => u !== uf) })
+                }
                 className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
               >
                 <X className="h-3 w-3" />
@@ -422,7 +495,11 @@ export function ProcessosToolbar({
             <Badge key={status} variant="secondary" className="gap-1">
               Status: {status}
               <button
-                onClick={() => updateFilters({ status: filters.status.filter(s => s !== status) })}
+                onClick={() =>
+                  updateFilters({
+                    status: filters.status.filter((s) => s !== status),
+                  })
+                }
                 className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
               >
                 <X className="h-3 w-3" />
@@ -435,12 +512,14 @@ export function ProcessosToolbar({
             .filter(([_, active]) => active)
             .map(([flag]) => (
               <Badge key={flag} variant="secondary" className="gap-1">
-                {flag === 'triangulacao' && 'Triangulação'}
-                {flag === 'troca' && 'Troca Direta'}
-                {flag === 'prova' && 'Prova Emprestada'}
-                {flag === 'duplo' && 'Duplo Papel'}
+                {flag === "triangulacao" && "Triangulação"}
+                {flag === "troca" && "Troca Direta"}
+                {flag === "prova" && "Prova Emprestada"}
+                {flag === "duplo" && "Duplo Papel"}
                 <button
-                  onClick={() => toggleFlag(flag as keyof ProcessoFiltersState['flags'])}
+                  onClick={() =>
+                    toggleFlag(flag as keyof ProcessoFiltersState["flags"])
+                  }
                   className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
                 >
                   <X className="h-3 w-3" />
@@ -464,7 +543,7 @@ export function ProcessosToolbar({
             </span>
           ) : (
             <span>
-              {totalCount.toLocaleString('pt-BR')} processos encontrados
+              {totalCount.toLocaleString("pt-BR")} processos encontrados
             </span>
           )}
         </div>

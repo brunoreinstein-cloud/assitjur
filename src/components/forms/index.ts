@@ -1,1 +1,1 @@
-export * from '@/components/forms/CnpjOabForm'
+export * from "@/components/forms/CnpjOabForm";

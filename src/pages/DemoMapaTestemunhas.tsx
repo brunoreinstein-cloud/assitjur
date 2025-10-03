@@ -1,6 +1,10 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import {
   Table,
   TableHeader,
@@ -8,21 +12,21 @@ import {
   TableHead,
   TableBody,
   TableCell,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 
 interface Witness {
   nome: string;
   vinculo: string;
-  risco: 'Alto' | 'Médio' | 'Baixo';
-  prova: 'Sim' | 'Não';
+  risco: "Alto" | "Médio" | "Baixo";
+  prova: "Sim" | "Não";
 }
 
 const mockData: Witness[] = [
-  { nome: 'Ana Souza', vinculo: 'Ex-empregada', risco: 'Alto', prova: 'Não' },
-  { nome: 'Bruno Lima', vinculo: 'Colega', risco: 'Médio', prova: 'Sim' },
-  { nome: 'Carla Dias', vinculo: 'Gerente', risco: 'Baixo', prova: 'Sim' },
-  { nome: 'Daniel Rocha', vinculo: 'Fornecedor', risco: 'Médio', prova: 'Não' },
-  { nome: 'Elisa Moreira', vinculo: 'Consultora', risco: 'Alto', prova: 'Sim' },
+  { nome: "Ana Souza", vinculo: "Ex-empregada", risco: "Alto", prova: "Não" },
+  { nome: "Bruno Lima", vinculo: "Colega", risco: "Médio", prova: "Sim" },
+  { nome: "Carla Dias", vinculo: "Gerente", risco: "Baixo", prova: "Sim" },
+  { nome: "Daniel Rocha", vinculo: "Fornecedor", risco: "Médio", prova: "Não" },
+  { nome: "Elisa Moreira", vinculo: "Consultora", risco: "Alto", prova: "Sim" },
 ];
 
 export default function DemoMapaTestemunhas() {
@@ -38,8 +42,12 @@ export default function DemoMapaTestemunhas() {
     }
   };
 
-  const riskColor = (risco: Witness['risco']) =>
-    risco === 'Alto' ? 'text-red-600' : risco === 'Médio' ? 'text-yellow-600' : 'text-green-600';
+  const riskColor = (risco: Witness["risco"]) =>
+    risco === "Alto"
+      ? "text-red-600"
+      : risco === "Médio"
+        ? "text-yellow-600"
+        : "text-green-600";
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -56,11 +64,11 @@ export default function DemoMapaTestemunhas() {
           <div
             key={stepIndex}
             className={`h-2 w-8 rounded-full transition-colors ${
-              stepIndex === step 
-                ? 'bg-primary' 
-                : stepIndex < step 
-                  ? 'bg-primary/60' 
-                  : 'bg-muted'
+              stepIndex === step
+                ? "bg-primary"
+                : stepIndex < step
+                  ? "bg-primary/60"
+                  : "bg-muted"
             }`}
           />
         ))}
@@ -111,7 +119,9 @@ export default function DemoMapaTestemunhas() {
                     <TableCell>{witness.nome}</TableCell>
                     <TableCell>{witness.vinculo}</TableCell>
                     <TableCell>
-                      <span className={riskColor(witness.risco)}>{witness.risco}</span>
+                      <span className={riskColor(witness.risco)}>
+                        {witness.risco}
+                      </span>
                     </TableCell>
                     <TableCell>{witness.prova}</TableCell>
                     <TableCell>
@@ -169,4 +179,3 @@ export default function DemoMapaTestemunhas() {
     </div>
   );
 }
-

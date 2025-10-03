@@ -1,4 +1,9 @@
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -10,12 +15,12 @@ import { applyPIIMask } from "@/utils/pii-mask";
 import { useToast } from "@/hooks/use-toast";
 
 export function DetailDrawer() {
-  const { 
-    isDetailDrawerOpen, 
-    setIsDetailDrawerOpen, 
-    selectedProcesso, 
+  const {
+    isDetailDrawerOpen,
+    setIsDetailDrawerOpen,
+    selectedProcesso,
     selectedTestemunha,
-    isPiiMasked 
+    isPiiMasked,
   } = useMapaTestemunhasStore();
   const { toast } = useToast();
 
@@ -36,7 +41,13 @@ export function DetailDrawer() {
     }
   };
 
-  const BooleanIcon = ({ value, label }: { value: boolean | null; label?: string }) => (
+  const BooleanIcon = ({
+    value,
+    label,
+  }: {
+    value: boolean | null;
+    label?: string;
+  }) => (
     <div className="flex items-center gap-2">
       {value === null ? (
         <span className="text-muted-foreground">—</span>
@@ -55,7 +66,7 @@ export function DetailDrawer() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => copyToClipboard(value?.toString() || 'N/A', label)}
+          onClick={() => copyToClipboard(value?.toString() || "N/A", label)}
           className="h-6 w-6 p-0"
         >
           <Copy className="h-3 w-3" />
@@ -64,14 +75,20 @@ export function DetailDrawer() {
     </div>
   );
 
-  const DetailField = ({ label, value, copyable = false }: { 
-    label: string; 
-    value: string | number | null; 
+  const DetailField = ({
+    label,
+    value,
+    copyable = false,
+  }: {
+    label: string;
+    value: string | number | null;
     copyable?: boolean;
   }) => (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-muted-foreground">{label}</label>
+        <label className="text-sm font-medium text-muted-foreground">
+          {label}
+        </label>
         {copyable && value && (
           <Button
             variant="ghost"
@@ -84,7 +101,7 @@ export function DetailDrawer() {
         )}
       </div>
       <p className="font-mono text-sm break-all">
-        {value ? applyPIIMask(value.toString(), isPiiMasked) : '—'}
+        {value ? applyPIIMask(value.toString(), isPiiMasked) : "—"}
       </p>
     </div>
   );
@@ -98,11 +115,9 @@ export function DetailDrawer() {
       <DrawerContent className="max-w-4xl mx-auto">
         <DrawerHeader>
           <DrawerTitle>
-            {selectedProcesso ? (
-              `Processo ${selectedProcesso.cnj}`
-            ) : (
-              `Testemunha ${selectedTestemunha?.nome_testemunha}`
-            )}
+            {selectedProcesso
+              ? `Processo ${selectedProcesso.cnj}`
+              : `Testemunha ${selectedTestemunha?.nome_testemunha}`}
           </DrawerTitle>
         </DrawerHeader>
 
@@ -116,20 +131,32 @@ export function DetailDrawer() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <DetailField label="CNJ" value={selectedProcesso.cnj} copyable />
+                <DetailField
+                  label="CNJ"
+                  value={selectedProcesso.cnj}
+                  copyable
+                />
                 <DetailField label="Status" value={selectedProcesso.status} />
                 <DetailField label="UF" value={selectedProcesso.uf} />
-                <DetailField label="Comarca" value={selectedProcesso.comarca} copyable />
+                <DetailField
+                  label="Comarca"
+                  value={selectedProcesso.comarca}
+                  copyable
+                />
                 <DetailField label="Fase" value={selectedProcesso.fase} />
-                <DetailField label="Reclamante" value={selectedProcesso.reclamante_limpo} copyable />
+                <DetailField
+                  label="Reclamante"
+                  value={selectedProcesso.reclamante_limpo}
+                  copyable
+                />
               </div>
 
               <Separator />
 
               <div className="space-y-4">
                 <h3 className="font-semibold">Advogados Parte Ativa</h3>
-                <ArrayField 
-                  items={selectedProcesso.advogados_parte_ativa} 
+                <ArrayField
+                  items={selectedProcesso.advogados_parte_ativa}
                   maxVisible={5}
                   isPiiMasked={isPiiMasked}
                 />
@@ -140,16 +167,16 @@ export function DetailDrawer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="text-sm font-medium mb-2">Polo Ativo</h4>
-                    <ArrayField 
-                      items={selectedProcesso.testemunhas_ativo_limpo} 
+                    <ArrayField
+                      items={selectedProcesso.testemunhas_ativo_limpo}
                       maxVisible={5}
                       isPiiMasked={isPiiMasked}
                     />
                   </div>
                   <div>
                     <h4 className="text-sm font-medium mb-2">Polo Passivo</h4>
-                    <ArrayField 
-                      items={selectedProcesso.testemunhas_passivo_limpo} 
+                    <ArrayField
+                      items={selectedProcesso.testemunhas_passivo_limpo}
                       maxVisible={5}
                       isPiiMasked={isPiiMasked}
                     />
@@ -161,34 +188,44 @@ export function DetailDrawer() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-muted-foreground">Reclamante foi Testemunha</label>
-                  <BooleanIcon value={selectedProcesso.reclamante_foi_testemunha} />
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Reclamante foi Testemunha
+                  </label>
+                  <BooleanIcon
+                    value={selectedProcesso.reclamante_foi_testemunha}
+                  />
                 </div>
-                <DetailField 
-                  label="Qtd Vezes Reclamante foi Testemunha" 
-                  value={selectedProcesso.qtd_vezes_reclamante_foi_testemunha} 
+                <DetailField
+                  label="Qtd Vezes Reclamante foi Testemunha"
+                  value={selectedProcesso.qtd_vezes_reclamante_foi_testemunha}
                 />
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-muted-foreground">Troca Direta</label>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Troca Direta
+                  </label>
                   <BooleanIcon value={selectedProcesso.troca_direta} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-muted-foreground">Triangulação Confirmada</label>
-                  <BooleanIcon value={selectedProcesso.triangulacao_confirmada} />
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Triangulação Confirmada
+                  </label>
+                  <BooleanIcon
+                    value={selectedProcesso.triangulacao_confirmada}
+                  />
                 </div>
               </div>
 
               <Separator />
 
-              <DetailField 
-                label="Classificação Final" 
-                value={selectedProcesso.classificacao_final} 
+              <DetailField
+                label="Classificação Final"
+                value={selectedProcesso.classificacao_final}
               />
-              
-              <DetailField 
-                label="Insight Estratégico" 
-                value={selectedProcesso.insight_estrategico} 
-                copyable 
+
+              <DetailField
+                label="Insight Estratégico"
+                value={selectedProcesso.insight_estrategico}
+                copyable
               />
             </div>
           )}
@@ -202,14 +239,14 @@ export function DetailDrawer() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <DetailField 
-                  label="Nome da Testemunha" 
-                  value={selectedTestemunha.nome_testemunha} 
-                  copyable 
+                <DetailField
+                  label="Nome da Testemunha"
+                  value={selectedTestemunha.nome_testemunha}
+                  copyable
                 />
-                <DetailField 
-                  label="Quantidade de Depoimentos" 
-                  value={selectedTestemunha.qtd_depoimentos} 
+                <DetailField
+                  label="Quantidade de Depoimentos"
+                  value={selectedTestemunha.qtd_depoimentos}
                 />
               </div>
 
@@ -217,20 +254,34 @@ export function DetailDrawer() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-muted-foreground">Já Foi Reclamante</label>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Já Foi Reclamante
+                  </label>
                   <BooleanIcon value={selectedTestemunha.ja_foi_reclamante} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-muted-foreground">Foi Testemunha em Ambos os Polos</label>
-                  <BooleanIcon value={selectedTestemunha.foi_testemunha_em_ambos_polos} />
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Foi Testemunha em Ambos os Polos
+                  </label>
+                  <BooleanIcon
+                    value={selectedTestemunha.foi_testemunha_em_ambos_polos}
+                  />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-muted-foreground">Participou Troca Favor</label>
-                  <BooleanIcon value={selectedTestemunha.participou_troca_favor} />
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Participou Troca Favor
+                  </label>
+                  <BooleanIcon
+                    value={selectedTestemunha.participou_troca_favor}
+                  />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-muted-foreground">Participou Triangulação</label>
-                  <BooleanIcon value={selectedTestemunha.participou_triangulacao} />
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Participou Triangulação
+                  </label>
+                  <BooleanIcon
+                    value={selectedTestemunha.participou_triangulacao}
+                  />
                 </div>
               </div>
 
@@ -238,8 +289,8 @@ export function DetailDrawer() {
 
               <div className="space-y-4">
                 <h3 className="font-semibold">CNJs como Testemunha</h3>
-                <ArrayField 
-                  items={selectedTestemunha.cnjs_como_testemunha ?? null} 
+                <ArrayField
+                  items={selectedTestemunha.cnjs_como_testemunha ?? null}
                   maxVisible={5}
                   isPiiMasked={isPiiMasked}
                 />
@@ -247,8 +298,8 @@ export function DetailDrawer() {
 
               <div className="space-y-4">
                 <h3 className="font-semibold">CNJs como Reclamante</h3>
-                <ArrayField 
-                  items={selectedTestemunha.cnjs_como_reclamante ?? null} 
+                <ArrayField
+                  items={selectedTestemunha.cnjs_como_reclamante ?? null}
                   maxVisible={5}
                   isPiiMasked={isPiiMasked}
                 />
@@ -257,13 +308,13 @@ export function DetailDrawer() {
               <Separator />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <DetailField 
-                  label="Classificação" 
-                  value={selectedTestemunha.classificacao ?? null} 
+                <DetailField
+                  label="Classificação"
+                  value={selectedTestemunha.classificacao ?? null}
                 />
-                <DetailField 
-                  label="Classificação Estratégica" 
-                  value={selectedTestemunha.classificacao_estrategica ?? null} 
+                <DetailField
+                  label="Classificação Estratégica"
+                  value={selectedTestemunha.classificacao_estrategica ?? null}
                 />
               </div>
             </div>

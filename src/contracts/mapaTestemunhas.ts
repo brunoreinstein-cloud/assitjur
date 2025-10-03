@@ -1,4 +1,7 @@
-import { ProcessosRequestSchema, type ProcessosRequest } from '@/contracts/mapa-contracts';
+import {
+  ProcessosRequestSchema,
+  type ProcessosRequest,
+} from "@/contracts/mapa-contracts";
 
 export type MapaTestemunhasRequest = ProcessosRequest;
 

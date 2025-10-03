@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, ArrowRightLeft, Users, TrendingUp } from "lucide-react";
@@ -15,10 +21,12 @@ interface RiskStats {
 export const RiskPanel = () => {
   const activeTab = useMapaTestemunhasStore((s) => s.activeTab);
   const processos = useMapaTestemunhasStore((s) => s.processos);
-  const setProcessoFilters = useMapaTestemunhasStore((s) => s.setProcessoFilters);
+  const setProcessoFilters = useMapaTestemunhasStore(
+    (s) => s.setProcessoFilters,
+  );
 
   const stats = useMemo<RiskStats>(() => {
-    if (activeTab !== 'processos') {
+    if (activeTab !== "processos") {
       return { triangulacoes: 0, trocas: 0, provas: 0, total: 0 };
     }
 
@@ -36,50 +44,50 @@ export const RiskPanel = () => {
       troca: () => setProcessoFilters({ temTroca: true }),
       prova: () => setProcessoFilters({ temProvaEmprestada: true }),
     }),
-    [setProcessoFilters]
+    [setProcessoFilters],
   );
 
   const riskItems = useMemo(
     () => [
       {
-        id: 'triangulacao',
-        title: 'Triangulações',
-        description: 'Processos com triangulação confirmada',
+        id: "triangulacao",
+        title: "Triangulações",
+        description: "Processos com triangulação confirmada",
         count: stats.triangulacoes,
         total: stats.total,
         icon: Users,
-        color: 'text-destructive',
-        bgColor: 'bg-destructive/5 hover:bg-destructive/10',
-        borderColor: 'border-destructive/20',
+        color: "text-destructive",
+        bgColor: "bg-destructive/5 hover:bg-destructive/10",
+        borderColor: "border-destructive/20",
         onClick: filterCallbacks.triangulacao,
       },
       {
-        id: 'troca',
-        title: 'Trocas Diretas',
-        description: 'Processos com troca direta identificada',
+        id: "troca",
+        title: "Trocas Diretas",
+        description: "Processos com troca direta identificada",
         count: stats.trocas,
         total: stats.total,
         icon: ArrowRightLeft,
-        color: 'text-warning',
-        bgColor: 'bg-warning/5 hover:bg-warning/10',
-        borderColor: 'border-warning/20',
+        color: "text-warning",
+        bgColor: "bg-warning/5 hover:bg-warning/10",
+        borderColor: "border-warning/20",
         onClick: filterCallbacks.troca,
       },
       {
-        id: 'prova',
-        title: 'Provas Emprestadas',
-        description: 'Processos com prova emprestada detectada',
+        id: "prova",
+        title: "Provas Emprestadas",
+        description: "Processos com prova emprestada detectada",
         count: stats.provas,
         total: stats.total,
         icon: AlertTriangle,
-        color: 'text-orange-600',
+        color: "text-orange-600",
         bgColor:
-          'bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/10 dark:hover:bg-orange-900/20',
-        borderColor: 'border-orange-200 dark:border-orange-900/30',
+          "bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/10 dark:hover:bg-orange-900/20",
+        borderColor: "border-orange-200 dark:border-orange-900/30",
         onClick: filterCallbacks.prova,
       },
     ],
-    [stats, filterCallbacks]
+    [stats, filterCallbacks],
   );
 
   const getPercentage = useCallback((count: number, total: number) => {
@@ -87,12 +95,12 @@ export const RiskPanel = () => {
   }, []);
 
   const getVariantByPercentage = useCallback((percentage: number) => {
-    if (percentage >= 20) return 'destructive';
-    if (percentage >= 10) return 'secondary';
-    return 'outline';
+    if (percentage >= 20) return "destructive";
+    if (percentage >= 10) return "secondary";
+    return "outline";
   }, []);
 
-  if (activeTab !== 'processos') {
+  if (activeTab !== "processos") {
     return null;
   }
 
@@ -101,9 +109,9 @@ export const RiskPanel = () => {
       {riskItems.map((item) => {
         const percentage = getPercentage(item.count, item.total);
         const Icon = item.icon;
-        
+
         return (
-          <Card 
+          <Card
             key={item.id}
             className={`cursor-pointer transition-all duration-200 hover:shadow-md ${item.bgColor} border ${item.borderColor}`}
             onClick={item.onClick}
@@ -115,7 +123,10 @@ export const RiskPanel = () => {
                   {item.title}
                 </div>
                 {percentage > 0 && (
-                  <Badge variant={getVariantByPercentage(percentage)} className="text-xs">
+                  <Badge
+                    variant={getVariantByPercentage(percentage)}
+                    className="text-xs"
+                  >
                     {percentage}%
                   </Badge>
                 )}
@@ -135,8 +146,8 @@ export const RiskPanel = () => {
                   </div>
                 </div>
                 {item.count > 0 && (
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="sm"
                     className={`h-8 text-xs ${item.color} hover:bg-current/10`}
                   >

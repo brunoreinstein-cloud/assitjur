@@ -1,24 +1,43 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { canonicalDicionarioFields } from '@/lib/templates/canonical-samples';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { canonicalDicionarioFields } from "@/lib/templates/canonical-samples";
 
 export function FieldDictionary() {
-  const processoFields = canonicalDicionarioFields.filter(f => f.Aba === 'Por Processo');
-  const testemunhaFields = canonicalDicionarioFields.filter(f => f.Aba === 'Por Testemunha');
+  const processoFields = canonicalDicionarioFields.filter(
+    (f) => f.Aba === "Por Processo",
+  );
+  const testemunhaFields = canonicalDicionarioFields.filter(
+    (f) => f.Aba === "Por Testemunha",
+  );
 
-  const renderFieldTable = (fields: typeof canonicalDicionarioFields, title: string, description: string) => (
+  const renderFieldTable = (
+    fields: typeof canonicalDicionarioFields,
+    title: string,
+    description: string,
+  ) => (
     <Card>
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
-          {title === 'Aba "Por Processo"' ? '⚖️' : '👤'}
+          {title === 'Aba "Por Processo"' ? "⚖️" : "👤"}
           {title}
         </CardTitle>
-        <CardDescription>
-          {description}
-        </CardDescription>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -44,8 +63,10 @@ export function FieldDictionary() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-center">
-                    <Badge 
-                      variant={field.Obrigatorio === 'Sim' ? 'destructive' : 'outline'}
+                    <Badge
+                      variant={
+                        field.Obrigatorio === "Sim" ? "destructive" : "outline"
+                      }
                       className="text-xs"
                     >
                       {field.Obrigatorio}
@@ -72,18 +93,18 @@ export function FieldDictionary() {
         <CardTitle>Dicionário de Campos</CardTitle>
         <CardDescription className="text-sm">
           <strong>CONFORMIDADE COM NOVAS ESPECIFICAÇÕES:</strong>
-          <br />
-          ✅ <strong>Abas obrigatórias:</strong> "Por Processo" + "Por Testemunha"
-          <br />
-          ✅ <strong>Campos obrigatórios Por Processo:</strong> cnj, uf, comarca, reclamante_nome, reu_nome, advogados_ativo, todas_testemunhas
-          <br />
-          ✅ <strong>Campos obrigatórios Por Testemunha:</strong> nome_testemunha, qtd_depoimentos, cnjs_como_testemunha
-          <br />
-          ✅ <strong>Sistema de sinônimos:</strong> Reconhece variações de nomes de colunas automaticamente
-          <br />
-          ✅ <strong>Parser de listas:</strong> Suporta formatos JSON-like, separação por ; e ,
-          <br />
-          ✅ <strong>CNJ preservado:</strong> Formato original mantido como string
+          <br />✅ <strong>Abas obrigatórias:</strong> "Por Processo" + "Por
+          Testemunha"
+          <br />✅ <strong>Campos obrigatórios Por Processo:</strong> cnj, uf,
+          comarca, reclamante_nome, reu_nome, advogados_ativo, todas_testemunhas
+          <br />✅ <strong>Campos obrigatórios Por Testemunha:</strong>{" "}
+          nome_testemunha, qtd_depoimentos, cnjs_como_testemunha
+          <br />✅ <strong>Sistema de sinônimos:</strong> Reconhece variações de
+          nomes de colunas automaticamente
+          <br />✅ <strong>Parser de listas:</strong> Suporta formatos
+          JSON-like, separação por ; e ,
+          <br />✅ <strong>CNJ preservado:</strong> Formato original mantido
+          como string
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -94,16 +115,16 @@ export function FieldDictionary() {
           </TabsList>
           <TabsContent value="processo" className="space-y-4 mt-6">
             {renderFieldTable(
-              processoFields, 
+              processoFields,
               'Aba "Por Processo"',
-              'Dados de processos judiciais com validação rigorosa de CNJ e campos obrigatórios'
+              "Dados de processos judiciais com validação rigorosa de CNJ e campos obrigatórios",
             )}
           </TabsContent>
           <TabsContent value="testemunha" className="space-y-4 mt-6">
             {renderFieldTable(
-              testemunhaFields, 
+              testemunhaFields,
               'Aba "Por Testemunha"',
-              'Dados de testemunhas com lista de CNJs dos processos onde atuaram como testemunhas'
+              "Dados de testemunhas com lista de CNJs dos processos onde atuaram como testemunhas",
             )}
           </TabsContent>
         </Tabs>

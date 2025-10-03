@@ -12,35 +12,37 @@ export function generateSessionId(): string {
  */
 export function isValidFileType(file: File): boolean {
   const validTypes = [
-    'text/csv',
-    'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    "text/csv",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   ];
-  
-  const validExtensions = ['.csv', '.xls', '.xlsx'];
-  
-  return validTypes.includes(file.type) || 
-         validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+
+  const validExtensions = [".csv", ".xls", ".xlsx"];
+
+  return (
+    validTypes.includes(file.type) ||
+    validExtensions.some((ext) => file.name.toLowerCase().endsWith(ext))
+  );
 }
 
 /**
  * Formata o tamanho do arquivo para exibição
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  
+  if (bytes === 0) return "0 Bytes";
+
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
 /**
  * Extrai a extensão do arquivo
  */
 export function getFileExtension(fileName: string): string {
-  return fileName.split('.').pop()?.toLowerCase() || '';
+  return fileName.split(".").pop()?.toLowerCase() || "";
 }
 
 /**
@@ -56,8 +58,8 @@ export function isValidFileSize(file: File, maxSizeMB: number = 20): boolean {
  */
 export function sanitizeFileName(fileName: string): string {
   return fileName
-    .replace(/[^a-zA-Z0-9.-]/g, '_')
-    .replace(/_{2,}/g, '_')
+    .replace(/[^a-zA-Z0-9.-]/g, "_")
+    .replace(/_{2,}/g, "_")
     .toLowerCase();
 }
 
@@ -65,5 +67,5 @@ export function sanitizeFileName(fileName: string): string {
  * Gera um timestamp formatado para logs
  */
 export function getFormattedTimestamp(): string {
-  return new Date().toISOString().replace('T', ' ').slice(0, 19);
+  return new Date().toISOString().replace("T", " ").slice(0, 19);
 }

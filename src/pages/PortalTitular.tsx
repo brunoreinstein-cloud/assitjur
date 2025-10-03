@@ -1,65 +1,91 @@
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, Eye, Download, Trash2, Edit, CheckCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Shield, Eye, Download, Trash2, Edit, CheckCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface LGPDRequest {
   id: string;
-  request_type: 'ACCESS' | 'RECTIFICATION' | 'DELETION' | 'PORTABILITY';
-  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'REJECTED';
+  request_type: "ACCESS" | "RECTIFICATION" | "DELETION" | "PORTABILITY";
+  status: "PENDING" | "PROCESSING" | "COMPLETED" | "REJECTED";
   created_at: string;
   completed_at?: string;
   justification?: string;
 }
 
 export default function PortalTitular() {
-  const [email, setEmail] = useState('');
-  const [requestType, setRequestType] = useState<string>('');
-  const [justification, setJustification] = useState('');
+  const [email, setEmail] = useState("");
+  const [requestType, setRequestType] = useState<string>("");
+  const [justification, setJustification] = useState("");
   const [requests, setRequests] = useState<LGPDRequest[]>([]);
   const [loading, setLoading] = useState(false);
 
   const requestTypes = [
-    { value: 'ACCESS', label: 'Acesso aos Dados', description: 'Visualizar quais dados pessoais temos sobre você' },
-    { value: 'RECTIFICATION', label: 'Retificação', description: 'Corrigir dados pessoais incorretos' },
-    { value: 'DELETION', label: 'Exclusão', description: 'Solicitar remoção dos seus dados pessoais' },
-    { value: 'PORTABILITY', label: 'Portabilidade', description: 'Receber seus dados em formato estruturado' }
+    {
+      value: "ACCESS",
+      label: "Acesso aos Dados",
+      description: "Visualizar quais dados pessoais temos sobre você",
+    },
+    {
+      value: "RECTIFICATION",
+      label: "Retificação",
+      description: "Corrigir dados pessoais incorretos",
+    },
+    {
+      value: "DELETION",
+      label: "Exclusão",
+      description: "Solicitar remoção dos seus dados pessoais",
+    },
+    {
+      value: "PORTABILITY",
+      label: "Portabilidade",
+      description: "Receber seus dados em formato estruturado",
+    },
   ];
 
   const handleSubmitRequest = async () => {
     if (!email || !requestType) {
-      toast.error('Preencha todos os campos obrigatórios');
+      toast.error("Preencha todos os campos obrigatórios");
       return;
     }
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('lgpd-requests', {
+      const { data, error } = await supabase.functions.invoke("lgpd-requests", {
         body: {
           email,
           requestType,
-          justification
-        }
+          justification,
+        },
       });
 
       if (error) {
-        console.error('Error submitting request:', error);
-        toast.error(error.message || 'Erro ao enviar solicitação. Tente novamente.');
+        console.error("Error submitting request:", error);
+        toast.error(
+          error.message || "Erro ao enviar solicitação. Tente novamente.",
+        );
         return;
       }
 
-      toast.success('Solicitação enviada com sucesso! Você receberá uma resposta em até 15 dias úteis.');
-      setEmail('');
-      setRequestType('');
-      setJustification('');
-      
+      toast.success(
+        "Solicitação enviada com sucesso! Você receberá uma resposta em até 15 dias úteis.",
+      );
+      setEmail("");
+      setRequestType("");
+      setJustification("");
+
       // Show additional info if available
       if (data?.processingInfo) {
         setTimeout(() => {
@@ -67,8 +93,8 @@ export default function PortalTitular() {
         }, 2000);
       }
     } catch (error) {
-      console.error('Erro ao enviar solicitação:', error);
-      toast.error('Erro ao enviar solicitação. Tente novamente.');
+      console.error("Erro ao enviar solicitação:", error);
+      toast.error("Erro ao enviar solicitação. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -76,13 +102,17 @@ export default function PortalTitular() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'PENDING':
+      case "PENDING":
         return <Badge variant="secondary">Pendente</Badge>;
-      case 'PROCESSING':
+      case "PROCESSING":
         return <Badge variant="default">Em Processamento</Badge>;
-      case 'COMPLETED':
-        return <Badge variant="default" className="bg-success">Concluída</Badge>;
-      case 'REJECTED':
+      case "COMPLETED":
+        return (
+          <Badge variant="default" className="bg-success">
+            Concluída
+          </Badge>
+        );
+      case "REJECTED":
         return <Badge variant="destructive">Rejeitada</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
@@ -91,13 +121,13 @@ export default function PortalTitular() {
 
   const getRequestIcon = (type: string) => {
     switch (type) {
-      case 'ACCESS':
+      case "ACCESS":
         return <Eye className="h-4 w-4" />;
-      case 'RECTIFICATION':
+      case "RECTIFICATION":
         return <Edit className="h-4 w-4" />;
-      case 'DELETION':
+      case "DELETION":
         return <Trash2 className="h-4 w-4" />;
-      case 'PORTABILITY':
+      case "PORTABILITY":
         return <Download className="h-4 w-4" />;
       default:
         return <Shield className="h-4 w-4" />;
@@ -114,7 +144,8 @@ export default function PortalTitular() {
             <h1 className="text-3xl font-bold">Portal do Titular - LGPD</h1>
           </div>
           <p className="text-muted-foreground text-lg">
-            Exercite seus direitos sobre dados pessoais conforme a Lei Geral de Proteção de Dados
+            Exercite seus direitos sobre dados pessoais conforme a Lei Geral de
+            Proteção de Dados
           </p>
         </div>
 
@@ -128,9 +159,7 @@ export default function PortalTitular() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">
-                E-mail *
-              </label>
+              <label className="block text-sm font-medium mb-2">E-mail *</label>
               <Input
                 type="email"
                 placeholder="seu.email@exemplo.com"
@@ -157,7 +186,9 @@ export default function PortalTitular() {
                         {getRequestIcon(type.value)}
                         <div>
                           <div className="font-medium">{type.label}</div>
-                          <div className="text-xs text-muted-foreground">{type.description}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {type.description}
+                          </div>
                         </div>
                       </div>
                     </SelectItem>
@@ -181,19 +212,20 @@ export default function PortalTitular() {
             <Alert>
               <CheckCircle className="h-4 w-4" />
               <AlertDescription>
-                <strong>Compromisso de Transparência:</strong> Todas as solicitações são processadas em até 15 dias úteis. 
-                Você receberá uma resposta detalhada no e-mail informado, incluindo os dados solicitados em formato 
-                estruturado quando aplicável.
+                <strong>Compromisso de Transparência:</strong> Todas as
+                solicitações são processadas em até 15 dias úteis. Você receberá
+                uma resposta detalhada no e-mail informado, incluindo os dados
+                solicitados em formato estruturado quando aplicável.
               </AlertDescription>
             </Alert>
 
-            <Button 
+            <Button
               onClick={handleSubmitRequest}
               disabled={loading}
               className="w-full"
               size="lg"
             >
-              {loading ? 'Enviando...' : 'Enviar Solicitação'}
+              {loading ? "Enviando..." : "Enviar Solicitação"}
             </Button>
           </CardContent>
         </Card>
@@ -209,25 +241,29 @@ export default function PortalTitular() {
                 <li className="flex items-start gap-2">
                   <Eye className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
                   <div>
-                    <strong>Acesso:</strong> Saber quais dados pessoais tratamos sobre você
+                    <strong>Acesso:</strong> Saber quais dados pessoais tratamos
+                    sobre você
                   </div>
                 </li>
                 <li className="flex items-start gap-2">
                   <Edit className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
                   <div>
-                    <strong>Retificação:</strong> Corrigir dados incompletos, inexatos ou desatualizados
+                    <strong>Retificação:</strong> Corrigir dados incompletos,
+                    inexatos ou desatualizados
                   </div>
                 </li>
                 <li className="flex items-start gap-2">
                   <Trash2 className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
                   <div>
-                    <strong>Exclusão:</strong> Solicitar a eliminação dos seus dados pessoais
+                    <strong>Exclusão:</strong> Solicitar a eliminação dos seus
+                    dados pessoais
                   </div>
                 </li>
                 <li className="flex items-start gap-2">
                   <Download className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
                   <div>
-                    <strong>Portabilidade:</strong> Receber seus dados em formato estruturado
+                    <strong>Portabilidade:</strong> Receber seus dados em
+                    formato estruturado
                   </div>
                 </li>
               </ul>
@@ -241,20 +277,21 @@ export default function PortalTitular() {
             <CardContent>
               <div className="space-y-3 text-sm">
                 <p>
-                  <strong>Execução de Direitos:</strong> Tratamos seus dados com base no exercício regular 
-                  de direitos em processo judicial (Art. 7º, VI da LGPD).
+                  <strong>Execução de Direitos:</strong> Tratamos seus dados com
+                  base no exercício regular de direitos em processo judicial
+                  (Art. 7º, VI da LGPD).
                 </p>
                 <p>
-                  <strong>Minimização:</strong> Coletamos apenas dados estritamente necessários para 
-                  a finalidade específica.
+                  <strong>Minimização:</strong> Coletamos apenas dados
+                  estritamente necessários para a finalidade específica.
                 </p>
                 <p>
-                  <strong>Segurança:</strong> Seus dados são protegidos por criptografia e controles 
-                  de acesso rigorosos.
+                  <strong>Segurança:</strong> Seus dados são protegidos por
+                  criptografia e controles de acesso rigorosos.
                 </p>
                 <p>
-                  <strong>Retenção:</strong> Dados são mantidos pelo período necessário para 
-                  cumprimento da finalidade ou obrigação legal.
+                  <strong>Retenção:</strong> Dados são mantidos pelo período
+                  necessário para cumprimento da finalidade ou obrigação legal.
                 </p>
               </div>
             </CardContent>

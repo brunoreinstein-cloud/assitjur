@@ -6,11 +6,11 @@ import {
   useState,
   ReactNode,
   FC,
-} from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { z } from 'zod';
-import { getEnv } from '@/lib/getEnv';
+} from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { z } from "zod";
+import { getEnv } from "@/lib/getEnv";
 
 const FlagsSchema = z.record(z.string(), z.boolean());
 const ResponseSchema = z.object({ flags: FlagsSchema });
@@ -25,18 +25,21 @@ interface FeatureFlagProviderProps {
   children: ReactNode;
 }
 
-export const FeatureFlagProvider: FC<FeatureFlagProviderProps> = ({ children }) => {
+export const FeatureFlagProvider: FC<FeatureFlagProviderProps> = ({
+  children,
+}) => {
   const { user, profile } = useAuth();
   const tenantId = profile?.organization_id;
   const userId = user?.id;
-  const environment = import.meta.env.MODE || 'production';
+  const environment = import.meta.env.MODE || "production";
 
   const {
     featureFlagsRefreshInterval: refreshInterval,
     featureFlagsCacheTtl: cacheTtl,
   } = getEnv();
 
-  const cacheKey = tenantId && userId ? `ff:${tenantId}:${userId}:${environment}` : null;
+  const cacheKey =
+    tenantId && userId ? `ff:${tenantId}:${userId}:${environment}` : null;
   const prevCacheKey = useRef<string | null>(null);
 
   const readCache = (): { ts: number; flags: Flags } | null => {
@@ -50,26 +53,33 @@ export const FeatureFlagProvider: FC<FeatureFlagProviderProps> = ({ children }) 
     }
   };
 
-  const cacheValid = (c: { ts: number }): boolean => Date.now() - c.ts <= cacheTtl;
+  const cacheValid = (c: { ts: number }): boolean =>
+    Date.now() - c.ts <= cacheTtl;
 
   const [flags, setFlags] = useState<Flags>(() => readCache()?.flags ?? {});
 
   const saveCache = (next: Flags) => {
     if (!cacheKey) return;
-    localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), flags: next }));
+    localStorage.setItem(
+      cacheKey,
+      JSON.stringify({ ts: Date.now(), flags: next }),
+    );
   };
 
   const fetchFlags = async () => {
     if (!tenantId || !userId) return;
     try {
-      const { data, error } = await supabase.functions.invoke('evaluate_flags', {
-        body: {
-          tenant_id: tenantId,
-          user_id: userId,
-          segments: profile?.plan ? [profile.plan] : [],
-          environment,
+      const { data, error } = await supabase.functions.invoke(
+        "evaluate_flags",
+        {
+          body: {
+            tenant_id: tenantId,
+            user_id: userId,
+            segments: profile?.plan ? [profile.plan] : [],
+            environment,
+          },
         },
-      });
+      );
       if (error) throw error;
       const parsed = ResponseSchema.parse(data);
       saveCache(parsed.flags);
@@ -119,7 +129,7 @@ export const useFeatureFlag = (flag: string, debug = false) => {
 
   useEffect(() => {
     if (import.meta.env.DEV && debug && prev.current !== value) {
-      console.debug(`[feature-flag] ${flag} ${value ? 'ON' : 'OFF'}`);
+      console.debug(`[feature-flag] ${flag} ${value ? "ON" : "OFF"}`);
     }
     prev.current = value;
   }, [value, debug, flag]);
@@ -127,6 +137,7 @@ export const useFeatureFlag = (flag: string, debug = false) => {
   return value;
 };
 
-export const refreshFeatureFlags = () => (globalRefresh ? globalRefresh() : Promise.resolve());
+export const refreshFeatureFlags = () =>
+  globalRefresh ? globalRefresh() : Promise.resolve();
 
 export type { Flags };

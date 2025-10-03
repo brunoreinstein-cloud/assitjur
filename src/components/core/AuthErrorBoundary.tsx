@@ -1,7 +1,7 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { logError } from '@/lib/logger';
-import { Button } from '@/components/ui/button';
-import { ShieldAlert, LogIn } from 'lucide-react';
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { logError } from "@/lib/logger";
+import { Button } from "@/components/ui/button";
+import { ShieldAlert, LogIn } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -21,26 +21,30 @@ export class AuthErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
-    const isAuthError = 
-      error.message.includes('auth') ||
-      error.message.includes('unauthorized') ||
-      error.message.includes('session') ||
-      error.message.includes('token');
+    const isAuthError =
+      error.message.includes("auth") ||
+      error.message.includes("unauthorized") ||
+      error.message.includes("session") ||
+      error.message.includes("token");
 
     return { hasError: true, error, isAuthError };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    logError('Auth context error', {
-      error: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack,
-      isAuthError: this.state.isAuthError
-    }, 'AuthErrorBoundary');
+    logError(
+      "Auth context error",
+      {
+        error: error.message,
+        stack: error.stack,
+        componentStack: errorInfo.componentStack,
+        isAuthError: this.state.isAuthError,
+      },
+      "AuthErrorBoundary",
+    );
   }
 
   handleLogin = () => {
-    window.location.href = '/login';
+    window.location.href = "/login";
   };
 
   handleRetry = () => {
@@ -61,16 +65,18 @@ export class AuthErrorBoundary extends Component<Props, State> {
               <ShieldAlert className="h-16 w-16 text-destructive" />
             </div>
             <h2 className="text-2xl font-bold text-foreground">
-              {this.state.isAuthError ? 'Erro de Autenticação' : 'Erro Crítico'}
+              {this.state.isAuthError ? "Erro de Autenticação" : "Erro Crítico"}
             </h2>
             <p className="text-muted-foreground">
               {this.state.isAuthError
-                ? 'Sua sessão expirou ou há um problema com sua autenticação. Por favor, faça login novamente.'
-                : 'Ocorreu um erro crítico na aplicação. Tente recarregar a página.'}
+                ? "Sua sessão expirou ou há um problema com sua autenticação. Por favor, faça login novamente."
+                : "Ocorreu um erro crítico na aplicação. Tente recarregar a página."}
             </p>
             {this.state.error && (
               <details className="text-xs text-muted-foreground text-left bg-muted p-2 rounded">
-                <summary className="cursor-pointer font-medium">Detalhes técnicos</summary>
+                <summary className="cursor-pointer font-medium">
+                  Detalhes técnicos
+                </summary>
                 <pre className="mt-2 whitespace-pre-wrap break-all">
                   {this.state.error.message}
                 </pre>

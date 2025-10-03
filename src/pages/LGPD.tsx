@@ -1,4 +1,3 @@
-
 export default function LGPD() {
   return (
     <main className="container mx-auto px-6 py-8">

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface FieldsetProps {
   label: string;
@@ -8,28 +8,41 @@ interface FieldsetProps {
   required?: boolean;
 }
 
-export function Fieldset({ label, children, error, help, required }: FieldsetProps) {
-  const fieldId = label.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+export function Fieldset({
+  label,
+  children,
+  error,
+  help,
+  required,
+}: FieldsetProps) {
+  const fieldId = label.toLowerCase().replace(/[^a-z0-9]+/g, "-");
   const errorId = `${fieldId}-error`;
   const helpId = `${fieldId}-help`;
 
   return (
     <div className="space-y-2">
-      <label htmlFor={fieldId} className="block text-sm font-medium text-foreground">
+      <label
+        htmlFor={fieldId}
+        className="block text-sm font-medium text-foreground"
+      >
         {label}
         {required && <span className="text-destructive ml-1">*</span>}
       </label>
-      
+
       <div>
-        {React.isValidElement(children) ? 
+        {React.isValidElement(children) ? (
           React.cloneElement(children as React.ReactElement, {
             id: fieldId,
-            'aria-describedby': error ? errorId : help ? helpId : undefined,
-          }) : 
-          <div id={fieldId} aria-describedby={error ? errorId : help ? helpId : undefined}>
+            "aria-describedby": error ? errorId : help ? helpId : undefined,
+          })
+        ) : (
+          <div
+            id={fieldId}
+            aria-describedby={error ? errorId : help ? helpId : undefined}
+          >
             {children}
           </div>
-        }
+        )}
       </div>
 
       {help && !error && (

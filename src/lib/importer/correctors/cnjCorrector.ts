@@ -1,9 +1,9 @@
-import { calculateCNJCheckDigits } from '@/lib/cnj-generator';
+import { calculateCNJCheckDigits } from "@/lib/cnj-generator";
 
 export interface CNJCorrection {
   original: string;
   corrected: string;
-  type: 'digits' | 'format' | 'checkDigits';
+  type: "digits" | "format" | "checkDigits";
   confidence: number;
 }
 
@@ -15,11 +15,11 @@ export function correctCNJ(cnj: string): CNJCorrection | null {
 
   const original = cnj;
   let corrected = cnj;
-  let type: CNJCorrection['type'] = 'format';
+  let type: CNJCorrection["type"] = "format";
   let confidence = 0.9;
 
   // Remove formatação
-  const digitsOnly = cnj.replace(/\D/g, '');
+  const digitsOnly = cnj.replace(/\D/g, "");
 
   // Se tem menos de 20 dígitos, tenta corrigir
   if (digitsOnly.length < 20) {
@@ -27,22 +27,28 @@ export function correctCNJ(cnj: string): CNJCorrection | null {
     if (digitsOnly.length === 18) {
       const checkDigits = calculateCNJCheckDigits(digitsOnly);
       corrected = digitsOnly + checkDigits;
-      type = 'checkDigits';
+      type = "checkDigits";
       confidence = 0.95;
     } else if (digitsOnly.length >= 15 && digitsOnly.length < 18) {
       // Tenta preencher zeros à esquerda no número sequencial
       const sequentialPart = digitsOnly.substring(0, 7);
-      const yearPart = digitsOnly.substring(7, 11) || new Date().getFullYear().toString();
-      const segmentPart = digitsOnly.substring(11, 13) || '8'; // Tribunal de Justiça
-      const tribunalPart = digitsOnly.substring(13, 15) || '01'; // Padrão
-      const originPart = digitsOnly.substring(15) || '0001'; // Padrão
-      
-      const reconstructed = sequentialPart.padStart(7, '0') + yearPart + segmentPart + tribunalPart + originPart.padStart(4, '0');
-      
+      const yearPart =
+        digitsOnly.substring(7, 11) || new Date().getFullYear().toString();
+      const segmentPart = digitsOnly.substring(11, 13) || "8"; // Tribunal de Justiça
+      const tribunalPart = digitsOnly.substring(13, 15) || "01"; // Padrão
+      const originPart = digitsOnly.substring(15) || "0001"; // Padrão
+
+      const reconstructed =
+        sequentialPart.padStart(7, "0") +
+        yearPart +
+        segmentPart +
+        tribunalPart +
+        originPart.padStart(4, "0");
+
       if (reconstructed.length === 18) {
         const checkDigits = calculateCNJCheckDigits(reconstructed);
         corrected = reconstructed + checkDigits;
-        type = 'digits';
+        type = "digits";
         confidence = 0.7;
       }
     }
@@ -51,10 +57,10 @@ export function correctCNJ(cnj: string): CNJCorrection | null {
     const withoutCheck = digitsOnly.substring(0, 18);
     const providedCheck = digitsOnly.substring(18);
     const calculatedCheck = calculateCNJCheckDigits(withoutCheck);
-    
+
     if (providedCheck !== calculatedCheck) {
       corrected = withoutCheck + calculatedCheck;
-      type = 'checkDigits';
+      type = "checkDigits";
       confidence = 0.98;
     } else {
       // CNJ já está correto
@@ -63,7 +69,7 @@ export function correctCNJ(cnj: string): CNJCorrection | null {
   } else if (digitsOnly.length > 20) {
     // Remove dígitos extras (pega os primeiros 20)
     corrected = digitsOnly.substring(0, 20);
-    type = 'format';
+    type = "format";
     confidence = 0.6;
   }
 
@@ -72,7 +78,7 @@ export function correctCNJ(cnj: string): CNJCorrection | null {
       original,
       corrected,
       type,
-      confidence
+      confidence,
     };
   }
 
@@ -83,10 +89,10 @@ export function correctCNJ(cnj: string): CNJCorrection | null {
  * Formata CNJ para o padrão visual
  */
 export function formatCNJ(cnj: string): string {
-  const digitsOnly = cnj.replace(/\D/g, '');
-  
+  const digitsOnly = cnj.replace(/\D/g, "");
+
   if (digitsOnly.length !== 20) return cnj;
-  
+
   // NNNNNNN-DD.AAAA.J.TR.OOOO
   return `${digitsOnly.substring(0, 7)}-${digitsOnly.substring(7, 9)}.${digitsOnly.substring(9, 13)}.${digitsOnly.substring(13, 14)}.${digitsOnly.substring(14, 16)}.${digitsOnly.substring(16, 20)}`;
 }
@@ -96,8 +102,8 @@ export function formatCNJ(cnj: string): string {
  */
 export function correctCNJBatch(cnjs: string[]): Map<string, CNJCorrection> {
   const corrections = new Map<string, CNJCorrection>();
-  
-  cnjs.forEach(cnj => {
+
+  cnjs.forEach((cnj) => {
     if (cnj) {
       const correction = correctCNJ(cnj);
       if (correction) {
@@ -105,6 +111,6 @@ export function correctCNJBatch(cnjs: string[]): Map<string, CNJCorrection> {
       }
     }
   });
-  
+
   return corrections;
 }

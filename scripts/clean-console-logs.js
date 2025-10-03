@@ -5,22 +5,22 @@
  * Remove console.log mas mantém console.error, console.warn para debugging crítico
  */
 
-import { readFileSync, writeFileSync } from 'fs';
-import { glob } from 'glob';
+import { readFileSync, writeFileSync } from "fs";
+import { glob } from "glob";
 
-const DRY_RUN = process.argv.includes('--dry-run');
-const VERBOSE = process.argv.includes('--verbose');
+const DRY_RUN = process.argv.includes("--dry-run");
+const VERBOSE = process.argv.includes("--verbose");
 
 // Arquivos e diretórios a ignorar
 const IGNORE_PATTERNS = [
-  '**/node_modules/**',
-  '**/dist/**',
-  '**/build/**',
-  '**/*.test.ts',
-  '**/*.test.tsx',
-  '**/scripts/**',
-  '**/src/lib/dev-diagnostics.ts', // Mantém para debugging
-  '**/src/lib/debug-mode.ts', // Sistema de debug controlado
+  "**/node_modules/**",
+  "**/dist/**",
+  "**/build/**",
+  "**/*.test.ts",
+  "**/*.test.tsx",
+  "**/scripts/**",
+  "**/src/lib/dev-diagnostics.ts", // Mantém para debugging
+  "**/src/lib/debug-mode.ts", // Sistema de debug controlado
 ];
 
 // Padrões a remover (console.log, console.info, console.debug)
@@ -31,32 +31,30 @@ const PATTERNS_TO_REMOVE = [
 ];
 
 // Padrões a MANTER (console.error, console.warn, logger.*)
-const PATTERNS_TO_KEEP = [
-  /console\.error/,
-  /console\.warn/,
-  /logger\./,
-];
+const PATTERNS_TO_KEEP = [/console\.error/, /console\.warn/, /logger\./];
 
 async function cleanFile(filePath) {
   try {
-    const content = readFileSync(filePath, 'utf8');
+    const content = readFileSync(filePath, "utf8");
     let cleanedContent = content;
     let removedCount = 0;
 
     // Verifica se tem padrões para manter
-    const hasKeepPatterns = PATTERNS_TO_KEEP.some(pattern => pattern.test(content));
+    const hasKeepPatterns = PATTERNS_TO_KEEP.some((pattern) =>
+      pattern.test(content),
+    );
 
     // Remove console.logs
-    PATTERNS_TO_REMOVE.forEach(pattern => {
+    PATTERNS_TO_REMOVE.forEach((pattern) => {
       const matches = cleanedContent.match(pattern);
       if (matches) {
         removedCount += matches.length;
-        cleanedContent = cleanedContent.replace(pattern, '');
+        cleanedContent = cleanedContent.replace(pattern, "");
       }
     });
 
     // Remove linhas vazias em excesso
-    cleanedContent = cleanedContent.replace(/\n{3,}/g, '\n\n');
+    cleanedContent = cleanedContent.replace(/\n{3,}/g, "\n\n");
 
     if (removedCount > 0) {
       if (VERBOSE) {
@@ -64,7 +62,7 @@ async function cleanFile(filePath) {
       }
 
       if (!DRY_RUN) {
-        writeFileSync(filePath, cleanedContent, 'utf8');
+        writeFileSync(filePath, cleanedContent, "utf8");
       }
 
       return removedCount;
@@ -78,14 +76,14 @@ async function cleanFile(filePath) {
 }
 
 async function main() {
-  console.log('🧹 Limpando console.logs para produção...\n');
+  console.log("🧹 Limpando console.logs para produção...\n");
 
   if (DRY_RUN) {
-    console.log('⚠️  Modo DRY RUN - nenhum arquivo será modificado\n');
+    console.log("⚠️  Modo DRY RUN - nenhum arquivo será modificado\n");
   }
 
   // Busca arquivos TypeScript e JavaScript
-  const files = await glob('src/**/*.{ts,tsx,js,jsx}', {
+  const files = await glob("src/**/*.{ts,tsx,js,jsx}", {
     ignore: IGNORE_PATTERNS,
   });
 
@@ -102,15 +100,15 @@ async function main() {
     }
   }
 
-  console.log('\n📊 Resumo:');
+  console.log("\n📊 Resumo:");
   console.log(`   • Arquivos analisados: ${files.length}`);
   console.log(`   • Arquivos modificados: ${filesModified}`);
   console.log(`   • Console.logs removidos: ${totalRemoved}`);
 
   if (DRY_RUN) {
-    console.log('\n⚠️  Execute sem --dry-run para aplicar as mudanças');
+    console.log("\n⚠️  Execute sem --dry-run para aplicar as mudanças");
   } else {
-    console.log('\n✅ Limpeza concluída com sucesso!');
+    console.log("\n✅ Limpeza concluída com sucesso!");
   }
 }
 

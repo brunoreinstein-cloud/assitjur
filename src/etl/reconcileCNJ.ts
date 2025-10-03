@@ -17,12 +17,15 @@ export interface ProcessStub {
   // Flags para controle
   is_stub: boolean;
   precisa_completar: boolean;
-  created_from: 'testemunha_reference';
+  created_from: "testemunha_reference";
   org_id: string;
 }
 
 export interface ReconciliationWarning {
-  type: 'missing_processo_stub' | 'invalid_cnj_format' | 'duplicate_cnj_reference';
+  type:
+    | "missing_processo_stub"
+    | "invalid_cnj_format"
+    | "duplicate_cnj_reference";
   cnj: string;
   source: string;
   message: string;
@@ -45,11 +48,11 @@ export interface ReconciliationResult {
  * Valida formato básico de CNJ (20 dígitos)
  */
 export function isValidCNJFormat(cnj: string): boolean {
-  if (!cnj || typeof cnj !== 'string') return false;
-  
+  if (!cnj || typeof cnj !== "string") return false;
+
   // Remove espaços e caracteres especiais para validação
-  const cleanCNJ = cnj.replace(/[^\d]/g, '');
-  
+  const cleanCNJ = cnj.replace(/[^\d]/g, "");
+
   // CNJ deve ter exatamente 20 dígitos
   return cleanCNJ.length === 20 && /^\d{20}$/.test(cleanCNJ);
 }
@@ -59,18 +62,18 @@ export function isValidCNJFormat(cnj: string): boolean {
  */
 export function extractCNJsFromTestemunhas(testemunhas: any[]): Set<string> {
   const allCNJs = new Set<string>();
-  
+
   for (const testemunha of testemunhas) {
     const cnjs = testemunha.cnjs_como_testemunha || [];
-    
+
     for (const cnj of cnjs) {
-      if (cnj && typeof cnj === 'string') {
+      if (cnj && typeof cnj === "string") {
         // Preserva CNJ original como string
         allCNJs.add(cnj.trim());
       }
     }
   }
-  
+
   return allCNJs;
 }
 
@@ -79,26 +82,26 @@ export function extractCNJsFromTestemunhas(testemunhas: any[]): Set<string> {
  */
 export function identifyMissingCNJs(
   referencedCNJs: Set<string>,
-  existingProcessos: any[]
+  existingProcessos: any[],
 ): { missing: string[]; invalid: string[] } {
   const existingCNJSet = new Set(
-    existingProcessos.map(p => p.cnj).filter(Boolean)
+    existingProcessos.map((p) => p.cnj).filter(Boolean),
   );
-  
+
   const missing: string[] = [];
   const invalid: string[] = [];
-  
+
   for (const cnj of referencedCNJs) {
     if (!isValidCNJFormat(cnj)) {
       invalid.push(cnj);
       continue;
     }
-    
+
     if (!existingCNJSet.has(cnj)) {
       missing.push(cnj);
     }
   }
-  
+
   return { missing, invalid };
 }
 
@@ -108,10 +111,10 @@ export function identifyMissingCNJs(
 export function createProcessStub(cnj: string, orgId: string): ProcessStub {
   return {
     cnj: cnj, // Preserva formato original
-    status: 'desconhecido',
-    fase: 'desconhecida', 
-    uf: '',
-    comarca: '',
+    status: "desconhecido",
+    fase: "desconhecida",
+    uf: "",
+    comarca: "",
     reclamantes: [],
     advogados_ativo: [],
     testemunhas_ativo: [],
@@ -120,8 +123,8 @@ export function createProcessStub(cnj: string, orgId: string): ProcessStub {
     // Flags de controle
     is_stub: true,
     precisa_completar: true,
-    created_from: 'testemunha_reference',
-    org_id: orgId
+    created_from: "testemunha_reference",
+    org_id: orgId,
   };
 }
 
@@ -131,50 +134,50 @@ export function createProcessStub(cnj: string, orgId: string): ProcessStub {
 export function reconcileCNJs(
   processos: any[],
   testemunhas: any[],
-  orgId: string
+  orgId: string,
 ): ReconciliationResult {
   const warnings: ReconciliationWarning[] = [];
   const stubs: ProcessStub[] = [];
-  
+
   // 1. Extrair todos os CNJs referenciados pelas testemunhas
   const referencedCNJs = extractCNJsFromTestemunhas(testemunhas);
-  
+
   // 2. Identificar CNJs faltantes e inválidos
   const { missing, invalid } = identifyMissingCNJs(referencedCNJs, processos);
-  
+
   // 3. Gerar warnings para CNJs inválidos
   for (const invalidCNJ of invalid) {
-    const testemunhaRef = testemunhas.find(t => 
-      (t.cnjs_como_testemunha || []).includes(invalidCNJ)
+    const testemunhaRef = testemunhas.find((t) =>
+      (t.cnjs_como_testemunha || []).includes(invalidCNJ),
     );
-    
+
     warnings.push({
-      type: 'invalid_cnj_format',
+      type: "invalid_cnj_format",
       cnj: invalidCNJ,
-      source: 'testemunha_reference',
+      source: "testemunha_reference",
       message: `CNJ com formato inválido: "${invalidCNJ}" (deve ter 20 dígitos)`,
-      testemunha_nome: testemunhaRef?.nome_testemunha
+      testemunha_nome: testemunhaRef?.nome_testemunha,
     });
   }
-  
+
   // 4. Criar stubs para CNJs faltantes válidos
   for (const missingCNJ of missing) {
     const stub = createProcessStub(missingCNJ, orgId);
     stubs.push(stub);
-    
-    const testemunhaRef = testemunhas.find(t => 
-      (t.cnjs_como_testemunha || []).includes(missingCNJ)
+
+    const testemunhaRef = testemunhas.find((t) =>
+      (t.cnjs_como_testemunha || []).includes(missingCNJ),
     );
-    
+
     warnings.push({
-      type: 'missing_processo_stub',
+      type: "missing_processo_stub",
       cnj: missingCNJ,
-      source: 'testemunha_reference',
+      source: "testemunha_reference",
       message: `CNJ "${missingCNJ}" referenciado por testemunha mas não encontrado em processos. Stub criado.`,
-      testemunha_nome: testemunhaRef?.nome_testemunha
+      testemunha_nome: testemunhaRef?.nome_testemunha,
     });
   }
-  
+
   return {
     stubs_created: stubs,
     warnings,
@@ -182,8 +185,8 @@ export function reconcileCNJs(
       total_cnjs_referenced: referencedCNJs.size,
       existing_processos: processos.length,
       stubs_needed: missing.length,
-      invalid_cnjs: invalid.length
-    }
+      invalid_cnjs: invalid.length,
+    },
   };
 }
 
@@ -192,7 +195,7 @@ export function reconcileCNJs(
  */
 export function mergeProcessosWithStubs(
   existingProcessos: any[],
-  stubs: ProcessStub[]
+  stubs: ProcessStub[],
 ): any[] {
   return [...existingProcessos, ...stubs];
 }
@@ -201,7 +204,7 @@ export function mergeProcessosWithStubs(
  * Filtra apenas os stubs criados de uma lista combinada
  */
 export function extractStubsFromProcessos(processos: any[]): ProcessStub[] {
-  return processos.filter(p => p.is_stub === true) as ProcessStub[];
+  return processos.filter((p) => p.is_stub === true) as ProcessStub[];
 }
 
 /**
@@ -209,10 +212,10 @@ export function extractStubsFromProcessos(processos: any[]): ProcessStub[] {
  */
 export function needsCompletion(processo: any): boolean {
   if (!processo.is_stub) return false;
-  
+
   return (
     processo.precisa_completar === true ||
-    processo.status === 'desconhecido' ||
+    processo.status === "desconhecido" ||
     !processo.uf ||
     !processo.comarca ||
     (processo.reclamantes || []).length === 0

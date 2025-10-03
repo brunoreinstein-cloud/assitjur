@@ -1,6 +1,6 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { ErrorHandler, createError } from '@/lib/error-handling';
-import ServerError from '@/pages/ServerError';
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { ErrorHandler, createError } from "@/lib/error-handling";
+import ServerError from "@/pages/ServerError";
 
 interface Props {
   children: ReactNode;
@@ -26,19 +26,19 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Cria erro estruturado com contexto adicional
-    const appError = createError.system('React component error', {
+    const appError = createError.system("React component error", {
       componentStack: errorInfo.componentStack,
       errorBoundary: true,
       originalError: error.message,
-      stack: error.stack
+      stack: error.stack,
     });
 
     // Usa o handler centralizado
-    const handledError = ErrorHandler.handle(appError, 'ErrorBoundary');
-    
+    const handledError = ErrorHandler.handle(appError, "ErrorBoundary");
+
     this.setState({
       error: handledError,
-      errorInfo
+      errorInfo,
     });
 
     // Call custom error handler if provided
@@ -68,12 +68,12 @@ export class ErrorBoundary extends Component<Props, State> {
 // Hook version for functional components
 export function useErrorHandler() {
   return (error: Error, errorInfo?: ErrorInfo) => {
-    const appError = createError.system('Component error', {
+    const appError = createError.system("Component error", {
       ...errorInfo,
       originalError: error.message,
-      stack: error.stack
+      stack: error.stack,
     });
 
-    ErrorHandler.handleAndNotify(appError, 'useErrorHandler');
+    ErrorHandler.handleAndNotify(appError, "useErrorHandler");
   };
 }

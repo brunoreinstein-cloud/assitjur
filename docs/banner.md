@@ -9,7 +9,7 @@ import { Banner } from "@/components/ui/banner";
 
 <Banner variant="success" title="Sucesso">
   Dados salvos com êxito.
-</Banner>
+</Banner>;
 ```
 
 ## Variantes

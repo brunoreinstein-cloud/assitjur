@@ -4,19 +4,19 @@
  * Clear Vite build cache to fix initialization errors
  */
 
-import { existsSync, rmSync } from 'fs';
-import { join } from 'path';
+import { existsSync, rmSync } from "fs";
+import { join } from "path";
 
 const cacheDirs = [
-  'node_modules/.vite',
-  'node_modules/.cache',
-  '.vite',
-  'dist'
+  "node_modules/.vite",
+  "node_modules/.cache",
+  ".vite",
+  "dist",
 ];
 
-console.log('🧹 Limpando cache do Vite...\n');
+console.log("🧹 Limpando cache do Vite...\n");
 
-cacheDirs.forEach(dir => {
+cacheDirs.forEach((dir) => {
   const fullPath = join(process.cwd(), dir);
   if (existsSync(fullPath)) {
     try {
@@ -30,4 +30,6 @@ cacheDirs.forEach(dir => {
   }
 });
 
-console.log('\n✨ Cache limpo! Execute `npm run dev` ou `npm run build` para reconstruir.');
+console.log(
+  "\n✨ Cache limpo! Execute `npm run dev` ou `npm run build` para reconstruir.",
+);

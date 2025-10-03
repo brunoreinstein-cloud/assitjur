@@ -14,7 +14,10 @@ export function getSessionContext(): SessionContext {
   };
 }
 
-export function calculateRisk(previousTimezone: string | null, context: SessionContext): number {
+export function calculateRisk(
+  previousTimezone: string | null,
+  context: SessionContext,
+): number {
   let risk = 0;
   if (previousTimezone && previousTimezone !== context.timezone) {
     risk += 40; // new location
@@ -24,7 +27,7 @@ export function calculateRisk(previousTimezone: string | null, context: SessionC
     risk += 30; // unusual login time
   }
   const ua = context.userAgent.toLowerCase();
-  if (ua.includes('headless') || ua.includes('bot')) {
+  if (ua.includes("headless") || ua.includes("bot")) {
     risk += 30; // suspicious user agent as ASN hint
   }
   return risk;

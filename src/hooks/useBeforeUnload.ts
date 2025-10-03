@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 
-export function useBeforeUnload(enabled: boolean, message = "Você tem alterações não salvas. Deseja sair?") {
+export function useBeforeUnload(
+  enabled: boolean,
+  message = "Você tem alterações não salvas. Deseja sair?",
+) {
   useEffect(() => {
     if (!enabled) return;
 

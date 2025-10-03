@@ -1,30 +1,36 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Database, 
-  CheckCircle2, 
-  Upload, 
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Database,
+  CheckCircle2,
+  Upload,
   AlertTriangle,
-  TrendingUp, 
-  Users, 
+  TrendingUp,
+  Users,
   MessageSquare,
   DollarSign,
   Activity,
-  BarChart3
-} from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
-import { 
-  UsageChart, 
-  RiskDistributionChart, 
+  BarChart3,
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import {
+  UsageChart,
+  RiskDistributionChart,
   ComarcaRiskChart,
-  TokensChart 
-} from '@/components/analytics/AnalyticsCharts';
-import { ReviewUpdateButton } from '@/components/admin/ReviewUpdateButton';
-import { DatabaseCleanupButton } from '@/components/admin/DatabaseCleanupButton';
-import { WitnessDataProcessor } from '@/components/admin/WitnessDataProcessor';
+  TokensChart,
+} from "@/components/analytics/AnalyticsCharts";
+import { ReviewUpdateButton } from "@/components/admin/ReviewUpdateButton";
+import { DatabaseCleanupButton } from "@/components/admin/DatabaseCleanupButton";
+import { WitnessDataProcessor } from "@/components/admin/WitnessDataProcessor";
 
 interface OverviewData {
   counts: {
@@ -65,20 +71,24 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [overviewData, setOverviewData] = useState<OverviewData | null>(null);
   const [usageData, setUsageData] = useState<UsageData | null>(null);
-  const [riskPatternData, setRiskPatternData] = useState<RiskPatternData | null>(null);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [riskPatternData, setRiskPatternData] =
+    useState<RiskPatternData | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
 
   const fetchAnalytics = async (type: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('admin-analytics', {
-        body: { type }
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "admin-analytics",
+        {
+          body: { type },
+        },
+      );
 
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error fetching analytics:', error);
-      toast.error('Erro ao carregar dados analíticos');
+      console.error("Error fetching analytics:", error);
+      toast.error("Erro ao carregar dados analíticos");
       return null;
     }
   };
@@ -86,7 +96,7 @@ const Dashboard = () => {
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
-      const overview = await fetchAnalytics('overview');
+      const overview = await fetchAnalytics("overview");
       if (overview) {
         setOverviewData(overview);
       }
@@ -97,11 +107,11 @@ const Dashboard = () => {
   }, []);
 
   const loadTabData = async (tab: string) => {
-    if (tab === 'usage' && !usageData) {
-      const usage = await fetchAnalytics('usage');
+    if (tab === "usage" && !usageData) {
+      const usage = await fetchAnalytics("usage");
       if (usage) setUsageData(usage);
-    } else if (tab === 'risk_patterns' && !riskPatternData) {
-      const riskData = await fetchAnalytics('risk_patterns');
+    } else if (tab === "risk_patterns" && !riskPatternData) {
+      const riskData = await fetchAnalytics("risk_patterns");
       if (riskData) setRiskPatternData(riskData);
     }
   };
@@ -117,7 +127,9 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard Analítico</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Dashboard Analítico
+        </h1>
         <p className="text-muted-foreground">
           Insights avançados e métricas do sistema
         </p>
@@ -145,8 +157,8 @@ const Dashboard = () => {
       {/* Processamento de Testemunhas */}
       <WitnessDataProcessor />
 
-      <Tabs 
-        value={activeTab} 
+      <Tabs
+        value={activeTab}
         onValueChange={(value) => {
           setActiveTab(value);
           loadTabData(value);
@@ -165,7 +177,9 @@ const Dashboard = () => {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Processos</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Processos
+                </CardTitle>
                 <Database className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -210,12 +224,14 @@ const Dashboard = () => {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Versão Ativa</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Versão Ativa
+                </CardTitle>
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  v{overviewData?.counts?.activeVersion || 'N/A'}
+                  v{overviewData?.counts?.activeVersion || "N/A"}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Base de dados atual
@@ -226,28 +242,39 @@ const Dashboard = () => {
 
           {/* Charts */}
           <div className="grid gap-6 md:grid-cols-2">
-            <RiskDistributionChart data={overviewData?.riskDistribution || { low: 0, medium: 0, high: 0 }} />
-            
+            <RiskDistributionChart
+              data={
+                overviewData?.riskDistribution || { low: 0, medium: 0, high: 0 }
+              }
+            />
+
             <Card>
               <CardHeader>
                 <CardTitle>Atividade Recente</CardTitle>
-                <CardDescription>Últimas interações com o sistema</CardDescription>
+                <CardDescription>
+                  Últimas interações com o sistema
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {overviewData?.recentActivity?.slice(0, 5).map((activity, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-primary rounded-full"></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">
-                          {activity.role === 'user' ? 'Pergunta' : 'Resposta'} - Conversa
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(activity.created_at).toLocaleString('pt-BR')}
-                        </p>
+                  {overviewData?.recentActivity
+                    ?.slice(0, 5)
+                    .map((activity, index) => (
+                      <div key={index} className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-primary rounded-full"></div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">
+                            {activity.role === "user" ? "Pergunta" : "Resposta"}{" "}
+                            - Conversa
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(activity.created_at).toLocaleString(
+                              "pt-BR",
+                            )}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  )) || (
+                    )) || (
                     <div className="text-center text-muted-foreground py-4">
                       Nenhuma atividade recente
                     </div>
@@ -265,20 +292,26 @@ const Dashboard = () => {
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Consultas</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Total Consultas
+                    </CardTitle>
                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
                       {usageData.totalStats.totalRequests.toLocaleString()}
                     </div>
-                    <p className="text-xs text-muted-foreground">Últimos 30 dias</p>
+                    <p className="text-xs text-muted-foreground">
+                      Últimos 30 dias
+                    </p>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Custo Total</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Custo Total
+                    </CardTitle>
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
@@ -291,27 +324,36 @@ const Dashboard = () => {
 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Tokens Processados</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Tokens Processados
+                    </CardTitle>
                     <BarChart3 className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
                       {(usageData.totalStats.totalTokens / 1000).toFixed(1)}K
                     </div>
-                    <p className="text-xs text-muted-foreground">Entrada + Saída</p>
+                    <p className="text-xs text-muted-foreground">
+                      Entrada + Saída
+                    </p>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Tempo Médio</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Tempo Médio
+                    </CardTitle>
                     <Activity className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {(usageData.totalStats.avgResponseTime / 1000).toFixed(1)}s
+                      {(usageData.totalStats.avgResponseTime / 1000).toFixed(1)}
+                      s
                     </div>
-                    <p className="text-xs text-muted-foreground">Resposta da API</p>
+                    <p className="text-xs text-muted-foreground">
+                      Resposta da API
+                    </p>
                   </CardContent>
                 </Card>
               </div>
@@ -336,11 +378,13 @@ const Dashboard = () => {
               <div className="grid gap-4 md:grid-cols-3">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm font-medium">Risco Médio Geral</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Risco Médio Geral
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-3xl font-bold">
-                      {riskPatternData.avgRisk?.toFixed(1) || 'N/A'}
+                      {riskPatternData.avgRisk?.toFixed(1) || "N/A"}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       De {riskPatternData.totalProcessos} processos
@@ -350,7 +394,9 @@ const Dashboard = () => {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm font-medium">Alto Risco</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Alto Risco
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-3xl font-bold text-red-600">
@@ -364,7 +410,9 @@ const Dashboard = () => {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm font-medium">Total Analisado</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Total Analisado
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-3xl font-bold">

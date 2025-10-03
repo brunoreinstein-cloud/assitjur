@@ -13,7 +13,9 @@ interface DataStateProps {
 export function DataState({ status, onRetry, children }: DataStateProps) {
   if (status === "loading") {
     return (
-      <div className="p-8 text-center text-sm text-muted-foreground">Carregando...</div>
+      <div className="p-8 text-center text-sm text-muted-foreground">
+        Carregando...
+      </div>
     );
   }
 

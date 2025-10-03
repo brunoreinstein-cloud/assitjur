@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Helper hook for managing Multi Factor Authentication (MFA) via TOTP.
@@ -14,7 +14,9 @@ export function useMfa() {
    * the otpauth URI that should be displayed as a QR code to the user.
    */
   const enableMfa = async () => {
-    const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
+    const { data, error } = await supabase.auth.mfa.enroll({
+      factorType: "totp",
+    });
     if (error) throw error;
     // data.totp should contain { uri } with the otpauth URL
     return data;
@@ -26,9 +28,10 @@ export function useMfa() {
    * may return backup codes for account recovery.
    */
   const verifyMfa = async (factorId: string, code: string) => {
-    const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
-      factorId,
-    });
+    const { data: challenge, error: challengeError } =
+      await supabase.auth.mfa.challenge({
+        factorId,
+      });
     if (challengeError) throw challengeError;
 
     const { data, error } = await supabase.auth.mfa.verify({

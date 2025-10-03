@@ -120,6 +120,7 @@ Outras variáveis `VITE_*` usadas pelo projeto podem ser adicionadas conforme ne
 Este projeto é otimizado para deploy no [Lovable](https://lovable.app/), uma plataforma de deploy estático.
 
 ### Requisitos
+
 - **Node:** 20.x (ou superior, compatível com npm 10)
 - **npm:** 10.x
 - **Output:** `dist/` (Vite build padrão)
@@ -130,6 +131,7 @@ Este projeto é otimizado para deploy no [Lovable](https://lovable.app/), uma pl
 No [Lovable](https://lovable.app/), acesse **Settings → Environment Variables** e adicione:
 
 #### Obrigatórias
+
 ```
 VITE_SUPABASE_URL=https://seu-projeto.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGc...sua-chave-anon
@@ -137,6 +139,7 @@ VITE_PUBLIC_SITE_URL=https://seu-site.lovable.app
 ```
 
 #### Opcionais (recomendadas)
+
 ```
 VITE_SENTRY_DSN=
 VITE_INACTIVITY_TIMEOUT_MINUTES=30
@@ -322,4 +325,3 @@ npm run lh -- --url=https://assistjur.com.br/
 
 Propriedade intelectual de **Assistjur.IA**.
 Uso restrito a colaboradores autorizados.
-

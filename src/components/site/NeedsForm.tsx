@@ -1,27 +1,40 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { useBetaFormStore } from '@/stores/useBetaFormStore';
-import { Loader2, ArrowRight } from 'lucide-react';
-import { track } from '@/lib/track';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { useBetaFormStore } from "@/stores/useBetaFormStore";
+import { Loader2, ArrowRight } from "lucide-react";
+import { track } from "@/lib/track";
 
 interface NeedsFormProps {
-  onSubmit?: (data: { email: string; needs: string[]; otherNeed?: string }) => void;
+  onSubmit?: (data: {
+    email: string;
+    needs: string[];
+    otherNeed?: string;
+  }) => void;
 }
 
 const needsOptions = [
-  { id: 'tempo', label: 'Reduzir tempo em tarefas operacionais' },
-  { id: 'organizar', label: 'Organizar e entender melhor a carteira' },
-  { id: 'provisoes', label: 'Conectar provisões contábeis a dados reais' },
-  { id: 'testemunhas', label: 'Mapear testemunhas e padrões de risco' },
+  { id: "tempo", label: "Reduzir tempo em tarefas operacionais" },
+  { id: "organizar", label: "Organizar e entender melhor a carteira" },
+  { id: "provisoes", label: "Conectar provisões contábeis a dados reais" },
+  { id: "testemunhas", label: "Mapear testemunhas e padrões de risco" },
 ];
 
 export function NeedsForm({ onSubmit }: NeedsFormProps) {
-  const { email, needs, otherNeed, loading, setEmail, setNeeds, setOtherNeed, submitBeta } = useBetaFormStore();
+  const {
+    email,
+    needs,
+    otherNeed,
+    loading,
+    setEmail,
+    setNeeds,
+    setOtherNeed,
+    submitBeta,
+  } = useBetaFormStore();
   const [showOtherField, setShowOtherField] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; needs?: string }>({});
 
@@ -31,16 +44,16 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
   };
 
   const handleNeedChange = (needId: string, checked: boolean) => {
-    const updatedNeeds = checked 
+    const updatedNeeds = checked
       ? [...needs, needId]
-      : needs.filter(n => n !== needId);
+      : needs.filter((n) => n !== needId);
     setNeeds(updatedNeeds);
   };
 
   const handleOtherChange = (checked: boolean) => {
     setShowOtherField(checked);
     if (!checked) {
-      setOtherNeed('');
+      setOtherNeed("");
     }
   };
 
@@ -48,33 +61,34 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
-    if (formData.get('website')) return;
+    if (formData.get("website")) return;
 
     // Validations
     const newErrors: { email?: string; needs?: string } = {};
-    
+
     if (!email || !validateEmail(email)) {
-      newErrors.email = 'Por favor, insira um e-mail válido';
+      newErrors.email = "Por favor, insira um e-mail válido";
     }
-    
+
     if (needs.length === 0 && (!showOtherField || !otherNeed)) {
-      newErrors.needs = 'Por favor, selecione ao menos uma opção ou descreva sua necessidade';
+      newErrors.needs =
+        "Por favor, selecione ao menos uma opção ou descreva sua necessidade";
     }
-    
+
     setErrors(newErrors);
-    
+
     if (Object.keys(newErrors).length > 0) {
       return;
     }
 
     // Submit
     const success = await submitBeta();
-    
+
     if (success && onSubmit) {
       onSubmit({
         email,
         needs,
-        otherNeed: showOtherField ? otherNeed : undefined
+        otherNeed: showOtherField ? otherNeed : undefined,
       });
     }
   };
@@ -106,8 +120,8 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4">
               {needsOptions.map((option, index) => (
-                <div 
-                  key={option.id} 
+                <div
+                  key={option.id}
                   className="group p-4 rounded-lg border border-border/50 hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 animate-slide-up"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
@@ -115,11 +129,13 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
                     <Checkbox
                       id={option.id}
                       checked={needs.includes(option.id)}
-                      onCheckedChange={(checked) => handleNeedChange(option.id, checked as boolean)}
+                      onCheckedChange={(checked) =>
+                        handleNeedChange(option.id, checked as boolean)
+                      }
                       className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                     />
-                    <Label 
-                      htmlFor={option.id} 
+                    <Label
+                      htmlFor={option.id}
                       className="text-sm font-medium cursor-pointer group-hover:text-primary transition-colors flex-1"
                     >
                       {option.label}
@@ -127,9 +143,9 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
                   </div>
                 </div>
               ))}
-              
+
               {/* Outro */}
-              <div 
+              <div
                 className="group p-4 rounded-lg border border-border/50 hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 animate-slide-up"
                 style={{ animationDelay: `${needsOptions.length * 0.1}s` }}
               >
@@ -141,8 +157,8 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
                     className="data-[state=checked]:bg-primary data-[state=checked]:border-primary mt-0.5"
                   />
                   <div className="flex-1 space-y-3">
-                    <Label 
-                      htmlFor="outro" 
+                    <Label
+                      htmlFor="outro"
                       className="text-sm font-medium cursor-pointer group-hover:text-primary transition-colors"
                     >
                       Outro (campo livre)
@@ -162,9 +178,13 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
                 </div>
               </div>
             </div>
-            
+
             {errors.needs && (
-              <p className="text-sm text-destructive" role="alert" aria-live="polite">
+              <p
+                className="text-sm text-destructive"
+                role="alert"
+                aria-live="polite"
+              >
                 {errors.needs}
               </p>
             )}
@@ -184,7 +204,12 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
               className={errors.email ? "border-destructive" : ""}
             />
             {errors.email && (
-              <p id="email-error" className="text-sm text-destructive" role="alert" aria-live="polite">
+              <p
+                id="email-error"
+                className="text-sm text-destructive"
+                role="alert"
+                aria-live="polite"
+              >
                 {errors.email}
               </p>
             )}
@@ -192,16 +217,22 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
 
           {/* Progress Indicator */}
           <div className="flex items-center justify-center space-x-2 py-2">
-            <div className={`w-3 h-3 rounded-full transition-colors ${email && (needs.length > 0 || otherNeed) ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
-            <div className={`w-8 h-1 rounded-full transition-colors ${email && (needs.length > 0 || otherNeed) ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
-            <div className={`w-3 h-3 rounded-full transition-colors ${email && (needs.length > 0 || otherNeed) ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
+            <div
+              className={`w-3 h-3 rounded-full transition-colors ${email && (needs.length > 0 || otherNeed) ? "bg-primary" : "bg-muted-foreground/30"}`}
+            />
+            <div
+              className={`w-8 h-1 rounded-full transition-colors ${email && (needs.length > 0 || otherNeed) ? "bg-primary" : "bg-muted-foreground/30"}`}
+            />
+            <div
+              className={`w-3 h-3 rounded-full transition-colors ${email && (needs.length > 0 || otherNeed) ? "bg-primary" : "bg-muted-foreground/30"}`}
+            />
           </div>
 
           {/* Submit */}
           <Button
             type="submit"
             disabled={loading || !email || (needs.length === 0 && !otherNeed)}
-            onClick={() => track('cta_click', { id: 'mid-entrar-beta' })}
+            onClick={() => track("cta_click", { id: "mid-entrar-beta" })}
             className="w-full bg-gradient-primary hover:bg-primary/90 hover:shadow-glow text-lg py-6 transition-all duration-300 group"
           >
             {loading ? (
@@ -219,7 +250,7 @@ export function NeedsForm({ onSubmit }: NeedsFormProps) {
 
           {/* LGPD */}
           <p className="text-xs text-muted-foreground text-center">
-          Seus dados serão usados apenas para contato sobre o Beta.
+            Seus dados serão usados apenas para contato sobre o Beta.
           </p>
         </form>
       </CardContent>

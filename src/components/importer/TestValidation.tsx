@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { parseList, normalizeCNJ } from '@/lib/importer/utils';
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { parseList, normalizeCNJ } from "@/lib/importer/utils";
 
 /**
  * Componente de teste para validar as correções implementadas
  */
 export function TestValidation() {
-  const [testInput, setTestInput] = useState("['1234567-89.2023.4.05.0001','2345678-90.2023.4.05.0002']");
+  const [testInput, setTestInput] = useState(
+    "['1234567-89.2023.4.05.0001','2345678-90.2023.4.05.0002']",
+  );
   const [result, setResult] = useState<string[]>([]);
 
   const runTest = () => {
@@ -23,7 +25,7 @@ export function TestValidation() {
     "CNJ1,CNJ2,CNJ3",
     "[]",
     "",
-    "CNJ-único"
+    "CNJ-único",
   ];
 
   return (
@@ -65,10 +67,10 @@ export function TestValidation() {
               return (
                 <div key={index} className="p-2 border rounded text-xs">
                   <div className="font-mono text-muted-foreground mb-1">
-                    Entrada: {testCase || '(vazio)'}
+                    Entrada: {testCase || "(vazio)"}
                   </div>
                   <div>
-                    Resultado: [{parsed.join(', ')}] ({parsed.length} items)
+                    Resultado: [{parsed.join(", ")}] ({parsed.length} items)
                   </div>
                 </div>
               );

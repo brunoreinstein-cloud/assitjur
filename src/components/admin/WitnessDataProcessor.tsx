@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Database, CheckCircle, AlertCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, Database, CheckCircle, AlertCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const WitnessDataProcessor = () => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -21,16 +27,19 @@ export const WitnessDataProcessor = () => {
     setResult(null);
 
     try {
-      const { data, error: functionError } = await supabase.functions.invoke('process-witness-data');
+      const { data, error: functionError } = await supabase.functions.invoke(
+        "process-witness-data",
+      );
 
       if (functionError) {
         throw functionError;
       }
 
       setResult(data);
-      toast.success('Dados de testemunhas processados com sucesso!');
+      toast.success("Dados de testemunhas processados com sucesso!");
     } catch (err: any) {
-      const errorMessage = err.message || 'Erro ao processar dados de testemunhas';
+      const errorMessage =
+        err.message || "Erro ao processar dados de testemunhas";
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -46,8 +55,9 @@ export const WitnessDataProcessor = () => {
           Processamento de Dados de Testemunhas
         </CardTitle>
         <CardDescription>
-          Processa os dados importados para extrair e popular informações de testemunhas nos processos.
-          Esta ação deve ser executada após uma importação para garantir que os dados apareçam no mapa de testemunhas.
+          Processa os dados importados para extrair e popular informações de
+          testemunhas nos processos. Esta ação deve ser executada após uma
+          importação para garantir que os dados apareçam no mapa de testemunhas.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -63,15 +73,20 @@ export const WitnessDataProcessor = () => {
             <CheckCircle className="h-4 w-4" />
             <AlertDescription>
               <div className="space-y-1">
-                <p><strong>{result.message}</strong></p>
-                <p>Processos processados: {result.processedCount} de {result.totalProcessos}</p>
+                <p>
+                  <strong>{result.message}</strong>
+                </p>
+                <p>
+                  Processos processados: {result.processedCount} de{" "}
+                  {result.totalProcessos}
+                </p>
               </div>
             </AlertDescription>
           </Alert>
         )}
 
         <div className="flex flex-col gap-2">
-          <Button 
+          <Button
             onClick={handleProcessWitnessData}
             disabled={isProcessing}
             className="w-full"
@@ -88,9 +103,10 @@ export const WitnessDataProcessor = () => {
               </>
             )}
           </Button>
-          
+
           <p className="text-sm text-muted-foreground">
-            Este processo pode levar alguns minutos dependendo da quantidade de dados.
+            Este processo pode levar alguns minutos dependendo da quantidade de
+            dados.
           </p>
         </div>
       </CardContent>

@@ -1,22 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { 
-  Save, 
-  X, 
-  Filter,
-  Star,
-  Trash2
-} from 'lucide-react';
-import { ProcessoFiltersState } from '@/types/processos-explorer';
-import { useToast } from '@/hooks/use-toast';
+} from "@/components/ui/popover";
+import { Save, X, Filter, Star, Trash2 } from "lucide-react";
+import { ProcessoFiltersState } from "@/types/processos-explorer";
+import { useToast } from "@/hooks/use-toast";
 
 interface SavedFilter {
   id: string;
@@ -30,17 +24,17 @@ interface ProcessosSavedFiltersProps {
   onFiltersApply: (filters: ProcessoFiltersState) => void;
 }
 
-export function ProcessosSavedFilters({ 
-  currentFilters, 
-  onFiltersApply 
+export function ProcessosSavedFilters({
+  currentFilters,
+  onFiltersApply,
 }: ProcessosSavedFiltersProps) {
   const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [filterName, setFilterName] = useState('');
+  const [filterName, setFilterName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
-  const STORAGE_KEY = 'processos_saved_filters';
+  const STORAGE_KEY = "processos_saved_filters";
 
   // Carregar filtros salvos do localStorage
   useEffect(() => {
@@ -50,7 +44,7 @@ export function ProcessosSavedFilters({
         setSavedFilters(JSON.parse(saved));
       }
     } catch (error) {
-      console.error('Erro ao carregar filtros salvos:', error);
+      console.error("Erro ao carregar filtros salvos:", error);
     }
   }, []);
 
@@ -60,7 +54,7 @@ export function ProcessosSavedFilters({
       localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
       setSavedFilters(filters);
     } catch (error) {
-      console.error('Erro ao salvar filtros:', error);
+      console.error("Erro ao salvar filtros:", error);
       toast({
         title: "Erro ao salvar",
         description: "Não foi possível salvar os filtros. Tente novamente.",
@@ -72,8 +66,8 @@ export function ProcessosSavedFilters({
   // Verificar se há filtros ativos
   const hasActiveFilters = () => {
     return (
-      currentFilters.search.trim() !== '' ||
-      currentFilters.testemunha.trim() !== '' ||
+      currentFilters.search.trim() !== "" ||
+      currentFilters.testemunha.trim() !== "" ||
       currentFilters.uf.length > 0 ||
       currentFilters.comarca.length > 0 ||
       currentFilters.status.length > 0 ||
@@ -112,7 +106,7 @@ export function ProcessosSavedFilters({
         id: Date.now().toString(),
         name: filterName.trim(),
         filters: { ...currentFilters },
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
 
       const updatedFilters = [newFilter, ...savedFilters];
@@ -123,10 +117,10 @@ export function ProcessosSavedFilters({
         description: `"${filterName}" foi salvo com sucesso.`,
       });
 
-      setFilterName('');
+      setFilterName("");
       setIsPopoverOpen(false);
     } catch (error) {
-      console.error('Erro ao salvar filtro:', error);
+      console.error("Erro ao salvar filtro:", error);
     } finally {
       setIsSaving(false);
     }
@@ -143,9 +137,9 @@ export function ProcessosSavedFilters({
 
   // Excluir filtro salvo
   const handleDeleteFilter = (filterId: string) => {
-    const updatedFilters = savedFilters.filter(f => f.id !== filterId);
+    const updatedFilters = savedFilters.filter((f) => f.id !== filterId);
     saveToStorage(updatedFilters);
-    
+
     toast({
       title: "Filtro excluído",
       description: "O filtro foi removido com sucesso.",
@@ -155,19 +149,21 @@ export function ProcessosSavedFilters({
   // Gerar resumo do filtro
   const getFilterSummary = (filters: ProcessoFiltersState): string => {
     const parts = [];
-    
+
     if (filters.search) parts.push(`Busca: "${filters.search}"`);
     if (filters.testemunha) parts.push(`Testemunha: "${filters.testemunha}"`);
-    if (filters.uf.length > 0) parts.push(`UF: ${filters.uf.join(', ')}`);
-    if (filters.status.length > 0) parts.push(`Status: ${filters.status.join(', ')}`);
-    if (filters.classificacao.length > 0) parts.push(`Class.: ${filters.classificacao.join(', ')}`);
-    
+    if (filters.uf.length > 0) parts.push(`UF: ${filters.uf.join(", ")}`);
+    if (filters.status.length > 0)
+      parts.push(`Status: ${filters.status.join(", ")}`);
+    if (filters.classificacao.length > 0)
+      parts.push(`Class.: ${filters.classificacao.join(", ")}`);
+
     const activeFlags = Object.entries(filters.flags)
       .filter(([_, active]) => active)
       .map(([key]) => key);
-    if (activeFlags.length > 0) parts.push(`Flags: ${activeFlags.join(', ')}`);
-    
-    return parts.join(' • ') || 'Filtros diversos';
+    if (activeFlags.length > 0) parts.push(`Flags: ${activeFlags.join(", ")}`);
+
+    return parts.join(" • ") || "Filtros diversos";
   };
 
   return (
@@ -208,7 +204,7 @@ export function ProcessosSavedFilters({
             Salvar filtro
           </Button>
         </PopoverTrigger>
-        
+
         <PopoverContent className="w-80" align="start">
           <div className="space-y-4">
             <div className="space-y-2">
@@ -229,7 +225,7 @@ export function ProcessosSavedFilters({
                 placeholder="Ex: Processos Alto Risco SP"
                 className="h-8"
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     handleSaveFilter();
                   }
                 }}
@@ -251,7 +247,7 @@ export function ProcessosSavedFilters({
                 disabled={isSaving || !filterName.trim()}
                 className="h-7 px-3 text-xs"
               >
-                {isSaving ? 'Salvando...' : 'Salvar'}
+                {isSaving ? "Salvando..." : "Salvar"}
               </Button>
             </div>
           </div>

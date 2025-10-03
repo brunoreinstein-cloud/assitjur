@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { Skeleton } from '@/components/ui/skeleton';
-import { AllUsersTable } from '@/components/super-admin/AllUsersTable';
-import { useToast } from '@/hooks/use-toast';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AllUsersTable } from "@/components/super-admin/AllUsersTable";
+import { useToast } from "@/hooks/use-toast";
 
 export default function UserManagement() {
   const { isSuperAdmin, loading } = useAuth();
@@ -13,11 +13,11 @@ export default function UserManagement() {
   useEffect(() => {
     if (!loading && !isSuperAdmin) {
       toast({
-        title: 'Acesso Negado',
-        description: 'Apenas super admins podem acessar esta página',
-        variant: 'destructive',
+        title: "Acesso Negado",
+        description: "Apenas super admins podem acessar esta página",
+        variant: "destructive",
       });
-      navigate('/');
+      navigate("/");
     }
   }, [isSuperAdmin, loading, navigate, toast]);
 

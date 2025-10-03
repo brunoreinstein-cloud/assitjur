@@ -1,12 +1,21 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Download, FileText, FileSpreadsheet, Printer, Shield } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { AnonymizeButton } from '@/components/compliance/AnonymizeButton';
-import { LGPDSeal } from '@/components/compliance/LGPDSeal';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Download,
+  FileText,
+  FileSpreadsheet,
+  Printer,
+  Shield,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { AnonymizeButton } from "@/components/compliance/AnonymizeButton";
+import { LGPDSeal } from "@/components/compliance/LGPDSeal";
 
 interface ExportActionsProps {
-  onExport: (format: 'pdf' | 'csv' | 'docx' | 'json', isAnonymized?: boolean) => void;
+  onExport: (
+    format: "pdf" | "csv" | "docx" | "json",
+    isAnonymized?: boolean,
+  ) => void;
   showPrint?: boolean;
   disabled?: boolean;
   showAnonymizeOption?: boolean;
@@ -15,14 +24,14 @@ interface ExportActionsProps {
   className?: string;
 }
 
-export function ExportActions({ 
-  onExport, 
-  showPrint = true, 
+export function ExportActions({
+  onExport,
+  showPrint = true,
   disabled = false,
   showAnonymizeOption = true,
   isAnonymized = false,
   onAnonymizeToggle,
-  className = ''
+  className = "",
 }: ExportActionsProps) {
   const { toast } = useToast();
 
@@ -34,9 +43,11 @@ export function ExportActions({
     });
   };
 
-  const handleExport = (format: 'pdf' | 'csv' | 'docx' | 'json') => {
+  const handleExport = (format: "pdf" | "csv" | "docx" | "json") => {
     onExport(format, isAnonymized);
-    const privacyStatus = isAnonymized ? ' (dados anonimizados)' : ' (dados completos)';
+    const privacyStatus = isAnonymized
+      ? " (dados anonimizados)"
+      : " (dados completos)";
     toast({
       title: "Exportando",
       description: `Gerando arquivo ${format.toUpperCase()}${privacyStatus}... Será registrado no log de auditoria.`,
@@ -49,7 +60,7 @@ export function ExportActions({
       <div className="flex items-center justify-between">
         <LGPDSeal variant="badge" />
         {showAnonymizeOption && onAnonymizeToggle && (
-          <AnonymizeButton 
+          <AnonymizeButton
             isAnonymized={isAnonymized}
             onToggle={onAnonymizeToggle}
             variant="minimal"
@@ -72,11 +83,11 @@ export function ExportActions({
             {isAnonymized && <Shield className="h-3 w-3 text-success" />}
           </Button>
         )}
-        
+
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handleExport('pdf')}
+          onClick={() => handleExport("pdf")}
           disabled={disabled}
           className="gap-2"
         >
@@ -84,11 +95,11 @@ export function ExportActions({
           PDF
           {isAnonymized && <Shield className="h-3 w-3 text-success" />}
         </Button>
-        
+
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handleExport('csv')}
+          onClick={() => handleExport("csv")}
           disabled={disabled}
           className="gap-2"
         >
@@ -96,11 +107,11 @@ export function ExportActions({
           CSV
           {isAnonymized && <Shield className="h-3 w-3 text-success" />}
         </Button>
-        
+
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handleExport('docx')}
+          onClick={() => handleExport("docx")}
           disabled={disabled}
           className="gap-2"
         >
@@ -108,11 +119,11 @@ export function ExportActions({
           DOCX
           {isAnonymized && <Shield className="h-3 w-3 text-success" />}
         </Button>
-        
+
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handleExport('json')}
+          onClick={() => handleExport("json")}
           disabled={disabled}
           className="gap-2"
         >

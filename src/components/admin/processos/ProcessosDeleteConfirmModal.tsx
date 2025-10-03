@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,21 +6,21 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { 
-  AlertTriangle, 
-  Download, 
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import {
+  AlertTriangle,
+  Download,
   FileText,
   Trash2,
-  ShieldAlert
-} from 'lucide-react';
-import { ProcessoRow } from '@/types/processos-explorer';
-import { useToast } from '@/hooks/use-toast';
+  ShieldAlert,
+} from "lucide-react";
+import { ProcessoRow } from "@/types/processos-explorer";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProcessosDeleteConfirmModalProps {
   open: boolean;
@@ -30,59 +30,68 @@ interface ProcessosDeleteConfirmModalProps {
   isDeleting: boolean;
 }
 
-export function ProcessosDeleteConfirmModal({ 
-  open, 
-  onClose, 
-  onConfirm, 
-  processos, 
-  isDeleting 
+export function ProcessosDeleteConfirmModal({
+  open,
+  onClose,
+  onConfirm,
+  processos,
+  isDeleting,
 }: ProcessosDeleteConfirmModalProps) {
   const [step, setStep] = useState<1 | 2>(1);
-  const [confirmText, setConfirmText] = useState('');
+  const [confirmText, setConfirmText] = useState("");
   const { toast } = useToast();
 
   const totalCount = processos.length;
-  const REQUIRED_TEXT = 'EXCLUIR';
+  const REQUIRED_TEXT = "EXCLUIR";
 
   const handleClose = () => {
     setStep(1);
-    setConfirmText('');
+    setConfirmText("");
     onClose();
   };
 
   const handleExportBackup = () => {
     // Gerar CSV de backup
     const headers = [
-      'CNJ', 'UF', 'Comarca', 'Status', 'Fase', 'Reclamante', 'Reu', 
-      'Classificacao', 'Score', 'Data Audiencia', 'Created At'
+      "CNJ",
+      "UF",
+      "Comarca",
+      "Status",
+      "Fase",
+      "Reclamante",
+      "Reu",
+      "Classificacao",
+      "Score",
+      "Data Audiencia",
+      "Created At",
     ];
 
-    const csvRows = [headers.join(',')];
-    
-    processos.forEach(processo => {
+    const csvRows = [headers.join(",")];
+
+    processos.forEach((processo) => {
       const row = [
-        processo.cnj || '',
-        processo.uf || '',
-        processo.comarca || '',
-        processo.status || '',
-        processo.fase || '',
-        processo.reclamante_nome || '',
-        processo.reu_nome || '',
-        processo.classificacao_final || '',
-        processo.score_risco?.toString() || '',
-        processo.data_audiencia || '',
-        processo.created_at
+        processo.cnj || "",
+        processo.uf || "",
+        processo.comarca || "",
+        processo.status || "",
+        processo.fase || "",
+        processo.reclamante_nome || "",
+        processo.reu_nome || "",
+        processo.classificacao_final || "",
+        processo.score_risco?.toString() || "",
+        processo.data_audiencia || "",
+        processo.created_at,
       ];
-      
-      csvRows.push(row.map(field => `"${field}"`).join(','));
+
+      csvRows.push(row.map((field) => `"${field}"`).join(","));
     });
 
-    const csvContent = csvRows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.download = `backup_processos_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `backup_processos_${new Date().toISOString().split("T")[0]}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -104,12 +113,13 @@ export function ProcessosDeleteConfirmModal({
       // Reset modal state after confirming
       setTimeout(() => {
         setStep(1);
-        setConfirmText('');
+        setConfirmText("");
       }, 100);
     }
   };
 
-  const canProceed = step === 1 || (step === 2 && confirmText === REQUIRED_TEXT);
+  const canProceed =
+    step === 1 || (step === 2 && confirmText === REQUIRED_TEXT);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -120,10 +130,9 @@ export function ProcessosDeleteConfirmModal({
             Excluir Todos os Processos
           </DialogTitle>
           <DialogDescription>
-            {step === 1 
-              ? 'Esta ação é irreversível. Revise os dados que serão excluídos.'
-              : 'Confirme a exclusão digitando exatamente o texto solicitado.'
-            }
+            {step === 1
+              ? "Esta ação é irreversível. Revise os dados que serão excluídos."
+              : "Confirme a exclusão digitando exatamente o texto solicitado."}
           </DialogDescription>
         </DialogHeader>
 
@@ -136,7 +145,7 @@ export function ProcessosDeleteConfirmModal({
                 <AlertDescription className="flex items-center justify-between">
                   <span>Registros que serão excluídos:</span>
                   <Badge variant="destructive" className="font-mono">
-                    {totalCount.toLocaleString('pt-BR')}
+                    {totalCount.toLocaleString("pt-BR")}
                   </Badge>
                 </AlertDescription>
               </Alert>
@@ -145,10 +154,12 @@ export function ProcessosDeleteConfirmModal({
               <div className="flex items-center justify-between p-3 border rounded-lg bg-muted">
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Exportar backup antes da exclusão</span>
+                  <span className="text-sm">
+                    Exportar backup antes da exclusão
+                  </span>
                 </div>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={handleExportBackup}
                   className="flex items-center gap-1"
@@ -164,7 +175,10 @@ export function ProcessosDeleteConfirmModal({
                   <AlertTriangle className="h-3 w-3 mt-0.5 text-yellow-600" />
                   <div>
                     <p className="font-medium">Registro de auditoria</p>
-                    <p>Esta ação será registrada nos logs de auditoria para fins de compliance.</p>
+                    <p>
+                      Esta ação será registrada nos logs de auditoria para fins
+                      de compliance.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -177,22 +191,30 @@ export function ProcessosDeleteConfirmModal({
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
                   <div className="space-y-2">
-                    <p className="font-semibold">Atenção: Esta ação é irreversível!</p>
-                    <p>Para confirmar a exclusão de <strong>{totalCount}</strong> processos, digite exatamente:</p>
+                    <p className="font-semibold">
+                      Atenção: Esta ação é irreversível!
+                    </p>
+                    <p>
+                      Para confirmar a exclusão de <strong>{totalCount}</strong>{" "}
+                      processos, digite exatamente:
+                    </p>
                   </div>
                 </AlertDescription>
               </Alert>
 
               <div className="space-y-2">
                 <Label htmlFor="confirm-text" className="text-sm font-medium">
-                  Digite: <code className="text-sm bg-muted px-1 py-0.5 rounded">{REQUIRED_TEXT}</code>
+                  Digite:{" "}
+                  <code className="text-sm bg-muted px-1 py-0.5 rounded">
+                    {REQUIRED_TEXT}
+                  </code>
                 </Label>
                 <Input
                   id="confirm-text"
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
                   placeholder={REQUIRED_TEXT}
-                  className={`font-mono ${confirmText === REQUIRED_TEXT ? 'border-green-500' : 'border-destructive'}`}
+                  className={`font-mono ${confirmText === REQUIRED_TEXT ? "border-green-500" : "border-destructive"}`}
                   autoFocus
                 />
                 {confirmText && confirmText !== REQUIRED_TEXT && (
@@ -209,10 +231,10 @@ export function ProcessosDeleteConfirmModal({
           <Button variant="outline" onClick={handleClose} disabled={isDeleting}>
             Cancelar
           </Button>
-          
+
           {step === 1 ? (
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={handleProceedToStep2}
               disabled={isDeleting}
             >

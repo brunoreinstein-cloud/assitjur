@@ -1,15 +1,17 @@
-import { supabase } from '@/integrations/supabase/client';
-import { v4 as uuid } from 'uuid';
-import { AuthErrorHandler } from '@/utils/authErrorHandler';
+import { supabase } from "@/integrations/supabase/client";
+import { v4 as uuid } from "uuid";
+import { AuthErrorHandler } from "@/utils/authErrorHandler";
 
 export async function fetchWithAuth(url: string, init?: RequestInit) {
   const requestId = uuid();
   const headers = new Headers(init?.headers || {});
-  headers.set('x-request-id', requestId);
+  headers.set("x-request-id", requestId);
 
   let token: string | undefined;
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (session) {
       const now = Math.floor(Date.now() / 1000);
       const expiresIn = session.expires_at ? session.expires_at - now : 0;
@@ -30,7 +32,7 @@ export async function fetchWithAuth(url: string, init?: RequestInit) {
     // ignore
   }
   if (token) {
-    headers.set('Authorization', `Bearer ${token}`);
+    headers.set("Authorization", `Bearer ${token}`);
   }
 
   let response: Response | undefined;
@@ -51,61 +53,74 @@ export async function fetchWithAuth(url: string, init?: RequestInit) {
       ok: false,
       status: 0,
       requestId,
-      error: 'network_error',
-      details: err instanceof Error ? err.message : String(err)
+      error: "network_error",
+      details: err instanceof Error ? err.message : String(err),
     };
   }
 
   let refreshAttempted = false;
-  if (response && (response.status === 401 || response.status === 403 || response.status === 400) && !refreshAttempted) {
+  if (
+    response &&
+    (response.status === 401 ||
+      response.status === 403 ||
+      response.status === 400) &&
+    !refreshAttempted
+  ) {
     refreshAttempted = true;
     try {
       const { data: refreshed, error } = await supabase.auth.refreshSession();
       if (error) {
         // Se refresh falhou com erro 400/401, sessão expirada - limpar e redirecionar
-        if (error.message?.includes('refresh_token') || error.status === 400) {
-          console.warn('⚠️ Refresh token inválido, limpando sessão...');
+        if (error.message?.includes("refresh_token") || error.status === 400) {
+          console.warn("⚠️ Refresh token inválido, limpando sessão...");
           await supabase.auth.signOut();
-          window.location.href = '/login?session_expired=1';
+          window.location.href = "/login?session_expired=1";
           return {
             ok: false,
             status: 401,
             requestId,
-            error: 'session_expired',
-            details: 'Sessão expirada, faça login novamente'
+            error: "session_expired",
+            details: "Sessão expirada, faça login novamente",
           };
         }
         if (AuthErrorHandler.isAuthError(error)) {
           AuthErrorHandler.handleAuthError(error);
         }
       } else if (refreshed.session) {
-        headers.set('Authorization', `Bearer ${refreshed.session.access_token}`);
+        headers.set(
+          "Authorization",
+          `Bearer ${refreshed.session.access_token}`,
+        );
         await execute();
       }
     } catch (err) {
-      console.error('❌ Erro ao renovar sessão:', err);
+      console.error("❌ Erro ao renovar sessão:", err);
     }
   }
 
   const responseRequestId =
-    body?.requestId || response?.headers.get('x-request-id') || requestId;
+    body?.requestId || response?.headers.get("x-request-id") || requestId;
 
   if (!response?.ok) {
     const errorResponse = {
       ok: false,
       status: response?.status ?? 0,
       requestId: responseRequestId,
-      error: body?.error || (response?.statusText ?? 'Unknown error'),
-      details: body?.details
+      error: body?.error || (response?.statusText ?? "Unknown error"),
+      details: body?.details,
     };
 
     if (response?.status === 401 || response?.status === 403) {
       const isAuthError =
         AuthErrorHandler.isAuthError(body) ||
-        AuthErrorHandler.isAuthError({ message: response?.statusText ?? 'Unknown error' });
+        AuthErrorHandler.isAuthError({
+          message: response?.statusText ?? "Unknown error",
+        });
 
       if (isAuthError) {
-        AuthErrorHandler.handleAuthError(body || { message: response?.statusText ?? 'Unknown error' });
+        AuthErrorHandler.handleAuthError(
+          body || { message: response?.statusText ?? "Unknown error" },
+        );
       }
     }
 
@@ -116,7 +131,7 @@ export async function fetchWithAuth(url: string, init?: RequestInit) {
     ok: true,
     status: response?.status ?? 0,
     requestId: responseRequestId,
-    data: body
+    data: body,
   };
 }
 

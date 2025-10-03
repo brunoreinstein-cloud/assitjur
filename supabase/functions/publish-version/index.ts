@@ -1,8 +1,8 @@
-import { serve } from '../_shared/observability.ts';
-import { corsHeaders, handlePreflight } from '../_shared/cors.ts'
+import { serve } from "../_shared/observability.ts";
+import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 
-serve('publish-version', async (req) => {
-  const requestId = req.headers.get('x-request-id') ?? crypto.randomUUID();
+serve("publish-version", async (req) => {
+  const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();
   const ch = corsHeaders(req);
   const pre = handlePreflight(req, requestId);
   if (pre) return pre;
@@ -11,29 +11,40 @@ serve('publish-version', async (req) => {
 
   try {
     // Validate request method
-    if (req.method !== 'POST') {
-      console.error('❌ Invalid method:', req.method);
-      return new Response(
-        JSON.stringify({ error: 'Method not allowed' }),
-        { status: 405, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
-      );
+    if (req.method !== "POST") {
+      console.error("❌ Invalid method:", req.method);
+      return new Response(JSON.stringify({ error: "Method not allowed" }), {
+        status: 405,
+        headers: {
+          ...ch,
+          "Content-Type": "application/json",
+          "x-request-id": requestId,
+        },
+      });
     }
 
     // Validate Authorization header
-    const authHeader = req.headers.get('Authorization');
+    const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      console.error('❌ Missing Authorization header');
+      console.error("❌ Missing Authorization header");
       return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
+        JSON.stringify({ error: "Missing authorization header" }),
+        {
+          status: 401,
+          headers: {
+            ...ch,
+            "Content-Type": "application/json",
+            "x-request-id": requestId,
+          },
+        },
       );
     }
 
-    console.log('✅ Authorization header present');
+    console.log("✅ Authorization header present");
 
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_PUBLISHABLE_KEY')!,
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!,
       {
         auth: {
           autoRefreshToken: false,
@@ -43,165 +54,254 @@ serve('publish-version', async (req) => {
         global: {
           headers: { Authorization: authHeader },
         },
-      }
+      },
     );
 
     // Verificar autenticação
-    console.log('🔐 Checking authentication...');
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    console.log("🔐 Checking authentication...");
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError) {
-      console.error('❌ Auth error:', authError);
+      console.error("❌ Auth error:", authError);
       return new Response(
-        JSON.stringify({ error: 'Authentication failed', details: authError.message }),
-        { status: 401, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
-      );
-    }
-    
-    if (!user) {
-      console.error('❌ No user found');
-      return new Response(
-        JSON.stringify({ error: 'No user found' }),
-        { status: 401, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
+        JSON.stringify({
+          error: "Authentication failed",
+          details: authError.message,
+        }),
+        {
+          status: 401,
+          headers: {
+            ...ch,
+            "Content-Type": "application/json",
+            "x-request-id": requestId,
+          },
+        },
       );
     }
 
-    console.log('✅ User authenticated:', user.email);
+    if (!user) {
+      console.error("❌ No user found");
+      return new Response(JSON.stringify({ error: "No user found" }), {
+        status: 401,
+        headers: {
+          ...ch,
+          "Content-Type": "application/json",
+          "x-request-id": requestId,
+        },
+      });
+    }
+
+    console.log("✅ User authenticated:", user.email);
 
     // Buscar perfil do usuário
-    console.log('👤 Fetching user profile...');
+    console.log("👤 Fetching user profile...");
     const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('organization_id, role')
-      .eq('user_id', user.id)
+      .from("profiles")
+      .select("organization_id, role")
+      .eq("user_id", user.id)
       .single();
 
     if (profileError) {
-      console.error('❌ Profile fetch error:', profileError);
+      console.error("❌ Profile fetch error:", profileError);
       return new Response(
-        JSON.stringify({ error: 'Failed to fetch user profile', details: profileError.message }),
-        { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
+        JSON.stringify({
+          error: "Failed to fetch user profile",
+          details: profileError.message,
+        }),
+        {
+          status: 500,
+          headers: {
+            ...ch,
+            "Content-Type": "application/json",
+            "x-request-id": requestId,
+          },
+        },
       );
     }
 
-    if (!profile || profile.role !== 'ADMIN') {
-      console.error('❌ Insufficient permissions. Profile:', profile);
+    if (!profile || profile.role !== "ADMIN") {
+      console.error("❌ Insufficient permissions. Profile:", profile);
       return new Response(
-        JSON.stringify({ error: 'Insufficient permissions' }),
-        { status: 403, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
+        JSON.stringify({ error: "Insufficient permissions" }),
+        {
+          status: 403,
+          headers: {
+            ...ch,
+            "Content-Type": "application/json",
+            "x-request-id": requestId,
+          },
+        },
       );
     }
 
-    console.log('✅ Profile validated:', { role: profile.role, org: profile.organization_id });
+    console.log("✅ Profile validated:", {
+      role: profile.role,
+      org: profile.organization_id,
+    });
 
     // Parse request body with error handling
     let requestBody;
     try {
       requestBody = await req.json();
-      console.log('📦 Request body parsed:', requestBody);
+      console.log("📦 Request body parsed:", requestBody);
     } catch (parseError) {
-      console.error('❌ JSON parse error:', parseError);
+      console.error("❌ JSON parse error:", parseError);
       return new Response(
-        JSON.stringify({ error: 'Invalid JSON in request body' }),
-        { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
+        JSON.stringify({ error: "Invalid JSON in request body" }),
+        {
+          status: 400,
+          headers: {
+            ...ch,
+            "Content-Type": "application/json",
+            "x-request-id": requestId,
+          },
+        },
       );
     }
 
     const { versionId } = requestBody;
     if (!versionId) {
-      console.error('❌ Missing versionId in request');
-      return new Response(
-        JSON.stringify({ error: 'Missing versionId' }),
-        { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
-      );
+      console.error("❌ Missing versionId in request");
+      return new Response(JSON.stringify({ error: "Missing versionId" }), {
+        status: 400,
+        headers: {
+          ...ch,
+          "Content-Type": "application/json",
+          "x-request-id": requestId,
+        },
+      });
     }
 
     // Verificar se a versão existe e pertence à organização
-    console.log('📋 Checking version:', versionId);
+    console.log("📋 Checking version:", versionId);
     const { data: versionToPublish, error: versionError } = await supabase
-      .from('versions')
-      .select('id, number, org_id, status')
-      .eq('id', versionId)
-      .eq('org_id', profile.organization_id)
+      .from("versions")
+      .select("id, number, org_id, status")
+      .eq("id", versionId)
+      .eq("org_id", profile.organization_id)
       .single();
 
     if (versionError) {
-      console.error('❌ Version fetch error:', versionError);
+      console.error("❌ Version fetch error:", versionError);
       return new Response(
-        JSON.stringify({ error: 'Failed to fetch version', details: versionError.message }),
-        { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
+        JSON.stringify({
+          error: "Failed to fetch version",
+          details: versionError.message,
+        }),
+        {
+          status: 500,
+          headers: {
+            ...ch,
+            "Content-Type": "application/json",
+            "x-request-id": requestId,
+          },
+        },
       );
     }
 
     if (!versionToPublish) {
-      console.error('❌ Version not found or access denied');
-      return new Response(
-        JSON.stringify({ error: 'Version not found' }),
-        { status: 404, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
-      );
+      console.error("❌ Version not found or access denied");
+      return new Response(JSON.stringify({ error: "Version not found" }), {
+        status: 404,
+        headers: {
+          ...ch,
+          "Content-Type": "application/json",
+          "x-request-id": requestId,
+        },
+      });
     }
 
-    console.log('✅ Version found:', { number: versionToPublish.number, status: versionToPublish.status });
+    console.log("✅ Version found:", {
+      number: versionToPublish.number,
+      status: versionToPublish.status,
+    });
 
-    if (versionToPublish.status !== 'draft') {
-      console.error('❌ Invalid status for publication:', versionToPublish.status);
+    if (versionToPublish.status !== "draft") {
+      console.error(
+        "❌ Invalid status for publication:",
+        versionToPublish.status,
+      );
       return new Response(
-        JSON.stringify({ error: 'Only draft versions can be published' }),
-        { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
+        JSON.stringify({ error: "Only draft versions can be published" }),
+        {
+          status: 400,
+          headers: {
+            ...ch,
+            "Content-Type": "application/json",
+            "x-request-id": requestId,
+          },
+        },
       );
     }
 
     // Verificar se a versão tem dados antes de publicar
-    console.log('📊 Checking if version has data...');
+    console.log("📊 Checking if version has data...");
     const { count: processosCount, error: countError } = await supabase
-      .from('processos')
-      .select('*', { count: 'exact', head: true })
-      .eq('version_id', versionId);
+      .from("processos")
+      .select("*", { count: "exact", head: true })
+      .eq("version_id", versionId);
 
     if (countError) {
-      console.error('❌ Error counting processos:', countError);
+      console.error("❌ Error counting processos:", countError);
       return new Response(
-        JSON.stringify({ error: 'Failed to validate version data', details: countError.message }),
-        { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
+        JSON.stringify({
+          error: "Failed to validate version data",
+          details: countError.message,
+        }),
+        {
+          status: 500,
+          headers: {
+            ...ch,
+            "Content-Type": "application/json",
+            "x-request-id": requestId,
+          },
+        },
       );
     }
 
     if (!processosCount || processosCount === 0) {
-      console.error('❌ Cannot publish empty version. Processos count:', processosCount);
-      
+      console.error(
+        "❌ Cannot publish empty version. Processos count:",
+        processosCount,
+      );
+
       // Verificar se houve tentativa de importação recente com dados detalhados
       const { data: versionWithSummary } = await supabase
-        .from('versions')
-        .select('summary')
-        .eq('id', versionId)
+        .from("versions")
+        .select("summary")
+        .eq("id", versionId)
         .single();
-      
+
       const summary = versionWithSummary?.summary || {};
       const importErrors = summary.errors || 0;
       const attemptedImport = summary.total_records || 0;
       const imported = summary.imported || 0;
-      
-      console.log('📊 Version summary analysis:', {
+
+      console.log("📊 Version summary analysis:", {
         attempted: attemptedImport,
         imported: imported,
         errors: importErrors,
-        hasAttemptedImport: attemptedImport > 0
+        hasAttemptedImport: attemptedImport > 0,
       });
-      
-      let errorMessage = 'Não é possível publicar versão vazia';
+
+      let errorMessage = "Não é possível publicar versão vazia";
       let details = `A versão contém ${processosCount || 0} processos. Importe dados válidos primeiro.`;
-      
+
       if (attemptedImport > 0) {
         if (imported === 0) {
-          errorMessage = 'Falha total na importação - nenhum dado foi importado';
+          errorMessage =
+            "Falha total na importação - nenhum dado foi importado";
           details = `Tentativa de importar ${attemptedImport} registros, mas todos falharam (${importErrors} erros). Verifique o formato dos dados e tente novamente.`;
         } else if (imported < attemptedImport / 2) {
-          errorMessage = 'Importação com alta taxa de falha';
+          errorMessage = "Importação com alta taxa de falha";
           details = `Apenas ${imported} de ${attemptedImport} registros foram importados com sucesso (${importErrors} erros). Taxa de sucesso muito baixa.`;
         }
       }
-      
+
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: errorMessage,
           details: details,
           importStats: {
@@ -209,102 +309,153 @@ serve('publish-version', async (req) => {
             imported: imported,
             failed: importErrors,
             successful: processosCount || 0,
-            successRate: attemptedImport > 0 ? Math.round((imported / attemptedImport) * 100) : 0
-          }
+            successRate:
+              attemptedImport > 0
+                ? Math.round((imported / attemptedImport) * 100)
+                : 0,
+          },
         }),
-        { status: 400, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
+        {
+          status: 400,
+          headers: {
+            ...ch,
+            "Content-Type": "application/json",
+            "x-request-id": requestId,
+          },
+        },
       );
     }
 
-    console.log(`✅ Version has ${processosCount} processos, proceeding with publication`);
+    console.log(
+      `✅ Version has ${processosCount} processos, proceeding with publication`,
+    );
 
     const now = new Date().toISOString();
 
     // 1. Marcar versões anteriores como archived
-    console.log('📚 Archiving previous published versions...');
+    console.log("📚 Archiving previous published versions...");
     const { error: archiveError } = await supabase
-      .from('versions')
-      .update({ status: 'archived' })
-      .eq('org_id', profile.organization_id)
-      .eq('status', 'published');
+      .from("versions")
+      .update({ status: "archived" })
+      .eq("org_id", profile.organization_id)
+      .eq("status", "published");
 
     if (archiveError) {
-      console.error('❌ Error archiving previous versions:', archiveError);
+      console.error("❌ Error archiving previous versions:", archiveError);
       // Continue anyway, this is not critical
     } else {
-      console.log('✅ Previous versions archived');
+      console.log("✅ Previous versions archived");
     }
 
     // 2. Publicar nova versão
-    console.log('🚀 Publishing version...');
+    console.log("🚀 Publishing version...");
     const { data: publishedVersion, error } = await supabase
-      .from('versions')
-      .update({ 
-        status: 'published', 
+      .from("versions")
+      .update({
+        status: "published",
         published_at: now,
         summary: {
           ...(versionToPublish.summary || {}),
           published_at: now,
-          published_by: user.email
-        }
+          published_by: user.email,
+        },
       })
-      .eq('id', versionId)
-      .select('number, published_at')
+      .eq("id", versionId)
+      .select("number, published_at")
       .single();
 
     if (error) {
-      console.error('❌ Error publishing version:', error);
+      console.error("❌ Error publishing version:", error);
       return new Response(
-        JSON.stringify({ error: 'Failed to publish version', details: error.message }),
-        { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
+        JSON.stringify({
+          error: "Failed to publish version",
+          details: error.message,
+        }),
+        {
+          status: 500,
+          headers: {
+            ...ch,
+            "Content-Type": "application/json",
+            "x-request-id": requestId,
+          },
+        },
       );
     }
 
     if (!publishedVersion) {
-      console.error('❌ No version data returned after publish');
+      console.error("❌ No version data returned after publish");
       return new Response(
-        JSON.stringify({ error: 'Failed to publish version - no data returned' }),
-        { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
+        JSON.stringify({
+          error: "Failed to publish version - no data returned",
+        }),
+        {
+          status: 500,
+          headers: {
+            ...ch,
+            "Content-Type": "application/json",
+            "x-request-id": requestId,
+          },
+        },
       );
     }
 
-    console.log(`Published version v${publishedVersion.number} for org ${profile.organization_id}`);
+    console.log(
+      `Published version v${publishedVersion.number} for org ${profile.organization_id}`,
+    );
 
     // Iniciar processamento automatico de testemunhas em background
-    console.log('Starting automatic witness data processing...');
+    console.log("Starting automatic witness data processing...");
     try {
-      supabase.functions.invoke('process-witness-data', {
-        body: { org_id: profile.organization_id }
-      }).then(() => {
-        console.log('✅ Witness processing initiated successfully');
-      }).catch((err) => {
-        console.error('⚠️ Non-critical: Failed to start witness processing:', err);
-      });
+      supabase.functions
+        .invoke("process-witness-data", {
+          body: { org_id: profile.organization_id },
+        })
+        .then(() => {
+          console.log("✅ Witness processing initiated successfully");
+        })
+        .catch((err) => {
+          console.error(
+            "⚠️ Non-critical: Failed to start witness processing:",
+            err,
+          );
+        });
     } catch (bgError) {
-      console.error('⚠️ Non-critical: Background process error:', bgError);
+      console.error("⚠️ Non-critical: Background process error:", bgError);
     }
 
     return new Response(
       JSON.stringify({
         number: publishedVersion.number,
         publishedAt: publishedVersion.published_at,
-        processosCount: processosCount
+        processosCount: processosCount,
       }),
-      { headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
+      {
+        headers: {
+          ...ch,
+          "Content-Type": "application/json",
+          "x-request-id": requestId,
+        },
+      },
     );
-
   } catch (error) {
-    console.error('💥 CRITICAL ERROR in publish-version:', error);
-    console.error('Error stack:', error.stack);
-    console.error('Error message:', error.message);
-    
+    console.error("💥 CRITICAL ERROR in publish-version:", error);
+    console.error("Error stack:", error.stack);
+    console.error("Error message:", error.message);
+
     return new Response(
       JSON.stringify({
-        error: 'Internal server error',
+        error: "Internal server error",
         message: error.message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       }),
-      { status: 500, headers: { ...ch, 'Content-Type': 'application/json', 'x-request-id': requestId } }
+      {
+        status: 500,
+        headers: {
+          ...ch,
+          "Content-Type": "application/json",
+          "x-request-id": requestId,
+        },
+      },
     );
   }
 });

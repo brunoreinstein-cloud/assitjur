@@ -8,7 +8,7 @@ interface ConnectionStatusProps {
   errorMessage?: string;
   isConnected: boolean;
   dataCount: number;
-  dataType: 'processos' | 'testemunhas';
+  dataType: "processos" | "testemunhas";
 }
 
 export const ConnectionStatus = ({
@@ -17,7 +17,7 @@ export const ConnectionStatus = ({
   errorMessage,
   isConnected,
   dataCount,
-  dataType
+  dataType,
 }: ConnectionStatusProps) => {
   if (isLoading) {
     return (
@@ -48,7 +48,10 @@ export const ConnectionStatus = ({
                 <p className="text-xs text-orange-700 mt-1">{errorMessage}</p>
               )}
             </div>
-            <Badge variant="outline" className="text-orange-700 border-orange-300">
+            <Badge
+              variant="outline"
+              className="text-orange-700 border-orange-300"
+            >
               Mock
             </Badge>
           </div>
@@ -89,7 +92,10 @@ export const ConnectionStatus = ({
             <span className="text-sm text-green-800">
               {dataCount} {dataType} carregados do servidor
             </span>
-            <Badge variant="outline" className="text-green-700 border-green-300">
+            <Badge
+              variant="outline"
+              className="text-green-700 border-green-300"
+            >
               Online
             </Badge>
           </div>

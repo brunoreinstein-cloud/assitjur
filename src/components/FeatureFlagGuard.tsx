@@ -1,5 +1,5 @@
-import React from 'react';
-import { useFeatureFlag } from '@/hooks/useFeatureFlag';
+import React from "react";
+import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 
 interface Props {
   flag: string;
@@ -7,7 +7,11 @@ interface Props {
   fallback?: React.ReactNode;
 }
 
-export const FeatureFlagGuard: React.FC<Props> = ({ flag, children, fallback }) => {
+export const FeatureFlagGuard: React.FC<Props> = ({
+  flag,
+  children,
+  fallback,
+}) => {
   const enabled = useFeatureFlag(flag);
   if (!enabled) return <>{fallback ?? null}</>;
   return <>{children}</>;

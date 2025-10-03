@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Calculator, TrendingUp, DollarSign } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Calculator, TrendingUp, DollarSign } from "lucide-react";
 
 interface ROIInputs {
   funcionarios: number;
@@ -16,7 +22,7 @@ export function ComplianceROI() {
   const [inputs, setInputs] = useState<ROIInputs>({
     funcionarios: 10,
     processos: 50,
-    consultoriaAtual: 25000
+    consultoriaAtual: 25000,
   });
 
   const calculateROI = () => {
@@ -25,7 +31,8 @@ export function ComplianceROI() {
     const implementacao = consultoriaTradicional * 1.8; // 180% do valor da consultoria
     const auditoria = consultoriaTradicional * 0.6; // 60% anual
     const manutencao = consultoriaTradicional * 0.5; // 50% anual
-    const totalTradicional = consultoriaTradicional + implementacao + auditoria + manutencao;
+    const totalTradicional =
+      consultoriaTradicional + implementacao + auditoria + manutencao;
 
     // Custos AssistJur.IA
     const licencaAnual = Math.max(24000, inputs.funcionarios * 2400); // R$ 2.400 por usuário/ano
@@ -34,14 +41,14 @@ export function ComplianceROI() {
 
     // Economia
     const economia = totalTradicional - totalAssistjur;
-    const percentualEconomia = ((economia / totalTradicional) * 100);
+    const percentualEconomia = (economia / totalTradicional) * 100;
 
     return {
       totalTradicional,
       totalAssistjur,
       economia,
       percentualEconomia,
-      tempoEconomizado: 85 // 85% menos tempo
+      tempoEconomizado: 85, // 85% menos tempo
     };
   };
 
@@ -67,7 +74,12 @@ export function ComplianceROI() {
               id="funcionarios"
               type="number"
               value={inputs.funcionarios}
-              onChange={(e) => setInputs({...inputs, funcionarios: parseInt(e.target.value) || 0})}
+              onChange={(e) =>
+                setInputs({
+                  ...inputs,
+                  funcionarios: parseInt(e.target.value) || 0,
+                })
+              }
               min="1"
             />
           </div>
@@ -77,7 +89,12 @@ export function ComplianceROI() {
               id="processos"
               type="number"
               value={inputs.processos}
-              onChange={(e) => setInputs({...inputs, processos: parseInt(e.target.value) || 0})}
+              onChange={(e) =>
+                setInputs({
+                  ...inputs,
+                  processos: parseInt(e.target.value) || 0,
+                })
+              }
               min="1"
             />
           </div>
@@ -87,7 +104,12 @@ export function ComplianceROI() {
               id="consultoria"
               type="number"
               value={inputs.consultoriaAtual}
-              onChange={(e) => setInputs({...inputs, consultoriaAtual: parseInt(e.target.value) || 0})}
+              onChange={(e) =>
+                setInputs({
+                  ...inputs,
+                  consultoriaAtual: parseInt(e.target.value) || 0,
+                })
+              }
               min="0"
             />
           </div>
@@ -98,7 +120,9 @@ export function ComplianceROI() {
           {/* Método Tradicional */}
           <Card className="border-destructive/20">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-destructive">Método Tradicional</CardTitle>
+              <CardTitle className="text-lg text-destructive">
+                Método Tradicional
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
@@ -107,15 +131,21 @@ export function ComplianceROI() {
               </div>
               <div className="flex justify-between text-sm">
                 <span>Implementação:</span>
-                <span>R$ {(inputs.consultoriaAtual * 1.8).toLocaleString()}</span>
+                <span>
+                  R$ {(inputs.consultoriaAtual * 1.8).toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Auditoria anual:</span>
-                <span>R$ {(inputs.consultoriaAtual * 0.6).toLocaleString()}</span>
+                <span>
+                  R$ {(inputs.consultoriaAtual * 0.6).toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Manutenção anual:</span>
-                <span>R$ {(inputs.consultoriaAtual * 0.5).toLocaleString()}</span>
+                <span>
+                  R$ {(inputs.consultoriaAtual * 0.5).toLocaleString()}
+                </span>
               </div>
               <div className="border-t pt-2">
                 <div className="flex justify-between font-bold text-destructive">
@@ -132,7 +162,9 @@ export function ComplianceROI() {
           {/* AssistJur.IA */}
           <Card className="border-primary/20">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-primary">AssistJur.IA</CardTitle>
+              <CardTitle className="text-lg text-primary">
+                AssistJur.IA
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
@@ -141,7 +173,10 @@ export function ComplianceROI() {
               </div>
               <div className="flex justify-between text-sm">
                 <span>Licença anual:</span>
-                <span>R$ {Math.max(24000, inputs.funcionarios * 2400).toLocaleString()}</span>
+                <span>
+                  R${" "}
+                  {Math.max(24000, inputs.funcionarios * 2400).toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Suporte:</span>
@@ -173,14 +208,18 @@ export function ComplianceROI() {
                   <DollarSign className="w-6 h-6" />
                   R$ {roi.economia.toLocaleString()}
                 </div>
-                <div className="text-sm text-muted-foreground">Economia total</div>
+                <div className="text-sm text-muted-foreground">
+                  Economia total
+                </div>
               </div>
               <div>
                 <div className="flex items-center justify-center gap-2 text-2xl font-bold text-accent">
                   <TrendingUp className="w-6 h-6" />
                   {roi.percentualEconomia.toFixed(0)}%
                 </div>
-                <div className="text-sm text-muted-foreground">Redução de custos</div>
+                <div className="text-sm text-muted-foreground">
+                  Redução de custos
+                </div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-primary">
@@ -189,7 +228,7 @@ export function ComplianceROI() {
                 <div className="text-sm text-muted-foreground">Menos tempo</div>
               </div>
             </div>
-            
+
             <div className="mt-6 text-center">
               <Button size="lg" className="mr-2">
                 Solicitar Demonstração

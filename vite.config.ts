@@ -3,7 +3,11 @@ import react from "@vitejs/plugin-react-swc";
 import { componentTagger } from "lovable-tagger";
 import { brotliCompress, gzip } from "node:zlib";
 import { promisify } from "node:util";
-import type { NormalizedOutputOptions, OutputBundle, PluginContext } from "rollup";
+import type {
+  NormalizedOutputOptions,
+  OutputBundle,
+  PluginContext,
+} from "rollup";
 import path from "path";
 
 const gzipAsync = promisify(gzip);
@@ -51,8 +55,8 @@ function spaFallbackPlugin(): Plugin {
       _options: NormalizedOutputOptions,
       bundle: OutputBundle,
     ) {
-      const indexHtml = bundle['index.html'];
-      if (indexHtml && indexHtml.type === 'asset') {
+      const indexHtml = bundle["index.html"];
+      if (indexHtml && indexHtml.type === "asset") {
         this.emitFile({
           type: "asset",
           fileName: "404.html",
@@ -75,7 +79,7 @@ function suppressTS6310Plugin(): Plugin {
         // Disable TypeScript project references validation
         (originalBuild as any).typescript = { check: false };
       }
-    }
+    },
   };
 }
 
@@ -100,38 +104,37 @@ const tsconfigVite = {
       "@/*": ["./src/*"],
       "@components/*": ["./src/components/*"],
       "@hooks/*": ["./src/hooks/*"],
-      "@lib/*": ["./src/lib/*"]
-    }
+      "@lib/*": ["./src/lib/*"],
+    },
   },
   include: ["src/**/*"],
-  exclude: ["node_modules", "dist"]
+  exclude: ["node_modules", "dist"],
 };
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  
   const plugins = [
     suppressTS6310Plugin(), // Must be first
     react({
       tsDecorators: true,
     }),
-    mode === 'development' && componentTagger(),
-    mode !== 'development' && spaFallbackPlugin(),
-    mode !== 'development' && compressPlugin(),
+    mode === "development" && componentTagger(),
+    mode !== "development" && spaFallbackPlugin(),
+    mode !== "development" && compressPlugin(),
   ];
 
   // Handle analyzer plugin dynamically but synchronously
   if (process.env.ANALYZE) {
     try {
-      const { visualizer } = require('rollup-plugin-visualizer');
+      const { visualizer } = require("rollup-plugin-visualizer");
       plugins.push(visualizer({ open: true }) as Plugin);
     } catch {
-      console.warn('rollup-plugin-visualizer not available');
+      console.warn("rollup-plugin-visualizer not available");
     }
   }
 
   return {
-    base: '/',
+    base: "/",
     server: {
       host: "::",
       port: 8080,
@@ -139,65 +142,69 @@ export default defineConfig(({ mode }) => {
     plugins: plugins.filter(Boolean),
     // Completely suppress TypeScript error reporting
     clearScreen: false,
-    logLevel: 'warn', // Only show warnings, suppress TS errors
+    logLevel: "warn", // Only show warnings, suppress TS errors
     resolve: {
       alias: [
-        { find: '@', replacement: path.resolve(__dirname, 'src') },
-        { find: '@components', replacement: path.resolve(__dirname, 'src/components') },
-        { find: '@hooks', replacement: path.resolve(__dirname, 'src/hooks') },
-        { find: '@lib', replacement: path.resolve(__dirname, 'src/lib') }
-      ]
+        { find: "@", replacement: path.resolve(__dirname, "src") },
+        {
+          find: "@components",
+          replacement: path.resolve(__dirname, "src/components"),
+        },
+        { find: "@hooks", replacement: path.resolve(__dirname, "src/hooks") },
+        { find: "@lib", replacement: path.resolve(__dirname, "src/lib") },
+      ],
     },
     // CRITICAL: Bypass TS6310 by using esbuild with isolated config
     esbuild: {
-      jsx: 'automatic',
-      target: 'es2020',
+      jsx: "automatic",
+      target: "es2020",
       tsconfigRaw: JSON.stringify(tsconfigVite),
-      logOverride: { 
-        'this-is-undefined-in-esm': 'silent',
-        'tsconfig-resolve-error': 'silent'
-      }
+      logOverride: {
+        "this-is-undefined-in-esm": "silent",
+        "tsconfig-resolve-error": "silent",
+      },
     },
     optimizeDeps: {
       esbuildOptions: {
-        tsconfigRaw: JSON.stringify(tsconfigVite)
-      }
+        tsconfigRaw: JSON.stringify(tsconfigVite),
+      },
     },
     define: {
-      global: 'globalThis',
-      'process.env': {},
+      global: "globalThis",
+      "process.env": {},
     },
     build: {
-      target: 'ES2022',
-      outDir: 'dist',
+      target: "ES2022",
+      outDir: "dist",
       sourcemap: false,
       minify: true,
       emptyOutDir: true,
       // PHASE 1: Critical build config to bypass TS6310
       commonjsOptions: {
-        include: ['node_modules/**'],  
-        transformMixedEsModules: true
+        include: ["node_modules/**"],
+        transformMixedEsModules: true,
       },
       rollupOptions: {
         output: {
           manualChunks(id: string) {
             // More granular chunking to prevent initialization errors
-            if (id.includes('node_modules')) {
+            if (id.includes("node_modules")) {
               // Split vendor chunks by package
-              if (id.includes('@radix-ui')) return 'vendor-radix';
-              if (id.includes('react') || id.includes('react-dom')) return 'vendor-react';
-              if (id.includes('@tanstack')) return 'vendor-tanstack';
-              if (id.includes('@supabase')) return 'vendor-supabase';
-              return 'vendor';
+              if (id.includes("@radix-ui")) return "vendor-radix";
+              if (id.includes("react") || id.includes("react-dom"))
+                return "vendor-react";
+              if (id.includes("@tanstack")) return "vendor-tanstack";
+              if (id.includes("@supabase")) return "vendor-supabase";
+              return "vendor";
             }
             // Keep feature modules separate
-            if (id.includes('/src/features/')) return 'features';
-            if (id.includes('/src/components/')) return 'components';
+            if (id.includes("/src/features/")) return "features";
+            if (id.includes("/src/components/")) return "components";
           },
         },
         // Suppress warnings about circular dependencies
         onwarn(warning, warn) {
-          if (warning.code === 'CIRCULAR_DEPENDENCY') return;
+          if (warning.code === "CIRCULAR_DEPENDENCY") return;
           warn(warning);
         },
       },

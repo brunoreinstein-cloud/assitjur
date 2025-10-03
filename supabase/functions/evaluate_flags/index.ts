@@ -1,10 +1,13 @@
-import { serve } from '../_shared/observability.ts';
+import { serve } from "../_shared/observability.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { audit } from "../_shared/audit.ts";
 import { adminClient } from "../_shared/auth.ts";
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { jwtVerify } from "npm:jose@5.10.0";
-import { EvaluateFlagsRequestSchema, EvaluateFlagsResponseSchema } from "./schemas.ts";
+import {
+  EvaluateFlagsRequestSchema,
+  EvaluateFlagsResponseSchema,
+} from "./schemas.ts";
 import { RateLimiter } from "./rateLimiter.ts";
 
 const rateLimiter = new RateLimiter(
@@ -12,18 +15,25 @@ const rateLimiter = new RateLimiter(
   60_000,
 );
 
-export async function hashPercentage(flagId: string, userId: string): Promise<number> {
+export async function hashPercentage(
+  flagId: string,
+  userId: string,
+): Promise<number> {
   const encoder = new TextEncoder();
   const data = encoder.encode(flagId + userId);
-  const digest = await crypto.subtle.digest('SHA-256', data);
+  const digest = await crypto.subtle.digest("SHA-256", data);
   const hashArray = new Uint8Array(digest);
   const hashHex = Array.from(hashArray)
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
   return parseInt(hashHex.slice(0, 8), 16) % 100;
 }
 
-export async function inRollout(flagId: string, userId: string, rollout: number): Promise<boolean> {
+export async function inRollout(
+  flagId: string,
+  userId: string,
+  rollout: number,
+): Promise<boolean> {
   if (rollout >= 100) return true;
   return (await hashPercentage(flagId, userId)) < rollout;
 }
@@ -35,12 +45,22 @@ export async function handler(req: Request): Promise<Response> {
   if (pre) return pre;
 
   if (req.method !== "POST") {
-    return jsonError(405, "method_not_allowed", { requestId }, { ...ch, "x-request-id": requestId });
+    return jsonError(
+      405,
+      "method_not_allowed",
+      { requestId },
+      { ...ch, "x-request-id": requestId },
+    );
   }
 
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
-    return jsonError(403, "missing_authorization", { requestId }, { ...ch, "x-request-id": requestId });
+    return jsonError(
+      403,
+      "missing_authorization",
+      { requestId },
+      { ...ch, "x-request-id": requestId },
+    );
   }
 
   const token = authHeader.replace(/^Bearer\s+/i, "");
@@ -50,27 +70,55 @@ export async function handler(req: Request): Promise<Response> {
     const decoded = await jwtVerify(token, new TextEncoder().encode(secret));
     payload = decoded.payload as Record<string, any>;
   } catch {
-    return jsonError(403, "invalid_token", { requestId }, { ...ch, "x-request-id": requestId });
+    return jsonError(
+      403,
+      "invalid_token",
+      { requestId },
+      { ...ch, "x-request-id": requestId },
+    );
   }
 
   const body = await req.json().catch(() => null);
   if (!body) {
-    return jsonError(400, "invalid_json", { requestId }, { ...ch, "x-request-id": requestId });
+    return jsonError(
+      400,
+      "invalid_json",
+      { requestId },
+      { ...ch, "x-request-id": requestId },
+    );
   }
 
   const parsed = EvaluateFlagsRequestSchema.safeParse(body);
   if (!parsed.success) {
-    return jsonError(400, "invalid_body", { requestId }, { ...ch, "x-request-id": requestId });
+    return jsonError(
+      400,
+      "invalid_body",
+      { requestId },
+      { ...ch, "x-request-id": requestId },
+    );
   }
 
   const { tenant_id, user_id, segments, environment } = parsed.data;
 
-  if (payload.tenant_id !== tenant_id || (payload.environment ?? "production") !== environment) {
-    return jsonError(403, "tenant_env_mismatch", { requestId }, { ...ch, "x-request-id": requestId });
+  if (
+    payload.tenant_id !== tenant_id ||
+    (payload.environment ?? "production") !== environment
+  ) {
+    return jsonError(
+      403,
+      "tenant_env_mismatch",
+      { requestId },
+      { ...ch, "x-request-id": requestId },
+    );
   }
 
   if (!rateLimiter.check(user_id)) {
-    return jsonError(429, "rate_limited", { requestId }, { ...ch, "x-request-id": requestId });
+    return jsonError(
+      429,
+      "rate_limited",
+      { requestId },
+      { ...ch, "x-request-id": requestId },
+    );
   }
 
   const supa = adminClient();
@@ -95,7 +143,12 @@ export async function handler(req: Request): Promise<Response> {
 
   if (error) {
     console.error("fetch_flags_error", error);
-    return jsonError(500, "fetch_failed", { requestId }, { ...ch, "x-request-id": requestId });
+    return jsonError(
+      500,
+      "fetch_failed",
+      { requestId },
+      { ...ch, "x-request-id": requestId },
+    );
   }
 
   const flags: Record<string, boolean> = {};
@@ -104,10 +157,18 @@ export async function handler(req: Request): Promise<Response> {
     if (killed.includes(flag.flag_id)) {
       enabled = false;
     }
-    if (enabled && typeof flag.rollout_percentage === "number" && flag.rollout_percentage < 100) {
+    if (
+      enabled &&
+      typeof flag.rollout_percentage === "number" &&
+      flag.rollout_percentage < 100
+    ) {
       enabled = await inRollout(flag.flag_id, user_id, flag.rollout_percentage);
     }
-    if (enabled && Array.isArray(flag.user_segments) && flag.user_segments.length > 0) {
+    if (
+      enabled &&
+      Array.isArray(flag.user_segments) &&
+      flag.user_segments.length > 0
+    ) {
       const inter = segments.filter((s) => flag.user_segments.includes(s));
       enabled = inter.length > 0;
     }
@@ -124,4 +185,4 @@ export async function handler(req: Request): Promise<Response> {
   return json(200, resp, { ...ch, "x-request-id": requestId });
 }
 
-serve('evaluate_flags', handler);
+serve("evaluate_flags", handler);

@@ -44,9 +44,12 @@ describe("DetailDrawer copy masking", () => {
   it("copies masked value to clipboard when PII mask is enabled", () => {
     render(<DetailDrawer />);
     const label = screen.getByText("Nome da Testemunha");
-    const button = label.parentElement?.querySelector("button") as HTMLButtonElement;
+    const button = label.parentElement?.querySelector(
+      "button",
+    ) as HTMLButtonElement;
     fireEvent.click(button);
-    expect((navigator as any).clipboard.writeText).toHaveBeenCalledWith("jo***@example.com");
+    expect((navigator as any).clipboard.writeText).toHaveBeenCalledWith(
+      "jo***@example.com",
+    );
   });
 });
-

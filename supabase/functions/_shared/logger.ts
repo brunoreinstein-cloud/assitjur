@@ -1,4 +1,4 @@
-export type LogLevel = 'info' | 'warn' | 'error';
+export type LogLevel = "info" | "warn" | "error";
 
 interface LogEntry {
   level: LogLevel;
@@ -16,10 +16,10 @@ function emit(level: LogLevel, msg: string, requestId?: string) {
   };
   const json = JSON.stringify(entry);
   switch (level) {
-    case 'error':
+    case "error":
       console.error(json);
       break;
-    case 'warn':
+    case "warn":
       console.warn(json);
       break;
     default:
@@ -28,9 +28,9 @@ function emit(level: LogLevel, msg: string, requestId?: string) {
 }
 
 export const logger = {
-  info: (msg: string, requestId?: string) => emit('info', msg, requestId),
-  warn: (msg: string, requestId?: string) => emit('warn', msg, requestId),
-  error: (msg: string, requestId?: string) => emit('error', msg, requestId),
+  info: (msg: string, requestId?: string) => emit("info", msg, requestId),
+  warn: (msg: string, requestId?: string) => emit("warn", msg, requestId),
+  error: (msg: string, requestId?: string) => emit("error", msg, requestId),
 };
 
 export function createLogger(requestId?: string) {

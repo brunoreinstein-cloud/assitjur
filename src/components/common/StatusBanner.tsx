@@ -1,6 +1,6 @@
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { useServiceHealth } from '@/hooks/useServiceHealth';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { useServiceHealth } from "@/hooks/useServiceHealth";
 
 export function StatusBanner() {
   const { isUnavailable, retry } = useServiceHealth();
@@ -24,4 +24,3 @@ export function StatusBanner() {
     </Alert>
   );
 }
-

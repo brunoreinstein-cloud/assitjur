@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: AssistJur API
-  version: '1.0.0'
+  version: "1.0.0"
 servers:
   - url: https://assistjur.com.br
 paths:
@@ -9,18 +9,18 @@ paths:
     get:
       summary: Health check
       responses:
-        '200':
+        "200":
           description: Application is healthy
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthResponse'
-        '500':
+                $ref: "#/components/schemas/HealthResponse"
+        "500":
           description: Application is unhealthy
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthError'
+                $ref: "#/components/schemas/HealthError"
   /api/export:
     post:
       summary: Export message blocks
@@ -31,42 +31,42 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ExportRequest'
+              $ref: "#/components/schemas/ExportRequest"
       responses:
-        '200':
+        "200":
           description: Export generated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExportResponse'
-        '400':
+                $ref: "#/components/schemas/ExportResponse"
+        "400":
           description: Invalid export type
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Authentication error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
           description: User profile not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
           description: Export failed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
     options:
       summary: CORS preflight
       responses:
-        '200':
+        "200":
           description: Successful response
 components:
   securitySchemes:

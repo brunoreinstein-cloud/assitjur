@@ -1,76 +1,96 @@
-import React, { useState, useMemo, useRef } from 'react';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, AlertTriangle, XCircle, Download, Filter } from 'lucide-react';
-import { ValidationIssue } from '@/types/assistjur';
-import { useVirtualizer } from '@tanstack/react-virtual';
+import React, { useState, useMemo, useRef } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  CheckCircle,
+  AlertTriangle,
+  XCircle,
+  Download,
+  Filter,
+} from "lucide-react";
+import { ValidationIssue } from "@/types/assistjur";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
 interface IssuesDataTableProps {
   issues: ValidationIssue[];
   onExportIssues?: () => void;
 }
 
-export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps) {
+export function IssuesDataTable({
+  issues,
+  onExportIssues,
+}: IssuesDataTableProps) {
   const [filters, setFilters] = useState({
-    severity: 'all',
-    sheet: 'all',
-    rule: 'all',
-    search: ''
+    severity: "all",
+    sheet: "all",
+    rule: "all",
+    search: "",
   });
   const parentRef = useRef<HTMLDivElement>(null);
 
   // Extrair valores únicos para filtros
-  const uniqueSheets = useMemo(() => 
-    [...new Set(issues.map(i => i.sheet))].sort(),
-    [issues]
+  const uniqueSheets = useMemo(
+    () => [...new Set(issues.map((i) => i.sheet))].sort(),
+    [issues],
   );
-  
-  const uniqueRules = useMemo(() => 
-    [...new Set(issues.map(i => i.rule).filter(Boolean))].sort(),
-    [issues]
+
+  const uniqueRules = useMemo(
+    () => [...new Set(issues.map((i) => i.rule).filter(Boolean))].sort(),
+    [issues],
   );
 
   // Filtrar issues
   const filteredIssues = useMemo(() => {
-    return issues.filter(issue => {
+    return issues.filter((issue) => {
       // Filtro por severidade
-      if (filters.severity !== 'all' && issue.severity !== filters.severity) {
+      if (filters.severity !== "all" && issue.severity !== filters.severity) {
         return false;
       }
-      
+
       // Filtro por aba
-      if (filters.sheet !== 'all' && issue.sheet !== filters.sheet) {
+      if (filters.sheet !== "all" && issue.sheet !== filters.sheet) {
         return false;
       }
-      
+
       // Filtro por regra
-      if (filters.rule !== 'all' && issue.rule !== filters.rule) {
+      if (filters.rule !== "all" && issue.rule !== filters.rule) {
         return false;
       }
-      
+
       // Busca textual
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
-        const matchesMessage = issue.message.toLowerCase().includes(searchLower);
+        const matchesMessage = issue.message
+          .toLowerCase()
+          .includes(searchLower);
         const matchesColumn = issue.column?.toLowerCase().includes(searchLower);
-        const matchesValue = issue.original?.toString().toLowerCase().includes(searchLower);
-        
+        const matchesValue = issue.original
+          ?.toString()
+          .toLowerCase()
+          .includes(searchLower);
+
         if (!matchesMessage && !matchesColumn && !matchesValue) {
           return false;
         }
       }
-      
+
       return true;
     });
   }, [issues, filters]);
@@ -82,50 +102,64 @@ export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps
     overscan: 5,
   });
 
-  const getSeverityIcon = (severity: ValidationIssue['severity']) => {
+  const getSeverityIcon = (severity: ValidationIssue["severity"]) => {
     switch (severity) {
-      case 'error':
+      case "error":
         return <XCircle className="h-4 w-4 text-destructive" />;
-      case 'warning':
+      case "warning":
         return <AlertTriangle className="h-4 w-4 text-warning" />;
-      case 'info':
+      case "info":
         return <CheckCircle className="h-4 w-4 text-info" />;
     }
   };
 
-  const getSeverityColor = (severity: ValidationIssue['severity']) => {
+  const getSeverityColor = (severity: ValidationIssue["severity"]) => {
     switch (severity) {
-      case 'error':
-        return 'destructive';
-      case 'warning':
-        return 'default';
-      case 'info':
-        return 'secondary';
+      case "error":
+        return "destructive";
+      case "warning":
+        return "default";
+      case "info":
+        return "secondary";
     }
   };
 
   const exportIssuesCSV = () => {
-    const headers = ['Severidade', 'Aba', 'Linha', 'Coluna', 'Regra', 'Mensagem', 'Valor Original', 'Valor Corrigido'];
+    const headers = [
+      "Severidade",
+      "Aba",
+      "Linha",
+      "Coluna",
+      "Regra",
+      "Mensagem",
+      "Valor Original",
+      "Valor Corrigido",
+    ];
     const csvData = [
-      headers.join(','),
-      ...filteredIssues.map(issue => [
-        issue.severity,
-        issue.sheet,
-        issue.row || '',
-        issue.column || '',
-        issue.rule || '',
-        `"${issue.message.replace(/"/g, '""')}"`,
-        `"${(issue.original || '').toString().replace(/"/g, '""')}"`,
-        `"${(issue.fixed || '').toString().replace(/"/g, '""')}"`
-      ].join(','))
-    ].join('\n');
+      headers.join(","),
+      ...filteredIssues.map((issue) =>
+        [
+          issue.severity,
+          issue.sheet,
+          issue.row || "",
+          issue.column || "",
+          issue.rule || "",
+          `"${issue.message.replace(/"/g, '""')}"`,
+          `"${(issue.original || "").toString().replace(/"/g, '""')}"`,
+          `"${(issue.fixed || "").toString().replace(/"/g, '""')}"`,
+        ].join(","),
+      ),
+    ].join("\n");
 
-    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
+    const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `assistjur-issues-${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `assistjur-issues-${new Date().toISOString().split("T")[0]}.csv`,
+    );
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -141,10 +175,10 @@ export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps
 
   const resetFilters = () => {
     setFilters({
-      severity: 'all',
-      sheet: 'all',
-      rule: 'all', 
-      search: ''
+      severity: "all",
+      sheet: "all",
+      rule: "all",
+      search: "",
     });
   };
 
@@ -166,14 +200,17 @@ export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps
             </Button>
           </div>
         </div>
-        
+
         {/* Filtros */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
           <div>
             <label className="text-sm font-medium mb-1 block">Severidade</label>
-            <Select value={filters.severity} onValueChange={(value) => 
-              setFilters(prev => ({ ...prev, severity: value }))
-            }>
+            <Select
+              value={filters.severity}
+              onValueChange={(value) =>
+                setFilters((prev) => ({ ...prev, severity: value }))
+              }
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -188,16 +225,21 @@ export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps
 
           <div>
             <label className="text-sm font-medium mb-1 block">Aba</label>
-            <Select value={filters.sheet} onValueChange={(value) => 
-              setFilters(prev => ({ ...prev, sheet: value }))
-            }>
+            <Select
+              value={filters.sheet}
+              onValueChange={(value) =>
+                setFilters((prev) => ({ ...prev, sheet: value }))
+              }
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas</SelectItem>
-                {uniqueSheets.map(sheet => (
-                  <SelectItem key={sheet} value={sheet}>{sheet}</SelectItem>
+                {uniqueSheets.map((sheet) => (
+                  <SelectItem key={sheet} value={sheet}>
+                    {sheet}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -205,16 +247,21 @@ export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps
 
           <div>
             <label className="text-sm font-medium mb-1 block">Regra</label>
-            <Select value={filters.rule} onValueChange={(value) => 
-              setFilters(prev => ({ ...prev, rule: value }))
-            }>
+            <Select
+              value={filters.rule}
+              onValueChange={(value) =>
+                setFilters((prev) => ({ ...prev, rule: value }))
+              }
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas</SelectItem>
-                {uniqueRules.map(rule => (
-                  <SelectItem key={rule} value={rule}>{rule}</SelectItem>
+                {uniqueRules.map((rule) => (
+                  <SelectItem key={rule} value={rule}>
+                    {rule}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -225,14 +272,19 @@ export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps
             <Input
               placeholder="Buscar na mensagem, coluna ou valor..."
               value={filters.search}
-              onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+              onChange={(e) =>
+                setFilters((prev) => ({ ...prev, search: e.target.value }))
+              }
             />
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent>
-        <div ref={parentRef} className="rounded-md border max-h-96 overflow-y-auto">
+        <div
+          ref={parentRef}
+          className="rounded-md border max-h-96 overflow-y-auto"
+        >
           <Table>
             <TableHeader>
               <TableRow>
@@ -249,14 +301,22 @@ export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps
             {filteredIssues.length === 0 ? (
               <TableBody>
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground py-6">
-                    {issues.length === 0 ? 'Nenhuma issue detectada' : 'Nenhuma issue corresponde aos filtros'}
+                  <TableCell
+                    colSpan={8}
+                    className="text-center text-muted-foreground py-6"
+                  >
+                    {issues.length === 0
+                      ? "Nenhuma issue detectada"
+                      : "Nenhuma issue corresponde aos filtros"}
                   </TableCell>
                 </TableRow>
               </TableBody>
             ) : (
               <TableBody
-                style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}
+                style={{
+                  height: `${rowVirtualizer.getTotalSize()}px`,
+                  position: "relative",
+                }}
               >
                 {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                   const issue = filteredIssues[virtualRow.index];
@@ -269,14 +329,19 @@ export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {getSeverityIcon(issue.severity)}
-                          <Badge variant={getSeverityColor(issue.severity)} className="text-xs">
+                          <Badge
+                            variant={getSeverityColor(issue.severity)}
+                            className="text-xs"
+                          >
                             {issue.severity.toUpperCase()}
                           </Badge>
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">{issue.sheet}</TableCell>
-                      <TableCell>{issue.row || '-'}</TableCell>
-                      <TableCell>{issue.column || '-'}</TableCell>
+                      <TableCell className="font-medium">
+                        {issue.sheet}
+                      </TableCell>
+                      <TableCell>{issue.row || "-"}</TableCell>
+                      <TableCell>{issue.column || "-"}</TableCell>
                       <TableCell>
                         {issue.rule && (
                           <Badge variant="outline" className="text-xs">
@@ -291,14 +356,20 @@ export function IssuesDataTable({ issues, onExportIssues }: IssuesDataTableProps
                       </TableCell>
                       <TableCell className="max-w-xs">
                         {issue.original && (
-                          <div className="truncate bg-muted px-2 py-1 rounded text-xs" title={issue.original?.toString()}>
+                          <div
+                            className="truncate bg-muted px-2 py-1 rounded text-xs"
+                            title={issue.original?.toString()}
+                          >
                             {issue.original?.toString()}
                           </div>
                         )}
                       </TableCell>
                       <TableCell className="max-w-xs">
                         {issue.fixed && (
-                          <div className="truncate bg-success/10 px-2 py-1 rounded text-xs" title={issue.fixed?.toString()}>
+                          <div
+                            className="truncate bg-success/10 px-2 py-1 rounded text-xs"
+                            title={issue.fixed?.toString()}
+                          >
                             {issue.fixed?.toString()}
                           </div>
                         )}

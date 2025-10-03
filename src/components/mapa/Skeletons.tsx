@@ -31,7 +31,7 @@ export const TableSkeleton = ({ rows = 5 }: { rows?: number }) => (
         <Skeleton className="h-4 w-24" />
       </div>
     </div>
-    
+
     {/* Rows */}
     <div>
       {Array.from({ length: rows }, (_, i) => (
@@ -78,7 +78,7 @@ export const DrawerSkeleton = () => (
       <Skeleton className="h-6 w-48" />
       <Skeleton className="h-4 w-32" />
     </div>
-    
+
     {/* Content */}
     <div className="space-y-4">
       {Array.from({ length: 8 }, (_, i) => (
@@ -88,7 +88,7 @@ export const DrawerSkeleton = () => (
         </div>
       ))}
     </div>
-    
+
     {/* Actions */}
     <div className="flex gap-2 pt-4">
       <Skeleton className="h-10 w-24" />

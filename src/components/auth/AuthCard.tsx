@@ -1,5 +1,11 @@
 import { ReactNode } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Scale } from "lucide-react";
 
 interface AuthCardProps {
@@ -16,7 +22,9 @@ export const AuthCard = ({ title, description, children }: AuthCardProps) => {
           <Scale className="h-8 w-8 text-primary-foreground" />
         </div>
         <div className="space-y-2">
-          <CardTitle className="text-2xl font-bold text-foreground">{title}</CardTitle>
+          <CardTitle className="text-2xl font-bold text-foreground">
+            {title}
+          </CardTitle>
           {description && (
             <CardDescription className="text-muted-foreground">
               {description}
@@ -24,10 +32,8 @@ export const AuthCard = ({ title, description, children }: AuthCardProps) => {
           )}
         </div>
       </CardHeader>
-      
-      <CardContent className="pt-0">
-        {children}
-      </CardContent>
+
+      <CardContent className="pt-0">{children}</CardContent>
     </Card>
   );
 };

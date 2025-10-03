@@ -3,8 +3,8 @@
  * Verifica conectividade, autenticação e configuração das Edge Functions
  */
 
-import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/lib/logger';
+import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 export interface EdgeFunctionDiagnostics {
   functionName: string;
@@ -12,7 +12,7 @@ export interface EdgeFunctionDiagnostics {
   hasAuth: boolean;
   authError?: string;
   configError?: string;
-  testResult?: 'success' | 'error' | 'not_tested';
+  testResult?: "success" | "error" | "not_tested";
   errorDetails?: any;
 }
 
@@ -20,7 +20,7 @@ export interface EdgeFunctionDiagnostics {
  * Testa conectividade básica de uma Edge Function
  */
 export async function testEdgeFunctionConnectivity(
-  functionName: string
+  functionName: string,
 ): Promise<EdgeFunctionDiagnostics> {
   const diagnostics: EdgeFunctionDiagnostics = {
     functionName,
@@ -30,19 +30,24 @@ export async function testEdgeFunctionConnectivity(
 
   try {
     // Verifica sessão
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
     if (sessionError) {
       diagnostics.authError = sessionError.message;
-      logger.error(`[EdgeDiagnostics] Erro de sessão para ${functionName}`, { 
-        error: sessionError 
+      logger.error(`[EdgeDiagnostics] Erro de sessão para ${functionName}`, {
+        error: sessionError,
       });
       return diagnostics;
     }
 
     if (!session) {
-      diagnostics.authError = 'Nenhuma sessão ativa';
-      logger.warn(`[EdgeDiagnostics] Nenhuma sessão ativa para ${functionName}`);
+      diagnostics.authError = "Nenhuma sessão ativa";
+      logger.warn(
+        `[EdgeDiagnostics] Nenhuma sessão ativa para ${functionName}`,
+      );
       return diagnostics;
     }
 
@@ -53,35 +58,37 @@ export async function testEdgeFunctionConnectivity(
     const { data, error } = await supabase.functions.invoke(functionName, {
       body: {
         paginacao: { page: 1, limit: 1 },
-        filtros: {}
-      }
+        filtros: {},
+      },
     });
 
     if (error) {
-      diagnostics.testResult = 'error';
+      diagnostics.testResult = "error";
       diagnostics.errorDetails = {
         message: error.message,
         context: error.context,
-        status: error.status
+        status: error.status,
       };
-      logger.error(`[EdgeDiagnostics] Erro ao testar ${functionName}`, { 
+      logger.error(`[EdgeDiagnostics] Erro ao testar ${functionName}`, {
         error,
-        errorDetails: diagnostics.errorDetails
+        errorDetails: diagnostics.errorDetails,
       });
     } else {
       diagnostics.isReachable = true;
-      diagnostics.testResult = 'success';
-      logger.info(`[EdgeDiagnostics] ${functionName} respondeu com sucesso`, { 
+      diagnostics.testResult = "success";
+      logger.info(`[EdgeDiagnostics] ${functionName} respondeu com sucesso`, {
         hasData: !!data,
-        dataKeys: data ? Object.keys(data) : []
+        dataKeys: data ? Object.keys(data) : [],
       });
     }
 
     return diagnostics;
   } catch (error) {
-    diagnostics.testResult = 'error';
+    diagnostics.testResult = "error";
     diagnostics.errorDetails = error;
-    logger.error(`[EdgeDiagnostics] Exceção ao testar ${functionName}`, { error });
+    logger.error(`[EdgeDiagnostics] Exceção ao testar ${functionName}`, {
+      error,
+    });
     return diagnostics;
   }
 }
@@ -89,12 +96,16 @@ export async function testEdgeFunctionConnectivity(
 /**
  * Executa diagnóstico completo de todas as Edge Functions do Mapa
  */
-export async function runMapaDiagnostics(): Promise<Record<string, EdgeFunctionDiagnostics>> {
-  logger.info('🔍 [EdgeDiagnostics] ===== INICIANDO DIAGNÓSTICO COMPLETO =====');
-  
+export async function runMapaDiagnostics(): Promise<
+  Record<string, EdgeFunctionDiagnostics>
+> {
+  logger.info(
+    "🔍 [EdgeDiagnostics] ===== INICIANDO DIAGNÓSTICO COMPLETO =====",
+  );
+
   const functions = [
-    'mapa-testemunhas-processos',
-    'mapa-testemunhas-testemunhas'
+    "mapa-testemunhas-processos",
+    "mapa-testemunhas-testemunhas",
   ];
 
   const results: Record<string, EdgeFunctionDiagnostics> = {};
@@ -104,19 +115,21 @@ export async function runMapaDiagnostics(): Promise<Record<string, EdgeFunctionD
     results[fn] = await testEdgeFunctionConnectivity(fn);
   }
 
-  logger.info('✅ [EdgeDiagnostics] ===== DIAGNÓSTICO CONCLUÍDO =====', { results });
-  
+  logger.info("✅ [EdgeDiagnostics] ===== DIAGNÓSTICO CONCLUÍDO =====", {
+    results,
+  });
+
   // Log resumo
   const summary = Object.entries(results).map(([name, diag]) => ({
     function: name,
     reachable: diag.isReachable,
     authenticated: diag.hasAuth,
     testResult: diag.testResult,
-    error: diag.errorDetails?.message || diag.authError || 'none'
+    error: diag.errorDetails?.message || diag.authError || "none",
   }));
-  
+
   console.table(summary);
-  
+
   return results;
 }
 
@@ -124,16 +137,16 @@ export async function runMapaDiagnostics(): Promise<Record<string, EdgeFunctionD
  * Verifica configuração do Supabase Client
  */
 export function logSupabaseConfig() {
-  logger.info('🔍 [EdgeDiagnostics] ===== CONFIGURAÇÃO SUPABASE =====');
-  
+  logger.info("🔍 [EdgeDiagnostics] ===== CONFIGURAÇÃO SUPABASE =====");
+
   const config = {
     hasSupabaseClient: !!supabase,
-    functionsUrl: supabase?.functions?.url || 'NOT_CONFIGURED',
+    functionsUrl: supabase?.functions?.url || "NOT_CONFIGURED",
     hasAuth: !!supabase?.auth,
   };
-  
-  logger.info('🔍 [EdgeDiagnostics] Config:', config);
+
+  logger.info("🔍 [EdgeDiagnostics] Config:", config);
   console.table(config);
-  
+
   return config;
 }

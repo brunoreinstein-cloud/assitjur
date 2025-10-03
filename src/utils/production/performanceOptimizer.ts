@@ -3,7 +3,7 @@
  * Implementa melhorias críticas para build de produção
  */
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 interface PerformanceConfig {
   enableResourceHints: boolean;
@@ -17,7 +17,7 @@ class PerformanceOptimizer {
     enableResourceHints: true,
     enableServiceWorker: true,
     enableCriticalResourcePrefetch: true,
-    enableMemoryOptimization: true
+    enableMemoryOptimization: true,
   };
 
   constructor(config?: Partial<PerformanceConfig>) {
@@ -39,10 +39,18 @@ class PerformanceOptimizer {
       this.enableCriticalResourcePrefetch();
       this.setupMemoryOptimization();
       this.registerServiceWorker();
-      
-      logger.info('Performance optimizations applied successfully', {}, 'PerformanceOptimizer');
+
+      logger.info(
+        "Performance optimizations applied successfully",
+        {},
+        "PerformanceOptimizer",
+      );
     } catch (error) {
-      logger.error('Failed to apply performance optimizations', { error }, 'PerformanceOptimizer');
+      logger.error(
+        "Failed to apply performance optimizations",
+        { error },
+        "PerformanceOptimizer",
+      );
     }
   }
 
@@ -53,31 +61,29 @@ class PerformanceOptimizer {
     if (!this.config.enableResourceHints) return;
 
     const head = document.head;
-    
+
     // DNS prefetch para domínios críticos
     const dnsPrefetchDomains = [
-      'https://fgjypmlszuzkgvhuszxn.supabase.co',
-      'https://fonts.googleapis.com',
-      'https://fonts.gstatic.com'
+      "https://fgjypmlszuzkgvhuszxn.supabase.co",
+      "https://fonts.googleapis.com",
+      "https://fonts.gstatic.com",
     ];
 
-    dnsPrefetchDomains.forEach(domain => {
-      const link = document.createElement('link');
-      link.rel = 'dns-prefetch';
+    dnsPrefetchDomains.forEach((domain) => {
+      const link = document.createElement("link");
+      link.rel = "dns-prefetch";
       link.href = domain;
       head.appendChild(link);
     });
 
     // Preconnect para recursos críticos
-    const preconnectUrls = [
-      'https://fgjypmlszuzkgvhuszxn.supabase.co'
-    ];
+    const preconnectUrls = ["https://fgjypmlszuzkgvhuszxn.supabase.co"];
 
-    preconnectUrls.forEach(url => {
-      const link = document.createElement('link');
-      link.rel = 'preconnect';
+    preconnectUrls.forEach((url) => {
+      const link = document.createElement("link");
+      link.rel = "preconnect";
       link.href = url;
-      link.crossOrigin = 'anonymous';
+      link.crossOrigin = "anonymous";
       head.appendChild(link);
     });
   }
@@ -89,13 +95,13 @@ class PerformanceOptimizer {
     if (!this.config.enableCriticalResourcePrefetch) return;
 
     // Prefetch de rotas críticas em idle time
-    if ('requestIdleCallback' in window) {
+    if ("requestIdleCallback" in window) {
       requestIdleCallback(() => {
-        const criticalRoutes = ['/mapa', '/admin', '/dashboard'];
-        
-        criticalRoutes.forEach(route => {
-          const link = document.createElement('link');
-          link.rel = 'prefetch';
+        const criticalRoutes = ["/mapa", "/admin", "/dashboard"];
+
+        criticalRoutes.forEach((route) => {
+          const link = document.createElement("link");
+          link.rel = "prefetch";
           link.href = route;
           document.head.appendChild(link);
         });
@@ -110,9 +116,9 @@ class PerformanceOptimizer {
     if (!this.config.enableMemoryOptimization) return;
 
     // Garbage collection agressivo em produção
-    if ('gc' in window && typeof (window as any).gc === 'function') {
+    if ("gc" in window && typeof (window as any).gc === "function") {
       // Executa GC em idle time
-      if ('requestIdleCallback' in window) {
+      if ("requestIdleCallback" in window) {
         requestIdleCallback(() => {
           try {
             (window as any).gc();
@@ -124,7 +130,7 @@ class PerformanceOptimizer {
     }
 
     // Cleanup de event listeners não utilizados
-    window.addEventListener('beforeunload', () => {
+    window.addEventListener("beforeunload", () => {
       // Remove todos os event listeners de performance monitoring
       performance.clearMarks();
       performance.clearMeasures();
@@ -135,18 +141,27 @@ class PerformanceOptimizer {
    * Registra Service Worker para cache
    */
   private registerServiceWorker() {
-    if (!this.config.enableServiceWorker || !('serviceWorker' in navigator)) {
+    if (!this.config.enableServiceWorker || !("serviceWorker" in navigator)) {
       return;
     }
 
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        logger.info('Service Worker registered successfully', { 
-          scope: registration.scope 
-        }, 'PerformanceOptimizer');
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((registration) => {
+        logger.info(
+          "Service Worker registered successfully",
+          {
+            scope: registration.scope,
+          },
+          "PerformanceOptimizer",
+        );
       })
-      .catch(error => {
-        logger.warn('Service Worker registration failed', { error }, 'PerformanceOptimizer');
+      .catch((error) => {
+        logger.warn(
+          "Service Worker registration failed",
+          { error },
+          "PerformanceOptimizer",
+        );
       });
   }
 
@@ -159,57 +174,76 @@ class PerformanceOptimizer {
     // Performance monitoring básico e seguro
     try {
       // Monitora métricas básicas de performance
-      window.addEventListener('load', () => {
+      window.addEventListener("load", () => {
         // Performance timing básico
         const perfData = performance.timing;
         if (perfData) {
           const loadTime = perfData.loadEventEnd - perfData.navigationStart;
-          const domContentLoaded = perfData.domContentLoadedEventEnd - perfData.navigationStart;
+          const domContentLoaded =
+            perfData.domContentLoadedEventEnd - perfData.navigationStart;
           const firstByte = perfData.responseStart - perfData.navigationStart;
-          
-          logger.info('Performance metrics', {
-            loadTime,
-            domContentLoaded,
-            firstByte
-          }, 'WebVitals');
+
+          logger.info(
+            "Performance metrics",
+            {
+              loadTime,
+              domContentLoaded,
+              firstByte,
+            },
+            "WebVitals",
+          );
         }
 
         // Resource timing
-        const resources = performance.getEntriesByType('resource');
-        const slowResources = resources.filter((resource: any) => resource.duration > 1000);
-        
+        const resources = performance.getEntriesByType("resource");
+        const slowResources = resources.filter(
+          (resource: any) => resource.duration > 1000,
+        );
+
         if (slowResources.length > 0) {
-          logger.warn('Slow resources detected', {
-            count: slowResources.length,
-            resources: slowResources.slice(0, 5).map((r: any) => ({
-              name: r.name,
-              duration: r.duration
-            }))
-          }, 'WebVitals');
+          logger.warn(
+            "Slow resources detected",
+            {
+              count: slowResources.length,
+              resources: slowResources.slice(0, 5).map((r: any) => ({
+                name: r.name,
+                duration: r.duration,
+              })),
+            },
+            "WebVitals",
+          );
         }
       });
 
       // Performance observer para entrada do usuário (quando disponível)
-      if ('PerformanceObserver' in window) {
+      if ("PerformanceObserver" in window) {
         try {
           const observer = new PerformanceObserver((list) => {
             list.getEntries().forEach((entry) => {
-              if (entry.entryType === 'measure') {
-                logger.info('Custom performance measure', {
-                  name: entry.name,
-                  duration: entry.duration
-                }, 'WebVitals');
+              if (entry.entryType === "measure") {
+                logger.info(
+                  "Custom performance measure",
+                  {
+                    name: entry.name,
+                    duration: entry.duration,
+                  },
+                  "WebVitals",
+                );
               }
             });
           });
-          
-          observer.observe({ entryTypes: ['measure'] });
+
+          observer.observe({ entryTypes: ["measure"] });
         } catch (error) {
           // Performance Observer não suportado ou falhou
         }
       }
     } catch (error) {
-      logger.warn('Performance monitoring setup failed', { error }, 'PerformanceOptimizer');
+      logger.warn(
+        "Performance monitoring setup failed",
+        { error },
+        "PerformanceOptimizer",
+      );
     }
   }
 }

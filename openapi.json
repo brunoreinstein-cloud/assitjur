@@ -4,9 +4,7 @@
     "title": "AssistJur API",
     "version": "1.0.0"
   },
-  "servers": [
-    { "url": "https://assistjur.com.br" }
-  ],
+  "servers": [{ "url": "https://assistjur.com.br" }],
   "paths": {
     "/api/health": {
       "get": {
@@ -34,7 +32,7 @@
     "/api/export": {
       "post": {
         "summary": "Export message blocks",
-        "security": [ { "bearerAuth": [] } ],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {

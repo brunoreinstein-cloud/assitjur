@@ -34,11 +34,7 @@
     "CNJs_Como_Reclamante": {
       "type": ["string", "null"],
       "description": "CNJs onde foi reclamante, separados por ';' ou '—' se não aplicável",
-      "examples": [
-        "0007890-12.2023.5.02.0001",
-        "CNJ1; CNJ2",
-        "—"
-      ]
+      "examples": ["0007890-12.2023.5.02.0001", "CNJ1; CNJ2", "—"]
     },
     "Foi_Testemunha_Ativo": {
       "type": ["boolean", "null"],
@@ -53,11 +49,7 @@
     "CNJs_Passivo": {
       "type": ["string", "null"],
       "description": "CNJs onde foi testemunha do polo passivo, separados por ';'",
-      "examples": [
-        "0008888-88.2022.5.01.0001",
-        "CNJ1; CNJ2; CNJ3",
-        "—"
-      ]
+      "examples": ["0008888-88.2022.5.01.0001", "CNJ1; CNJ2; CNJ3", "—"]
     },
     "Foi_Ambos_Polos": {
       "type": ["boolean", "null"],
@@ -87,11 +79,7 @@
     "CNJs_Triangulacao": {
       "type": ["string", "null"],
       "description": "CNJs envolvidos na triangulação, separados por ';'",
-      "examples": [
-        "0001; 0002; 0003",
-        "CNJ_A; CNJ_B; CNJ_C",
-        "—"
-      ]
+      "examples": ["0001; 0002; 0003", "CNJ_A; CNJ_B; CNJ_C", "—"]
     },
     "E_Prova_Emprestada": {
       "type": ["boolean", "null"],
@@ -111,11 +99,7 @@
       "examples": ["CRÍTICO", "ATENÇÃO", "NORMAL"]
     }
   },
-  "required": [
-    "Nome_Testemunha",
-    "Qtd_Depoimentos",
-    "CNJs_Como_Testemunha"
-  ],
+  "required": ["Nome_Testemunha", "Qtd_Depoimentos", "CNJs_Como_Testemunha"],
   "additionalProperties": false,
   "examples": [
     {

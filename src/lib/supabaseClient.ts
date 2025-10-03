@@ -1,7 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
-import { getEnv } from '@/lib/getEnv'
+import { createClient } from "@supabase/supabase-js";
+import { getEnv } from "@/lib/getEnv";
 
-const { supabaseUrl, supabaseKey } = getEnv()
+const { supabaseUrl, supabaseKey } = getEnv();
 
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
@@ -9,22 +9,27 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     persistSession: true,
     detectSessionInUrl: true,
   },
-})
+});
 
 export async function getAccessToken(): Promise<string | null> {
-  const { data: { session } } = await supabase.auth.getSession()
-  return session?.access_token ?? null
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.access_token ?? null;
 }
 
 export async function ensureSessionOrThrow() {
-  const { data: { session }, error } = await supabase.auth.getSession()
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.getSession();
   if (error || !session) {
-    throw new Error('Sessão não encontrada. Faça login.')
+    throw new Error("Sessão não encontrada. Faça login.");
   }
-  return session
+  return session;
 }
 
 export function getProjectRef(): string {
-  const match = /https:\/\/([^.]+)\.supabase\.co/.exec(supabaseUrl)
-  return match ? match[1] : ''
+  const match = /https:\/\/([^.]+)\.supabase\.co/.exec(supabaseUrl);
+  return match ? match[1] : "";
 }

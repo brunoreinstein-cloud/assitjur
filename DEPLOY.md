@@ -22,6 +22,7 @@ node scripts/pre-deploy-check.js
 ```
 
 Este script verifica:
+
 - ✅ Variáveis de ambiente
 - ✅ Console.logs em produção
 - ✅ TypeScript compilation
@@ -82,6 +83,7 @@ OPENAI_PROJECT=proj_... (opcional)
 Acesse: https://supabase.com/dashboard/project/fgjypmlszuzkgvhuszxn/settings/auth
 
 **Auth Settings:**
+
 - ✅ OTP Expiry: **600 segundos** (10 minutos)
 - ✅ Enable Leaked Password Protection: **Habilitado**
 
@@ -90,6 +92,7 @@ Acesse: https://supabase.com/dashboard/project/fgjypmlszuzkgvhuszxn/settings/aut
 Acesse: https://supabase.com/dashboard/project/fgjypmlszuzkgvhuszxn/editor
 
 Verificar que as seguintes tabelas têm RLS ativo + policies:
+
 - ✅ `profiles`
 - ✅ `processos`
 - ✅ `pessoas`
@@ -99,6 +102,7 @@ Verificar que as seguintes tabelas têm RLS ativo + policies:
 - ✅ `invoices`
 
 Execute a query de verificação:
+
 ```sql
 SELECT get_security_status();
 ```
@@ -112,6 +116,7 @@ Se disponível, faça upgrade para PostgreSQL 15+ via Dashboard.
 ### Opção A: Deploy via Lovable (Recomendado)
 
 1. **Commit todas as mudanças**
+
    ```bash
    git add .
    git commit -m "chore: prepare for production deploy"
@@ -127,12 +132,14 @@ Se disponível, faça upgrade para PostgreSQL 15+ via Dashboard.
 ### Opção B: Deploy Manual (Vercel/Netlify)
 
 #### Vercel
+
 ```bash
 npm install -g vercel
 vercel --prod
 ```
 
 #### Netlify
+
 ```bash
 npm install -g netlify-cli
 netlify deploy --prod --dir=dist
@@ -157,16 +164,19 @@ Após deploy, testar:
 https://supabase.com/dashboard/project/fgjypmlszuzkgvhuszxn/functions/{function_name}/logs
 
 **Aplicação (se Sentry configurado):**
+
 - Verificar dashboard Sentry para erros
 
 ### 4.3 Performance Check
 
 Executar Lighthouse Audit:
+
 ```bash
 npm run lighthouse # (se configurado)
 ```
 
 Ou manualmente via Chrome DevTools:
+
 1. Abrir site em produção
 2. DevTools → Lighthouse
 3. Gerar relatório
@@ -180,6 +190,7 @@ npm run security:scan # (se configurado)
 ```
 
 Ou verificar manualmente:
+
 - [ ] HTTPS habilitado
 - [ ] Headers de segurança configurados
 - [ ] RLS policies ativas
@@ -213,7 +224,7 @@ npm run build
    SELECT * FROM profiles WHERE user_id = auth.uid();
    ```
 
-### "VITE_* is not defined"
+### "VITE\_\* is not defined"
 
 1. Confirmar que `.env.production` existe
 2. Rebuild:
@@ -242,11 +253,13 @@ npm run build
 Se necessário reverter deploy:
 
 ### Via Lovable
+
 1. Acessar histórico de versões
 2. Clicar em "Revert" na versão anterior
 3. Aguardar redeploy
 
 ### Via Git + CI/CD
+
 ```bash
 git revert HEAD
 git push origin main

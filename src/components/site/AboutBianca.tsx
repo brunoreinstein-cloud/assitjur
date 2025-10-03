@@ -28,8 +28,7 @@ export function AboutBianca() {
     {
       icon: Building,
       company: "BR Consultoria",
-      role:
-        "A BR Consultoria, fundada por Bianca Reinstein, é uma boutique especializada em gestão estratégica de passivos judiciais.",
+      role: "A BR Consultoria, fundada por Bianca Reinstein, é uma boutique especializada em gestão estratégica de passivos judiciais.",
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
     },

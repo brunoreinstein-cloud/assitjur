@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   FileText,
@@ -10,7 +10,7 @@ import {
   Copy,
   Filter,
   Loader2,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -18,13 +18,17 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useUnifiedSearch } from '@/hooks/useUnifiedSearch';
-import { useToast } from '@/hooks/use-toast';
-import type { SearchScope, SearchEntityType } from '@/types/search';
-import { SEARCH_PLACEHOLDERS, ENTITY_TYPE_LABELS, ENTITY_TYPE_COLORS } from '@/types/search';
+} from "@/components/ui/command";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useUnifiedSearch } from "@/hooks/useUnifiedSearch";
+import { useToast } from "@/hooks/use-toast";
+import type { SearchScope, SearchEntityType } from "@/types/search";
+import {
+  SEARCH_PLACEHOLDERS,
+  ENTITY_TYPE_LABELS,
+  ENTITY_TYPE_COLORS,
+} from "@/types/search";
 
 const ENTITY_ICONS: Record<SearchEntityType, any> = {
   process: FileText,
@@ -36,8 +40,8 @@ const ENTITY_ICONS: Record<SearchEntityType, any> = {
 
 export const UnifiedSearch = () => {
   const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [scope, setScope] = useState<SearchScope>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [scope, setScope] = useState<SearchScope>("all");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -56,35 +60,41 @@ export const UnifiedSearch = () => {
   // Atalho de teclado
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if ((e.key === 'k' || e.key === '/') && (e.metaKey || e.ctrlKey)) {
+      if ((e.key === "k" || e.key === "/") && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((open) => !open);
       }
-      if (e.key === 'Escape' && open) {
-        setSearchQuery('');
+      if (e.key === "Escape" && open) {
+        setSearchQuery("");
       }
     };
 
-    document.addEventListener('keydown', down);
-    return () => document.removeEventListener('keydown', down);
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
   }, [open]);
 
   const handleSelect = (result: any) => {
     setOpen(false);
 
     switch (result.type) {
-      case 'process':
-        navigate(`/dados/mapa?tab=por-processo&cnj=${encodeURIComponent(result.title)}`);
+      case "process":
+        navigate(
+          `/dados/mapa?tab=por-processo&cnj=${encodeURIComponent(result.title)}`,
+        );
         break;
-      case 'witness':
-        navigate(`/dados/mapa?tab=por-testemunha&nome=${encodeURIComponent(result.title)}`);
+      case "witness":
+        navigate(
+          `/dados/mapa?tab=por-testemunha&nome=${encodeURIComponent(result.title)}`,
+        );
         break;
-      case 'claimant':
-        navigate(`/dados/mapa?tab=por-processo&reclamante=${encodeURIComponent(result.title)}`);
+      case "claimant":
+        navigate(
+          `/dados/mapa?tab=por-processo&reclamante=${encodeURIComponent(result.title)}`,
+        );
         break;
       default:
         toast({
-          title: 'Em desenvolvimento',
+          title: "Em desenvolvimento",
           description: `Visualização de ${result.type} em breve`,
         });
     }
@@ -94,7 +104,7 @@ export const UnifiedSearch = () => {
     e.stopPropagation();
     navigator.clipboard.writeText(cnj);
     toast({
-      title: 'CNJ copiado',
+      title: "CNJ copiado",
       description: cnj,
     });
   };
@@ -106,10 +116,10 @@ export const UnifiedSearch = () => {
   };
 
   const scopeChips = [
-    { value: 'all' as SearchScope, label: 'Tudo', icon: Search },
-    { value: 'process' as SearchScope, label: 'Processos', icon: FileText },
-    { value: 'witness' as SearchScope, label: 'Testemunhas', icon: Users },
-    { value: 'claimant' as SearchScope, label: 'Reclamantes', icon: Users },
+    { value: "all" as SearchScope, label: "Tudo", icon: Search },
+    { value: "process" as SearchScope, label: "Processos", icon: FileText },
+    { value: "witness" as SearchScope, label: "Testemunhas", icon: Users },
+    { value: "claimant" as SearchScope, label: "Reclamantes", icon: Users },
   ];
 
   return (
@@ -142,7 +152,7 @@ export const UnifiedSearch = () => {
               return (
                 <Button
                   key={chip.value}
-                  variant={scope === chip.value ? 'default' : 'outline'}
+                  variant={scope === chip.value ? "default" : "outline"}
                   size="sm"
                   className="h-7 text-xs gap-1.5"
                   onClick={() => setScope(chip.value)}
@@ -167,10 +177,13 @@ export const UnifiedSearch = () => {
               {data?.results.length === 0 && (
                 <CommandEmpty>
                   <div className="text-center py-6">
-                    <p className="text-sm text-muted-foreground">Nenhum resultado encontrado.</p>
+                    <p className="text-sm text-muted-foreground">
+                      Nenhum resultado encontrado.
+                    </p>
                     <p className="text-xs text-muted-foreground mt-2">
-                      Tente usar operadores: <code className="bg-muted px-1 rounded">p:</code>{' '}
-                      <code className="bg-muted px-1 rounded">w:</code>{' '}
+                      Tente usar operadores:{" "}
+                      <code className="bg-muted px-1 rounded">p:</code>{" "}
+                      <code className="bg-muted px-1 rounded">w:</code>{" "}
                       <code className="bg-muted px-1 rounded">uf:RS</code>
                     </p>
                   </div>
@@ -180,7 +193,7 @@ export const UnifiedSearch = () => {
               {data?.results && data.results.length > 0 && (
                 <>
                   {/* Agrupar por tipo */}
-                  {['process', 'witness', 'claimant'].map((type) => {
+                  {["process", "witness", "claimant"].map((type) => {
                     const items = data.results.filter((r) => r.type === type);
                     if (items.length === 0) return null;
 
@@ -203,7 +216,9 @@ export const UnifiedSearch = () => {
 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
-                                <span className="font-medium truncate">{result.title}</span>
+                                <span className="font-medium truncate">
+                                  {result.title}
+                                </span>
                                 <Badge
                                   variant="secondary"
                                   className={`text-[10px] px-1.5 py-0 ${
@@ -221,46 +236,63 @@ export const UnifiedSearch = () => {
                               )}
 
                               {/* Metadados específicos */}
-                              {result.type === 'process' && result.meta && (
+                              {result.type === "process" && result.meta && (
                                 <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
-                                  <span>Status: {result.meta.status || 'Em andamento'}</span>
+                                  <span>
+                                    Status:{" "}
+                                    {result.meta.status || "Em andamento"}
+                                  </span>
                                   {result.meta.statusInferido && (
-                                    <Badge 
-                                      variant="outline" 
+                                    <Badge
+                                      variant="outline"
                                       className="text-[9px] px-1 py-0 bg-muted/50"
                                     >
                                       Inferido
                                     </Badge>
                                   )}
-                                  {result.meta.comarca && <span>· {result.meta.comarca}</span>}
-                                  <Badge 
-                                    variant="outline" 
+                                  {result.meta.comarca && (
+                                    <span>· {result.meta.comarca}</span>
+                                  )}
+                                  <Badge
+                                    variant="outline"
                                     className="text-[9px] px-1 py-0"
                                   >
-                                    {result.meta.classificacao || 'Normal'}
+                                    {result.meta.classificacao || "Normal"}
                                   </Badge>
                                   {result.meta.confidence !== undefined && (
                                     <span className="text-[9px]">
-                                      · {Math.round(result.meta.confidence * 100)}% conf.
+                                      ·{" "}
+                                      {Math.round(result.meta.confidence * 100)}
+                                      % conf.
                                     </span>
                                   )}
                                 </div>
                               )}
 
-                              {result.type === 'witness' && result.meta && (
+                              {result.type === "witness" && result.meta && (
                                 <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
-                                  <span>{result.meta.depoimentos} depoimentos</span>
+                                  <span>
+                                    {result.meta.depoimentos} depoimentos
+                                  </span>
                                   {result.meta.ambosPoles && (
-                                    <Badge variant="outline" className="text-[9px] px-1 py-0">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-[9px] px-1 py-0"
+                                    >
                                       Ambos polos
                                     </Badge>
                                   )}
-                                  <Badge variant="outline" className="text-[9px] px-1 py-0">
-                                    {result.meta.classificacao || 'Normal'}
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[9px] px-1 py-0"
+                                  >
+                                    {result.meta.classificacao || "Normal"}
                                   </Badge>
                                   {result.meta.confidence !== undefined && (
                                     <span className="text-[9px]">
-                                      · {Math.round(result.meta.confidence * 100)}% conf.
+                                      ·{" "}
+                                      {Math.round(result.meta.confidence * 100)}
+                                      % conf.
                                     </span>
                                   )}
                                 </div>
@@ -269,13 +301,15 @@ export const UnifiedSearch = () => {
 
                             {/* Ações rápidas */}
                             <div className="flex items-center gap-1">
-                              {result.type === 'process' && (
+                              {result.type === "process" && (
                                 <>
                                   <Button
                                     variant="ghost"
                                     size="sm"
                                     className="h-6 w-6 p-0"
-                                    onClick={(e) => handleCopyCNJ(result.title, e)}
+                                    onClick={(e) =>
+                                      handleCopyCNJ(result.title, e)
+                                    }
                                   >
                                     <Copy className="h-3 w-3" />
                                   </Button>
@@ -284,14 +318,20 @@ export const UnifiedSearch = () => {
                                       variant="ghost"
                                       size="sm"
                                       className="h-6 w-6 p-0"
-                                      onClick={(e) => handleFilterByUF(result.meta.comarca, e)}
+                                      onClick={(e) =>
+                                        handleFilterByUF(result.meta.comarca, e)
+                                      }
                                     >
                                       <Filter className="h-3 w-3" />
                                     </Button>
                                   )}
                                 </>
                               )}
-                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0"
+                              >
                                 <ExternalLink className="h-3 w-3" />
                               </Button>
                             </div>
@@ -309,14 +349,21 @@ export const UnifiedSearch = () => {
             <div className="py-6 px-3 text-center text-sm text-muted-foreground space-y-3">
               <p className="font-medium">Busca inteligente com operadores</p>
               <div className="flex flex-wrap justify-center gap-2">
-                <code className="bg-muted px-2 py-1 rounded text-xs font-mono">risco:alto João Silva</code>
-                <code className="bg-muted px-2 py-1 rounded text-xs font-mono">depoimentos:&gt;3</code>
-                <code className="bg-muted px-2 py-1 rounded text-xs font-mono">uf:RS comarca:POA</code>
+                <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                  risco:alto João Silva
+                </code>
+                <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                  depoimentos:&gt;3
+                </code>
+                <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                  uf:RS comarca:POA
+                </code>
               </div>
               <p className="text-xs">
-                Use prefixos: <code className="bg-muted px-1 rounded">p:</code> processo,{' '}
-                <code className="bg-muted px-1 rounded">w:</code> testemunha,{' '}
-                <code className="bg-muted px-1 rounded">r:</code> reclamante
+                Use prefixos: <code className="bg-muted px-1 rounded">p:</code>{" "}
+                processo, <code className="bg-muted px-1 rounded">w:</code>{" "}
+                testemunha, <code className="bg-muted px-1 rounded">r:</code>{" "}
+                reclamante
               </p>
             </div>
           )}

@@ -7,9 +7,11 @@ Este documento detalha as **4 configurações finais** que devem ser feitas manu
 ## ⚠️ Warnings Pendentes
 
 ### 1. **Auth OTP Long Expiry** (WARN)
+
 **Problema:** O tempo de expiração do OTP está acima do recomendado (atualmente > 60s).
 
 **Solução:**
+
 1. Acesse o [Dashboard Supabase](https://supabase.com/dashboard/project/fgjypmlszuzkgvhuszxn)
 2. Navegue até **Authentication** → **Settings** → **Email Auth**
 3. Localize **"OTP Expiry"**
@@ -21,9 +23,11 @@ Este documento detalha as **4 configurações finais** que devem ser feitas manu
 ---
 
 ### 2. **Leaked Password Protection Disabled** (WARN)
+
 **Problema:** A proteção contra senhas vazadas está desativada.
 
 **Solução:**
+
 1. Acesse o [Dashboard Supabase](https://supabase.com/dashboard/project/fgjypmlszuzkgvhuszxn)
 2. Navegue até **Authentication** → **Settings** → **Password Protection**
 3. Localize **"Enable Leaked Password Protection"**
@@ -32,6 +36,7 @@ Este documento detalha as **4 configurações finais** que devem ser feitas manu
 6. Clique em **Save**
 
 **Benefícios:**
+
 - Bloqueia senhas que apareceram em vazamentos públicos
 - Protege usuários contra reutilização de senhas comprometidas
 - Integração automática com banco de dados Have I Been Pwned
@@ -41,9 +46,11 @@ Este documento detalha as **4 configurações finais** que devem ser feitas manu
 ---
 
 ### 3. **PostgreSQL Version Outdated** (WARN)
+
 **Problema:** A versão do PostgreSQL tem patches de segurança disponíveis.
 
 **Solução:**
+
 1. Acesse o [Dashboard Supabase](https://supabase.com/dashboard/project/fgjypmlszuzkgvhuszxn)
 2. Navegue até **Settings** → **Database** → **Postgres Version**
 3. Verifique a versão atual e a versão mais recente disponível
@@ -54,6 +61,7 @@ Este documento detalha as **4 configurações finais** que devem ser feitas manu
 6. Aguarde a conclusão do upgrade (pode levar alguns minutos)
 
 **⚠️ ATENÇÃO:**
+
 - Sempre faça backup antes de upgrade
 - Planeje o upgrade para horário de baixo tráfego
 - Teste em ambiente staging primeiro (se disponível)
@@ -63,11 +71,13 @@ Este documento detalha as **4 configurações finais** que devem ser feitas manu
 ---
 
 ### 4. **Extension in Public Schema** (WARN)
+
 **Problema:** A extensão `pg_trgm` está instalada no schema `public`.
 
 **Status:** ⚠️ **Baixa prioridade** - Necessária para full-text search
 
 **Contexto:**
+
 - A extensão `pg_trgm` é necessária para funcionalidades de busca fuzzy
 - Supabase recomenda instalar extensões em schemas dedicados
 - **NÃO é um risco crítico de segurança**
@@ -94,14 +104,14 @@ ALTER EXTENSION pg_trgm SET SCHEMA extensions;
 
 Após realizar as configurações 1, 2 e 3:
 
-| Categoria | Status |
-|-----------|--------|
-| **SQL Security** | ✅ 100% compliant |
-| **RLS Policies** | ✅ Todas configuradas |
-| **Function Security** | ✅ search_path fixo em todas |
-| **Auth Settings** | ✅ OTP curto + Leaked protection |
-| **PostgreSQL** | ✅ Versão mais recente |
-| **Extensions** | ⚠️ pg_trgm em public (baixa prioridade) |
+| Categoria             | Status                                  |
+| --------------------- | --------------------------------------- |
+| **SQL Security**      | ✅ 100% compliant                       |
+| **RLS Policies**      | ✅ Todas configuradas                   |
+| **Function Security** | ✅ search_path fixo em todas            |
+| **Auth Settings**     | ✅ OTP curto + Leaked protection        |
+| **PostgreSQL**        | ✅ Versão mais recente                  |
+| **Extensions**        | ⚠️ pg_trgm em public (baixa prioridade) |
 
 ### Score de Segurança Esperado: **9.5/10** 🎯
 

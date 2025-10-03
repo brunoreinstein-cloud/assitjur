@@ -1,10 +1,27 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AlertTriangle, CheckCircle, Loader2, AlertCircle, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Loader2,
+  AlertCircle,
+  Trash2,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,54 +46,59 @@ interface CleanupOperation {
   id: string;
   label: string;
   description: string;
-  severity: 'low' | 'medium' | 'high';
+  severity: "low" | "medium" | "high";
   enabled: boolean;
 }
 
 const cleanupOperations: CleanupOperation[] = [
   {
-    id: 'invalid_cnjs',
-    label: 'CNJs Inválidos',
-    description: 'Remove processos com CNJs que não têm 20 dígitos numéricos',
-    severity: 'medium',
-    enabled: true
+    id: "invalid_cnjs",
+    label: "CNJs Inválidos",
+    description: "Remove processos com CNJs que não têm 20 dígitos numéricos",
+    severity: "medium",
+    enabled: true,
   },
   {
-    id: 'empty_fields',
-    label: 'Campos Obrigatórios Vazios',
-    description: 'Remove processos sem nome do reclamante ou réu',
-    severity: 'medium',
-    enabled: true
+    id: "empty_fields",
+    label: "Campos Obrigatórios Vazios",
+    description: "Remove processos sem nome do reclamante ou réu",
+    severity: "medium",
+    enabled: true,
   },
   {
-    id: 'duplicates',
-    label: 'Duplicatas',
-    description: 'Remove processos duplicados (mantém o mais recente)',
-    severity: 'high',
-    enabled: false
+    id: "duplicates",
+    label: "Duplicatas",
+    description: "Remove processos duplicados (mantém o mais recente)",
+    severity: "high",
+    enabled: false,
   },
   {
-    id: 'normalize_cnjs',
-    label: 'Normalizar CNJs',
-    description: 'Remove pontuação e padroniza formato dos CNJs válidos',
-    severity: 'low',
-    enabled: true
+    id: "normalize_cnjs",
+    label: "Normalizar CNJs",
+    description: "Remove pontuação e padroniza formato dos CNJs válidos",
+    severity: "low",
+    enabled: true,
   },
   {
-    id: 'hard_delete_old',
-    label: 'Exclusão Permanente',
-    description: 'Remove permanentemente processos excluídos há mais de 30 dias',
-    severity: 'high',
-    enabled: false
-  }
+    id: "hard_delete_old",
+    label: "Exclusão Permanente",
+    description:
+      "Remove permanentemente processos excluídos há mais de 30 dias",
+    severity: "high",
+    enabled: false,
+  },
 ];
 
 const getSeverityColor = (severity: string) => {
   switch (severity) {
-    case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-    case 'medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-    case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-    default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    case "low":
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+    case "medium":
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+    case "high":
+      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+    default:
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
   }
 };
 
@@ -85,7 +107,9 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
   const [operations, setOperations] = useState(cleanupOperations);
   const [loading, setLoading] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
-  const [step, setStep] = useState<'preview' | 'confirm' | 'running'>('preview');
+  const [step, setStep] = useState<"preview" | "confirm" | "running">(
+    "preview",
+  );
   const { profile } = useAuth();
   const { toast } = useToast();
 
@@ -97,25 +121,28 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
 
   const loadPreview = async () => {
     if (!isValidOrgId(profile?.organization_id)) return;
-    
+
     setLoading(true);
     await withErrorHandling(async () => {
       const { data: session } = await supabase.auth.getSession();
       const token = session?.session?.access_token;
-      
+
       if (!token) {
-        throw new Error('Token de autenticação não encontrado');
+        throw new Error("Token de autenticação não encontrado");
       }
 
-      const { data, error } = await supabase.functions.invoke('database-cleanup', {
-        body: {
-          orgId: profile.organization_id,
-          preview: true
+      const { data, error } = await supabase.functions.invoke(
+        "database-cleanup",
+        {
+          body: {
+            orgId: profile.organization_id,
+            preview: true,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      );
 
       if (error) {
         throw error;
@@ -126,65 +153,78 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
       }
 
       setPreview(data?.preview);
-    }, 'CleanupModal.loadPreview').finally(() => {
+    }, "CleanupModal.loadPreview").finally(() => {
       setLoading(false);
     });
   };
 
   const handleOperationToggle = (operationId: string, checked: boolean) => {
-    setOperations(prev => prev.map(op => 
-      op.id === operationId ? { ...op, enabled: checked } : op
-    ));
+    setOperations((prev) =>
+      prev.map((op) =>
+        op.id === operationId ? { ...op, enabled: checked } : op,
+      ),
+    );
   };
 
   const getOperationCount = (operationId: string): number => {
     if (!preview) return 0;
-    
+
     switch (operationId) {
-      case 'invalid_cnjs': return preview.invalid_cnjs;
-      case 'empty_fields': return preview.empty_reclamante + preview.empty_reu;
-      case 'duplicates': return preview.duplicates;
-      case 'normalize_cnjs': return preview.invalid_cnjs; // CNJs que precisam normalização
-      case 'hard_delete_old': return preview.soft_deleted;
-      default: return 0;
+      case "invalid_cnjs":
+        return preview.invalid_cnjs;
+      case "empty_fields":
+        return preview.empty_reclamante + preview.empty_reu;
+      case "duplicates":
+        return preview.duplicates;
+      case "normalize_cnjs":
+        return preview.invalid_cnjs; // CNJs que precisam normalização
+      case "hard_delete_old":
+        return preview.soft_deleted;
+      default:
+        return 0;
     }
   };
 
   const handleExecuteCleanup = async () => {
     if (!isValidOrgId(profile?.organization_id)) return;
 
-    const selectedOperations = operations.filter(op => op.enabled).map(op => op.id);
-    
+    const selectedOperations = operations
+      .filter((op) => op.enabled)
+      .map((op) => op.id);
+
     if (selectedOperations.length === 0) {
       toast({
         title: "Nenhuma operação selecionada",
         description: "Selecione pelo menos uma operação para continuar",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
-    setStep('running');
+    setStep("running");
     setIsRunning(true);
 
     try {
       await withErrorHandling(async () => {
         const { data: session } = await supabase.auth.getSession();
         const token = session?.session?.access_token;
-        
+
         if (!token) {
-          throw new Error('Token de autenticação não encontrado');
+          throw new Error("Token de autenticação não encontrado");
         }
 
-        const { data, error } = await supabase.functions.invoke('database-cleanup', {
-          body: {
-            orgId: profile.organization_id,
-            operations: selectedOperations
+        const { data, error } = await supabase.functions.invoke(
+          "database-cleanup",
+          {
+            body: {
+              orgId: profile.organization_id,
+              operations: selectedOperations,
+            },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        );
 
         if (error) {
           throw error;
@@ -198,19 +238,21 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
           toast({
             title: "Limpeza concluída",
             description: `${data.totalProcessed} registros processados`,
-            variant: "default"
+            variant: "default",
           });
           onOpenChange(false);
           window.location.reload();
         } else {
           const failedOps = data?.results?.filter((r: any) => !r.success) || [];
           if (failedOps.length > 0) {
-            throw new Error(`Algumas operações falharam: ${failedOps.map((op: any) => op.message).join(', ')}`);
+            throw new Error(
+              `Algumas operações falharam: ${failedOps.map((op: any) => op.message).join(", ")}`,
+            );
           }
         }
-      }, 'CleanupModal.executeCleanup');
+      }, "CleanupModal.executeCleanup");
     } catch (error) {
-      setStep('confirm');
+      setStep("confirm");
     } finally {
       setIsRunning(false);
     }
@@ -219,7 +261,7 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
   const handleClose = () => {
     if (!isRunning) {
       onOpenChange(false);
-      setStep('preview');
+      setStep("preview");
       setPreview(null);
     }
   };
@@ -253,8 +295,12 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
               </CardHeader>
               <CardContent>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-destructive">{preview.total_issues}</div>
-                  <div className="text-sm text-muted-foreground">problemas detectados</div>
+                  <div className="text-3xl font-bold text-destructive">
+                    {preview.total_issues}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    problemas detectados
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -270,25 +316,28 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
                         <Checkbox
                           id={operation.id}
                           checked={operation.enabled}
-                          onCheckedChange={(checked) => 
-                            handleOperationToggle(operation.id, checked as boolean)
+                          onCheckedChange={(checked) =>
+                            handleOperationToggle(
+                              operation.id,
+                              checked as boolean,
+                            )
                           }
                         />
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <label 
+                            <label
                               htmlFor={operation.id}
                               className="font-medium cursor-pointer"
                             >
                               {operation.label}
                             </label>
-                            <Badge className={getSeverityColor(operation.severity)}>
+                            <Badge
+                              className={getSeverityColor(operation.severity)}
+                            >
                               {operation.severity}
                             </Badge>
                             {count > 0 && (
-                              <Badge variant="outline">
-                                {count} registros
-                              </Badge>
+                              <Badge variant="outline">{count} registros</Badge>
                             )}
                           </div>
                           <p className="text-sm text-muted-foreground">
@@ -313,9 +362,9 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
           <Button variant="outline" onClick={loadPreview}>
             Atualizar
           </Button>
-          <Button 
-            onClick={() => setStep('confirm')}
-            disabled={!operations.some(op => op.enabled) || loading}
+          <Button
+            onClick={() => setStep("confirm")}
+            disabled={!operations.some((op) => op.enabled) || loading}
           >
             Continuar
           </Button>
@@ -325,8 +374,11 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
   );
 
   const renderConfirmStep = () => {
-    const selectedOps = operations.filter(op => op.enabled);
-    const totalToProcess = selectedOps.reduce((sum, op) => sum + getOperationCount(op.id), 0);
+    const selectedOps = operations.filter((op) => op.enabled);
+    const totalToProcess = selectedOps.reduce(
+      (sum, op) => sum + getOperationCount(op.id),
+      0,
+    );
 
     return (
       <>
@@ -341,8 +393,9 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
             <p className="font-semibold text-destructive mb-2">⚠️ Atenção!</p>
             <p className="text-sm">
-              Esta operação irá processar <strong>{totalToProcess} registros</strong> e 
-              pode ser irreversível. Certifique-se de que tem um backup da base de dados.
+              Esta operação irá processar{" "}
+              <strong>{totalToProcess} registros</strong> e pode ser
+              irreversível. Certifique-se de que tem um backup da base de dados.
             </p>
           </div>
 
@@ -358,13 +411,10 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
         </div>
 
         <div className="flex justify-between">
-          <Button variant="outline" onClick={() => setStep('preview')}>
+          <Button variant="outline" onClick={() => setStep("preview")}>
             Voltar
           </Button>
-          <Button 
-            variant="destructive"
-            onClick={handleExecuteCleanup}
-          >
+          <Button variant="destructive" onClick={handleExecuteCleanup}>
             Confirmar Limpeza
           </Button>
         </div>
@@ -392,9 +442,9 @@ export function CleanupModal({ open, onOpenChange }: CleanupModalProps) {
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        {step === 'preview' && renderPreviewStep()}
-        {step === 'confirm' && renderConfirmStep()}
-        {step === 'running' && renderRunningStep()}
+        {step === "preview" && renderPreviewStep()}
+        {step === "confirm" && renderConfirmStep()}
+        {step === "running" && renderRunningStep()}
       </DialogContent>
     </Dialog>
   );

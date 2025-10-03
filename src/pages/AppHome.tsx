@@ -1,7 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Database, Search, BarChart3, Brain, ArrowRight, Users } from "lucide-react";
+import {
+  Database,
+  Search,
+  BarChart3,
+  Brain,
+  ArrowRight,
+  Users,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function AppHome() {
@@ -24,7 +31,7 @@ export default function AppHome() {
       status: "Parcialmente Disponível",
       statusColor: "bg-success/20 text-success border-success/30",
       available: true,
-      route: "/mapa-testemunhas"
+      route: "/mapa-testemunhas",
     },
     {
       icon: BarChart3,
@@ -56,12 +63,12 @@ export default function AppHome() {
             <p className="text-xl text-muted-foreground mb-8">
               Plataforma de inteligência estratégica para contencioso jurídico
             </p>
-            
+
             {/* Quick Actions */}
             <div className="flex flex-wrap gap-4">
-              <Button 
-                size="lg" 
-                onClick={() => navigate('/mapa-testemunhas')}
+              <Button
+                size="lg"
+                onClick={() => navigate("/mapa-testemunhas")}
                 className="gap-2"
               >
                 <Users className="h-5 w-5" />
@@ -80,7 +87,8 @@ export default function AppHome() {
             Funcionalidades da Plataforma
           </h2>
           <p className="text-lg text-muted-foreground">
-            Estamos constantemente desenvolvendo novas funcionalidades para tornar sua experiência ainda melhor.
+            Estamos constantemente desenvolvendo novas funcionalidades para
+            tornar sua experiência ainda melhor.
           </p>
         </div>
 
@@ -117,10 +125,10 @@ export default function AppHome() {
                 <p className="text-muted-foreground leading-relaxed mb-4">
                   {feature.description}
                 </p>
-                
+
                 {feature.available && feature.route && (
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full gap-2"
                     onClick={() => navigate(feature.route)}
                   >
@@ -141,8 +149,8 @@ export default function AppHome() {
                 Novidades em Desenvolvimento
               </h3>
               <p className="text-muted-foreground">
-                Estamos trabalhando em novas funcionalidades que serão lançadas em breve.
-                Fique atento às atualizações!
+                Estamos trabalhando em novas funcionalidades que serão lançadas
+                em breve. Fique atento às atualizações!
               </p>
             </CardContent>
           </Card>

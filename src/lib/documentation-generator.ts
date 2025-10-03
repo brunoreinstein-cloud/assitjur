@@ -3,21 +3,26 @@
  * Cria documentação dinâmica sobre padrões de error handling e boas práticas
  */
 
-import { logger } from '@/lib/logger';
-import { ErrorHandler } from '@/lib/error-handling';
-import { observability } from '@/lib/observability';
+import { logger } from "@/lib/logger";
+import { ErrorHandler } from "@/lib/error-handling";
+import { observability } from "@/lib/observability";
 
 interface DocumentationSection {
   title: string;
   content: string;
   examples: string[];
   antipatterns?: string[];
-  category: 'error-handling' | 'validation' | 'api' | 'performance' | 'security';
+  category:
+    | "error-handling"
+    | "validation"
+    | "api"
+    | "performance"
+    | "security";
 }
 
 export class DocumentationGenerator {
   private sections: DocumentationSection[] = [];
-  
+
   constructor() {
     this.initializeStandardSections();
   }
@@ -25,8 +30,8 @@ export class DocumentationGenerator {
   private initializeStandardSections() {
     // Error Handling
     this.addSection({
-      title: 'Sistema Centralizado de Error Handling',
-      category: 'error-handling',
+      title: "Sistema Centralizado de Error Handling",
+      category: "error-handling",
       content: `
 O AssistJur.IA utiliza um sistema centralizado de tratamento de erros para garantir:
 - Logging estruturado e consistente
@@ -52,7 +57,7 @@ const fetchData = async () => {
 throw createError.validation('CNJ inválido', { cnj: '123' });
 throw createError.network('API indisponível', true); // retryable
 throw createError.business('Operação não permitida', 'Usuário sem permissão');
-        `
+        `,
       ],
       antipatterns: [
         `
@@ -67,14 +72,14 @@ try {
         `
 // ❌ ERRADO - Mensagens hardcoded sem contexto
 throw new Error('Algo deu errado'); // Muito genérico
-        `
-      ]
+        `,
+      ],
     });
 
     // Validation
     this.addSection({
-      title: 'Sistema de Validação com Zod',
-      category: 'validation',
+      title: "Sistema de Validação com Zod",
+      category: "validation",
       content: `
 Todas as validações devem usar o sistema centralizado com Zod:
 - Schemas reutilizáveis para entidades comuns
@@ -96,14 +101,14 @@ import { isValidOrgId, isValidCNJ } from '@/lib/error-handling';
 if (!isValidOrgId(orgId)) {
   throw createError.validation('ID da organização inválido');
 }
-        `
-      ]
+        `,
+      ],
     });
 
     // API Best Practices
     this.addSection({
-      title: 'Padrões para Chamadas de API',
-      category: 'api',
+      title: "Padrões para Chamadas de API",
+      category: "api",
       content: `
 Todas as chamadas de API devem seguir os padrões estabelecidos:
 - Usar apiCall() wrapper para timeout e retry automático
@@ -128,14 +133,14 @@ const result = await apiCall(
   'ServiceName',
   { retries: 2, timeout: 30000, fallback: defaultData }
 );
-        `
-      ]
+        `,
+      ],
     });
 
     // Performance
     this.addSection({
-      title: 'Monitoramento de Performance',
-      category: 'performance',
+      title: "Monitoramento de Performance",
+      category: "performance",
       content: `
 Use o sistema de observabilidade para monitorar performance:
 - Instrumentação automática de funções críticas
@@ -170,14 +175,14 @@ function MyComponent() {
   
   return <button onClick={() => recordInteraction('click')}>Action</button>;
 }
-        `
-      ]
+        `,
+      ],
     });
 
     // Security
     this.addSection({
-      title: 'Práticas de Segurança',
-      category: 'security',
+      title: "Práticas de Segurança",
+      category: "security",
       content: `
 Padrões de segurança obrigatórios:
 - Nunca usar Service Role Key no frontend
@@ -208,7 +213,7 @@ const handleSubmit = async () => {
   setLastAttempt(now);
   // ... resto da lógica
 };
-        `
+        `,
       ],
       antipatterns: [
         `
@@ -217,80 +222,87 @@ const { data } = await supabase
   .from('processos')
   .select('*')
   .eq('id', processId); // Sem org_id = acesso a todos os dados!
-        `
-      ]
+        `,
+      ],
     });
   }
 
   addSection(section: DocumentationSection) {
     this.sections.push(section);
-    logger.info('Documentation section added', { 
-      title: section.title, 
-      category: section.category 
-    }, 'DocumentationGenerator');
+    logger.info(
+      "Documentation section added",
+      {
+        title: section.title,
+        category: section.category,
+      },
+      "DocumentationGenerator",
+    );
   }
 
   generateMarkdown(): string {
     const categorizedSections = this.groupByCategory();
-    
+
     let markdown = `# AssistJur.IA - Guia de Desenvolvimento\n\n`;
-    markdown += `*Documentação gerada automaticamente em ${new Date().toLocaleString('pt-BR')}*\n\n`;
-    
+    markdown += `*Documentação gerada automaticamente em ${new Date().toLocaleString("pt-BR")}*\n\n`;
+
     // Índice
     markdown += `## Índice\n\n`;
     Object.entries(categorizedSections).forEach(([category, sections]) => {
       markdown += `### ${this.getCategoryTitle(category)}\n`;
-      sections.forEach(section => {
+      sections.forEach((section) => {
         markdown += `- [${section.title}](#${this.slugify(section.title)})\n`;
       });
       markdown += `\n`;
     });
-    
+
     // Conteúdo
     Object.entries(categorizedSections).forEach(([category, sections]) => {
       markdown += `\n## ${this.getCategoryTitle(category)}\n\n`;
-      
-      sections.forEach(section => {
+
+      sections.forEach((section) => {
         markdown += `### ${section.title}\n\n`;
         markdown += `${section.content}\n\n`;
-        
+
         if (section.examples.length > 0) {
           markdown += `**Exemplos:**\n\n`;
-          section.examples.forEach(example => {
+          section.examples.forEach((example) => {
             markdown += `\`\`\`typescript${example}\`\`\`\n\n`;
           });
         }
-        
+
         if (section.antipatterns && section.antipatterns.length > 0) {
           markdown += `**⚠️ Antipadrões - NÃO FAZER:**\n\n`;
-          section.antipatterns.forEach(antipattern => {
+          section.antipatterns.forEach((antipattern) => {
             markdown += `\`\`\`typescript${antipattern}\`\`\`\n\n`;
           });
         }
       });
     });
-    
+
     // Apêndice com comandos úteis
     markdown += this.generateAppendix();
-    
+
     return markdown;
   }
 
   generateHTML(): string {
     const markdown = this.generateMarkdown();
-    
+
     // Conversão básica de Markdown para HTML
     const html = markdown
-      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/```typescript([\s\S]*?)```/g, '<pre><code class="language-typescript">$1</code></pre>')
-      .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-      .replace(/`(.+?)`/g, '<code>$1</code>')
-      .replace(/\n/g, '<br>');
-    
+      .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+      .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+      .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+      .replace(
+        /```typescript([\s\S]*?)```/g,
+        '<pre><code class="language-typescript">$1</code></pre>',
+      )
+      .replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>")
+      .replace(/`(.+?)`/g, "<code>$1</code>")
+      .replace(/\n/g, "<br>");
+
     return `
 <!DOCTYPE html>
 <html>
@@ -335,32 +347,35 @@ const { data } = await supabase
   }
 
   private groupByCategory(): Record<string, DocumentationSection[]> {
-    return this.sections.reduce((acc, section) => {
-      if (!acc[section.category]) {
-        acc[section.category] = [];
-      }
-      acc[section.category].push(section);
-      return acc;
-    }, {} as Record<string, DocumentationSection[]>);
+    return this.sections.reduce(
+      (acc, section) => {
+        if (!acc[section.category]) {
+          acc[section.category] = [];
+        }
+        acc[section.category].push(section);
+        return acc;
+      },
+      {} as Record<string, DocumentationSection[]>,
+    );
   }
 
   private getCategoryTitle(category: string): string {
     const titles = {
-      'error-handling': '🛡️ Tratamento de Erros',
-      'validation': '✅ Validação de Dados', 
-      'api': '🌐 APIs e Requisições',
-      'performance': '⚡ Performance e Monitoramento',
-      'security': '🔐 Segurança'
+      "error-handling": "🛡️ Tratamento de Erros",
+      validation: "✅ Validação de Dados",
+      api: "🌐 APIs e Requisições",
+      performance: "⚡ Performance e Monitoramento",
+      security: "🔐 Segurança",
     };
-    
+
     return titles[category as keyof typeof titles] || category;
   }
 
   private slugify(text: string): string {
     return text
       .toLowerCase()
-      .replace(/[^a-z0-9 -]/g, '')
-      .replace(/\s+/g, '-');
+      .replace(/[^a-z0-9 -]/g, "")
+      .replace(/\s+/g, "-");
   }
 
   private generateAppendix(): string {
@@ -418,26 +433,31 @@ Verifique: event listeners não removidos, referências circulares, objetos gran
   }
 
   // Salvar documentação como arquivo
-  async saveToFile(format: 'markdown' | 'html' = 'markdown') {
-    const content = format === 'html' ? this.generateHTML() : this.generateMarkdown();
-    const filename = `assistjur-dev-guide.${format === 'html' ? 'html' : 'md'}`;
-    
-    const blob = new Blob([content], { 
-      type: format === 'html' ? 'text/html' : 'text/markdown' 
+  async saveToFile(format: "markdown" | "html" = "markdown") {
+    const content =
+      format === "html" ? this.generateHTML() : this.generateMarkdown();
+    const filename = `assistjur-dev-guide.${format === "html" ? "html" : "md"}`;
+
+    const blob = new Blob([content], {
+      type: format === "html" ? "text/html" : "text/markdown",
     });
-    
-    const link = document.createElement('a');
+
+    const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
-    logger.info('Documentation exported', { 
-      format, 
-      filename, 
-      sections: this.sections.length 
-    }, 'DocumentationGenerator');
+
+    logger.info(
+      "Documentation exported",
+      {
+        format,
+        filename,
+        sections: this.sections.length,
+      },
+      "DocumentationGenerator",
+    );
   }
 }
 
@@ -445,11 +465,12 @@ Verifique: event listeners não removidos, referências circulares, objetos gran
 export const documentationGenerator = new DocumentationGenerator();
 
 // Disponibilizar no console em desenvolvimento
-if (typeof window !== 'undefined' && import.meta.env.DEV) {
+if (typeof window !== "undefined" && import.meta.env.DEV) {
   (window as any).__DOCS_GENERATOR__ = {
     generateMarkdown: () => documentationGenerator.generateMarkdown(),
-    saveMarkdown: () => documentationGenerator.saveToFile('markdown'),
-    saveHTML: () => documentationGenerator.saveToFile('html'),
-    addCustomSection: (section: DocumentationSection) => documentationGenerator.addSection(section)
+    saveMarkdown: () => documentationGenerator.saveToFile("markdown"),
+    saveHTML: () => documentationGenerator.saveToFile("html"),
+    addCustomSection: (section: DocumentationSection) =>
+      documentationGenerator.addSection(section),
   };
 }

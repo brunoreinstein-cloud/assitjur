@@ -1,4 +1,3 @@
-
 export type HeadProps = {
   title: string;
   description: string;
@@ -7,23 +6,31 @@ export type HeadProps = {
   path: string;
 };
 
-const BASE_URL = 'https://assistjur.com.br';
+const BASE_URL = "https://assistjur.com.br";
 
-export function Head({ title, description, canonical, ogImage, path }: HeadProps) {
+export function Head({
+  title,
+  description,
+  canonical,
+  ogImage,
+  path,
+}: HeadProps) {
   const url = canonical ?? `${BASE_URL}${path}`;
-  const image = ogImage?.startsWith('http') ? ogImage : `${BASE_URL}${ogImage ?? '/brand/og-assistjur.png'}`;
+  const image = ogImage?.startsWith("http")
+    ? ogImage
+    : `${BASE_URL}${ogImage ?? "/brand/og-assistjur.png"}`;
 
   const orgJson = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'AssistJur.IA',
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "AssistJur.IA",
     url: BASE_URL,
   } as const;
 
   const siteJson = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: 'AssistJur.IA',
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "AssistJur.IA",
     url: BASE_URL,
   } as const;
 
@@ -42,8 +49,14 @@ export function Head({ title, description, canonical, ogImage, path }: HeadProps
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJson) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJson) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJson) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJson) }}
+      />
     </>
   );
 }

@@ -1,6 +1,7 @@
 # Auth Redirects
 
 ## Supabase Config
+
 - **Site URL**: `https://assistjur.com.br`
 - **Additional Redirect URLs:**
   - `https://assistjur.com.br/*`

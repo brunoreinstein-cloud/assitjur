@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { toast } from '@/hooks/use-toast';
-import { track } from '@/lib/track';
+import { create } from "zustand";
+import { toast } from "@/hooks/use-toast";
+import { track } from "@/lib/track";
 
 interface BetaFormState {
   email: string;
@@ -25,9 +25,9 @@ interface BetaFormActions {
 type BetaFormStore = BetaFormState & BetaFormActions;
 
 const initialState: BetaFormState = {
-  email: '',
+  email: "",
   needs: [],
-  otherNeed: '',
+  otherNeed: "",
   loading: false,
   error: null,
   success: false,
@@ -48,7 +48,7 @@ export const useBetaFormStore = create<BetaFormStore>((set, get) => ({
 
     set({ loading: true, error: null });
 
-    track('beta_submit', { email_domain: email.split('@')[1] });
+    track("beta_submit", { email_domain: email.split("@")[1] });
 
     try {
       // Preparar payload
@@ -61,12 +61,12 @@ export const useBetaFormStore = create<BetaFormStore>((set, get) => ({
 
       // Tentar enviar para a API
       let success = false;
-      
+
       try {
-        const response = await fetch('/api/beta-signup', {
-          method: 'POST',
+        const response = await fetch("/api/beta-signup", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
         });
@@ -74,21 +74,21 @@ export const useBetaFormStore = create<BetaFormStore>((set, get) => ({
         if (response.ok) {
           success = true;
         } else {
-          throw new Error('API not available');
+          throw new Error("API not available");
         }
       } catch (apiError) {
         // Fallback para mock se API não existir
-        console.log('Beta signup mock data:', payload);
-        
+        console.log("Beta signup mock data:", payload);
+
         // Simular delay da API
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
         success = true;
       }
 
       if (success) {
         set({ success: true, loading: false });
-        
+
         // Toast de sucesso
         toast({
           title: "Inscrição recebida!",
@@ -103,14 +103,14 @@ export const useBetaFormStore = create<BetaFormStore>((set, get) => ({
         return true;
       }
     } catch (error) {
-      console.error('Erro ao enviar inscrição beta:', error);
-      
-      const errorMessage = 'Não foi possível enviar. Tente novamente.';
-      set({ 
-        error: errorMessage, 
-        loading: false 
+      console.error("Erro ao enviar inscrição beta:", error);
+
+      const errorMessage = "Não foi possível enviar. Tente novamente.";
+      set({
+        error: errorMessage,
+        loading: false,
       });
-      
+
       // Toast de erro
       toast({
         title: "Erro no envio",

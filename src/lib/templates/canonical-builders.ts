@@ -11,51 +11,53 @@ import {
   CANONICAL_HEADERS_TESTEMUNHA,
   type CanonicalProcessoSample,
   type CanonicalTestemunhaSample,
-  type DicionarioField
-} from '@/lib/templates/canonical-samples';
+  type DicionarioField,
+} from "@/lib/templates/canonical-samples";
 
 /**
  * Build canonical XLSX template with 3 sheets
  */
 export async function buildCanonicalXlsx(): Promise<Buffer> {
   // Import XLSX only when generating templates
-  const XLSX = await import('xlsx');
+  const XLSX = await import("xlsx");
   const wb = XLSX.utils.book_new();
 
   // Sheet 1: Por Processo
   const processoWs = XLSX.utils.json_to_sheet(canonicalProcessoSamples);
-  XLSX.utils.book_append_sheet(wb, processoWs, 'Por Processo');
+  XLSX.utils.book_append_sheet(wb, processoWs, "Por Processo");
 
-  // Sheet 2: Por Testemunha  
+  // Sheet 2: Por Testemunha
   const testemunhaWs = XLSX.utils.json_to_sheet(canonicalTestemunhaSamples);
-  XLSX.utils.book_append_sheet(wb, testemunhaWs, 'Por Testemunha');
+  XLSX.utils.book_append_sheet(wb, testemunhaWs, "Por Testemunha");
 
   // Sheet 3: Dicionario
   const dicionarioWs = XLSX.utils.json_to_sheet(canonicalDicionarioFields);
-  XLSX.utils.book_append_sheet(wb, dicionarioWs, 'Dicionario');
+  XLSX.utils.book_append_sheet(wb, dicionarioWs, "Dicionario");
 
   // Generate buffer with compression
-  return XLSX.write(wb, { 
-    type: 'buffer', 
-    bookType: 'xlsx',
-    compression: true 
+  return XLSX.write(wb, {
+    type: "buffer",
+    bookType: "xlsx",
+    compression: true,
   }) as Buffer;
 }
 
 /**
  * Build canonical CSV for specific sheet
  */
-export function buildCanonicalCsv(sheetName: 'Por Processo' | 'Por Testemunha' | 'Dicionario'): string {
+export function buildCanonicalCsv(
+  sheetName: "Por Processo" | "Por Testemunha" | "Dicionario",
+): string {
   let data: any[] = [];
-  
+
   switch (sheetName) {
-    case 'Por Processo':
+    case "Por Processo":
       data = canonicalProcessoSamples;
       break;
-    case 'Por Testemunha':
+    case "Por Testemunha":
       data = canonicalTestemunhaSamples;
       break;
-    case 'Dicionario':
+    case "Dicionario":
       data = canonicalDicionarioFields;
       break;
     default:
@@ -69,20 +71,25 @@ export function buildCanonicalCsv(sheetName: 'Por Processo' | 'Por Testemunha' |
   // Get headers from first data row
   const firstRow = data[0] as Record<string, any>;
   const headers = Object.keys(firstRow);
-  
+
   // CSV escape function
   const escapeCsvValue = (value: any): string => {
-    if (value === null || value === undefined) return '—';
-    
+    if (value === null || value === undefined) return "—";
+
     let str = String(value);
-    
+
     // Convert boolean to string
-    if (typeof value === 'boolean') {
-      str = value ? 'true' : 'false';
+    if (typeof value === "boolean") {
+      str = value ? "true" : "false";
     }
-    
+
     // If contains separator, newline or quotes, wrap in double quotes
-    if (str.includes(',') || str.includes('\n') || str.includes('"') || str.includes(';')) {
+    if (
+      str.includes(",") ||
+      str.includes("\n") ||
+      str.includes('"') ||
+      str.includes(";")
+    ) {
       return `"${str.replace(/"/g, '""')}"`;
     }
     return str;
@@ -90,18 +97,18 @@ export function buildCanonicalCsv(sheetName: 'Por Processo' | 'Por Testemunha' |
 
   // Build CSV lines
   const lines: string[] = [];
-  
+
   // Header line
-  lines.push(headers.map(h => escapeCsvValue(h)).join(','));
-  
+  lines.push(headers.map((h) => escapeCsvValue(h)).join(","));
+
   // Data lines
   data.forEach((row: any) => {
     const rowData = row as Record<string, any>;
-    const values = headers.map(header => escapeCsvValue(rowData[header]));
-    lines.push(values.join(','));
+    const values = headers.map((header) => escapeCsvValue(rowData[header]));
+    lines.push(values.join(","));
   });
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -116,85 +123,111 @@ export function validateCanonicalStructure(): {
   // Validate processo headers
   const processoActualHeaders = Object.keys(canonicalProcessoSamples[0] || {});
   const processoExpectedHeaders = [...CANONICAL_HEADERS_PROCESSO] as string[];
-  
-  const processoMissing = processoExpectedHeaders.filter(h => !processoActualHeaders.includes(h));
-  const processoExtra = processoActualHeaders.filter(h => !processoExpectedHeaders.includes(h));
-  
+
+  const processoMissing = processoExpectedHeaders.filter(
+    (h) => !processoActualHeaders.includes(h),
+  );
+  const processoExtra = processoActualHeaders.filter(
+    (h) => !processoExpectedHeaders.includes(h),
+  );
+
   if (processoMissing.length > 0) {
-    issues.push(`Por Processo - Campos ausentes: ${processoMissing.join(', ')}`);
+    issues.push(
+      `Por Processo - Campos ausentes: ${processoMissing.join(", ")}`,
+    );
   }
   if (processoExtra.length > 0) {
-    issues.push(`Por Processo - Campos extras: ${processoExtra.join(', ')}`);
+    issues.push(`Por Processo - Campos extras: ${processoExtra.join(", ")}`);
   }
 
   // Validate testemunha headers
-  const testemunhaActualHeaders = Object.keys(canonicalTestemunhaSamples[0] || {});
-  const testemunhaExpectedHeaders = [...CANONICAL_HEADERS_TESTEMUNHA] as string[];
-  
-  const testemunhaMissing = testemunhaExpectedHeaders.filter(h => !testemunhaActualHeaders.includes(h));
-  const testemunhaExtra = testemunhaActualHeaders.filter(h => !testemunhaExpectedHeaders.includes(h));
-  
+  const testemunhaActualHeaders = Object.keys(
+    canonicalTestemunhaSamples[0] || {},
+  );
+  const testemunhaExpectedHeaders = [
+    ...CANONICAL_HEADERS_TESTEMUNHA,
+  ] as string[];
+
+  const testemunhaMissing = testemunhaExpectedHeaders.filter(
+    (h) => !testemunhaActualHeaders.includes(h),
+  );
+  const testemunhaExtra = testemunhaActualHeaders.filter(
+    (h) => !testemunhaExpectedHeaders.includes(h),
+  );
+
   if (testemunhaMissing.length > 0) {
-    issues.push(`Por Testemunha - Campos ausentes: ${testemunhaMissing.join(', ')}`);
+    issues.push(
+      `Por Testemunha - Campos ausentes: ${testemunhaMissing.join(", ")}`,
+    );
   }
   if (testemunhaExtra.length > 0) {
-    issues.push(`Por Testemunha - Campos extras: ${testemunhaExtra.join(', ')}`);
+    issues.push(
+      `Por Testemunha - Campos extras: ${testemunhaExtra.join(", ")}`,
+    );
   }
 
   // Validate sample data
   if (canonicalProcessoSamples.length === 0) {
-    issues.push('Nenhum sample data para Por Processo');
+    issues.push("Nenhum sample data para Por Processo");
   }
   if (canonicalTestemunhaSamples.length === 0) {
-    issues.push('Nenhum sample data para Por Testemunha');
+    issues.push("Nenhum sample data para Por Testemunha");
   }
   if (canonicalDicionarioFields.length === 0) {
-    issues.push('Nenhum campo no dicionário');
+    issues.push("Nenhum campo no dicionário");
   }
 
   return {
     valid: issues.length === 0,
-    issues
+    issues,
   };
 }
 
 /**
  * Get canonical headers for sheet type
  */
-export function getCanonicalHeaders(sheetType: 'processo' | 'testemunha'): string[] {
-  return sheetType === 'processo' ? [...CANONICAL_HEADERS_PROCESSO] : [...CANONICAL_HEADERS_TESTEMUNHA];
+export function getCanonicalHeaders(
+  sheetType: "processo" | "testemunha",
+): string[] {
+  return sheetType === "processo"
+    ? [...CANONICAL_HEADERS_PROCESSO]
+    : [...CANONICAL_HEADERS_TESTEMUNHA];
 }
 
 /**
  * Convert data to canonical format for export
  */
 export function formatDataToCanonical(
-  data: any[], 
-  sheetType: 'processo' | 'testemunha'
+  data: any[],
+  sheetType: "processo" | "testemunha",
 ): Record<string, any>[] {
   const canonicalHeaders = getCanonicalHeaders(sheetType);
-  
+
   return data.map((row: any) => {
     const canonicalRow: Record<string, any> = {};
-    
+
     canonicalHeaders.forEach((header: string) => {
       // Map from current format to canonical format - use dynamic access
       const rowData = row as Record<string, any>;
-      const value = rowData[header] || rowData[header.toLowerCase()] || rowData[header.replace(/_/g, '')] || null;
-      
+      const value =
+        rowData[header] ||
+        rowData[header.toLowerCase()] ||
+        rowData[header.replace(/_/g, "")] ||
+        null;
+
       // Handle special formatting
       if (value === null || value === undefined) {
-        canonicalRow[header] = '—';
+        canonicalRow[header] = "—";
       } else if (Array.isArray(value)) {
         // Lists: join with semicolon
-        canonicalRow[header] = value.length > 0 ? value.join('; ') : '—';
-      } else if (typeof value === 'boolean') {
+        canonicalRow[header] = value.length > 0 ? value.join("; ") : "—";
+      } else if (typeof value === "boolean") {
         canonicalRow[header] = value;
       } else {
         canonicalRow[header] = String(value);
       }
     });
-    
+
     return canonicalRow;
   });
 }
@@ -204,25 +237,26 @@ export function formatDataToCanonical(
  */
 export function parseCanonicalList(input: any): string[] {
   if (!input) return [];
-  
+
   const str = String(input).trim();
-  if (str === '—' || str === '') return [];
-  
+  if (str === "—" || str === "") return [];
+
   // Split by semicolon, clean each item
-  return str.split(';')
-    .map(item => item.trim())
-    .filter(item => item.length > 0 && item !== '—');
+  return str
+    .split(";")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0 && item !== "—");
 }
 
 /**
  * Format list to canonical format (semicolon separated)
  */
 export function formatToCanonicalList(items: string[]): string {
-  if (!items || items.length === 0) return '—';
-  
+  if (!items || items.length === 0) return "—";
+
   const cleanItems = items
-    .map(item => String(item).trim())
-    .filter(item => item.length > 0);
-  
-  return cleanItems.length > 0 ? cleanItems.join('; ') : '—';
+    .map((item) => String(item).trim())
+    .filter((item) => item.length > 0);
+
+  return cleanItems.length > 0 ? cleanItems.join("; ") : "—";
 }

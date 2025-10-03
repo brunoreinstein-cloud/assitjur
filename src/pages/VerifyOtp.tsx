@@ -1,24 +1,24 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { AuthCard } from '@/components/auth/AuthCard';
-import { TwoFactorForm } from '@/components/auth/TwoFactorForm';
-import { AlertBox } from '@/components/auth/AlertBox';
-import { useAuth } from '@/hooks/useAuth';
-import { BrandHeader } from '@/components/brand/BrandHeader';
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { AuthCard } from "@/components/auth/AuthCard";
+import { TwoFactorForm } from "@/components/auth/TwoFactorForm";
+import { AlertBox } from "@/components/auth/AlertBox";
+import { useAuth } from "@/hooks/useAuth";
+import { BrandHeader } from "@/components/brand/BrandHeader";
 
 const VerifyOtp = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, profile } = useAuth();
-  const [userEmail, setUserEmail] = useState<string>('');
+  const [userEmail, setUserEmail] = useState<string>("");
 
-  const next = searchParams.get('next');
-  const email = searchParams.get('email');
+  const next = searchParams.get("next");
+  const email = searchParams.get("email");
 
   // Redirect if user is authenticated and 2FA not required
   useEffect(() => {
     if (user && profile && !profile.two_factor_enabled) {
-      const redirectTo = next ? decodeURIComponent(next) : '/dados/mapa';
+      const redirectTo = next ? decodeURIComponent(next) : "/dados/mapa";
       navigate(redirectTo);
     }
   }, [user, profile, navigate, next]);
@@ -34,19 +34,19 @@ const VerifyOtp = () => {
 
   useEffect(() => {
     if (profile && !profile.two_factor_enabled) {
-      const redirectTo = next ? decodeURIComponent(next) : '/dados/mapa';
+      const redirectTo = next ? decodeURIComponent(next) : "/dados/mapa";
       navigate(redirectTo);
     }
   }, [profile, navigate, next]);
 
   const handleVerificationSuccess = () => {
-    sessionStorage.setItem('mfa_verified', 'true');
-    const redirectTo = next ? decodeURIComponent(next) : '/dados/mapa';
+    sessionStorage.setItem("mfa_verified", "true");
+    const redirectTo = next ? decodeURIComponent(next) : "/dados/mapa";
     navigate(redirectTo);
   };
 
   const handleBack = () => {
-    navigate('/login');
+    navigate("/login");
   };
 
   if (!profile?.two_factor_enabled || !profile.two_factor_secret) {
@@ -64,7 +64,8 @@ const VerifyOtp = () => {
         {/* MFA Info */}
         <div className="mb-6">
           <AlertBox variant="info" title="Verificação adicional necessária">
-            Sua conta possui verificação em duas etapas ativada para maior segurança.
+            Sua conta possui verificação em duas etapas ativada para maior
+            segurança.
           </AlertBox>
         </div>
 

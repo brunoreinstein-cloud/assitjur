@@ -44,7 +44,7 @@ Características:
 - Foco em análise de dados processuais
 - Capacidade de identificar padrões
 
-Sempre mantenha um tom profissional e forneça informações precisas baseadas nos dados disponíveis.`
+Sempre mantenha um tom profissional e forneça informações precisas baseadas nos dados disponíveis.`,
 };
 
 /**
@@ -61,17 +61,23 @@ export function getSystemPrompt(promptName: string): string {
   // Busca por correspondência parcial (case-insensitive)
   const normalizedName = promptName.toLowerCase();
   for (const [key, value] of Object.entries(DEFAULT_PROMPTS)) {
-    if (key.toLowerCase().includes(normalizedName) || normalizedName.includes(key.toLowerCase())) {
+    if (
+      key.toLowerCase().includes(normalizedName) ||
+      normalizedName.includes(key.toLowerCase())
+    ) {
       return value;
     }
   }
 
   // Fallback baseado em palavras-chave
-  if (normalizedName.includes('testemunha') || normalizedName.includes('mapa')) {
+  if (
+    normalizedName.includes("testemunha") ||
+    normalizedName.includes("mapa")
+  ) {
     return DEFAULT_PROMPTS["System: Mapa de Testemunhas - v1"];
   }
 
-  if (normalizedName.includes('legal') || normalizedName.includes('juridic')) {
+  if (normalizedName.includes("legal") || normalizedName.includes("juridic")) {
     return DEFAULT_PROMPTS["System: Legal Analysis - General"];
   }
 

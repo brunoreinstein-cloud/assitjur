@@ -1,4 +1,7 @@
-import{j as e}from"./vendor-xNGbxDip.js";import"./page-Login-5_M3Gm0y.js";import"./page-About-RKuI2z9S.js";const s=`<!DOCTYPE html>\r
+import { j as e } from "./vendor-xNGbxDip.js";
+import "./page-Login-5_M3Gm0y.js";
+import "./page-About-RKuI2z9S.js";
+const s = `<!DOCTYPE html>\r
 <html lang="pt-BR">\r
 <head>\r
     <meta charset="UTF-8">\r
@@ -26,4 +29,8 @@ import{j as e}from"./vendor-xNGbxDip.js";import"./page-Login-5_M3Gm0y.js";import
         <p>Para dúvidas sobre estes termos, entre em contato através do site oficial.</p>\r
     </div>\r
 </body>\r
-</html>`;function o(){return e.jsx("div",{dangerouslySetInnerHTML:{__html:s}})}export{o as default};
+</html>`;
+function o() {
+  return e.jsx("div", { dangerouslySetInnerHTML: { __html: s } });
+}
+export { o as default };

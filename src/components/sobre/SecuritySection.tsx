@@ -1,43 +1,48 @@
-import React from 'react';
-import { 
+import React from "react";
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Shield, Lock, Eye, UserCheck, Download } from 'lucide-react';
+} from "@/components/ui/accordion";
+import { Shield, Lock, Eye, UserCheck, Download } from "lucide-react";
 
 const securityItems = [
   {
-    id: 'encryption',
+    id: "encryption",
     icon: Lock,
-    title: 'Criptografia ponta-a-ponta',
-    content: 'Todos os dados são protegidos com criptografia AES-256 em trânsito e em repouso, garantindo que apenas usuários autorizados tenham acesso às informações sensíveis.'
+    title: "Criptografia ponta-a-ponta",
+    content:
+      "Todos os dados são protegidos com criptografia AES-256 em trânsito e em repouso, garantindo que apenas usuários autorizados tenham acesso às informações sensíveis.",
   },
   {
-    id: 'permissions',
+    id: "permissions",
     icon: UserCheck,
-    title: 'Permissões granulares e 2FA',
-    content: 'Sistema de permissões baseado em funções (RBAC) com autenticação de dois fatores obrigatória para todos os usuários, garantindo acesso controlado e seguro.'
+    title: "Permissões granulares e 2FA",
+    content:
+      "Sistema de permissões baseado em funções (RBAC) com autenticação de dois fatores obrigatória para todos os usuários, garantindo acesso controlado e seguro.",
   },
   {
-    id: 'audit',
+    id: "audit",
     icon: Eye,
-    title: 'Trilha de auditoria completa',
-    content: 'Registro detalhado de todas as ações realizadas na plataforma, incluindo timestamps, usuários responsáveis e alterações realizadas, para total rastreabilidade.'
+    title: "Trilha de auditoria completa",
+    content:
+      "Registro detalhado de todas as ações realizadas na plataforma, incluindo timestamps, usuários responsáveis e alterações realizadas, para total rastreabilidade.",
   },
   {
-    id: 'review',
+    id: "review",
     icon: Shield,
-    title: 'Revisão humana obrigatória',
-    content: 'Todas as análises e recomendações da IA passam por validação humana especializada antes da disponibilização, garantindo precisão e responsabilidade.'
+    title: "Revisão humana obrigatória",
+    content:
+      "Todas as análises e recomendações da IA passam por validação humana especializada antes da disponibilização, garantindo precisão e responsabilidade.",
   },
   {
-    id: 'portability',
+    id: "portability",
     icon: Download,
-    title: 'Portabilidade total',
-    content: 'Exportação completa de dados a qualquer momento em formatos padrão, garantindo que você mantenha total controle sobre suas informações.'
-  }
+    title: "Portabilidade total",
+    content:
+      "Exportação completa de dados a qualquer momento em formatos padrão, garantindo que você mantenha total controle sobre suas informações.",
+  },
 ];
 
 export function SecuritySection() {
@@ -58,8 +63,8 @@ export function SecuritySection() {
             {securityItems.map((item) => {
               const Icon = item.icon;
               return (
-                <AccordionItem 
-                  key={item.id} 
+                <AccordionItem
+                  key={item.id}
                   value={item.id}
                   className="border rounded-lg px-6 bg-background shadow-sm"
                 >

@@ -1,8 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { BarChart, Bar, CartesianGrid, XAxis, YAxis } from 'recharts';
+import React, { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import { BarChart, Bar, CartesianGrid, XAxis, YAxis } from "recharts";
 
 interface MetricRow {
   flag_id: string;
@@ -18,32 +22,47 @@ const FeatureFlagMetrics: React.FC = () => {
   useEffect(() => {
     // Mock data since feature_flag_metrics table doesn't exist yet
     const mockRows: MetricRow[] = [
-      { flag_id: 'advanced-search', window: '7d', evaluations_count: 150, unique_users: 45, last_evaluated: new Date().toISOString() },
-      { flag_id: 'beta-features', window: '30d', evaluations_count: 300, unique_users: 80, last_evaluated: new Date().toISOString() }
+      {
+        flag_id: "advanced-search",
+        window: "7d",
+        evaluations_count: 150,
+        unique_users: 45,
+        last_evaluated: new Date().toISOString(),
+      },
+      {
+        flag_id: "beta-features",
+        window: "30d",
+        evaluations_count: 300,
+        unique_users: 80,
+        last_evaluated: new Date().toISOString(),
+      },
     ];
     setRows(mockRows);
   }, []);
 
   const chartData = useMemo(() => {
-    const byFlag: Record<string, { flag_id: string; eval_7d: number; eval_30d: number }> = {};
+    const byFlag: Record<
+      string,
+      { flag_id: string; eval_7d: number; eval_30d: number }
+    > = {};
     for (const r of rows) {
       if (!byFlag[r.flag_id]) {
         byFlag[r.flag_id] = { flag_id: r.flag_id, eval_7d: 0, eval_30d: 0 };
       }
-      if (r.window === '7d') byFlag[r.flag_id].eval_7d = r.evaluations_count;
-      if (r.window === '30d') byFlag[r.flag_id].eval_30d = r.evaluations_count;
+      if (r.window === "7d") byFlag[r.flag_id].eval_7d = r.evaluations_count;
+      if (r.window === "30d") byFlag[r.flag_id].eval_30d = r.evaluations_count;
     }
     return Object.values(byFlag);
   }, [rows]);
 
   const total7d = rows
-    .filter((r) => r.window === '7d')
+    .filter((r) => r.window === "7d")
     .reduce((sum, r) => sum + r.evaluations_count, 0);
   const total30d = rows
-    .filter((r) => r.window === '30d')
+    .filter((r) => r.window === "30d")
     .reduce((sum, r) => sum + r.evaluations_count, 0);
   const users30d = rows
-    .filter((r) => r.window === '30d')
+    .filter((r) => r.window === "30d")
     .reduce((sum, r) => sum + r.unique_users, 0);
 
   return (
@@ -77,8 +96,8 @@ const FeatureFlagMetrics: React.FC = () => {
           <ChartContainer
             className="h-[300px]"
             config={{
-              eval_7d: { label: '7d', color: 'hsl(var(--chart-1))' },
-              eval_30d: { label: '30d', color: 'hsl(var(--chart-2))' },
+              eval_7d: { label: "7d", color: "hsl(var(--chart-1))" },
+              eval_30d: { label: "30d", color: "hsl(var(--chart-2))" },
             }}
           >
             <BarChart data={chartData}>

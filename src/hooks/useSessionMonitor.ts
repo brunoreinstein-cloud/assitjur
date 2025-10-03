@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { AuthErrorHandler } from '@/utils/authErrorHandler';
+import { useEffect, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { AuthErrorHandler } from "@/utils/authErrorHandler";
 
 interface SessionMonitorOptions {
   checkInterval?: number; // minutes
@@ -14,7 +14,7 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
     checkInterval = 5, // Check every 5 minutes
     preemptiveRefresh = 10, // Refresh 10 minutes before expiry
     inactivityTimeout = 0,
-    enabled = true
+    enabled = true,
   } = options;
 
   const intervalRef = useRef<NodeJS.Timeout>();
@@ -27,8 +27,11 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
     isCheckingRef.current = true;
 
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+
       if (error) {
         if (AuthErrorHandler.isAuthError(error)) {
           await AuthErrorHandler.handleAuthError(error);
@@ -45,10 +48,10 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
       const refreshThreshold = preemptiveRefresh * 60; // Convert to seconds
 
       if (timeUntilExpiry < refreshThreshold) {
-        console.log('Token expiring soon, refreshing session...');
-        
+        console.log("Token expiring soon, refreshing session...");
+
         const { error: refreshError } = await supabase.auth.refreshSession();
-        
+
         if (refreshError) {
           if (AuthErrorHandler.isAuthError(refreshError)) {
             await AuthErrorHandler.handleAuthError(refreshError);
@@ -56,7 +59,7 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
         }
       }
     } catch (error) {
-      console.error('Session monitor error:', error);
+      console.error("Session monitor error:", error);
       if (AuthErrorHandler.isAuthError(error)) {
         await AuthErrorHandler.handleAuthError(error);
       }
@@ -73,8 +76,8 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
 
     // Set up periodic checks
     intervalRef.current = setInterval(
-      checkAndRefreshSession, 
-      checkInterval * 60 * 1000
+      checkAndRefreshSession,
+      checkInterval * 60 * 1000,
     );
 
     return () => {
@@ -92,13 +95,13 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
       lastActivityRef.current = Date.now();
     };
 
-    const events = ['mousemove', 'keydown', 'click'];
+    const events = ["mousemove", "keydown", "click"];
     events.forEach((e) => window.addEventListener(e, resetActivity));
 
     inactivityRef.current = setInterval(() => {
       const now = Date.now();
       if (now - lastActivityRef.current > inactivityTimeout * 60 * 1000) {
-        AuthErrorHandler.handleAuthError({ message: 'session_inactive' });
+        AuthErrorHandler.handleAuthError({ message: "session_inactive" });
       }
     }, 60 * 1000);
 
@@ -109,6 +112,6 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
   }, [enabled, inactivityTimeout]);
 
   return {
-    checkSession: checkAndRefreshSession
+    checkSession: checkAndRefreshSession,
   };
 }

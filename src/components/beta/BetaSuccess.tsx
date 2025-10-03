@@ -1,19 +1,27 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { CheckCircle, Linkedin, Download, RotateCcw } from 'lucide-react';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, Linkedin, Download, RotateCcw } from "lucide-react";
 
 interface BetaSuccessProps {
   onReset: () => void;
   className?: string;
 }
 
-export function BetaSuccess({ onReset, className = '' }: BetaSuccessProps) {
+export function BetaSuccess({ onReset, className = "" }: BetaSuccessProps) {
   return (
-    <div className={`text-center space-y-6 py-8 ${className}`} role="alert" aria-live="polite">
+    <div
+      className={`text-center space-y-6 py-8 ${className}`}
+      role="alert"
+      aria-live="polite"
+    >
       {/* Success Icon */}
       <div className="flex justify-center">
         <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-          <CheckCircle className="h-8 w-8 text-white" aria-hidden="true" focusable="false" />
+          <CheckCircle
+            className="h-8 w-8 text-white"
+            aria-hidden="true"
+            focusable="false"
+          />
         </div>
       </div>
 
@@ -23,13 +31,16 @@ export function BetaSuccess({ onReset, className = '' }: BetaSuccessProps) {
           Você está na lista!
         </h2>
         <p className="text-muted-foreground leading-relaxed max-w-md mx-auto">
-          Parabéns! Você agora tem acesso prioritário ao AssistJur.IA. Em breve entraremos em contato com detalhes exclusivos sobre a plataforma.
+          Parabéns! Você agora tem acesso prioritário ao AssistJur.IA. Em breve
+          entraremos em contato com detalhes exclusivos sobre a plataforma.
         </p>
       </div>
 
       {/* Benefit Highlights */}
       <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl p-4 border border-primary/10">
-        <h3 className="font-semibold text-foreground mb-2">O que vem por aí:</h3>
+        <h3 className="font-semibold text-foreground mb-2">
+          O que vem por aí:
+        </h3>
         <ul className="text-sm text-muted-foreground space-y-1 text-left max-w-xs mx-auto">
           <li>• Demonstração personalizada</li>
           <li>• Acesso antecipado à plataforma</li>
@@ -44,33 +55,41 @@ export function BetaSuccess({ onReset, className = '' }: BetaSuccessProps) {
           className="flex items-center space-x-2 text-white hover:text-primary bg-primary hover:bg-white transition-colors"
           onClick={() => {
             try {
-              window.open('https://www.linkedin.com/company/assistjuria', '_blank', 'noopener,noreferrer');
+              window.open(
+                "https://www.linkedin.com/company/assistjuria",
+                "_blank",
+                "noopener,noreferrer",
+              );
             } catch (error) {
-              console.error('Erro ao abrir LinkedIn:', error);
+              console.error("Erro ao abrir LinkedIn:", error);
             }
           }}
         >
           <Linkedin className="w-4 h-4" aria-hidden="true" focusable="false" />
           <span>Seguir no LinkedIn</span>
         </Button>
-        
+
         <Button
-          variant="outline" 
+          variant="outline"
           className="gap-2 border-primary/30 hover:bg-primary/5"
           onClick={() => {
             try {
-              const link = document.createElement('a');
-              link.href = '/whitepaper-assistjur.pdf';
-              link.download = 'assistjur-whitepaper.pdf';
-              link.target = '_blank';
-              link.rel = 'noopener noreferrer';
+              const link = document.createElement("a");
+              link.href = "/whitepaper-assistjur.pdf";
+              link.download = "assistjur-whitepaper.pdf";
+              link.target = "_blank";
+              link.rel = "noopener noreferrer";
               document.body.appendChild(link);
               link.click();
               document.body.removeChild(link);
             } catch (error) {
-              console.error('Erro ao baixar whitepaper:', error);
+              console.error("Erro ao baixar whitepaper:", error);
               // Fallback para abrir em nova aba
-              window.open('/whitepaper-assistjur.pdf', '_blank', 'noopener,noreferrer');
+              window.open(
+                "/whitepaper-assistjur.pdf",
+                "_blank",
+                "noopener,noreferrer",
+              );
             }
           }}
         >

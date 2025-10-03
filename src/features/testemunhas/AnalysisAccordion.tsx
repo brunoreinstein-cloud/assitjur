@@ -1,17 +1,17 @@
-import React from 'react';
+import React from "react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 interface Evidencia {
   tipo?: string;
   descricao: string;
-  relevancia?: 'alta' | 'media' | 'baixa';
+  relevancia?: "alta" | "media" | "baixa";
 }
 
 interface Secao {
@@ -30,15 +30,30 @@ interface AnalysisAccordionProps {
   textoOriginal?: string;
 }
 
-export function AnalysisAccordion({ secoes, textoOriginal }: AnalysisAccordionProps) {
+export function AnalysisAccordion({
+  secoes,
+  textoOriginal,
+}: AnalysisAccordionProps) {
   const getRelevanceBadge = (relevancia?: string) => {
     switch (relevancia) {
-      case 'alta':
-        return <Badge variant="destructive" className="text-xs">Alta</Badge>;
-      case 'media':
-        return <Badge variant="secondary" className="text-xs">Média</Badge>;
-      case 'baixa':
-        return <Badge variant="outline" className="text-xs">Baixa</Badge>;
+      case "alta":
+        return (
+          <Badge variant="destructive" className="text-xs">
+            Alta
+          </Badge>
+        );
+      case "media":
+        return (
+          <Badge variant="secondary" className="text-xs">
+            Média
+          </Badge>
+        );
+      case "baixa":
+        return (
+          <Badge variant="outline" className="text-xs">
+            Baixa
+          </Badge>
+        );
       default:
         return null;
     }
@@ -57,7 +72,8 @@ export function AnalysisAccordion({ secoes, textoOriginal }: AnalysisAccordionPr
                 <span className="font-medium">{secao.titulo}</span>
                 {secao.evidencias && secao.evidencias.length > 0 && (
                   <Badge variant="outline" className="text-xs">
-                    {secao.evidencias.length} evidência{secao.evidencias.length > 1 ? 's' : ''}
+                    {secao.evidencias.length} evidência
+                    {secao.evidencias.length > 1 ? "s" : ""}
                   </Badge>
                 )}
               </div>
@@ -79,15 +95,21 @@ export function AnalysisAccordion({ secoes, textoOriginal }: AnalysisAccordionPr
                     </h5>
                     <div className="grid gap-2">
                       {secao.evidencias.map((evidencia, evidenciaIndex) => {
-                        if (typeof evidencia === 'string') {
+                        if (typeof evidencia === "string") {
                           return (
-                            <Card key={evidenciaIndex} className="p-3 bg-muted/30">
+                            <Card
+                              key={evidenciaIndex}
+                              className="p-3 bg-muted/30"
+                            >
                               <p className="text-sm">{evidencia}</p>
                             </Card>
                           );
                         } else {
                           return (
-                            <Card key={evidenciaIndex} className="p-3 bg-muted/30">
+                            <Card
+                              key={evidenciaIndex}
+                              className="p-3 bg-muted/30"
+                            >
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex-1">
                                   {evidencia.tipo && (
@@ -95,9 +117,12 @@ export function AnalysisAccordion({ secoes, textoOriginal }: AnalysisAccordionPr
                                       {evidencia.tipo}
                                     </div>
                                   )}
-                                  <p className="text-sm">{evidencia.descricao}</p>
+                                  <p className="text-sm">
+                                    {evidencia.descricao}
+                                  </p>
                                 </div>
-                                {evidencia.relevancia && getRelevanceBadge(evidencia.relevancia)}
+                                {evidencia.relevancia &&
+                                  getRelevanceBadge(evidencia.relevancia)}
                               </div>
                             </Card>
                           );
@@ -118,12 +143,16 @@ export function AnalysisAccordion({ secoes, textoOriginal }: AnalysisAccordionPr
                       )}
                       {secao.metadados.confiabilidade && (
                         <span>
-                          <strong>Confiabilidade:</strong> {Math.round(secao.metadados.confiabilidade * 100)}%
+                          <strong>Confiabilidade:</strong>{" "}
+                          {Math.round(secao.metadados.confiabilidade * 100)}%
                         </span>
                       )}
                       {secao.metadados.timestamp && (
                         <span>
-                          <strong>Processado:</strong> {new Date(secao.metadados.timestamp).toLocaleString('pt-BR')}
+                          <strong>Processado:</strong>{" "}
+                          {new Date(secao.metadados.timestamp).toLocaleString(
+                            "pt-BR",
+                          )}
                         </span>
                       )}
                     </div>

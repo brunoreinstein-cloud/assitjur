@@ -1,13 +1,25 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { 
-  Users, 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  Users,
   Scale,
   AlertTriangle,
   FileText,
@@ -18,10 +30,10 @@ import {
   Filter,
   X,
   Info,
-  Settings
+  Settings,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { 
+import {
   useMapaTestemunhasStore,
   selectActiveTab,
   selectProcessos,
@@ -32,7 +44,7 @@ import {
   selectErrorMessage,
   selectLastUpdate,
   selectProcessoFilters,
-  selectTestemunhaFilters
+  selectTestemunhaFilters,
 } from "@/lib/store/mapa-testemunhas";
 import { ProcessoTable } from "@/components/mapa-testemunhas/ProcessoTable";
 import { TestemunhaTable } from "@/components/mapa-testemunhas/TestemunhaTable";
@@ -65,7 +77,7 @@ import { ContextBreadcrumb } from "@/components/mapa-testemunhas/ContextBreadcru
 // Updated types to match mapa-testemunhas structure
 type Processo = PorProcesso;
 type Testemunha = PorTestemunha;
-type TabType = 'processos' | 'testemunhas';
+type TabType = "processos" | "testemunhas";
 
 interface StatsData {
   totalProcessos: number;
@@ -81,7 +93,7 @@ const MapaPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading } = useAuth();
   const { toast } = useToast();
-  
+
   // Zustand selectors - optimized for re-rendering
   const activeTab = useMapaTestemunhasStore(selectActiveTab);
   const processos = useMapaTestemunhasStore(selectProcessos);
@@ -99,28 +111,38 @@ const MapaPage = () => {
   const isLoadingRef = useRef(false);
   const isFirstLoadRef = useRef(true);
   const hasAppliedUrlParams = useRef(false);
-  
+
   // Filter drawer state
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [isDiagnosticOpen, setIsDiagnosticOpen] = useState(false);
-  
+
   // Chat selectors
-  const chatResult = useMapaTestemunhasStore(s => s.chatResult);
-  const chatStatus = useMapaTestemunhasStore(s => s.chatStatus);
-  
+  const chatResult = useMapaTestemunhasStore((s) => s.chatResult);
+  const chatStatus = useMapaTestemunhasStore((s) => s.chatStatus);
+
   // Individual setters
-  const setActiveTab = useMapaTestemunhasStore(s => s.setActiveTab);
-  const setProcessos = useMapaTestemunhasStore(s => s.setProcessos);
-  const setTestemunhas = useMapaTestemunhasStore(s => s.setTestemunhas);
-  const setIsLoading = useMapaTestemunhasStore(s => s.setIsLoading);
-  const setLastUpdate = useMapaTestemunhasStore(s => s.setLastUpdate);
-  const setError = useMapaTestemunhasStore(s => s.setError);
-  const setIsImportModalOpen = useMapaTestemunhasStore(s => s.setIsImportModalOpen);
-  const loadViews = useMapaTestemunhasStore(s => s.loadViews);
-  const setProcessoFilters = useMapaTestemunhasStore(s => s.setProcessoFilters);
-  const setTestemunhaFilters = useMapaTestemunhasStore(s => s.setTestemunhaFilters);
-  const setSelectedProcesso = useMapaTestemunhasStore(s => s.setSelectedProcesso);
-  const setSelectedTestemunha = useMapaTestemunhasStore(s => s.setSelectedTestemunha);
+  const setActiveTab = useMapaTestemunhasStore((s) => s.setActiveTab);
+  const setProcessos = useMapaTestemunhasStore((s) => s.setProcessos);
+  const setTestemunhas = useMapaTestemunhasStore((s) => s.setTestemunhas);
+  const setIsLoading = useMapaTestemunhasStore((s) => s.setIsLoading);
+  const setLastUpdate = useMapaTestemunhasStore((s) => s.setLastUpdate);
+  const setError = useMapaTestemunhasStore((s) => s.setError);
+  const setIsImportModalOpen = useMapaTestemunhasStore(
+    (s) => s.setIsImportModalOpen,
+  );
+  const loadViews = useMapaTestemunhasStore((s) => s.loadViews);
+  const setProcessoFilters = useMapaTestemunhasStore(
+    (s) => s.setProcessoFilters,
+  );
+  const setTestemunhaFilters = useMapaTestemunhasStore(
+    (s) => s.setTestemunhaFilters,
+  );
+  const setSelectedProcesso = useMapaTestemunhasStore(
+    (s) => s.setSelectedProcesso,
+  );
+  const setSelectedTestemunha = useMapaTestemunhasStore(
+    (s) => s.setSelectedTestemunha,
+  );
 
   // Stable state
   const [totalProcessos, setTotalProcessos] = useState(0);
@@ -128,12 +150,12 @@ const MapaPage = () => {
 
   // Helper function for date formatting
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -142,41 +164,48 @@ const MapaPage = () => {
     // Validar arrays e filtrar com fallback seguro
     const processosValidos = Array.isArray(processos) ? processos : [];
     const testemunhasValidas = Array.isArray(testemunhas) ? testemunhas : [];
-    
-    const processosAltoRisco = processosValidos.filter(p => 
-      p?.classificacao_final === "Risco Alto" || 
-      p?.classificacao_final === "Alto"
+
+    const processosAltoRisco = processosValidos.filter(
+      (p) =>
+        p?.classificacao_final === "Risco Alto" ||
+        p?.classificacao_final === "Alto",
     ).length;
-    
-    const testemunhasAmbosPolos = testemunhasValidas.filter(t => 
-      t?.foi_testemunha_em_ambos_polos === true
+
+    const testemunhasAmbosPolos = testemunhasValidas.filter(
+      (t) => t?.foi_testemunha_em_ambos_polos === true,
     ).length;
-    
+
     // Função robusta de cálculo de porcentagem
     const pct = (a: number, b: number): number => {
       if (!isFinite(a) || !isFinite(b) || b <= 0) return 0;
       const result = Math.round((a / b) * 100);
       return isFinite(result) ? result : 0;
     };
-    
+
     // Garantir que totais sejam números válidos
-    const totalP = isFinite(totalProcessos) && totalProcessos > 0 ? totalProcessos : processosValidos.length;
-    const totalT = isFinite(totalTestemunhas) && totalTestemunhas > 0 ? totalTestemunhas : testemunhasValidas.length;
-    
-    return { 
-      totalProcessos: totalP, 
-      totalTestemunhas: totalT, 
-      processosAltoRisco, 
+    const totalP =
+      isFinite(totalProcessos) && totalProcessos > 0
+        ? totalProcessos
+        : processosValidos.length;
+    const totalT =
+      isFinite(totalTestemunhas) && totalTestemunhas > 0
+        ? totalTestemunhas
+        : testemunhasValidas.length;
+
+    return {
+      totalProcessos: totalP,
+      totalTestemunhas: totalT,
+      processosAltoRisco,
       testemunhasAmbosPolos,
-      pctProcAlto: pct(processosAltoRisco, totalP), 
-      pctAmbos: pct(testemunhasAmbosPolos, totalT) 
+      pctProcAlto: pct(processosAltoRisco, totalP),
+      pctAmbos: pct(testemunhasAmbosPolos, totalT),
     };
   }, [processos, testemunhas, totalProcessos, totalTestemunhas]);
 
   const computeStatus = (items: any[]): DataStatus => {
-    if (isLoading) return 'loading';
-    if (hasError) return navigator.onLine ? 'error' : 'offline';
-    return items.length ? 'success' : 'empty';
+    if (isLoading) return "loading";
+    if (hasError) return navigator.onLine ? "error" : "offline";
+    return items.length ? "success" : "empty";
   };
 
   const processoStatus = computeStatus(processos);
@@ -185,7 +214,7 @@ const MapaPage = () => {
   // Authentication guard - improved with loading check
   useEffect(() => {
     if (!loading && !user) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
   }, [user, loading, navigate]);
@@ -199,64 +228,81 @@ const MapaPage = () => {
   // URL synchronization - runs only once on mount
   useEffect(() => {
     if (hasAppliedUrlParams.current) return;
-    
-    const tab = searchParams.get('tab') as TabType;
-    const nome = searchParams.get('nome');
-    const cnj = searchParams.get('cnj');
-    const reclamante = searchParams.get('reclamante');
-    
+
+    const tab = searchParams.get("tab") as TabType;
+    const nome = searchParams.get("nome");
+    const cnj = searchParams.get("cnj");
+    const reclamante = searchParams.get("reclamante");
+
     // Set active tab from URL
-    if (tab && (tab === 'processos' || tab === 'testemunhas') && tab !== activeTab) {
+    if (
+      tab &&
+      (tab === "processos" || tab === "testemunhas") &&
+      tab !== activeTab
+    ) {
       setActiveTab(tab);
     }
-    
+
     // Apply URL params as initial filters (before first load)
     if (nome) {
       setTestemunhaFilters({ search: decodeURIComponent(nome) });
     }
-    
+
     if (cnj) {
       setProcessoFilters({ search: decodeURIComponent(cnj) });
     }
-    
+
     if (reclamante) {
       setProcessoFilters({ search: decodeURIComponent(reclamante) });
     }
-    
+
     // Mark as applied and clean URL
     if (nome || cnj || reclamante) {
       hasAppliedUrlParams.current = true;
       const newParams = new URLSearchParams(searchParams);
-      newParams.delete('nome');
-      newParams.delete('cnj');
-      newParams.delete('reclamante');
+      newParams.delete("nome");
+      newParams.delete("cnj");
+      newParams.delete("reclamante");
       setSearchParams(newParams, { replace: true });
     }
   }, []);
-  
+
   // Separate effect for data-dependent selections (runs after data loads)
   useEffect(() => {
     if (!hasAppliedUrlParams.current || isLoadingRef.current) return;
     if (processos.length === 0 && testemunhas.length === 0) return;
-    
+
     // Check if we have a search filter that matches loaded data
     if (testemunhaFilters.search && testemunhas.length > 0) {
-      const testemunha = testemunhas.find(t => 
-        t.nome_testemunha?.toLowerCase() === testemunhaFilters.search?.toLowerCase()
+      const testemunha = testemunhas.find(
+        (t) =>
+          t.nome_testemunha?.toLowerCase() ===
+          testemunhaFilters.search?.toLowerCase(),
       );
-      if (testemunha && !useMapaTestemunhasStore.getState().selectedTestemunha) {
+      if (
+        testemunha &&
+        !useMapaTestemunhasStore.getState().selectedTestemunha
+      ) {
         setSelectedTestemunha(testemunha);
-        toast({ title: "Testemunha selecionada", description: testemunha.nome_testemunha });
+        toast({
+          title: "Testemunha selecionada",
+          description: testemunha.nome_testemunha,
+        });
       }
     }
-    
+
     if (processoFilters.search && processos.length > 0) {
-      const processo = processos.find(p => 
-        p.cnj === processoFilters.search || p.numero_cnj === processoFilters.search
+      const processo = processos.find(
+        (p) =>
+          p.cnj === processoFilters.search ||
+          p.numero_cnj === processoFilters.search,
       );
       if (processo && !useMapaTestemunhasStore.getState().selectedProcesso) {
         setSelectedProcesso(processo);
-        toast({ title: "Processo selecionado", description: processo.cnj || processo.numero_cnj });
+        toast({
+          title: "Processo selecionado",
+          description: processo.cnj || processo.numero_cnj,
+        });
       }
     }
   }, [processos.length, testemunhas.length]);
@@ -265,7 +311,7 @@ const MapaPage = () => {
     const newTab = value as TabType;
     setActiveTab(newTab);
     setSearchParams({ tab: newTab }, { replace: true });
-    
+
     // Limpar seleções ao trocar de aba
     setSelectedProcesso(null);
     setSelectedTestemunha(null);
@@ -293,29 +339,50 @@ const MapaPage = () => {
     setError(false);
 
     try {
-      const currentProcessoFilters = useMapaTestemunhasStore.getState().processoFilters;
-      const currentTestemunhaFilters = useMapaTestemunhasStore.getState().testemunhaFilters;
-      
+      const currentProcessoFilters =
+        useMapaTestemunhasStore.getState().processoFilters;
+      const currentTestemunhaFilters =
+        useMapaTestemunhasStore.getState().testemunhaFilters;
+
       const [processosResult, testemunhasResult] = await Promise.all([
-        fetchProcessos({ page: 1, limit: 100, filters: currentProcessoFilters }),
-        fetchTestemunhas({ page: 1, limit: 100, filters: currentTestemunhaFilters })
+        fetchProcessos({
+          page: 1,
+          limit: 100,
+          filters: currentProcessoFilters,
+        }),
+        fetchTestemunhas({
+          page: 1,
+          limit: 100,
+          filters: currentTestemunhaFilters,
+        }),
       ]);
 
-      if (processoController.signal.aborted || testemunhaController.signal.aborted) {
+      if (
+        processoController.signal.aborted ||
+        testemunhaController.signal.aborted
+      ) {
         return;
       }
 
       // Validar e normalizar dados antes de atualizar estado
-      const processosData = Array.isArray(processosResult.data) ? processosResult.data : [];
-      const testemunhasData = Array.isArray(testemunhasResult.data) ? testemunhasResult.data : [];
-      
+      const processosData = Array.isArray(processosResult.data)
+        ? processosResult.data
+        : [];
+      const testemunhasData = Array.isArray(testemunhasResult.data)
+        ? testemunhasResult.data
+        : [];
+
       setProcessos(processosData);
       setTestemunhas(testemunhasData);
-      
+
       // Usar total da API ou length dos dados como fallback
-      const totalP = isFinite(processosResult.total) ? processosResult.total : processosData.length;
-      const totalT = isFinite(testemunhasResult.total) ? testemunhasResult.total : testemunhasData.length;
-      
+      const totalP = isFinite(processosResult.total)
+        ? processosResult.total
+        : processosData.length;
+      const totalT = isFinite(testemunhasResult.total)
+        ? testemunhasResult.total
+        : testemunhasData.length;
+
       setTotalProcessos(totalP);
       setTotalTestemunhas(totalT);
 
@@ -332,9 +399,10 @@ const MapaPage = () => {
         isFirstLoadRef.current = false;
       }
     } catch (error) {
-      if ((error as any)?.name === 'AbortError') return;
-      
-      const message = error instanceof Error ? error.message : 'Erro ao carregar dados';
+      if ((error as any)?.name === "AbortError") return;
+
+      const message =
+        error instanceof Error ? error.message : "Erro ao carregar dados";
       setError(true, message);
       toast({
         title: "Falha na conexão",
@@ -342,7 +410,10 @@ const MapaPage = () => {
         variant: "destructive",
       });
     } finally {
-      if (!processoController.signal.aborted && !testemunhaController.signal.aborted) {
+      if (
+        !processoController.signal.aborted &&
+        !testemunhaController.signal.aborted
+      ) {
         isLoadingRef.current = false;
         setIsLoading(false);
       }
@@ -359,7 +430,7 @@ const MapaPage = () => {
       testemunhaAbortRef.current?.abort();
     };
   }, [user, loadData]);
-  
+
   // Reload only when debounced filters change (after initial load)
   useEffect(() => {
     if (!isFirstLoadRef.current && user) {
@@ -370,25 +441,26 @@ const MapaPage = () => {
   // Ctrl+F shortcut to open filter drawer
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+      if ((e.ctrlKey || e.metaKey) && e.key === "f") {
         e.preventDefault();
         setIsFilterDrawerOpen(true);
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   // Helper to render active filter chips
   const getActiveFilterChips = () => {
-    const filters = activeTab === 'processos' ? processoFilters : testemunhaFilters;
+    const filters =
+      activeTab === "processos" ? processoFilters : testemunhaFilters;
     const entries = Object.entries(filters);
-    
+
     if (entries.length === 0) return null;
 
     const handleRemoveFilter = (key: string) => {
-      if (activeTab === 'processos') {
+      if (activeTab === "processos") {
         const newFilters = { ...processoFilters };
         delete newFilters[key as keyof typeof processoFilters];
         setProcessoFilters(newFilters);
@@ -404,7 +476,9 @@ const MapaPage = () => {
         <span className="text-sm text-muted-foreground">Filtros ativos:</span>
         {entries.map(([key, value]) => (
           <Badge key={key} variant="secondary" className="gap-1">
-            <span className="text-xs">{key}: {String(value)}</span>
+            <span className="text-xs">
+              {key}: {String(value)}
+            </span>
             <button
               onClick={() => handleRemoveFilter(key)}
               className="ml-1 hover:bg-secondary-foreground/10 rounded-full p-0.5"
@@ -421,8 +495,13 @@ const MapaPage = () => {
   // Show loading during auth check
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" aria-live="polite">
-        <div className="animate-pulse text-muted-foreground">Verificando autenticação...</div>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        aria-live="polite"
+      >
+        <div className="animate-pulse text-muted-foreground">
+          Verificando autenticação...
+        </div>
       </div>
     );
   }
@@ -456,13 +535,14 @@ const MapaPage = () => {
                 <div className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" aria-hidden="true" />
                   <span>
-                    Última atualização: {lastUpdate ? formatDate(lastUpdate) : '—'}
+                    Última atualização:{" "}
+                    {lastUpdate ? formatDate(lastUpdate) : "—"}
                   </span>
                 </div>
                 <Separator orientation="vertical" className="h-4" />
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4" aria-hidden="true" />
-                  <span>{hasError ? 'Dados mock' : 'Dados em tempo real'}</span>
+                  <span>{hasError ? "Dados mock" : "Dados em tempo real"}</span>
                 </div>
               </div>
             </div>
@@ -478,7 +558,10 @@ const MapaPage = () => {
                 Importar Dados
               </Button>
               {DebugMode.isEnabled() && (
-                <Sheet open={isDiagnosticOpen} onOpenChange={setIsDiagnosticOpen}>
+                <Sheet
+                  open={isDiagnosticOpen}
+                  onOpenChange={setIsDiagnosticOpen}
+                >
                   <SheetTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-2">
                       <Settings className="h-4 w-4" />
@@ -500,9 +583,13 @@ const MapaPage = () => {
               )}
               <DebugToggle />
               <MaskPIISwitch />
-              <ExportCsvButton 
+              <ExportCsvButton
                 data={activeTab === "processos" ? processos : testemunhas}
-                fileName={activeTab === "processos" ? "por_processo.csv" : "por_testemunha.csv"}
+                fileName={
+                  activeTab === "processos"
+                    ? "por_processo.csv"
+                    : "por_testemunha.csv"
+                }
               />
             </div>
           </div>
@@ -531,14 +618,21 @@ const MapaPage = () => {
                 <Card className="rounded-2xl border-border/50 hover:shadow-md transition-shadow cursor-help">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <Scale className="h-4 w-4 text-primary" aria-hidden="true" />
+                      <Scale
+                        className="h-4 w-4 text-primary"
+                        aria-hidden="true"
+                      />
                       Total de Processos
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold text-primary">{stats.totalProcessos.toLocaleString('pt-BR')}</div>
+                    <div className="text-3xl font-bold text-primary">
+                      {stats.totalProcessos.toLocaleString("pt-BR")}
+                    </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Processos cadastrados {processos.length < stats.totalProcessos && `(exibindo ${processos.length})`}
+                      Processos cadastrados{" "}
+                      {processos.length < stats.totalProcessos &&
+                        `(exibindo ${processos.length})`}
                     </p>
                   </CardContent>
                 </Card>
@@ -553,20 +647,30 @@ const MapaPage = () => {
                 <Card className="rounded-2xl border-border/50 hover:shadow-md transition-shadow cursor-help">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <Users className="h-4 w-4 text-emerald-600" aria-hidden="true" />
+                      <Users
+                        className="h-4 w-4 text-emerald-600"
+                        aria-hidden="true"
+                      />
                       Total de Testemunhas
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold text-emerald-600">{stats.totalTestemunhas.toLocaleString('pt-BR')}</div>
+                    <div className="text-3xl font-bold text-emerald-600">
+                      {stats.totalTestemunhas.toLocaleString("pt-BR")}
+                    </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Testemunhas identificadas {testemunhas.length < stats.totalTestemunhas && `(exibindo ${testemunhas.length})`}
+                      Testemunhas identificadas{" "}
+                      {testemunhas.length < stats.totalTestemunhas &&
+                        `(exibindo ${testemunhas.length})`}
                     </p>
                   </CardContent>
                 </Card>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Total de testemunhas únicas identificadas em todos os processos</p>
+                <p>
+                  Total de testemunhas únicas identificadas em todos os
+                  processos
+                </p>
               </TooltipContent>
             </Tooltip>
 
@@ -575,23 +679,33 @@ const MapaPage = () => {
                 <Card className="rounded-2xl border-border/50 hover:shadow-md transition-shadow cursor-help">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-destructive" aria-hidden="true" />
+                      <AlertTriangle
+                        className="h-4 w-4 text-destructive"
+                        aria-hidden="true"
+                      />
                       Processos de Alto Risco
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center gap-2">
-                      <div className="text-3xl font-bold text-destructive">{stats.processosAltoRisco}</div>
+                      <div className="text-3xl font-bold text-destructive">
+                        {stats.processosAltoRisco}
+                      </div>
                       <Badge variant="destructive" className="text-xs">
                         {stats.pctProcAlto}%
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">Requerem atenção especial</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Requerem atenção especial
+                    </p>
                   </CardContent>
                 </Card>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Processos classificados como alto risco que necessitam atenção imediata</p>
+                <p>
+                  Processos classificados como alto risco que necessitam atenção
+                  imediata
+                </p>
               </TooltipContent>
             </Tooltip>
 
@@ -600,23 +714,33 @@ const MapaPage = () => {
                 <Card className="rounded-2xl border-border/50 hover:shadow-md transition-shadow cursor-help">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-orange-500" aria-hidden="true" />
+                      <TrendingUp
+                        className="h-4 w-4 text-orange-500"
+                        aria-hidden="true"
+                      />
                       Atua nos Dois Polos
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center gap-2">
-                      <div className="text-3xl font-bold text-orange-600">{stats.testemunhasAmbosPolos}</div>
+                      <div className="text-3xl font-bold text-orange-600">
+                        {stats.testemunhasAmbosPolos}
+                      </div>
                       <Badge variant="secondary" className="text-xs">
                         {stats.pctAmbos}%
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">Testemunhas em ambos os polos</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Testemunhas em ambos os polos
+                    </p>
                   </CardContent>
                 </Card>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Testemunhas que participaram tanto como testemunha da reclamante quanto da ré</p>
+                <p>
+                  Testemunhas que participaram tanto como testemunha da
+                  reclamante quanto da ré
+                </p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -629,21 +753,24 @@ const MapaPage = () => {
             <Alert className="inline-flex items-center gap-2 py-2 px-3 w-auto border-violet-200 bg-violet-50">
               <Info className="h-4 w-4 text-violet-600" />
               <AlertDescription className="text-xs text-violet-900">
-                IA Assistiva LGPD Compliant.{' '}
-                <a href="/privacidade" className="underline font-medium hover:text-violet-700">
+                IA Assistiva LGPD Compliant.{" "}
+                <a
+                  href="/privacidade"
+                  className="underline font-medium hover:text-violet-700"
+                >
                   Saiba mais
                 </a>
               </AlertDescription>
             </Alert>
           </div>
-          
+
           <ChatBar />
           {chatResult && (
             <div className="mt-6">
               <ResultBlocks blocks={chatResult} />
             </div>
           )}
-          {chatStatus === 'loading' && (
+          {chatStatus === "loading" && (
             <div className="mt-6">
               <LoadingHints />
             </div>
@@ -655,11 +782,17 @@ const MapaPage = () => {
           <Tabs value={activeTab} onValueChange={handleTabChange}>
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
               <TabsList className="grid w-full lg:w-auto grid-cols-2">
-                <TabsTrigger value="processos" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="processos"
+                  className="flex items-center gap-2"
+                >
                   <Scale className="h-4 w-4" aria-hidden="true" />
                   Por Processo
                 </TabsTrigger>
-                <TabsTrigger value="testemunhas" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="testemunhas"
+                  className="flex items-center gap-2"
+                >
                   <Users className="h-4 w-4" aria-hidden="true" />
                   Por Testemunha
                 </TabsTrigger>
@@ -679,7 +812,7 @@ const MapaPage = () => {
                 dataCount={processos.length}
                 dataType="processos"
               />
-              
+
               {/* Filter Button + Active Chips */}
               <div className="flex flex-col gap-3">
                 <Button
@@ -696,7 +829,7 @@ const MapaPage = () => {
                 {getActiveFilterChips()}
               </div>
 
-              {processoStatus !== 'success' ? (
+              {processoStatus !== "success" ? (
                 <DataState status={processoStatus} onRetry={loadData} />
               ) : (
                 <ProcessoTable data={processos} />
@@ -712,7 +845,7 @@ const MapaPage = () => {
                 dataCount={testemunhas.length}
                 dataType="testemunhas"
               />
-              
+
               {/* Filter Button + Active Chips */}
               <div className="flex flex-col gap-3">
                 <Button
@@ -729,10 +862,14 @@ const MapaPage = () => {
                 {getActiveFilterChips()}
               </div>
 
-              {testemunhaStatus !== 'success' ? (
+              {testemunhaStatus !== "success" ? (
                 <DataState status={testemunhaStatus} onRetry={loadData} />
               ) : (
-                <TestemunhaTable data={testemunhas} status={testemunhaStatus} onRetry={loadData} />
+                <TestemunhaTable
+                  data={testemunhas}
+                  status={testemunhaStatus}
+                  onRetry={loadData}
+                />
               )}
             </TabsContent>
           </Tabs>
@@ -741,7 +878,10 @@ const MapaPage = () => {
         {/* Modals and Drawers */}
         <DetailDrawer />
         <ImportModal />
-        <FilterDrawer open={isFilterDrawerOpen} onOpenChange={setIsFilterDrawerOpen} />
+        <FilterDrawer
+          open={isFilterDrawerOpen}
+          onOpenChange={setIsFilterDrawerOpen}
+        />
       </div>
     </div>
   );

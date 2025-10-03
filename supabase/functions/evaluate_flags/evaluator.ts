@@ -1,4 +1,4 @@
-import { createHash } from 'crypto';
+import { createHash } from "crypto";
 
 export interface FlagRow {
   flag_id: string;
@@ -11,11 +11,17 @@ export interface FlagRow {
 }
 
 export function hashPercentage(flagId: string, userId: string): number {
-  const hash = createHash('sha256').update(flagId + userId).digest('hex');
+  const hash = createHash("sha256")
+    .update(flagId + userId)
+    .digest("hex");
   return parseInt(hash.slice(0, 8), 16) % 100;
 }
 
-export function inRollout(flagId: string, userId: string, rollout: number): boolean {
+export function inRollout(
+  flagId: string,
+  userId: string,
+  rollout: number,
+): boolean {
   if (rollout >= 100) return true;
   return hashPercentage(flagId, userId) < rollout;
 }
@@ -36,10 +42,18 @@ export function evaluateFlags(
     if (killed.includes(flag.flag_id)) {
       enabled = false;
     }
-    if (enabled && typeof flag.rollout_percentage === 'number' && flag.rollout_percentage < 100) {
+    if (
+      enabled &&
+      typeof flag.rollout_percentage === "number" &&
+      flag.rollout_percentage < 100
+    ) {
       enabled = inRollout(flag.flag_id, userId, flag.rollout_percentage);
     }
-    if (enabled && Array.isArray(flag.user_segments) && flag.user_segments.length > 0) {
+    if (
+      enabled &&
+      Array.isArray(flag.user_segments) &&
+      flag.user_segments.length > 0
+    ) {
       const inter = segments.filter((s) => flag.user_segments!.includes(s));
       enabled = inter.length > 0;
     }

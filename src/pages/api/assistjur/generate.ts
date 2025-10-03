@@ -71,12 +71,14 @@ export default async function handler(req: Request): Promise<Response> {
       const content = response.choices[0]?.message?.content || "";
       parsed = JSON.parse(content) as GenerateResponse;
     } catch {
-      const content = response.choices[0]?.message?.content || "Erro na geração";
+      const content =
+        response.choices[0]?.message?.content || "Erro na geração";
       parsed = {
         promptPrincipal: content,
         variacoes: { compacta: "", especialista: "" },
         checklist: [],
-        avisoLegal: "Documento produzido com apoio do AssistJur.IA. Validação nos autos é obrigatória.",
+        avisoLegal:
+          "Documento produzido com apoio do AssistJur.IA. Validação nos autos é obrigatória.",
       };
     }
 

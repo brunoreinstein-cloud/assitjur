@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { RotateCcw } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { RotateCcw } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface RestoreButtonProps {
   onSuccess?: () => void;
@@ -20,7 +20,7 @@ export function RestoreButton({ onSuccess, className }: RestoreButtonProps) {
       toast({
         title: "Erro",
         description: "Organização não encontrada",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -28,16 +28,16 @@ export function RestoreButton({ onSuccess, className }: RestoreButtonProps) {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.rpc('rpc_restore_all_processos', {
-        p_org_id: profile.organization_id
+      const { data, error } = await supabase.rpc("rpc_restore_all_processos", {
+        p_org_id: profile.organization_id,
       });
 
       if (error) throw error;
 
-      const result = data as unknown as { 
-        success: boolean; 
-        restored_count: number; 
-        message: string 
+      const result = data as unknown as {
+        success: boolean;
+        restored_count: number;
+        message: string;
       };
 
       if (result.success) {
@@ -49,13 +49,15 @@ export function RestoreButton({ onSuccess, className }: RestoreButtonProps) {
       } else {
         throw new Error(result.message);
       }
-
     } catch (error) {
-      console.error('Error restoring processes:', error);
+      console.error("Error restoring processes:", error);
       toast({
         title: "Erro na restauração",
-        description: error instanceof Error ? error.message : "Erro desconhecido durante a restauração",
-        variant: "destructive"
+        description:
+          error instanceof Error
+            ? error.message
+            : "Erro desconhecido durante a restauração",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -63,15 +65,17 @@ export function RestoreButton({ onSuccess, className }: RestoreButtonProps) {
   };
 
   return (
-    <Button 
+    <Button
       variant="outline"
       size="sm"
       onClick={handleRestore}
       disabled={isLoading}
       className={className}
     >
-      <RotateCcw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-      {isLoading ? 'Restaurando...' : 'Restaurar Excluídos'}
+      <RotateCcw
+        className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+      />
+      {isLoading ? "Restaurando..." : "Restaurar Excluídos"}
     </Button>
   );
 }

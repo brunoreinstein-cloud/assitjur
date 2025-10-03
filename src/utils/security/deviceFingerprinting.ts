@@ -20,7 +20,7 @@ export interface DeviceFingerprint {
 export interface SessionRisk {
   score: number; // 0-100, higher = more suspicious
   factors: string[];
-  recommendation: 'allow' | 'challenge' | 'block';
+  recommendation: "allow" | "challenge" | "block";
 }
 
 /**
@@ -29,7 +29,7 @@ export interface SessionRisk {
 export function generateDeviceFingerprint(): DeviceFingerprint {
   const nav = navigator;
   const screen = window.screen;
-  
+
   const components = [
     nav.userAgent,
     nav.platform,
@@ -37,14 +37,14 @@ export function generateDeviceFingerprint(): DeviceFingerprint {
     Intl.DateTimeFormat().resolvedOptions().timeZone,
     `${screen.width}x${screen.height}`,
     screen.colorDepth.toString(),
-    nav.hardwareConcurrency?.toString() || '0',
-    (nav as any).deviceMemory?.toString() || 'unknown',
+    nav.hardwareConcurrency?.toString() || "0",
+    (nav as any).deviceMemory?.toString() || "unknown",
     nav.cookieEnabled.toString(),
-    (nav.doNotTrack || 'unknown').toString()
+    (nav.doNotTrack || "unknown").toString(),
   ];
 
   // Create fingerprint hash
-  const fingerprint = btoa(components.join('|')).replace(/[+/=]/g, '');
+  const fingerprint = btoa(components.join("|")).replace(/[+/=]/g, "");
 
   return {
     userAgent: nav.userAgent,
@@ -56,8 +56,8 @@ export function generateDeviceFingerprint(): DeviceFingerprint {
     hardwareConcurrency: nav.hardwareConcurrency || 0,
     deviceMemory: (nav as any).deviceMemory,
     cookieEnabled: nav.cookieEnabled,
-    doNotTrack: nav.doNotTrack === '1',
-    fingerprint
+    doNotTrack: nav.doNotTrack === "1",
+    fingerprint,
   };
 }
 
@@ -69,7 +69,7 @@ export function calculateSessionRisk(
   previousFingerprint?: DeviceFingerprint,
   accountAge?: number,
   recentFailedAttempts?: number,
-  isNewLocation?: boolean
+  isNewLocation?: boolean,
 ): SessionRisk {
   let riskScore = 0;
   const factors: string[] = [];
@@ -80,92 +80,101 @@ export function calculateSessionRisk(
       // Check what changed
       if (currentFingerprint.userAgent !== previousFingerprint.userAgent) {
         riskScore += 20;
-        factors.push('Novo navegador/dispositivo');
+        factors.push("Novo navegador/dispositivo");
       }
-      
+
       if (currentFingerprint.timezone !== previousFingerprint.timezone) {
         riskScore += 30;
-        factors.push('Mudança de fuso horário');
+        factors.push("Mudança de fuso horário");
       }
-      
+
       if (currentFingerprint.platform !== previousFingerprint.platform) {
         riskScore += 25;
-        factors.push('Mudança de sistema operacional');
+        factors.push("Mudança de sistema operacional");
       }
-      
-      if (currentFingerprint.screenResolution !== previousFingerprint.screenResolution) {
+
+      if (
+        currentFingerprint.screenResolution !==
+        previousFingerprint.screenResolution
+      ) {
         riskScore += 10;
-        factors.push('Mudança de resolução de tela');
+        factors.push("Mudança de resolução de tela");
       }
     }
   } else {
     // First time login
     riskScore += 15;
-    factors.push('Primeiro acesso do dispositivo');
+    factors.push("Primeiro acesso do dispositivo");
   }
 
   // Account age factor
   if (accountAge !== undefined) {
-    if (accountAge < 7) { // Less than 7 days
+    if (accountAge < 7) {
+      // Less than 7 days
       riskScore += 20;
-      factors.push('Conta recente');
-    } else if (accountAge < 30) { // Less than 30 days
+      factors.push("Conta recente");
+    } else if (accountAge < 30) {
+      // Less than 30 days
       riskScore += 10;
-      factors.push('Conta nova');
+      factors.push("Conta nova");
     }
   }
 
   // Recent failed attempts
   if (recentFailedAttempts && recentFailedAttempts > 0) {
     riskScore += Math.min(recentFailedAttempts * 15, 45);
-    factors.push(`${recentFailedAttempts} tentativas de login falharam recentemente`);
+    factors.push(
+      `${recentFailedAttempts} tentativas de login falharam recentemente`,
+    );
   }
 
   // Location change
   if (isNewLocation) {
     riskScore += 25;
-    factors.push('Acesso de nova localização');
+    factors.push("Acesso de nova localização");
   }
 
   // Suspicious user agent patterns
   const suspiciousUAPatterns = [
     /bot|crawler|spider/i,
     /headless/i,
-    /phantom|selenium|webdriver/i
+    /phantom|selenium|webdriver/i,
   ];
-  
+
   for (const pattern of suspiciousUAPatterns) {
     if (pattern.test(currentFingerprint.userAgent)) {
       riskScore += 40;
-      factors.push('User agent suspeito');
+      factors.push("User agent suspeito");
       break;
     }
   }
 
   // Privacy-focused browsers (slightly elevated risk due to less fingerprint data)
-  if (currentFingerprint.userAgent.includes('Tor') || 
-      currentFingerprint.doNotTrack) {
+  if (
+    currentFingerprint.userAgent.includes("Tor") ||
+    currentFingerprint.doNotTrack
+  ) {
     riskScore += 10;
-    factors.push('Navegador focado em privacidade');
+    factors.push("Navegador focado em privacidade");
   }
 
   // Normalize risk score
   riskScore = Math.max(0, Math.min(100, riskScore));
 
   // Determine recommendation
-  let recommendation: SessionRisk['recommendation'];
+  let recommendation: SessionRisk["recommendation"];
   if (riskScore < 30) {
-    recommendation = 'allow';
+    recommendation = "allow";
   } else if (riskScore < 70) {
-    recommendation = 'challenge';
+    recommendation = "challenge";
   } else {
-    recommendation = 'block';
+    recommendation = "block";
   }
 
   return {
     score: riskScore,
     factors,
-    recommendation
+    recommendation,
   };
 }
 
@@ -175,21 +184,26 @@ export function calculateSessionRisk(
 export function generateSessionToken(): string {
   const timestamp = Date.now().toString();
   const randomBytes = crypto.getRandomValues(new Uint8Array(16));
-  const randomHex = Array.from(randomBytes, b => b.toString(16).padStart(2, '0')).join('');
-  
-  return btoa(`${timestamp}:${randomHex}`).replace(/[+/=]/g, '');
+  const randomHex = Array.from(randomBytes, (b) =>
+    b.toString(16).padStart(2, "0"),
+  ).join("");
+
+  return btoa(`${timestamp}:${randomHex}`).replace(/[+/=]/g, "");
 }
 
 /**
  * Validate session token (basic time-based validation)
  */
-export function validateSessionToken(token: string, maxAgeMinutes = 60): boolean {
+export function validateSessionToken(
+  token: string,
+  maxAgeMinutes = 60,
+): boolean {
   try {
     const decoded = atob(token);
-    const [timestampStr] = decoded.split(':');
+    const [timestampStr] = decoded.split(":");
     const timestamp = parseInt(timestampStr, 10);
     const ageMinutes = (Date.now() - timestamp) / (1000 * 60);
-    
+
     return ageMinutes <= maxAgeMinutes;
   } catch {
     return false;

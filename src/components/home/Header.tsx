@@ -16,15 +16,17 @@ export const Header = () => {
     const handleScroll = () => {
       setIsSticky(window.scrollY > 0);
     };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-200 ${
-      isSticky ? 'bg-background/80 backdrop-blur-md shadow-md' : 'bg-card'
-    } border-b border-border`}>
+    <header
+      className={`sticky top-0 z-50 transition-all duration-200 ${
+        isSticky ? "bg-background/80 backdrop-blur-md shadow-md" : "bg-card"
+      } border-b border-border`}
+    >
       <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link
@@ -42,30 +44,27 @@ export const Header = () => {
         {/* Actions */}
         <div className="flex items-center gap-2 min-w-fit">
           {user && <LastUpdateBadge />}
-          
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/demo')}
+
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/demo")}
             className="hidden md:flex"
           >
             Ver Demo
           </Button>
-          
+
           {user ? (
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate('/app/chat')}
+              onClick={() => navigate("/app/chat")}
               className="w-10 h-10 rounded-full"
               aria-label="Abrir área do usuário"
             >
               <User className="w-5 h-5" aria-hidden="true" />
             </Button>
           ) : (
-            <Button
-              variant="professional"
-              onClick={() => navigate('/login')}
-            >
+            <Button variant="professional" onClick={() => navigate("/login")}>
               Acessar área segura
             </Button>
           )}
@@ -74,4 +73,3 @@ export const Header = () => {
     </header>
   );
 };
-

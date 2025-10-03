@@ -1,6 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, FileText, Users } from "lucide-react";
@@ -8,32 +14,34 @@ import { useHomeStore } from "@/lib/store/home";
 
 export const DataPreview = () => {
   const navigate = useNavigate();
-  const { 
-    previewTab, 
-    setPreviewTab, 
-    previewProcesso, 
+  const {
+    previewTab,
+    setPreviewTab,
+    previewProcesso,
     previewTestemunha,
-    previewLoading 
+    previewLoading,
   } = useHomeStore();
 
   const getRiskColor = (classification: string) => {
     switch (classification?.toLowerCase()) {
-      case 'risco alto':
-      case 'crítico':
-        return 'bg-destructive-light text-destructive border-destructive/20';
-      case 'risco médio':
-      case 'atenção':
-        return 'bg-warning-light text-warning-foreground border-warning/20';
-      case 'baixo':
-      case 'observação':
-        return 'bg-success-light text-success border-success/20';
+      case "risco alto":
+      case "crítico":
+        return "bg-destructive-light text-destructive border-destructive/20";
+      case "risco médio":
+      case "atenção":
+        return "bg-warning-light text-warning-foreground border-warning/20";
+      case "baixo":
+      case "observação":
+        return "bg-success-light text-success border-success/20";
       default:
-        return 'bg-muted text-muted-foreground';
+        return "bg-muted text-muted-foreground";
     }
   };
 
   const handleViewAll = () => {
-    navigate(`/dados/mapa?tab=${previewTab === 'processo' ? 'por-processo' : 'por-testemunha'}`);
+    navigate(
+      `/dados/mapa?tab=${previewTab === "processo" ? "por-processo" : "por-testemunha"}`,
+    );
   };
 
   if (previewLoading) {
@@ -68,14 +76,17 @@ export const DataPreview = () => {
           Preview de Dados
         </CardTitle>
         <CardDescription>
-          Visualize exemplos dos dados disponíveis nas duas modalidades de análise.
+          Visualize exemplos dos dados disponíveis nas duas modalidades de
+          análise.
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent>
-        <Tabs 
-          value={previewTab} 
-          onValueChange={(value) => setPreviewTab(value as 'processo' | 'testemunha')}
+        <Tabs
+          value={previewTab}
+          onValueChange={(value) =>
+            setPreviewTab(value as "processo" | "testemunha")
+          }
         >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="processo" className="flex items-center gap-2">
@@ -87,27 +98,40 @@ export const DataPreview = () => {
               Por Testemunha
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="processo" className="mt-6">
             <div className="overflow-x-auto">
               <div className="min-w-full space-y-3">
                 {previewProcesso.map((item, index) => (
-                  <div key={index} className="p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors">
+                  <div
+                    key={index}
+                    className="p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors"
+                  >
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
                       <div>
-                        <div className="text-sm font-medium text-muted-foreground">CNJ</div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          CNJ
+                        </div>
                         <div className="font-mono text-sm">{item.CNJ}</div>
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-muted-foreground">UF/Comarca</div>
-                        <div className="text-sm">{item.UF} - {item.Comarca}</div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          UF/Comarca
+                        </div>
+                        <div className="text-sm">
+                          {item.UF} - {item.Comarca}
+                        </div>
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-muted-foreground">Reclamante</div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          Reclamante
+                        </div>
                         <div className="text-sm">{item.Reclamante}</div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge className={getRiskColor(item.Classificação_Final)}>
+                        <Badge
+                          className={getRiskColor(item.Classificação_Final)}
+                        >
                           {item.Classificação_Final}
                         </Badge>
                         <Badge variant="outline">
@@ -120,31 +144,62 @@ export const DataPreview = () => {
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="testemunha" className="mt-6">
             <div className="overflow-x-auto">
               <div className="min-w-full space-y-3">
                 {previewTestemunha.map((item, index) => (
-                  <div key={index} className="p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors">
+                  <div
+                    key={index}
+                    className="p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors"
+                  >
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
                       <div>
-                        <div className="text-sm font-medium text-muted-foreground">Nome</div>
-                        <div className="text-sm font-medium">{item.Nome_Testemunha}</div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          Nome
+                        </div>
+                        <div className="text-sm font-medium">
+                          {item.Nome_Testemunha}
+                        </div>
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-muted-foreground">Depoimentos</div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          Depoimentos
+                        </div>
                         <div className="text-sm">{item.Qtd_Depoimentos}</div>
                       </div>
                       <div className="flex flex-col gap-1">
-                        <Badge variant={item.Em_Ambos_Polos === "Sim" ? "destructive" : "outline"} className="text-xs">
-                          {item.Em_Ambos_Polos === "Sim" ? "Ambos Polos" : "Polo Único"}
+                        <Badge
+                          variant={
+                            item.Em_Ambos_Polos === "Sim"
+                              ? "destructive"
+                              : "outline"
+                          }
+                          className="text-xs"
+                        >
+                          {item.Em_Ambos_Polos === "Sim"
+                            ? "Ambos Polos"
+                            : "Polo Único"}
                         </Badge>
-                        <Badge variant={item.Já_Foi_Reclamante === "Sim" ? "destructive" : "outline"} className="text-xs">
-                          {item.Já_Foi_Reclamante === "Sim" ? "Foi Reclamante" : "Nunca Reclamante"}
+                        <Badge
+                          variant={
+                            item.Já_Foi_Reclamante === "Sim"
+                              ? "destructive"
+                              : "outline"
+                          }
+                          className="text-xs"
+                        >
+                          {item.Já_Foi_Reclamante === "Sim"
+                            ? "Foi Reclamante"
+                            : "Nunca Reclamante"}
                         </Badge>
                       </div>
                       <div>
-                        <Badge className={getRiskColor(item.Classificação_Estratégica)}>
+                        <Badge
+                          className={getRiskColor(
+                            item.Classificação_Estratégica,
+                          )}
+                        >
                           {item.Classificação_Estratégica}
                         </Badge>
                       </div>
@@ -155,7 +210,7 @@ export const DataPreview = () => {
             </div>
           </TabsContent>
         </Tabs>
-        
+
         <div className="mt-6 flex justify-center">
           <Button onClick={handleViewAll} variant="outline" className="group">
             Ver tudo

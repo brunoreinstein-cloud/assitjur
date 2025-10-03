@@ -1,16 +1,16 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MultiTenantProvider, useMultiTenant } from '../MultiTenantContext';
-import { AuthProvider } from '@/hooks/useAuth';
-import { mockOrganizations, mockSingleOrg } from '@/tests/mocks/organizations';
-import { mockUsers, mockProfiles } from '@/tests/mocks/users';
-import * as organizationService from '@/services/organizationService';
-import type { ReactNode } from 'react';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MultiTenantProvider, useMultiTenant } from "../MultiTenantContext";
+import { AuthProvider } from "@/hooks/useAuth";
+import { mockOrganizations, mockSingleOrg } from "@/tests/mocks/organizations";
+import { mockUsers, mockProfiles } from "@/tests/mocks/users";
+import * as organizationService from "@/services/organizationService";
+import type { ReactNode } from "react";
 
 // Mock dependencies
-vi.mock('@/services/organizationService');
-vi.mock('@/lib/logger');
+vi.mock("@/services/organizationService");
+vi.mock("@/lib/logger");
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -28,7 +28,7 @@ const createWrapper = () => {
   );
 };
 
-describe('MultiTenantContext', () => {
+describe("MultiTenantContext", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
@@ -38,7 +38,7 @@ describe('MultiTenantContext', () => {
     vi.restoreAllMocks();
   });
 
-  it('should initialize with loading state', () => {
+  it("should initialize with loading state", () => {
     const { result } = renderHook(() => useMultiTenant(), {
       wrapper: createWrapper(),
     });
@@ -48,9 +48,11 @@ describe('MultiTenantContext', () => {
     expect(result.current.organizations).toEqual([]);
   });
 
-  it('should load organizations when user is authenticated', async () => {
-    vi.spyOn(organizationService.organizationService, 'getUserOrganizations')
-      .mockResolvedValue(mockOrganizations);
+  it("should load organizations when user is authenticated", async () => {
+    vi.spyOn(
+      organizationService.organizationService,
+      "getUserOrganizations",
+    ).mockResolvedValue(mockOrganizations);
 
     const { result } = renderHook(() => useMultiTenant(), {
       wrapper: createWrapper(),
@@ -63,12 +65,14 @@ describe('MultiTenantContext', () => {
     expect(result.current.organizations.length).toBeGreaterThan(0);
   });
 
-  it('should set current organization from localStorage', async () => {
+  it("should set current organization from localStorage", async () => {
     const savedOrgId = mockOrganizations[1].id;
-    localStorage.setItem('current_org_id', savedOrgId);
+    localStorage.setItem("current_org_id", savedOrgId);
 
-    vi.spyOn(organizationService.organizationService, 'getUserOrganizations')
-      .mockResolvedValue(mockOrganizations);
+    vi.spyOn(
+      organizationService.organizationService,
+      "getUserOrganizations",
+    ).mockResolvedValue(mockOrganizations);
 
     const { result } = renderHook(() => useMultiTenant(), {
       wrapper: createWrapper(),
@@ -81,9 +85,11 @@ describe('MultiTenantContext', () => {
     expect(result.current.currentOrg?.id).toBe(savedOrgId);
   });
 
-  it('should switch organizations successfully', async () => {
-    vi.spyOn(organizationService.organizationService, 'getUserOrganizations')
-      .mockResolvedValue(mockOrganizations);
+  it("should switch organizations successfully", async () => {
+    vi.spyOn(
+      organizationService.organizationService,
+      "getUserOrganizations",
+    ).mockResolvedValue(mockOrganizations);
 
     const { result } = renderHook(() => useMultiTenant(), {
       wrapper: createWrapper(),
@@ -97,12 +103,14 @@ describe('MultiTenantContext', () => {
     await result.current.switchOrganization(targetOrgId);
 
     expect(result.current.currentOrg?.id).toBe(targetOrgId);
-    expect(localStorage.getItem('current_org_id')).toBe(targetOrgId);
+    expect(localStorage.getItem("current_org_id")).toBe(targetOrgId);
   });
 
-  it('should handle organization loading errors gracefully', async () => {
-    vi.spyOn(organizationService.organizationService, 'getUserOrganizations')
-      .mockRejectedValue(new Error('Network error'));
+  it("should handle organization loading errors gracefully", async () => {
+    vi.spyOn(
+      organizationService.organizationService,
+      "getUserOrganizations",
+    ).mockRejectedValue(new Error("Network error"));
 
     const { result } = renderHook(() => useMultiTenant(), {
       wrapper: createWrapper(),
@@ -116,11 +124,10 @@ describe('MultiTenantContext', () => {
     expect(result.current.currentOrg).toBeNull();
   });
 
-  it('should use cached organizations when available', async () => {
-    const getUserOrgsSpy = vi.spyOn(
-      organizationService.organizationService,
-      'getUserOrganizations'
-    ).mockResolvedValue(mockOrganizations);
+  it("should use cached organizations when available", async () => {
+    const getUserOrgsSpy = vi
+      .spyOn(organizationService.organizationService, "getUserOrganizations")
+      .mockResolvedValue(mockOrganizations);
 
     const { result, rerender } = renderHook(() => useMultiTenant(), {
       wrapper: createWrapper(),
@@ -137,11 +144,10 @@ describe('MultiTenantContext', () => {
     expect(getUserOrgsSpy).toHaveBeenCalledTimes(1); // Should not increase
   });
 
-  it('should refresh organizations when requested', async () => {
-    const getUserOrgsSpy = vi.spyOn(
-      organizationService.organizationService,
-      'getUserOrganizations'
-    ).mockResolvedValue(mockOrganizations);
+  it("should refresh organizations when requested", async () => {
+    const getUserOrgsSpy = vi
+      .spyOn(organizationService.organizationService, "getUserOrganizations")
+      .mockResolvedValue(mockOrganizations);
 
     const { result } = renderHook(() => useMultiTenant(), {
       wrapper: createWrapper(),
@@ -158,9 +164,11 @@ describe('MultiTenantContext', () => {
     expect(getUserOrgsSpy).toHaveBeenCalledTimes(2);
   });
 
-  it('should track loading progress correctly', async () => {
-    vi.spyOn(organizationService.organizationService, 'getUserOrganizations')
-      .mockResolvedValue(mockOrganizations);
+  it("should track loading progress correctly", async () => {
+    vi.spyOn(
+      organizationService.organizationService,
+      "getUserOrganizations",
+    ).mockResolvedValue(mockOrganizations);
 
     const { result } = renderHook(() => useMultiTenant(), {
       wrapper: createWrapper(),

@@ -1,34 +1,34 @@
-import { useState } from "react"
-import { Star } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { useState } from "react";
+import { Star } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface AssistJurPanelProps {
-  sessionId: string
-  response: string
-  comment?: string
+  sessionId: string;
+  response: string;
+  comment?: string;
 }
 
 export function AssistJurPanel({ sessionId, response }: AssistJurPanelProps) {
-  const [rating, setRating] = useState(0)
-  const [submitted, setSubmitted] = useState(false)
-  const { toast } = useToast()
+  const [rating, setRating] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
+  const { toast } = useToast();
 
   const handleRate = async (value: number) => {
-    if (submitted) return
-    setRating(value)
+    if (submitted) return;
+    setRating(value);
 
     try {
       await fetch("/api/csat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, score: value })
-      })
-      toast({ title: "Obrigado!" })
-      setSubmitted(true)
+        body: JSON.stringify({ sessionId, score: value }),
+      });
+      toast({ title: "Obrigado!" });
+      setSubmitted(true);
     } catch (error) {
-      toast({ title: "Erro ao enviar feedback", variant: "destructive" })
+      toast({ title: "Erro ao enviar feedback", variant: "destructive" });
     }
-  }
+  };
 
   return (
     <div className="space-y-4">
@@ -61,6 +61,5 @@ export function AssistJurPanel({ sessionId, response }: AssistJurPanelProps) {
         </div>
       )}
     </div>
-  )
+  );
 }
-

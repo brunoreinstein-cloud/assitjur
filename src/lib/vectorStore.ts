@@ -7,8 +7,10 @@ export async function getOrCreateVectorStore(name: string) {
 }
 
 export async function uploadFile(file: Blob | File) {
-  if (typeof window !== 'undefined') {
-    throw new Error("Upload de arquivos para OpenAI deve ser feito via Edge Function");
+  if (typeof window !== "undefined") {
+    throw new Error(
+      "Upload de arquivos para OpenAI deve ser feito via Edge Function",
+    );
   }
   if (!openai) {
     throw new Error("OpenAI client not configured");

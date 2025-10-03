@@ -1,10 +1,10 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, Shield, Lock } from 'lucide-react';
-import { PersonalInfoTab } from '@/components/profile/PersonalInfoTab';
-import { SecurityTab } from '@/components/profile/SecurityTab';
-import { PrivacyTab } from '@/components/profile/PrivacyTab';
-import { useProfile } from '@/hooks/useProfile';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { User, Shield, Lock } from "lucide-react";
+import { PersonalInfoTab } from "@/components/profile/PersonalInfoTab";
+import { SecurityTab } from "@/components/profile/SecurityTab";
+import { PrivacyTab } from "@/components/profile/PrivacyTab";
+import { useProfile } from "@/hooks/useProfile";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Profile() {
   const { isLoading } = useProfile();

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,10 +8,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Building2, Check, ChevronsUpDown } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/dropdown-menu";
+import { Building2, Check, ChevronsUpDown } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface Organization {
   id: string;
@@ -37,18 +37,18 @@ export function OrgSwitcher({ onOrgChange, selectedOrgId }: OrgSwitcherProps) {
   const loadOrganizations = async () => {
     try {
       const { data, error } = await supabase
-        .from('organizations')
-        .select('id, name, code, is_active')
-        .eq('is_active', true)
-        .order('name');
+        .from("organizations")
+        .select("id, name, code, is_active")
+        .eq("is_active", true)
+        .order("name");
 
       if (error) throw error;
       setOrgs(data || []);
     } catch (error: any) {
       toast({
-        title: 'Erro ao carregar organizações',
+        title: "Erro ao carregar organizações",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -59,7 +59,7 @@ export function OrgSwitcher({ onOrgChange, selectedOrgId }: OrgSwitcherProps) {
     onOrgChange?.(orgId);
   };
 
-  const selectedOrg = orgs.find(org => org.id === selectedOrgId);
+  const selectedOrg = orgs.find((org) => org.id === selectedOrgId);
 
   return (
     <DropdownMenu>
@@ -73,7 +73,9 @@ export function OrgSwitcher({ onOrgChange, selectedOrgId }: OrgSwitcherProps) {
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
             <span className="truncate">
-              {loading ? 'Carregando...' : selectedOrg?.name || 'Todas as organizações'}
+              {loading
+                ? "Carregando..."
+                : selectedOrg?.name || "Todas as organizações"}
             </span>
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -88,8 +90,8 @@ export function OrgSwitcher({ onOrgChange, selectedOrgId }: OrgSwitcherProps) {
         >
           <Check
             className={cn(
-              'mr-2 h-4 w-4',
-              !selectedOrgId ? 'opacity-100' : 'opacity-0'
+              "mr-2 h-4 w-4",
+              !selectedOrgId ? "opacity-100" : "opacity-0",
             )}
           />
           Todas as organizações
@@ -103,8 +105,8 @@ export function OrgSwitcher({ onOrgChange, selectedOrgId }: OrgSwitcherProps) {
           >
             <Check
               className={cn(
-                'mr-2 h-4 w-4',
-                selectedOrgId === org.id ? 'opacity-100' : 'opacity-0'
+                "mr-2 h-4 w-4",
+                selectedOrgId === org.id ? "opacity-100" : "opacity-0",
               )}
             />
             <div className="flex flex-col">

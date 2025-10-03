@@ -1,10 +1,11 @@
-import React from 'react';
-import { Clock } from 'lucide-react';
-import { useLastUpdate } from '@/hooks/useLastUpdate';
+import React from "react";
+import { Clock } from "lucide-react";
+import { useLastUpdate } from "@/hooks/useLastUpdate";
 
 export function LastUpdateBadge() {
-  const { versionNumber, publishedAtUTC, formatLocalDateTime, isLoading } = useLastUpdate();
-  
+  const { versionNumber, publishedAtUTC, formatLocalDateTime, isLoading } =
+    useLastUpdate();
+
   if (isLoading) {
     return (
       <div className="text-sm text-muted-foreground flex items-center gap-2">
@@ -27,7 +28,7 @@ export function LastUpdateBadge() {
     <div className="text-sm text-muted-foreground flex items-center gap-2">
       <Clock className="h-4 w-4" />
       <span>
-        Última atualização: {formatLocalDateTime(publishedAtUTC)} — 
+        Última atualização: {formatLocalDateTime(publishedAtUTC)} —
         <span className="font-medium ml-1">v{versionNumber}</span>
       </span>
     </div>

@@ -1,17 +1,25 @@
-import { useState } from 'react';
-import { HexColorPicker } from 'react-colorful';
-import { Palette, Paintbrush } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
+import { useState } from "react";
+import { HexColorPicker } from "react-colorful";
+import { Palette, Paintbrush } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useOrganizationSettings } from "@/hooks/useOrganizationSettings";
 
 export function AppearanceTab() {
   const { settings, updateSettings } = useOrganizationSettings();
-  const [primaryColor, setPrimaryColor] = useState(settings?.primary_color || '#2563eb');
-  const [secondaryColor, setSecondaryColor] = useState(settings?.secondary_color || '#1e40af');
+  const [primaryColor, setPrimaryColor] = useState(
+    settings?.primary_color || "#2563eb",
+  );
+  const [secondaryColor, setSecondaryColor] = useState(
+    settings?.secondary_color || "#1e40af",
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSave = async () => {
@@ -26,7 +34,7 @@ export function AppearanceTab() {
     }
   };
 
-  const isDirty = 
+  const isDirty =
     primaryColor !== settings?.primary_color ||
     secondaryColor !== settings?.secondary_color;
 
@@ -61,7 +69,10 @@ export function AppearanceTab() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-3">
-                  <HexColorPicker color={primaryColor} onChange={setPrimaryColor} />
+                  <HexColorPicker
+                    color={primaryColor}
+                    onChange={setPrimaryColor}
+                  />
                   <Input
                     value={primaryColor}
                     onChange={(e) => setPrimaryColor(e.target.value)}
@@ -93,7 +104,10 @@ export function AppearanceTab() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-3">
-                  <HexColorPicker color={secondaryColor} onChange={setSecondaryColor} />
+                  <HexColorPicker
+                    color={secondaryColor}
+                    onChange={setSecondaryColor}
+                  />
                   <Input
                     value={secondaryColor}
                     onChange={(e) => setSecondaryColor(e.target.value)}
@@ -112,7 +126,10 @@ export function AppearanceTab() {
           <p className="text-sm font-medium mb-3">Pré-visualização</p>
           <div className="flex gap-2">
             <Button style={{ backgroundColor: primaryColor }}>Primário</Button>
-            <Button variant="secondary" style={{ backgroundColor: secondaryColor }}>
+            <Button
+              variant="secondary"
+              style={{ backgroundColor: secondaryColor }}
+            >
               Secundário
             </Button>
           </div>
@@ -123,8 +140,8 @@ export function AppearanceTab() {
         <Button
           variant="outline"
           onClick={() => {
-            setPrimaryColor(settings?.primary_color || '#2563eb');
-            setSecondaryColor(settings?.secondary_color || '#1e40af');
+            setPrimaryColor(settings?.primary_color || "#2563eb");
+            setSecondaryColor(settings?.secondary_color || "#1e40af");
           }}
           disabled={!isDirty}
         >

@@ -1,26 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Activity, 
-  AlertTriangle, 
-  CheckCircle, 
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle,
   RefreshCw,
   BarChart3,
   Bug,
-  Zap
-} from 'lucide-react';
-import { TestUtils } from '@/lib/testing-utilities';
-import { observability } from '@/lib/observability';
-import { useDevDiagnostics } from '@/lib/dev-diagnostics';
+  Zap,
+} from "lucide-react";
+import { TestUtils } from "@/lib/testing-utilities";
+import { observability } from "@/lib/observability";
+import { useDevDiagnostics } from "@/lib/dev-diagnostics";
 
 interface HealthStatus {
   overall: boolean;
-  tests: any[];
+  tests: unknown[];
   memory: { usage: number; warning: boolean };
-  metrics: any;
+  metrics: Record<string, unknown>;
   lastCheck: Date;
 }
 
@@ -32,10 +32,10 @@ export function HealthMonitor() {
   const [isVisible, setIsVisible] = useState(false);
   const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { trackRender } = useDevDiagnostics('HealthMonitor');
+  const { trackRender } = useDevDiagnostics("HealthMonitor");
 
   // Apenas renderizar em desenvolvimento
-  if (import.meta.env.MODE !== 'development') {
+  if (import.meta.env.MODE !== "development") {
     return null;
   }
 
@@ -45,10 +45,10 @@ export function HealthMonitor() {
       const result = await TestUtils.healthCheck();
       setHealthStatus({
         ...result,
-        lastCheck: new Date()
+        lastCheck: new Date(),
       });
     } catch (error) {
-      console.error('Health check failed:', error);
+      console.error("Health check failed:", error);
     } finally {
       setIsLoading(false);
     }
@@ -58,22 +58,30 @@ export function HealthMonitor() {
     trackRender();
     // Check inicial
     runHealthCheck();
-    
+
     // Auto-refresh a cada 30 segundos
     const interval = setInterval(runHealthCheck, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  const getSeverityBadge = (severity: 'ok' | 'warning' | 'error') => {
+  const getSeverityBadge = (severity: "ok" | "warning" | "error") => {
     const variants = {
-      ok: { variant: 'default' as const, icon: CheckCircle, text: 'OK' },
-      warning: { variant: 'secondary' as const, icon: AlertTriangle, text: 'Aviso' },
-      error: { variant: 'destructive' as const, icon: AlertTriangle, text: 'Erro' }
+      ok: { variant: "default" as const, icon: CheckCircle, text: "OK" },
+      warning: {
+        variant: "secondary" as const,
+        icon: AlertTriangle,
+        text: "Aviso",
+      },
+      error: {
+        variant: "destructive" as const,
+        icon: AlertTriangle,
+        text: "Erro",
+      },
     };
-    
+
     const config = variants[severity];
     const Icon = config.icon;
-    
+
     return (
       <Badge variant={config.variant} className="flex items-center gap-1">
         <Icon className="h-3 w-3" />
@@ -82,16 +90,16 @@ export function HealthMonitor() {
     );
   };
 
-  const getOverallStatus = (): 'ok' | 'warning' | 'error' => {
-    if (!healthStatus) return 'warning';
-    
-    const criticalFailures = healthStatus.tests.filter(t => 
-      !t.passed && t.category === 'validation'
+  const getOverallStatus = (): "ok" | "warning" | "error" => {
+    if (!healthStatus) return "warning";
+
+    const criticalFailures = healthStatus.tests.filter(
+      (t) => !t.passed && t.category === "validation",
     );
-    
-    if (criticalFailures.length > 0) return 'error';
-    if (healthStatus.memory.warning || !healthStatus.overall) return 'warning';
-    return 'ok';
+
+    if (criticalFailures.length > 0) return "error";
+    if (healthStatus.memory.warning || !healthStatus.overall) return "warning";
+    return "ok";
   };
 
   // Toggle de visibilidade - botão flutuante
@@ -129,7 +137,9 @@ export function HealthMonitor() {
                 disabled={isLoading}
                 title="Atualizar status"
               >
-                <RefreshCw className={`h-3 w-3 ${isLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`h-3 w-3 ${isLoading ? "animate-spin" : ""}`}
+                />
               </Button>
               <Button
                 variant="ghost"
@@ -161,13 +171,13 @@ export function HealthMonitor() {
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="bg-muted p-2 rounded">
                     <div className="font-medium text-green-600">
-                      {healthStatus.tests.filter(t => t.passed).length}
+                      {healthStatus.tests.filter((t) => t.passed).length}
                     </div>
                     <div>Passaram</div>
                   </div>
                   <div className="bg-muted p-2 rounded">
                     <div className="font-medium text-red-600">
-                      {healthStatus.tests.filter(t => !t.passed).length}
+                      {healthStatus.tests.filter((t) => !t.passed).length}
                     </div>
                     <div>Falharam</div>
                   </div>
@@ -201,25 +211,32 @@ export function HealthMonitor() {
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="bg-muted p-2 rounded">
-                    <div className="font-medium">{healthStatus.metrics.errors}</div>
+                    <div className="font-medium">
+                      {healthStatus.metrics.errors}
+                    </div>
                     <div>Erros</div>
                   </div>
                   <div className="bg-muted p-2 rounded">
-                    <div className="font-medium">{healthStatus.metrics.apiCalls}</div>
+                    <div className="font-medium">
+                      {healthStatus.metrics.apiCalls}
+                    </div>
                     <div>API Calls</div>
                   </div>
                 </div>
               </div>
 
               {/* Alertas */}
-              {getOverallStatus() !== 'ok' && (
-                <Alert variant={getOverallStatus() === 'error' ? 'destructive' : 'default'}>
+              {getOverallStatus() !== "ok" && (
+                <Alert
+                  variant={
+                    getOverallStatus() === "error" ? "destructive" : "default"
+                  }
+                >
                   <AlertTriangle className="h-3 w-3" />
                   <AlertDescription className="text-xs">
-                    {getOverallStatus() === 'error' 
-                      ? 'Testes críticos falhando. Verifique validações.'
-                      : 'Alguns avisos detectados. Sistema funcional.'
-                    }
+                    {getOverallStatus() === "error"
+                      ? "Testes críticos falhando. Verifique validações."
+                      : "Alguns avisos detectados. Sistema funcional."}
                   </AlertDescription>
                 </Alert>
               )}
@@ -231,11 +248,12 @@ export function HealthMonitor() {
                   size="sm"
                   onClick={() => {
                     // Abrir console com comandos disponíveis
-                    console.log('🔧 Dev Diagnostics Commands:', {
-                      healthCheck: '__DEV_DIAGNOSTICS__.runHealthCheck()',
-                      regressionTests: '__DEV_DIAGNOSTICS__.runRegressionTests()',
-                      metrics: '__DEV_DIAGNOSTICS__.getMetrics()',
-                      bundleAnalysis: '__DEV_DIAGNOSTICS__.analyzeBundle()'
+                    console.log("🔧 Dev Diagnostics Commands:", {
+                      healthCheck: "__DEV_DIAGNOSTICS__.runHealthCheck()",
+                      regressionTests:
+                        "__DEV_DIAGNOSTICS__.runRegressionTests()",
+                      metrics: "__DEV_DIAGNOSTICS__.getMetrics()",
+                      bundleAnalysis: "__DEV_DIAGNOSTICS__.analyzeBundle()",
                     });
                   }}
                   className="w-full"

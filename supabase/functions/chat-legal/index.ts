@@ -16,8 +16,7 @@ import { toFieldErrors } from "../_shared/validation.ts";
  * Configuração e Constantes
  * =========================
  */
-const DEFAULT_MODEL =
-  Deno.env.get("OPENAI_DEFAULT_MODEL") ?? "gpt-4o-mini";
+const DEFAULT_MODEL = Deno.env.get("OPENAI_DEFAULT_MODEL") ?? "gpt-4o-mini";
 const DEFAULT_TEMPERATURE = Number(Deno.env.get("OPENAI_TEMPERATURE") ?? 0.2);
 const MAX_MESSAGE_LENGTH = Number(Deno.env.get("OPENAI_MAX_MSG_LEN") ?? 2000);
 const MAX_TOKENS = Number(Deno.env.get("OPENAI_MAX_TOKENS") ?? 1500);
@@ -29,7 +28,7 @@ function withTimeout<T>(p: Promise<T>, ms: number) {
   return Promise.race([
     p,
     new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("timeout")), ms)
+      setTimeout(() => reject(new Error("timeout")), ms),
     ),
   ]);
 }
@@ -67,21 +66,21 @@ async function openAIChat({
       { role: "system", content: system },
       { role: "user", content: user },
     ],
-    response_format: { type: "json_object" }
+    response_format: { type: "json_object" },
   };
 
   log.info(`Chamando OpenAI: model=${model}, max_tokens=${max_tokens}`);
   const startTime = Date.now();
 
   let lastError: Error | null = null;
-  
+
   // Retry logic
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
       const res = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${OPENAI_API_KEY}`,
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
@@ -91,14 +90,19 @@ async function openAIChat({
 
       if (!res.ok) {
         const errText = await res.text();
-        log.error(`OpenAI erro ${res.status} (tentativa ${attempt + 1}): ${errText}`);
+        log.error(
+          `OpenAI erro ${res.status} (tentativa ${attempt + 1}): ${errText}`,
+        );
         lastError = new Error(`OpenAI error: ${res.status} ${errText}`);
-        
+
         // Retry on 5xx errors or rate limits
-        if ((res.status >= 500 || res.status === 429) && attempt < MAX_RETRIES) {
+        if (
+          (res.status >= 500 || res.status === 429) &&
+          attempt < MAX_RETRIES
+        ) {
           const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
           log.warn(`Aguardando ${delay}ms antes de retry...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
           continue;
         }
         throw lastError;
@@ -106,9 +110,11 @@ async function openAIChat({
 
       const json = await res.json();
       const content = json?.choices?.[0]?.message?.content ?? "";
-      
-      log.info(`OpenAI sucesso em ${elapsed}ms (tentativa ${attempt + 1}), chars=${content.length}`);
-      
+
+      log.info(
+        `OpenAI sucesso em ${elapsed}ms (tentativa ${attempt + 1}), chars=${content.length}`,
+      );
+
       // Validate JSON response
       try {
         JSON.parse(content);
@@ -116,17 +122,16 @@ async function openAIChat({
       } catch {
         log.warn(`⚠️ Resposta NÃO é JSON válido: ${content.substring(0, 100)}`);
       }
-      
+
       return content;
-      
     } catch (err) {
       lastError = err as Error;
       log.error(`OpenAI tentativa ${attempt + 1} falhou: ${err.message}`);
-      
+
       if (attempt < MAX_RETRIES) {
         const delay = Math.pow(2, attempt) * 1000;
         log.warn(`Aguardando ${delay}ms antes de retry...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
@@ -149,7 +154,12 @@ export async function handler(request: Request) {
   try {
     const { user, organization_id, supa, error } = await getAuth(request);
     if (error || !user || !organization_id) {
-      return jsonError(401, "UNAUTHORIZED", { requestId }, { ...corsHeaders(request), "x-request-id": requestId });
+      return jsonError(
+        401,
+        "UNAUTHORIZED",
+        { requestId },
+        { ...corsHeaders(request), "x-request-id": requestId },
+      );
     }
 
     const admin = adminClient();
@@ -159,23 +169,34 @@ export async function handler(request: Request) {
       payload = await request.json();
     } catch (e) {
       log.error(`invalid json: ${e.message}`);
-      return jsonError(400, "INVALID_JSON", { fieldErrors: {}, requestId }, { ...corsHeaders(request), "x-request-id": requestId });
+      return jsonError(
+        400,
+        "INVALID_JSON",
+        { fieldErrors: {}, requestId },
+        { ...corsHeaders(request), "x-request-id": requestId },
+      );
     }
 
     const ChatLegalRequestSchema = z.object({
       message: z.string().min(1).max(MAX_MESSAGE_LENGTH),
       promptName: z.string().optional(),
-      context: z.object({
-        type: z.enum(['processo', 'testemunha']),
-        data: z.record(z.any()),
-        meta: z.object({
-          status: z.string().optional(),
-          statusInferido: z.boolean().optional(),
-          classificacao: z.string().optional(),
-          riscoNivel: z.enum(['baixo', 'medio', 'alto', 'critico']).optional(),
-          confidence: z.number().optional()
-        }).optional()
-      }).optional()
+      context: z
+        .object({
+          type: z.enum(["processo", "testemunha"]),
+          data: z.record(z.any()),
+          meta: z
+            .object({
+              status: z.string().optional(),
+              statusInferido: z.boolean().optional(),
+              classificacao: z.string().optional(),
+              riscoNivel: z
+                .enum(["baixo", "medio", "alto", "critico"])
+                .optional(),
+              confidence: z.number().optional(),
+            })
+            .optional(),
+        })
+        .optional(),
     });
     const validation = ChatLegalRequestSchema.safeParse(payload);
     if (!validation.success) {
@@ -188,15 +209,28 @@ export async function handler(request: Request) {
       );
     }
     const { message, promptName, context } = validation.data;
-    
+
     // Log context recebido para debug
-    log.info(`📦 Context recebido: type=${context?.type || 'none'}, hasMeta=${!!context?.meta}, meta=${JSON.stringify(context?.meta || {})}`);
+    log.info(
+      `📦 Context recebido: type=${context?.type || "none"}, hasMeta=${!!context?.meta}, meta=${JSON.stringify(context?.meta || {})}`,
+    );
 
     const ip = request.headers.get("x-forwarded-for") || "unknown";
     const rlKey = `${ip}:${organization_id}:${user.id}:chat-legal`;
-    const allowed = await checkRateLimit(admin, rlKey, undefined, undefined, requestId);
+    const allowed = await checkRateLimit(
+      admin,
+      rlKey,
+      undefined,
+      undefined,
+      requestId,
+    );
     if (!allowed) {
-      return jsonError(429, "RATE_LIMIT", { requestId }, { ...corsHeaders(request), "x-request-id": requestId });
+      return jsonError(
+        429,
+        "RATE_LIMIT",
+        { requestId },
+        { ...corsHeaders(request), "x-request-id": requestId },
+      );
     }
 
     const wantedName = promptName ?? "System: Mapa de Testemunhas - v1";
@@ -212,12 +246,12 @@ export async function handler(request: Request) {
       log.warn(`erro na consulta de prompts: ${spErr.message}`);
     }
     let systemPrompt = sysPromptRow?.content ?? getSystemPrompt(wantedName);
-    
+
     // Enriquecer prompt com contexto se disponível - OBRIGATÓRIO
     if (context?.meta) {
       const { status, classificacao, riscoNivel, confidence } = context.meta;
       const confidencePercent = Math.round((confidence || 0) * 100);
-      
+
       const metaInfo = `
 
 ## CONTEXTO ENRIQUECIDO - DADOS REAIS OBRIGATÓRIOS
@@ -233,13 +267,16 @@ Confiança dos Dados: ${confidencePercent}%
 4. Campo "confianca" DEVE ser EXATAMENTE: ${confidencePercent}
 
 NÃO use valores genéricos. Use OBRIGATORIAMENTE os valores reais acima no JSON de resposta.`;
-      
+
       systemPrompt += metaInfo;
-      log.info(`📊 Contexto enriquecido adicionado: status=${status}, classificacao=${classificacao}, risco=${riscoNivel}`, requestId);
+      log.info(
+        `📊 Contexto enriquecido adicionado: status=${status}, classificacao=${classificacao}, risco=${riscoNivel}`,
+        requestId,
+      );
     }
 
     // CORREÇÃO: Adicionar instruções específicas para contexto de testemunha
-    if (context?.type === 'testemunha' && context?.data?.nome) {
+    if (context?.type === "testemunha" && context?.data?.nome) {
       const testemunhaInfo = `
 
 ## DADOS DA TESTEMUNHA ANALISADA
@@ -251,12 +288,17 @@ Quantidade de Depoimentos: ${context.data.qtd_depoimentos || 0}
 - Campo "reu" do bloco executive DEVE ser EXATAMENTE: "N/A"
 - Campo "cnj" do bloco executive DEVE ser EXATAMENTE: "N/A"
 - Campo "processo" do bloco executive DEVE ser: "Análise de Testemunha: ${context.data.nome}"`;
-      
+
       systemPrompt += testemunhaInfo;
-      log.info(`👤 Contexto de testemunha adicionado: nome=${context.data.nome}`, requestId);
+      log.info(
+        `👤 Contexto de testemunha adicionado: nome=${context.data.nome}`,
+        requestId,
+      );
     }
-    
-    log.info(`📥 Input: kind=${wantedName}, msg_len=${message.length}, preview="${message.substring(0, 100)}..."`);
+
+    log.info(
+      `📥 Input: kind=${wantedName}, msg_len=${message.length}, preview="${message.substring(0, 100)}..."`,
+    );
     log.info(`📋 System prompt length: ${systemPrompt.length} chars`);
 
     const completion = await withTimeout(
@@ -264,13 +306,24 @@ Quantidade de Depoimentos: ${context.data.qtd_depoimentos || 0}
       OPENAI_TIMEOUT_MS,
     );
 
-    log.info(`📤 Response: len=${completion.length}, preview="${completion.substring(0, 200)}..."`);
+    log.info(
+      `📤 Response: len=${completion.length}, preview="${completion.substring(0, 200)}..."`,
+    );
 
-    return json(200, { ok: true, data: completion, requestId }, { ...corsHeaders(request), "x-request-id": requestId });
+    return json(
+      200,
+      { ok: true, data: completion, requestId },
+      { ...corsHeaders(request), "x-request-id": requestId },
+    );
   } catch (err) {
     log.error(`erro no chat-legal: ${err?.message ?? err}`);
-    return jsonError(500, "INTERNAL_ERROR", { requestId }, { ...corsHeaders(request), "x-request-id": requestId });
+    return jsonError(
+      500,
+      "INTERNAL_ERROR",
+      { requestId },
+      { ...corsHeaders(request), "x-request-id": requestId },
+    );
   }
 }
 
-serve('chat-legal', handler);
+serve("chat-legal", handler);
