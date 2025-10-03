@@ -79,7 +79,7 @@ export function inferirStatus(p: any): { status: string; inferido: boolean } {
 export function normalizarClassificacao(classificacao: any): string {
   if (!classificacao) return 'Normal';
   
-  let normalized = String(classificacao)
+  const normalized = String(classificacao)
     .replace(/[\[\]]/g, '')  // Remove colchetes
     .trim()
     .toLowerCase();

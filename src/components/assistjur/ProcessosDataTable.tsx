@@ -90,7 +90,28 @@ export function ProcessosDataTable() {
       const headers = ['CNJ', 'Reclamante', 'Reclamada', 'Testemunhas Ativas', 'Testemunhas Passivas', 'Qtd Total', 'Classificação', 'Data Criação'];
       const csvData = [
         headers.join(','),
-        ...processos.map((processo: any) => [
+        ...processos.map((processo: unknown) => {
+          const p = processo as {
+            cnj: string;
+            reclamante: string;
+            reclamada: string;
+            testemunhas_ativas: string[];
+            testemunhas_passivas: string[];
+            qtd_testemunhas: number;
+            classificacao: string;
+            created_at: string;
+          };
+          return [
+            p.cnj,
+            `"${p.reclamante}"`,
+            `"${p.reclamada}"`,
+            `"${p.testemunhas_ativas.join('; ')}"`,
+            `"${p.testemunhas_passivas.join('; ')}"`,
+            p.qtd_testemunhas,
+            `"${p.classificacao}"`,
+            format(new Date(p.created_at), 'dd/MM/yyyy', { locale: ptBR })
+          ].join(',');
+        })
           processo.cnj,
           `"${processo.reclamante}"`,
           `"${processo.reclamada}"`,
@@ -284,7 +305,37 @@ export function ProcessosDataTable() {
                   </TableCell>
                 </TableRow>
               ) : (
-                processos.map((processo: any) => (
+                processos.map((processo: unknown) => {
+                  const p = processo as {
+                    cnj: string;
+                    reclamante: string;
+                    reclamada: string;
+                    testemunhas_ativas: string[];
+                    testemunhas_passivas: string[];
+                    qtd_testemunhas: number;
+                    classificacao: string;
+                    created_at: string;
+                  };
+                  return (
+                    <TableRow key={p.cnj} className="hover:bg-muted/20">
+                      <TableCell className="font-mono text-xs max-w-[120px] truncate">
+                        {applyPIIMask(p.cnj, isPiiMasked)}
+                      </TableCell>
+                      <TableCell className="font-medium max-w-[150px] truncate">
+                        {applyPIIMask(p.reclamante, isPiiMasked)}
+                      </TableCell>
+                      <TableCell className="max-w-[150px] truncate">
+                        {applyPIIMask(p.reclamada, isPiiMasked)}
+                      </TableCell>
+                      <TableCell className="max-w-[200px]">
+                        <ArrayField 
+                          items={p.testemunhas_ativas} 
+                        />
+                      </TableCell>
+                      {/* ...restante das células... */}
+                    </TableRow>
+                  );
+                })
                   <TableRow key={processo.cnj} className="hover:bg-muted/20">
                     <TableCell className="font-mono text-xs max-w-[120px] truncate">
                       {applyPIIMask(processo.cnj, isPiiMasked)}

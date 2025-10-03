@@ -315,7 +315,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Collect session context and previous timezone
         const ctx = getSessionContext();
-        let previousTz: string | null = null;
+        const previousTz: string | null = null;
         // TODO: Re-enable when sessions table exists
         // try {
         //   const { data: last } = await supabase

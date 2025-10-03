@@ -180,7 +180,7 @@ export function formatDataToCanonical(
     canonicalHeaders.forEach((header: string) => {
       // Map from current format to canonical format - use dynamic access
       const rowData = row as Record<string, any>;
-      let value = rowData[header] || rowData[header.toLowerCase()] || rowData[header.replace(/_/g, '')] || null;
+      const value = rowData[header] || rowData[header.toLowerCase()] || rowData[header.replace(/_/g, '')] || null;
       
       // Handle special formatting
       if (value === null || value === undefined) {

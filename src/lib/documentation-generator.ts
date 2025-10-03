@@ -280,7 +280,7 @@ const { data } = await supabase
     const markdown = this.generateMarkdown();
     
     // Conversão básica de Markdown para HTML
-    let html = markdown
+    const html = markdown
       .replace(/^# (.+)$/gm, '<h1>$1</h1>')
       .replace(/^## (.+)$/gm, '<h2>$1</h2>')
       .replace(/^### (.+)$/gm, '<h3>$1</h3>')

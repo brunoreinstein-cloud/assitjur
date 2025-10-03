@@ -20,8 +20,8 @@ export const ProductionOptimizer = () => {
         
         // Remove React DevTools em produção
         if (typeof window !== 'undefined') {
-          (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
-            ...((window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__ || {}),
+          (window as unknown as { [key: string]: unknown }).__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
+            ...((window as unknown as { [key: string]: unknown }).__REACT_DEVTOOLS_GLOBAL_HOOK__ || {}),
             onCommitFiberRoot: () => {},
             onCommitFiberUnmount: () => {},
             isDisabled: true
@@ -29,8 +29,8 @@ export const ProductionOptimizer = () => {
         }
 
         // Remove Redux DevTools
-        delete (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__;
-        delete (window as any).__REDUX_DEVTOOLS_EXTENSION__;
+        delete (window as unknown as { [key: string]: unknown }).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__;
+        delete (window as unknown as { [key: string]: unknown }).__REDUX_DEVTOOLS_EXTENSION__;
         
         logger.info('Production optimizations initialized', {}, 'ProductionOptimizer');
       } catch (error) {
