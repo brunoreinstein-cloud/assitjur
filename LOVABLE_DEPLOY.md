@@ -23,7 +23,7 @@ npm run preview
 **Validações:**
 
 - ✅ Build completa sem erros críticos (TS6310 é cosmético)
-- ✅ `dist/index.html` e `dist/404.html` existem
+- ✅ `dist/index.html`, `dist/200.html` e `dist/404.html` existem e são gerados a partir do mesmo conteúdo
 - ✅ Preview funciona em `http://localhost:4173`
 - ✅ Rotas profundas funcionam (ex: `/mapa`, `/planos`)
 
@@ -114,7 +114,7 @@ ls -la dist/
 
 1. **Variáveis ENV faltando** → Verifique Settings → Environment Variables
 2. **Base path incorreto** → Confirme `base: '/'` no `vite.config.ts`
-3. **404.html ausente** → Verifique `dist/404.html` existe após build
+3. **Fallback SPA ausente** → Verifique se `dist/200.html` e `dist/404.html` existem após o build
 4. **CORS bloqueando API** → Configure `ALLOWED_ORIGINS` no Supabase
 
 **Debug:**
@@ -130,12 +130,18 @@ ls -la dist/
 ### Rotas retornam 404
 
 **Causa:** SPA fallback não configurado  
-**Solução:** Confirme que `dist/404.html` existe:
+**Solução:** Confirme que `dist/200.html` e `dist/404.html` existem e são cópias do `dist/index.html`:
 
 ```bash
 npm run build
+cat dist/200.html  # Deve ser idêntico ao index.html
 cat dist/404.html  # Deve ser idêntico ao index.html
 ```
+
+### Fallbacks SPA no Lovable
+
+- Configure o Lovable para servir os arquivos `200.html` e `404.html`, ambos gerados a partir do `index.html`.
+- Qualquer experiência personalizada de "Página não encontrada" deve ser tratada dentro do React Router (por exemplo, rota catch-all) para garantir comportamento consistente no deploy.
 
 ### API calls falham (401/403)
 
