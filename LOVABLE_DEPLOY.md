@@ -80,6 +80,34 @@ ALLOWED_ORIGINS=https://assistjur.com.br,https://*.lovable.app
 2. Aguarde o build automático
 3. Acesse a URL gerada: `https://seu-site.lovable.app`
 
+### Prompt recomendado para o Lovable (Build + Deploy)
+
+Cole o texto abaixo no campo de prompt do Lovable antes de publicar:
+
+```
+Você é responsável por gerar e publicar a versão de produção do AssistJur.
+
+Requisitos obrigatórios:
+1. Execute os comandos exatamente nesta ordem:
+   - npm ci
+   - npm run build
+   - node scripts/postbuild.js (já incluído no npm run build, mas verifique o dist/200.html)
+   - npm run preview -- --host 0.0.0.0 --port 4173 (apenas para validar que o build funciona)
+2. Confirme que os arquivos dist/index.html, dist/200.html e dist/404.html existem e são idênticos.
+3. Valide que o build gerou somente assets com hash no nome (dist/assets/*-*.js, dist/assets/*-*.css).
+4. Purge/Invalidate o CDN após o upload final para evitar cache antigo.
+5. Verifique se não há service workers ativos: abra o preview e execute navigator.serviceWorker.getRegistrations() no DevTools; se existir algo, chame unregister().
+6. Garanta que as variáveis VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY e VITE_PUBLIC_SITE_URL estão definidas no ambiente de produção do Lovable.
+7. Após o deploy, faça um hard refresh (Ctrl+F5) em uma aba anônima e valide:
+   - Home renderizada
+   - Rotas profundas (ex: /mapa, /planos) carregam sem 404
+   - Console sem erros de process.env
+   - Requisições ao Supabase retornam 200
+8. Documente no log final: horário do build, hash principal gerado e confirmação da purga do CDN.
+
+Caso qualquer etapa falhe, interrompa o deploy e reporte o erro com logs do comando falho.
+```
+
 ### Validação Pós-Deploy
 
 Teste as seguintes funcionalidades:
