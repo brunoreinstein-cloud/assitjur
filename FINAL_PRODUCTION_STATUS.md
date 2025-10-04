@@ -70,7 +70,7 @@
 
 - **Supabase** como backend
 - **Edge Functions** para APIs
-- **Vercel** deployment ready
+- **Lovable** deployment ready
 - **Environment** variables seguras
 - **Database migrations** versionadas
 
@@ -88,7 +88,7 @@
 
 1. **PUBLICAR** via botão "Publish" no Lovable ✅
 2. **Configurar domínio** assistjur.com.br
-3. **SSL Certificate** automático via Vercel
+3. **SSL Certificate** automático via Lovable
 4. **DNS** apontamento
 5. **Monitoring** ativo em produção
 
