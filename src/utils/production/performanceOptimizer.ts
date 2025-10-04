@@ -12,10 +12,14 @@ interface PerformanceConfig {
   enableMemoryOptimization: boolean;
 }
 
+interface WindowWithGC extends Window {
+  gc?: () => void;
+}
+
 class PerformanceOptimizer {
   private config: PerformanceConfig = {
     enableResourceHints: true,
-    enableServiceWorker: true,
+    enableServiceWorker: false,
     enableCriticalResourcePrefetch: true,
     enableMemoryOptimization: true,
   };
@@ -38,7 +42,7 @@ class PerformanceOptimizer {
       this.addResourceHints();
       this.enableCriticalResourcePrefetch();
       this.setupMemoryOptimization();
-      this.registerServiceWorker();
+      this.manageServiceWorker();
 
       logger.info(
         "Performance optimizations applied successfully",
@@ -116,12 +120,14 @@ class PerformanceOptimizer {
     if (!this.config.enableMemoryOptimization) return;
 
     // Garbage collection agressivo em produção
-    if ("gc" in window && typeof (window as any).gc === "function") {
+    const windowWithGc = window as WindowWithGC;
+
+    if ("gc" in windowWithGc && typeof windowWithGc.gc === "function") {
       // Executa GC em idle time
       if ("requestIdleCallback" in window) {
         requestIdleCallback(() => {
           try {
-            (window as any).gc();
+            windowWithGc.gc?.();
           } catch (e) {
             // Silently handle GC failures
           }
@@ -138,27 +144,62 @@ class PerformanceOptimizer {
   }
 
   /**
-   * Registra Service Worker para cache
+   * Gerencia registros de Service Worker conforme configuração
    */
-  private registerServiceWorker() {
-    if (!this.config.enableServiceWorker || !("serviceWorker" in navigator)) {
+  private manageServiceWorker() {
+    if (!("serviceWorker" in navigator)) {
+      return;
+    }
+
+    if (this.config.enableServiceWorker) {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((registration) => {
+          logger.info(
+            "Service Worker registered successfully",
+            {
+              scope: registration.scope,
+            },
+            "PerformanceOptimizer",
+          );
+        })
+        .catch((error) => {
+          logger.warn(
+            "Service Worker registration failed",
+            { error },
+            "PerformanceOptimizer",
+          );
+        });
+
       return;
     }
 
     navigator.serviceWorker
-      .register("/sw.js")
-      .then((registration) => {
+      .getRegistrations()
+      .then((registrations) => {
+        if (registrations.length === 0) {
+          return;
+        }
+
+        registrations.forEach((registration) => {
+          registration.unregister().catch((error) => {
+            logger.warn(
+              "Service Worker unregistration failed",
+              { error },
+              "PerformanceOptimizer",
+            );
+          });
+        });
+
         logger.info(
-          "Service Worker registered successfully",
-          {
-            scope: registration.scope,
-          },
+          "Existing Service Workers unregistered",
+          { count: registrations.length },
           "PerformanceOptimizer",
         );
       })
       .catch((error) => {
         logger.warn(
-          "Service Worker registration failed",
+          "Failed to fetch Service Worker registrations",
           { error },
           "PerformanceOptimizer",
         );
@@ -195,9 +236,11 @@ class PerformanceOptimizer {
         }
 
         // Resource timing
-        const resources = performance.getEntriesByType("resource");
+        const resources = performance.getEntriesByType(
+          "resource",
+        ) as PerformanceResourceTiming[];
         const slowResources = resources.filter(
-          (resource: any) => resource.duration > 1000,
+          (resource) => resource.duration > 1000,
         );
 
         if (slowResources.length > 0) {
@@ -205,9 +248,9 @@ class PerformanceOptimizer {
             "Slow resources detected",
             {
               count: slowResources.length,
-              resources: slowResources.slice(0, 5).map((r: any) => ({
-                name: r.name,
-                duration: r.duration,
+              resources: slowResources.slice(0, 5).map((resource) => ({
+                name: resource.name,
+                duration: resource.duration,
               })),
             },
             "WebVitals",
