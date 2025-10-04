@@ -129,14 +129,14 @@ Se disponível, faça upgrade para PostgreSQL 15+ via Dashboard.
    - Deploy será feito automaticamente
    - URL de produção será gerada
 
-### Opção B: Deploy Manual (Vercel/Netlify)
+### Opção B: Deploy Manual (Lovable Upload/Netlify)
 
-#### Vercel
+#### Lovable (upload manual)
 
-```bash
-npm install -g vercel
-vercel --prod
-```
+1. Executar `npm run build`
+2. Compactar a pasta `dist/` em um `.zip`
+3. No Lovable, acessar **Deployments → Upload Build**
+4. Enviar o arquivo `.zip` e clicar em **Publish** após a validação
 
 #### Netlify
 

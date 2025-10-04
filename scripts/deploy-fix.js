@@ -106,7 +106,7 @@ async function main() {
     console.log(
       "1. Fix package.json JSON syntax (remove lines 147-150, add proper engines field)",
     );
-    console.log("2. Set Node version to 22.x in Vercel Project Settings");
+    console.log("2. Set Node version to 22.x in Lovable Project Settings");
     console.log("3. Deploy with clean cache");
   } catch (error) {
     console.error("💥 Emergency deploy failed:", error.message);

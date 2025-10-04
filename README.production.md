@@ -11,7 +11,7 @@
 ### Frontend
 
 - **Framework**: React 18 + Vite 5
-- **Hospedagem**: Lovable Cloud (ou Vercel/Netlify)
+- **Hospedagem**: Lovable Cloud (principal) ou Netlify (fallback)
 - **Build**: Otimizado com code splitting, tree shaking, minificação
 - **Performance**: Lazy loading, route-based chunking, PWA ready
 
@@ -118,13 +118,8 @@ dist/
 
 ### Via Git + CI/CD
 
-```bash
-# Vercel
-vercel --prod
-
-# Netlify
-netlify deploy --prod --dir=dist
-```
+- **Lovable (via integração GitHub)**: merges na branch `main` disparam automaticamente o workflow de build e publicação configurado no Lovable Dashboard.
+- **Netlify (fallback)**: `netlify deploy --prod --dir=dist`
 
 ### Custom Domain
 
