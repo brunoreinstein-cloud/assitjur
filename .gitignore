@@ -8,4 +8,4 @@ bun.lockb
 *.tsbuildinfo
 node_modules/
 .vercel/
-.vercel/output/
+.vercel.output/
