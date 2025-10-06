@@ -3,7 +3,6 @@
  * Using k-anonymity method to protect user privacy
  */
 
-import { sanitizeInput } from "@/utils/security";
 
 export interface BreachCheckResult {
   breached: boolean;

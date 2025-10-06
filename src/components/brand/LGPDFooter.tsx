@@ -1,4 +1,3 @@
-import React from "react";
 import { Shield, Clock, Building } from "lucide-react";
 import { BRAND } from "@/branding/brand";
 import { useLastUpdate } from "@/hooks/useLastUpdate";

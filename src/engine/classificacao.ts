@@ -208,7 +208,7 @@ function determinePrioridade(
  */
 function generateInsightEstrategico(
   classificacao: ClassificacaoEstrategica,
-  fatores: string[],
+  _fatores: string[],
   factors: ClassificacaoFactors,
 ): string {
   const insights: string[] = [];
@@ -272,7 +272,6 @@ function generateInsightEstrategico(
  */
 export function calculateAdvancedScore(
   factors: ClassificacaoFactors,
-  historicalData?: any[],
 ): number {
   // Por enquanto, usa classificação simples
   const result = classificarProcesso(factors);

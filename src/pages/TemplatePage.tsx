@@ -3,7 +3,6 @@ import {
   ArrowLeft,
   Download,
   FileSpreadsheet,
-  AlertCircle,
   CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,29 +19,8 @@ import { FieldDictionary } from "@/components/template/FieldDictionary";
 import { Examples } from "@/components/template/Examples";
 import { Checklist } from "@/components/template/Checklist";
 import { TrustNote } from "@/components/template/TrustNote";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function TemplatePage() {
-  const handleTemplateDownload = async (
-    functionName: string,
-    filename: string,
-  ) => {
-    try {
-      const { data, error } = await supabase.functions.invoke(functionName);
-
-      if (error) throw error;
-
-      const blob = new Blob([data], { type: "application/octet-stream" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      link.click();
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Erro no download:", error);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-subtle">

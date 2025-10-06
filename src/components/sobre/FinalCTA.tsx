@@ -1,11 +1,10 @@
-import React from "react";
 import { BetaSignup } from "@/components/beta/BetaSignup";
 
 interface FinalCTAProps {
   onOpenBetaModal?: () => void;
 }
 
-export function FinalCTA({ onOpenBetaModal }: FinalCTAProps) {
+export function FinalCTA({ }: FinalCTAProps) {
   return (
     <section
       id="cta-final"

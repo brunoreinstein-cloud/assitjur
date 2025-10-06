@@ -47,8 +47,6 @@ import {
   Eye,
   EyeOff,
   Trash2,
-  CheckCircle,
-  XCircle,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -176,7 +174,7 @@ const OpenAIKeys = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data, keyId) => {
+    onSuccess: (data) => {
       setTestingKey(null);
       toast({
         title: data.valid ? "Chave válida" : "Chave inválida",
@@ -186,7 +184,7 @@ const OpenAIKeys = () => {
         variant: data.valid ? "default" : "destructive",
       });
     },
-    onError: (error, keyId) => {
+    onError: (error) => {
       setTestingKey(null);
       toast({
         title: "Erro no teste",

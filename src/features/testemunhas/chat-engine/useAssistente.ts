@@ -10,7 +10,6 @@ import {
 } from "@/lib/store/mapa-testemunhas";
 import {
   normalizeStatus,
-  normalizeClassificacao,
   normalizeRiscoNivel,
   calculateConfidence,
   inferirStatus,
@@ -22,8 +21,6 @@ export function useAssistente() {
   const { error: notifyError } = useNotifications();
 
   const {
-    chatKind,
-    chatInput,
     chatStatus,
     chatResult,
     agentOnline,
@@ -172,10 +169,6 @@ export function useAssistente() {
       });
 
       // Add user message
-      const userMessageId = addChatMessage({
-        role: "user",
-        content: input,
-      });
 
       // Add assistant message placeholder
       const assistantMessageId = addChatMessage({

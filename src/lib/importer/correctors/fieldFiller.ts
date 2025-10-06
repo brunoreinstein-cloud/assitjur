@@ -17,7 +17,6 @@ export interface OrgSettings {
  */
 export function fillEmptyFields(
   row: Record<string, any>,
-  rowIndex: number,
   sheetType: "processo" | "testemunha",
   orgSettings?: OrgSettings,
 ): FieldCorrection[] {

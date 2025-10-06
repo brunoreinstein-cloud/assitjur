@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Scale, User } from "lucide-react";
+import { User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { GlobalSearch } from "@/components/home/GlobalSearch";
 import { LastUpdateBadge } from "@/components/ui/LastUpdateBadge";

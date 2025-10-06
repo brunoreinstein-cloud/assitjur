@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -21,7 +21,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CheckCircle,
   AlertCircle,
-  Info,
   Wand2,
   Eye,
   EyeOff,
@@ -54,7 +53,7 @@ export function CorrectionInterface({
   onReject,
 }: CorrectionInterfaceProps) {
   const [showDetails, setShowDetails] = useState(false);
-  const [selectedCorrections, setSelectedCorrections] = useState<Set<string>>(
+  const [] = useState<Set<string>>(
     new Set(),
   );
 

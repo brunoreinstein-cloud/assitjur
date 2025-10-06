@@ -1,4 +1,4 @@
-import { isValid, parse, format } from "date-fns";
+import { isValid, format } from "date-fns";
 
 export interface DateCorrection {
   original: string;
@@ -102,7 +102,7 @@ export function correctDate(dateStr: string): DateCorrection | null {
  * Calcula confiança da correção de data
  */
 function calculateDateConfidence(
-  original: string,
+  _original: string,
   corrected: string,
   format: string,
 ): number {

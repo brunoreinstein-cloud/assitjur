@@ -27,12 +27,6 @@ export class ProductionOptimizer {
 
   private optimizeForProduction() {
     // Preserva apenas logs críticos através do sistema centralizado
-    const originalConsole = {
-      log: console.log,
-      warn: console.warn,
-      info: console.info,
-      debug: console.debug,
-    };
 
     // Remove logs não críticos em produção
     console.log = () => {};

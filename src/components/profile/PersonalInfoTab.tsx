@@ -225,7 +225,7 @@ export function PersonalInfoTab() {
             <Button
               type="submit"
               disabled={!isDirty || isSubmitting}
-              loading={isSubmitting}
+              isLoading={isSubmitting}
             >
               Salvar Alterações
             </Button>

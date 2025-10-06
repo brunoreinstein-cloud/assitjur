@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { ensureSessionOrThrow } from "@/lib/supabaseClient";
 
 export interface TestemunhaPublica {
@@ -16,8 +15,8 @@ export interface ExplorarResponse {
 }
 
 export async function explorarTestemunhas(
-  page = 1,
-  pageSize = 10,
+  _page = 1,
+  _pageSize = 10,
 ): Promise<ExplorarResponse> {
   await ensureSessionOrThrow();
 

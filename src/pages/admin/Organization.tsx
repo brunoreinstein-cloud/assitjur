@@ -45,7 +45,6 @@ import {
   Shield,
   Loader2,
   Search,
-  Filter,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -234,7 +233,7 @@ const Organization = () => {
         }
       }
 
-      const { data, error } = await supabase.functions.invoke(
+      const { error } = await supabase.functions.invoke(
         "user-invitations",
         {
           body: {

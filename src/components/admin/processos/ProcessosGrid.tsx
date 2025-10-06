@@ -35,7 +35,6 @@ import {
   formatRelativeTime,
   formatCNJ,
 } from "@/utils/date-formatter";
-import { maskPII } from "@/utils/pii-mask";
 import { asString } from "@/types/safe";
 
 interface ProcessosGridProps {

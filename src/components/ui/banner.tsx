@@ -4,7 +4,6 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import {
   tokens,
-  type Contrast,
   type Density,
 } from "@/components/ui/design-tokens";
 

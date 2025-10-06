@@ -48,9 +48,6 @@ export const validatePassword = async (
 
   // Progressive requirements based on role
   const adminRequired = userRole === "ADMIN";
-  const minLengthForRole = adminRequired
-    ? RECOMMENDED_PASSWORD_LENGTH
-    : MIN_PASSWORD_LENGTH;
 
   if (adminRequired && password.length < RECOMMENDED_PASSWORD_LENGTH) {
     errors.push(

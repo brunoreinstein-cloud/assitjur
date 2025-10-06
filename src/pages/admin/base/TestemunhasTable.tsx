@@ -18,8 +18,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Edit, Trash2, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { PorTestemunha } from "@/types/mapa-testemunhas";
 import { ArrayField } from "@/components/mapa-testemunhas/ArrayField";
 import { applyPIIMask } from "@/utils/pii-mask";
@@ -29,7 +27,7 @@ import { Card } from "@/components/ui/card";
 // Using PorTestemunha from mapa-testemunhas types
 
 export default function TestemunhasTable() {
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
   const { toast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState("");

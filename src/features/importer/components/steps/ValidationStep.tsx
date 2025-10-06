@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,14 +8,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   CheckCircle,
-  XCircle,
-  AlertTriangle,
   Info,
   Download,
-  FileSpreadsheet,
   AlertCircle,
   CheckCircle2,
   RefreshCw,
@@ -23,7 +19,6 @@ import {
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useImportStore } from "@/features/importer/store/useImportStore";
-import type { ImportSession } from "@/lib/importer/types";
 import { CorrectionInterface } from "@/components/importer/CorrectionInterface";
 import { IssuesDataTable } from "@/components/assistjur/IssuesDataTable";
 import { getExcelAddress } from "@/lib/excel/cell-addressing";
@@ -220,7 +215,6 @@ export function ValidationStep() {
       const downloadUrls = await generateReports(
         updatedResult,
         file?.name || "arquivo_corrigido",
-        undefined, // originalData not needed for corrected version
         correctionsMap, // Pass real corrections map for visual formatting
       );
 

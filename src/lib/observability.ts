@@ -141,7 +141,7 @@ class ObservabilityManager {
     }
   }
 
-  private sendToExternalService(metric: Metric) {
+  private sendToExternalService(_metric: Metric) {
     // Placeholder para integração com serviços de métricas
     // Ex: DataDog, NewRelic, Sentry, etc.
     // Esta implementação será expandida conforme necessário

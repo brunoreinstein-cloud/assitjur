@@ -111,31 +111,31 @@ export const ExportCsvButton = ({
         });
       } else {
         // Convert Testemunha[] to PorTestemunha[] for compatibility
-        const porTestemunhaData: PorTestemunha[] = (data as Testemunha[]).map(
-          (t) => ({
-            nome_testemunha: t.nome_testemunha,
-            qtd_depoimentos: t.qtd_depoimentos || null,
-            cnjs_como_testemunha: t.cnjs_como_testemunha || null,
-            ja_foi_reclamante: t.ja_foi_reclamante || null,
-            cnjs_como_reclamante: t.cnjs_como_reclamante || null,
-            foi_testemunha_ativo: t.foi_testemunha_ativo || null,
-            cnjs_ativo: t.cnjs_ativo || null,
-            foi_testemunha_passivo: t.foi_testemunha_passivo || null,
-            cnjs_passivo: t.cnjs_passivo || null,
-            foi_testemunha_em_ambos_polos:
-              t.foi_testemunha_em_ambos_polos || null,
-            participou_troca_favor: t.participou_troca_favor || null,
-            cnjs_troca_favor: t.cnjs_troca_favor || null,
-            participou_triangulacao: t.participou_triangulacao || null,
-            cnjs_triangulacao: t.cnjs_triangulacao || null,
-            e_prova_emprestada: t.e_prova_emprestada || null,
-            classificacao: t.classificacao || null,
-            classificacao_estrategica: t.classificacao_estrategica || null,
-            org_id: t.org_id || null,
-            created_at: t.created_at || new Date().toISOString(),
-            updated_at: t.updated_at || new Date().toISOString(),
-          }),
-        );
+          const porTestemunhaData: PorTestemunha[] = (data as Testemunha[]).map(
+            (t) => ({
+              nome_testemunha: t.nome_testemunha ?? "",
+              qtd_depoimentos: t.qtd_depoimentos ?? 0,
+              foi_testemunha_em_ambos_polos:
+                t.foi_testemunha_em_ambos_polos ?? false,
+              ja_foi_reclamante: t.ja_foi_reclamante ?? false,
+              participou_triangulacao: t.participou_triangulacao ?? false,
+              participou_troca_favor: t.participou_troca_favor ?? false,
+              classificacao: t.classificacao ?? null,
+              classificacao_estrategica: t.classificacao_estrategica ?? null,
+              cnjs_como_testemunha: t.cnjs_como_testemunha ?? null,
+              cnjs_como_reclamante: t.cnjs_como_reclamante ?? null,
+              foi_testemunha_ativo: t.foi_testemunha_ativo ?? null,
+              cnjs_ativo: t.cnjs_ativo ?? null,
+              foi_testemunha_passivo: t.foi_testemunha_passivo ?? null,
+              cnjs_passivo: t.cnjs_passivo ?? null,
+              cnjs_troca_favor: t.cnjs_troca_favor ?? null,
+              cnjs_triangulacao: t.cnjs_triangulacao ?? null,
+              e_prova_emprestada: t.e_prova_emprestada ?? null,
+              org_id: t.org_id ?? null,
+              created_at: t.created_at ?? new Date().toISOString(),
+              updated_at: t.updated_at ?? new Date().toISOString(),
+            }),
+          );
 
         exportedCount = exportTestemunhasToCSV(porTestemunhaData, {
           filename: fileName || defaultFileName,

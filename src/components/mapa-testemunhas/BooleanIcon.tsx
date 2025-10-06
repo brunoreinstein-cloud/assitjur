@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import { memo } from "react";
 import { CheckCircle, XCircle } from "lucide-react";
 
 interface BooleanIconProps {

@@ -34,7 +34,7 @@ export function CnpjOabForm() {
     defaultValues: { cnpj: "", oab: "" },
   });
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async () => {
     const now = Date.now();
     if (now - lastSubmitRef.current < 1000) return;
     lastSubmitRef.current = now;

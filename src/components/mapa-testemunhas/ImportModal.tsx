@@ -16,7 +16,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Collapsible,
   CollapsibleContent,
@@ -28,7 +27,6 @@ import {
   Eye,
   CheckCircle,
   AlertCircle,
-  Download,
   RefreshCw,
   FileX,
   Zap,
@@ -51,7 +49,7 @@ import type { WorkSheet } from "xlsx";
 import { DataState, DataStatus } from "@/components/ui/data-state";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { useBeforeUnload } from "@/hooks/useBeforeUnload";
-import { ErrorHandler, withErrorHandling } from "@/lib/error-handling";
+import { withErrorHandling } from "@/lib/error-handling";
 
 // Utils
 const onlyDigits = (s: any) => String(s ?? "").replace(/\D/g, "");
@@ -257,8 +255,8 @@ const ErrorReportGenerator: React.FC<ErrorReportGeneratorProps> = ({
   fileName,
 }) => {
   const { toast } = useToast();
-  const [status, setStatus] = useState<DataStatus>("empty");
-  const [cnjFailed, setCnjFailed] = useState(false);
+  const [] = useState<DataStatus>("empty");
+  const [] = useState(false);
 
   const generateCSVReport = () => {
     withErrorHandling(async () => {

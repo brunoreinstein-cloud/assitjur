@@ -10,7 +10,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Shield, Eye, Download, Trash2, Edit, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,7 +28,7 @@ export default function PortalTitular() {
   const [email, setEmail] = useState("");
   const [requestType, setRequestType] = useState<string>("");
   const [justification, setJustification] = useState("");
-  const [requests, setRequests] = useState<LGPDRequest[]>([]);
+  const [] = useState<LGPDRequest[]>([]);
   const [loading, setLoading] = useState(false);
 
   const requestTypes = [
@@ -100,24 +99,6 @@ export default function PortalTitular() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return <Badge variant="secondary">Pendente</Badge>;
-      case "PROCESSING":
-        return <Badge variant="default">Em Processamento</Badge>;
-      case "COMPLETED":
-        return (
-          <Badge variant="default" className="bg-success">
-            Concluída
-          </Badge>
-        );
-      case "REJECTED":
-        return <Badge variant="destructive">Rejeitada</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
 
   const getRequestIcon = (type: string) => {
     switch (type) {

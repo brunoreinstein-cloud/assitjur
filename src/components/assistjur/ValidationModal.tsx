@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,7 +6,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -18,7 +16,7 @@ import {
   Download,
   Upload,
 } from "lucide-react";
-import { ValidationReport, ValidationIssue } from "@/types/assistjur";
+import { ValidationReport } from "@/types/assistjur";
 import { IssuesDataTable } from "@/components/assistjur/IssuesDataTable";
 
 interface ValidationModalProps {
@@ -36,33 +34,12 @@ export function ValidationModal({
   open,
   onClose,
   report,
-  uploadId,
   onPublish,
   onDownloadReport,
   onExportData,
   isPublishing = false,
 }: ValidationModalProps) {
-  const getSeverityIcon = (severity: ValidationIssue["severity"]) => {
-    switch (severity) {
-      case "error":
-        return <XCircle className="h-4 w-4 text-destructive" />;
-      case "warning":
-        return <AlertTriangle className="h-4 w-4 text-warning" />;
-      case "info":
-        return <CheckCircle className="h-4 w-4 text-info" />;
-    }
-  };
 
-  const getSeverityColor = (severity: ValidationIssue["severity"]) => {
-    switch (severity) {
-      case "error":
-        return "destructive";
-      case "warning":
-        return "default";
-      case "info":
-        return "secondary";
-    }
-  };
 
   const canPublish = report.summary.error_count === 0;
 

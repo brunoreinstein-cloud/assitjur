@@ -9,9 +9,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Database,
-  CheckCircle2,
-  Upload,
-  AlertTriangle,
   TrendingUp,
   Users,
   MessageSquare,
@@ -67,7 +64,7 @@ interface RiskPatternData {
 }
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  useAuth();
   const [loading, setLoading] = useState(true);
   const [overviewData, setOverviewData] = useState<OverviewData | null>(null);
   const [usageData, setUsageData] = useState<UsageData | null>(null);

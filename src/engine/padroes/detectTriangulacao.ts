@@ -35,7 +35,6 @@ interface GrafoNode {
  */
 export function detectTriangulacao(
   processos: any[],
-  testemunhas: any[],
 ): TriangulacaoDetectionResult {
   const matches: TriangulacaoResult[] = [];
 
@@ -139,7 +138,7 @@ function findCyclesInGrafo(
   const stack = new Set<string>();
 
   // Para cada pessoa no grafo, tentar encontrar ciclos
-  for (const [nome, node] of grafo) {
+  for (const [nome] of grafo) {
     if (!visitados.has(nome)) {
       dfsForCycles(nome, grafo, processos, visitados, stack, [], ciclos);
     }

@@ -82,7 +82,7 @@ export const FeatureFlagAdmin: React.FC = () => {
     setKilled([]);
   };
 
-  const fetchAudit = async (flagId: string) => {
+  const fetchAudit = async (_flagId?: string) => {
     // Mock audit data since audit table doesn't exist yet
     const mockAudits: AuditEntry[] = [
       {

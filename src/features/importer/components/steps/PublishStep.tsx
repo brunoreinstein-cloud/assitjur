@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -9,7 +9,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { EdgeFunctionTester } from "@/components/admin/EdgeFunctionTester";
 import { CheckCircle, AlertCircle, RefreshCw, PartyPopper } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,19 +45,6 @@ export function PublishStep() {
 
       // Test direct connectivity to create-version
       try {
-        const testResponse = await fetch(
-          `https://fgjypmlszuzkgvhuszxn.functions.supabase.co/create-version`,
-          {
-            method: "OPTIONS",
-            headers: {
-              Origin: window.location.origin,
-              Authorization: `Bearer ${jwt}`,
-              "Access-Control-Request-Method": "POST",
-              "Access-Control-Request-Headers":
-                "authorization, content-type, apikey, x-retry-count",
-            },
-          },
-        );
       } catch (testError) {
         // Silently handle preflight test error in production
       }

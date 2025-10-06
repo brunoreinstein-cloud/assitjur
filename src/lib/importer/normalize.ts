@@ -13,7 +13,7 @@ import { resolveFieldName } from "@/etl/synonyms";
  */
 function mapHeaders(
   headers: string[],
-  sheetModel: "processo" | "testemunha",
+  _sheetModel: "processo" | "testemunha",
 ): Record<string, string> {
   const mapping: Record<string, string> = {};
 
@@ -63,7 +63,7 @@ function normalizeProcessoData(
   const headerMap = mapHeaders(sheet.headers, "processo");
 
   return rawData
-    .map((row, index) => {
+    .map((row) => {
       const mapped: any = {};
 
       // Map all available fields

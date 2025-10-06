@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Save, X, Filter, Star, Trash2 } from "lucide-react";
+import { Save, X, Star } from "lucide-react";
 import { ProcessoFiltersState } from "@/types/processos-explorer";
 import { useToast } from "@/hooks/use-toast";
 

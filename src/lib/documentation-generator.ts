@@ -4,8 +4,6 @@
  */
 
 import { logger } from "@/lib/logger";
-import { ErrorHandler } from "@/lib/error-handling";
-import { observability } from "@/lib/observability";
 
 interface DocumentationSection {
   title: string;

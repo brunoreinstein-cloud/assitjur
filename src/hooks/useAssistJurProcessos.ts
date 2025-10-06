@@ -7,7 +7,6 @@ import {
   mockStatsData,
 } from "@/lib/mock-data/assistjur-processos";
 import {
-  withErrorHandling,
   apiCall,
   isValidOrgId,
   createError,

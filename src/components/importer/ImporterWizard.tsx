@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Circle, ArrowRight } from "lucide-react";
 import { UploadStep } from "@/components/importer/UploadStep";
 import { ValidationStep } from "@/components/importer/ValidationStep";

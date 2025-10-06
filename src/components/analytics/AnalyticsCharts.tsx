@@ -48,13 +48,6 @@ interface ComarcaRisk {
   highRiskCount: number;
 }
 
-interface AnalyticsChartsProps {
-  usageData?: UsageData[];
-  riskDistribution?: RiskDistribution;
-  comarcaRisks?: ComarcaRisk[];
-  loading?: boolean;
-}
-
 const RISK_COLORS = {
   low: "#10b981", // green-500
   medium: "#f59e0b", // amber-500

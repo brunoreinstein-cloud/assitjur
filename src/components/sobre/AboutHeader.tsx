@@ -7,7 +7,7 @@ interface AboutHeaderProps {
   onOpenBetaModal?: () => void;
 }
 
-export function AboutHeader({ onOpenBetaModal }: AboutHeaderProps) {
+export function AboutHeader({ }: AboutHeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
 

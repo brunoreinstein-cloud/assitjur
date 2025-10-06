@@ -340,8 +340,8 @@ function calculateProvaEmprestadaRisk(
 function calculateProvaEmprestadaConfidence(
   qtdDepoimentos: number,
   advogadosRecorrentes: number,
-  concentracaoComarca: number,
-  processosAnalisados: number,
+  _concentracaoComarca: number,
+  _processosAnalisados: number,
 ): number {
   let score = 0;
 

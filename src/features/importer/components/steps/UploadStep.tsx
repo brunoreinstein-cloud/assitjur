@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -16,7 +16,6 @@ import {
   AlertCircle,
   CheckCircle,
   FileText,
-  Download,
 } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "@/hooks/use-toast";

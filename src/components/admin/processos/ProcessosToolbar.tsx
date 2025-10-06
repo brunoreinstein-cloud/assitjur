@@ -2,11 +2,8 @@ import React, { useMemo, useState } from "react";
 import {
   Search,
   Filter,
-  SlidersHorizontal,
   X,
   Upload,
-  Eye,
-  EyeOff,
   Users,
   MoreHorizontal,
 } from "lucide-react";
@@ -35,7 +32,6 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
 import { ProcessoFiltersState } from "@/types/processos-explorer";
 import { useDebounce } from "@/hooks/useDebounce";
 import { ProcessosSavedFilters } from "@/components/admin/processos/ProcessosSavedFilters";

@@ -28,7 +28,6 @@ export interface TrocaDiretaDetectionResult {
  */
 export function detectTrocaDireta(
   processos: any[],
-  testemunhas: any[],
 ): TrocaDiretaDetectionResult {
   const matches: TrocaDiretaResult[] = [];
   const testemunhasEnvolvidas = new Set<string>();

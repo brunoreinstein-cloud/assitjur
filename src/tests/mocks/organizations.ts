@@ -1,5 +1,7 @@
 import type { Organization } from "@/services/organizationService";
 
+const DEFAULT_TIMESTAMP = "2024-01-01T00:00:00.000Z";
+
 export const mockOrganizations: Organization[] = [
   {
     id: "00000000-0000-0000-0000-000000000001",
@@ -8,6 +10,8 @@ export const mockOrganizations: Organization[] = [
     role: "ADMIN",
     is_active: true,
     domain: "assistjur.ia",
+    created_at: DEFAULT_TIMESTAMP,
+    updated_at: DEFAULT_TIMESTAMP,
   },
   {
     id: "00000000-0000-0000-0000-000000000002",
@@ -15,6 +19,8 @@ export const mockOrganizations: Organization[] = [
     code: "ORG-SEC",
     role: "ANALYST",
     is_active: true,
+    created_at: DEFAULT_TIMESTAMP,
+    updated_at: DEFAULT_TIMESTAMP,
   },
   {
     id: "00000000-0000-0000-0000-000000000003",
@@ -22,6 +28,8 @@ export const mockOrganizations: Organization[] = [
     code: "ORG-INACTIVE",
     role: "VIEWER",
     is_active: false,
+    created_at: DEFAULT_TIMESTAMP,
+    updated_at: DEFAULT_TIMESTAMP,
   },
 ];
 
@@ -35,5 +43,7 @@ export const createMockOrganization = (
   code: "MOCK-ORG",
   role: "VIEWER",
   is_active: true,
+  created_at: DEFAULT_TIMESTAMP,
+  updated_at: DEFAULT_TIMESTAMP,
   ...overrides,
 });

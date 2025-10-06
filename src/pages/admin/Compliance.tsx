@@ -17,8 +17,6 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  Download,
-  Users,
   FileText,
   AlertTriangle,
 } from "lucide-react";
@@ -46,7 +44,7 @@ interface AccessLog {
 }
 
 export default function Compliance() {
-  const { user } = useAuth();
+  useAuth();
   const [requests, setRequests] = useState<LGPDRequest[]>([]);
   const [accessLogs, setAccessLogs] = useState<AccessLog[]>([]);
   const [loading, setLoading] = useState(true);

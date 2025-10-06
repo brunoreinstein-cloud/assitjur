@@ -3,7 +3,6 @@ import { DetectedSheet, SheetModel } from "@/lib/importer/types";
 import {
   toSlugCase,
   detectCsvSeparator,
-  onlyDigits,
 } from "@/lib/importer/utils";
 
 /**
@@ -78,7 +77,7 @@ async function processXlsxFile(file: File): Promise<DetectedSheet[]> {
           // Amostra dos dados (primeiras 5 linhas)
           const sampleData = dataRows.slice(0, 5).map((row) => {
             const obj: Record<string, any> = {};
-            filteredHeaders.forEach((header: string, index: number) => {
+            filteredHeaders.forEach((header: string) => {
               obj[header] = row[headers.indexOf(header)];
             });
             return obj;
@@ -147,7 +146,7 @@ function processCsvFile(file: File): Promise<DetectedSheet[]> {
 
             const sampleData = dataRows.slice(0, 5).map((row) => {
               const obj: Record<string, any> = {};
-              filteredHeaders.forEach((header, index) => {
+              filteredHeaders.forEach((header) => {
                 obj[header] = row[headers.indexOf(header)];
               });
               return obj;
