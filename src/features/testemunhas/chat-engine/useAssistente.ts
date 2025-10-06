@@ -67,7 +67,6 @@ export function useAssistente() {
               "Processo com potencial risco de triangulação detectado.",
             riscoNivel: "alto" as const,
             confianca: 0.85,
-            confianca: 0.85,
             alerta: "Testemunhas conectadas em múltiplos processos",
           },
           citations: [
