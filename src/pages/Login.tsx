@@ -9,7 +9,7 @@ import { AlertBox } from "@/components/auth/AlertBox";
 import { ErrorBanner } from "@/components/common/ErrorBanner";
 import { ERROR_MESSAGES } from "@/utils/errorMessages";
 import { useAuth } from "@/hooks/useAuth";
-import { UserRole } from "@/config/auth";
+import { getDefaultRedirect, AUTH_CONFIG, UserRole } from "@/config/auth";
 import { BrandHeader } from "@/components/brand/BrandHeader";
 import { BackToTopFAB } from "@/components/site/BackToTopFAB";
 
@@ -51,7 +51,7 @@ const Login = () => {
         if (next) params.set("next", next);
         navigate(`/verify-otp?${params.toString()}`);
       } else {
-        const redirectTo = getDefaultRedirect((profile.roles?.[0] as UserRole) || null, next);
+        const redirectTo = getDefaultRedirect(profile.roles?.[0]?.role as UserRole || null, next);
         navigate(redirectTo);
       }
     }

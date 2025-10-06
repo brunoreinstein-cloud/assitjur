@@ -141,7 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setIsSuperAdmin(superAdminStatus);
         return {
           ...data,
-          roles: data.roles || [],
+          roles: (data as any).roles || [],
           is_super_admin: superAdminStatus,
         } as UserProfile;
       }
@@ -455,7 +455,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           };
         }
 
-        if (role === "ADMIN" && !profileData.roles?.includes(role)) {
+        if (role === "ADMIN" && !profileData.roles?.some(r => r.role === role)) {
           await logAuthAttempt(email, "login", "failure", {
             role,
             error: "Insufficient privileges",
@@ -470,7 +470,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         await logAuthAttempt(email, "login", "success", {
           role,
-          user_role: profileData.roles?.[0] || "USER",
+          user_role: profileData.roles?.[0]?.role || "USER",
         });
         setProfile(profileData);
       }

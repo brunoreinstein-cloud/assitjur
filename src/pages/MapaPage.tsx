@@ -59,7 +59,6 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { fetchProcessos, fetchTestemunhas } from "@/services/mapa-testemunhas";
-import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
 import { ChatBar } from "@/features/testemunhas/ChatBar";
 import { ResultBlocks } from "@/features/testemunhas/ResultBlocks";
 import { LoadingHints } from "@/features/testemunhas/LoadingHints";

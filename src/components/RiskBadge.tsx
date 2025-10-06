@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 
 interface RiskBadgeProps {
   score?: number;
-  riscoNivel?: "alto" | "medio" | "baixo";
+  riscoNivel?: "alto" | "medio" | "baixo" | "critico";
   className?: string;
 }
 
@@ -34,8 +34,13 @@ export function RiskBadge({ score, riscoNivel, className }: RiskBadgeProps) {
     };
   };
 
-  const getRiskFromLevel = (nivel: "alto" | "medio" | "baixo") => {
+  const getRiskFromLevel = (nivel: "alto" | "medio" | "baixo" | "critico") => {
     switch (nivel) {
+      case "critico":
+        return {
+          level: "Crítico",
+          color: "bg-red-600 text-white border-red-700",
+        };
       case "alto":
         return {
           level: "Alto",
