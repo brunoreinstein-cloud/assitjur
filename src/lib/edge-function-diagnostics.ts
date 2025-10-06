@@ -141,7 +141,7 @@ export function logSupabaseConfig() {
 
   const config = {
     hasSupabaseClient: !!supabase,
-    functionsUrl: supabase?.functions?.url || "NOT_CONFIGURED",
+    functionsUrl: `${import.meta.env.VITE_SUPABASE_URL}/functions/v1` || "NOT_CONFIGURED",
     hasAuth: !!supabase?.auth,
   };
 

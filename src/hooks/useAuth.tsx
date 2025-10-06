@@ -455,7 +455,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           };
         }
 
-        if (role === "ADMIN" && profileData.role !== "ADMIN") {
+        if (role === "ADMIN" && !profileData.roles?.includes(role)) {
           await logAuthAttempt(email, "login", "failure", {
             role,
             error: "Insufficient privileges",
@@ -470,7 +470,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         await logAuthAttempt(email, "login", "success", {
           role,
-          user_role: profileData.role,
+          user_role: profileData.roles?.[0] || "USER",
         });
         setProfile(profileData);
       }

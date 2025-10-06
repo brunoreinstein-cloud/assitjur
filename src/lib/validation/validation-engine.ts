@@ -5,9 +5,8 @@
 
 import type {
   DetectedSheet,
-  ValidationResult as ImporterValidationResult,
-  ValidationIssue,
-  ValidationSeverity,
+  ValidationResult,
+  ValidationSummary,
 } from "@/lib/importer/types";
 
 // Extended interface for validation with full data

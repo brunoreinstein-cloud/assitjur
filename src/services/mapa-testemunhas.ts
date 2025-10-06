@@ -87,34 +87,31 @@ function getMockTestemunhasData(
 
   const mockData: PorTestemunha[] = [
     {
-      nome: "Maria Silva Santos",
+      nome_testemunha: "Maria Silva Santos",
       qtd_depoimentos: 8,
-      qtd_testemunha: 6,
-      qtd_reclamante: 2,
-      participa_troca_favor: true,
-      participa_triangulacao: true,
-      ambos_polos: true,
+      foi_testemunha_em_ambos_polos: true,
       ja_foi_reclamante: true,
+      participou_triangulacao: true,
+      participou_troca_favor: true,
+      classificacao: "ALTO_RISCO",
     },
     {
-      nome: "João Paulo Oliveira",
+      nome_testemunha: "João Paulo Oliveira",
       qtd_depoimentos: 5,
-      qtd_testemunha: 5,
-      qtd_reclamante: 0,
-      participa_troca_favor: false,
-      participa_triangulacao: true,
-      ambos_polos: false,
+      foi_testemunha_em_ambos_polos: false,
       ja_foi_reclamante: false,
+      participou_triangulacao: true,
+      participou_troca_favor: false,
+      classificacao: "MEDIO_RISCO",
     },
     {
-      nome: "Ana Costa Ferreira",
+      nome_testemunha: "Ana Costa Ferreira",
       qtd_depoimentos: 12,
-      qtd_testemunha: 8,
-      qtd_reclamante: 4,
-      participa_troca_favor: true,
-      participa_triangulacao: false,
-      ambos_polos: true,
+      foi_testemunha_em_ambos_polos: true,
       ja_foi_reclamante: true,
+      participou_triangulacao: false,
+      participou_troca_favor: true,
+      classificacao: "ALTO_RISCO",
     },
   ];
 
@@ -134,7 +131,7 @@ export async function fetchTestemunhas(params: {
 }): Promise<{ data: PorTestemunha[]; total: number; error?: string }> {
   const requestId = Math.random().toString(36).substring(7);
 
-  const searchTerm = params.filters?.search || params.filters?.nome;
+  const searchTerm = params.filters?.search;
 
   DebugMode.log(`🔍 [${requestId}] fetchTestemunhas iniciado`, {
     page: params.page,
@@ -185,7 +182,7 @@ export async function fetchTestemunhas(params: {
         `🚀 [${requestId}] Function: ${MAPA_TESTEMUNHAS_TESTEMUNHAS_FN}`,
       );
       DebugMode.log(
-        `🚀 [${requestId}] URL: ${supabase.functions.url}/${MAPA_TESTEMUNHAS_TESTEMUNHAS_FN}`,
+        `🚀 [${requestId}] URL: ${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${MAPA_TESTEMUNHAS_TESTEMUNHAS_FN}`,
       );
       DebugMode.log(`🚀 [${requestId}] Body:`, body);
       DebugMode.log(
@@ -387,7 +384,7 @@ export async function fetchProcessos(params: {
         `🚀 [${requestId}] Function: ${MAPA_TESTEMUNHAS_PROCESSOS_FN}`,
       );
       DebugMode.log(
-        `🚀 [${requestId}] URL: ${supabase.functions.url}/${MAPA_TESTEMUNHAS_PROCESSOS_FN}`,
+        `🚀 [${requestId}] URL: ${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${MAPA_TESTEMUNHAS_PROCESSOS_FN}`,
       );
       DebugMode.log(`🚀 [${requestId}] Body:`, body);
       DebugMode.log(

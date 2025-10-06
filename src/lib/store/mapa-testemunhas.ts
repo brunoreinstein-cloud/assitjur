@@ -55,11 +55,6 @@ type FilterProcesso = ProcessoFilters;
 type FilterTestemunha = TestemunhaFilters;
 type TabType = "processos" | "testemunhas";
 
-interface ErrorState {
-  hasError: boolean;
-  message?: string;
-}
-
 interface NavigationItem {
   label: string;
   path: string;

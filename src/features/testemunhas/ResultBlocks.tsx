@@ -149,10 +149,10 @@ export function ResultBlocks({ blocks }: ResultBlocksProps) {
                     "Análise contextual em progresso"
                   }
                   riscoNivel={
-                    (block.data?.riscoNivel ||
+                    ((block.data?.riscoNivel ||
                       block.meta?.riscoNivel ||
                       block.context?.meta?.riscoNivel ||
-                      "baixo") as "baixo" | "medio" | "alto" | "critico"
+                      "baixo") as "baixo" | "medio" | "alto" | "critico")
                   }
                   confianca={
                     typeof block.data?.confianca === "number"

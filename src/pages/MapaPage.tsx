@@ -73,8 +73,6 @@ import { DensitySelector } from "@/components/mapa-testemunhas/DensitySelector";
 import { ContextBreadcrumb } from "@/components/mapa-testemunhas/ContextBreadcrumb";
 
 // Updated types to match mapa-testemunhas structure
-type Processo = PorProcesso;
-type Testemunha = PorTestemunha;
 type TabType = "processos" | "testemunhas";
 
 interface StatsData {

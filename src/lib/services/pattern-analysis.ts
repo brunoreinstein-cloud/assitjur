@@ -2,7 +2,6 @@ import { supabase } from "@/integrations/supabase/client";
 import type {
   AnalysisResult,
   AnalysisRequest,
-  AnalysisResponse,
 } from "@/types/mapa-testemunhas-analysis";
 
 /**

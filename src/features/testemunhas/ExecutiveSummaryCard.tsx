@@ -37,7 +37,7 @@ interface ExecutiveSummaryCardProps {
   reu: string;
   status?: string;
   observacoes?: string;
-  riscoNivel: "alto" | "medio" | "baixo";
+  riscoNivel: "alto" | "medio" | "baixo" | "critico";
   confianca: number; // 0..1
   alerta?: string;
   citacoes: CitationItem[];

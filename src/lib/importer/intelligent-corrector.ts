@@ -1,5 +1,4 @@
-import type {
-  DetectedSheet,
+import {
   ImportSession,
   ValidationResult,
   ValidationIssue,

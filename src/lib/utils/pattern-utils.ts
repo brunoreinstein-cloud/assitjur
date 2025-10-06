@@ -1,12 +1,6 @@
 import type {
   AnalysisResult,
-  TrocaDiretaResult,
-  TriangulacaoResult,
-  DuploPapelResult,
-  ProvaEmprestadaResult,
-  HomonimoResult,
   RiscoLevel,
-  ProbabilidadeLevel,
 } from "@/types/mapa-testemunhas-analysis";
 
 /**

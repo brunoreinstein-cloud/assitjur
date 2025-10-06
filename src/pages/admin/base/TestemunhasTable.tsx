@@ -313,7 +313,7 @@ export default function TestemunhasTable() {
                   </TableCell>
                   <TableCell>
                     <ArrayField
-                      items={testemunha.cnjs_como_testemunha}
+                      items={testemunha.cnjs_como_testemunha ?? null}
                       maxVisible={2}
                       isPiiMasked={isPiiMasked}
                     />
@@ -321,7 +321,7 @@ export default function TestemunhasTable() {
                   <TableCell>
                     <Badge
                       variant={getClassificacaoColor(
-                        testemunha.classificacao_estrategica,
+                        testemunha.classificacao_estrategica ?? null,
                       )}
                       className="text-xs"
                     >
@@ -331,7 +331,7 @@ export default function TestemunhasTable() {
                   <TableCell>
                     <QualityChips
                       severity={getSeverityFromClassificacao(
-                        testemunha.classificacao_estrategica,
+                        testemunha.classificacao_estrategica ?? null,
                       )}
                       score={
                         testemunha.qtd_depoimentos

@@ -474,9 +474,9 @@ export function ChatBar() {
                                   </span>
                                   <Badge
                                     variant="secondary"
-                                    className={`text-[10px] px-1.5 py-0 ${ENTITY_TYPE_COLORS[result.type]}`}
+                                    className={`text-[10px] px-1.5 py-0 ${ENTITY_TYPE_COLORS[result.type as keyof typeof ENTITY_TYPE_COLORS]}`}
                                   >
-                                    {ENTITY_TYPE_LABELS[result.type]}
+                                    {ENTITY_TYPE_LABELS[result.type as keyof typeof ENTITY_TYPE_LABELS]}
                                   </Badge>
                                 </div>
 

@@ -1,13 +1,18 @@
 export type PorProcesso = {
   cnj: string;
+  numero_cnj?: string; // Alias temporário
   status: string | null;
   uf: string | null;
   comarca: string | null;
   fase: string | null;
   reclamante_limpo: string | null;
+  reclamante_nome?: string | null; // Alias temporário
+  reu_nome?: string | null; // Alias temporário
   advogados_parte_ativa: string[] | null;
   testemunhas_ativo_limpo: string[] | null;
+  testemunhas_ativo?: string[] | null; // Alias temporário
   testemunhas_passivo_limpo: string[] | null;
+  testemunhas_passivo?: string[] | null; // Alias temporário
   todas_testemunhas: string[] | null;
   reclamante_foi_testemunha: boolean | null;
   qtd_vezes_reclamante_foi_testemunha: number | null;
@@ -27,6 +32,8 @@ export type PorProcesso = {
   testemunhas_prova_emprestada: string[] | null;
   classificacao_final: string | null;
   insight_estrategico: string | null;
+  score_risco?: number | null; // Alias temporário
+  observacoes?: string | null; // Alias temporário
   org_id: string | null;
   created_at: string;
   updated_at: string;
@@ -34,14 +41,17 @@ export type PorProcesso = {
 
 export type PorTestemunha = {
   nome_testemunha: string;
+  nome?: string; // Alias temporário
   qtd_depoimentos: number;
   foi_testemunha_em_ambos_polos: boolean;
   ja_foi_reclamante: boolean;
   participou_triangulacao: boolean;
   participou_troca_favor: boolean;
   classificacao: string | null;
+  classificacao_final?: string | null; // Alias temporário
   classificacao_estrategica?: string | null;
   cnjs_como_testemunha?: string[] | null;
+  processos_cnj?: string[] | null; // Alias temporário
   cnjs_como_reclamante?: string[] | null;
   foi_testemunha_ativo?: boolean | null;
   cnjs_ativo?: string[] | null;
@@ -50,6 +60,7 @@ export type PorTestemunha = {
   cnjs_troca_favor?: string[] | null;
   cnjs_triangulacao?: string[] | null;
   e_prova_emprestada?: boolean | null;
+  score_risco?: number | null; // Alias temporário
   org_id?: string | null;
   created_at?: string;
   updated_at?: string;
