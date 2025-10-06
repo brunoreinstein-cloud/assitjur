@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,14 +13,22 @@ import {
   Zap,
 } from "lucide-react";
 import { TestUtils } from "@/lib/testing-utilities";
-import { observability } from "@/lib/observability";
+import type {
+  TestResult as HealthCheckTestResult,
+  HealthCheckResult,
+} from "@/lib/testing-utilities";
 import { useDevDiagnostics } from "@/lib/dev-diagnostics";
 
-interface HealthStatus {
-  overall: boolean;
-  tests: unknown[];
-  memory: { usage: number; warning: boolean };
-  metrics: Record<string, unknown>;
+interface TestResult extends HealthCheckTestResult {
+  id: HealthCheckTestResult["id"];
+  name: HealthCheckTestResult["name"];
+  category: HealthCheckTestResult["category"];
+  passed: HealthCheckTestResult["passed"];
+  duration: HealthCheckTestResult["duration"];
+  error?: HealthCheckTestResult["error"];
+}
+
+interface HealthStatus extends HealthCheckResult {
   lastCheck: Date;
 }
 
@@ -29,17 +37,13 @@ interface HealthStatus {
  * Exibe métricas em tempo real e status dos testes automáticos
  */
 export function HealthMonitor() {
+  const isDevelopment = import.meta.env.MODE === "development";
   const [isVisible, setIsVisible] = useState(false);
   const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { trackRender } = useDevDiagnostics("HealthMonitor");
 
-  // Apenas renderizar em desenvolvimento
-  if (import.meta.env.MODE !== "development") {
-    return null;
-  }
-
-  const runHealthCheck = async () => {
+  const runHealthCheck = useCallback(async () => {
     setIsLoading(true);
     try {
       const result = await TestUtils.healthCheck();
@@ -52,9 +56,13 @@ export function HealthMonitor() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    if (!isDevelopment) {
+      return;
+    }
+
     trackRender();
     // Check inicial
     runHealthCheck();
@@ -62,7 +70,12 @@ export function HealthMonitor() {
     // Auto-refresh a cada 30 segundos
     const interval = setInterval(runHealthCheck, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isDevelopment, runHealthCheck, trackRender]);
+
+  // Apenas renderizar em desenvolvimento
+  if (!isDevelopment) {
+    return null;
+  }
 
   const getSeverityBadge = (severity: "ok" | "warning" | "error") => {
     const variants = {

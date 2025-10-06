@@ -8,19 +8,29 @@ import { ErrorHandler, createError } from "@/lib/error-handling";
 import { observability } from "@/lib/observability";
 
 // Tipos para testes automatizados
+type TestCategory = "validation" | "api" | "ui" | "business";
+
 interface TestCase {
   name: string;
   test: () => Promise<boolean> | boolean;
-  category: "validation" | "api" | "ui" | "business";
+  category: TestCategory;
   critical?: boolean;
 }
 
-interface TestResult {
+export interface TestResult {
+  id: string;
   name: string;
+  category: TestCategory;
   passed: boolean;
-  error?: string;
   duration: number;
-  category: string;
+  error?: string;
+}
+
+export interface HealthCheckResult {
+  tests: TestResult[];
+  memory: { usage: number; warning: boolean };
+  metrics: ReturnType<typeof observability.getMetricsSummary>;
+  overall: boolean;
 }
 
 // Sistema de detecção de regressões
@@ -69,6 +79,7 @@ export class RegressionDetector {
         const duration = performance.now() - start;
 
         results.push({
+          id: `${testCase.category}:${testCase.name}`,
           name: testCase.name,
           passed,
           duration,
@@ -88,6 +99,7 @@ export class RegressionDetector {
       } catch (error) {
         const duration = performance.now();
         results.push({
+          id: `${testCase.category}:${testCase.name}`,
           name: testCase.name,
           passed: false,
           error: error instanceof Error ? error.message : String(error),
@@ -147,23 +159,38 @@ export const DomainValidators = {
   },
 
   // Validação de dados de processo
-  validateProcessoData: (processo: any): boolean => {
-    return !!(
-      processo &&
-      typeof processo.cnj === "string" &&
-      typeof processo.reclamante_nome === "string" &&
-      typeof processo.reu_nome === "string" &&
-      DomainValidators.validateCNJFormat(processo.cnj)
+  validateProcessoData: (processo: unknown): boolean => {
+    if (!processo || typeof processo !== "object") {
+      return false;
+    }
+
+    const candidate = processo as {
+      cnj?: unknown;
+      reclamante_nome?: unknown;
+      reu_nome?: unknown;
+    };
+
+    return (
+      typeof candidate.cnj === "string" &&
+      typeof candidate.reclamante_nome === "string" &&
+      typeof candidate.reu_nome === "string" &&
+      DomainValidators.validateCNJFormat(candidate.cnj)
     );
   },
 
   // Validação de resposta de API
-  validateApiResponse: (response: any, expectedFields: string[]): boolean => {
+  validateApiResponse: (
+    response: unknown,
+    expectedFields: string[],
+  ): boolean => {
     if (!response || typeof response !== "object") return false;
+
+    const record = response as Record<string, unknown>;
 
     return expectedFields.every(
       (field) =>
-        response.hasOwnProperty(field) && response[field] !== undefined,
+        Object.prototype.hasOwnProperty.call(record, field) &&
+        record[field] !== undefined,
     );
   },
 };
@@ -338,7 +365,7 @@ export const TestUtils = {
   },
 
   // Verificar integridade do sistema
-  healthCheck: async () => {
+  healthCheck: async (): Promise<HealthCheckResult> => {
     const results = await regressionDetector.runAllTests();
     const memoryCheck = performanceMonitor.checkMemoryUsage();
     const metrics = observability.getMetricsSummary();
@@ -348,6 +375,8 @@ export const TestUtils = {
       memory: memoryCheck,
       metrics,
       overall: results.every((r) => r.passed) && !memoryCheck.warning,
-    };
+    } satisfies HealthCheckResult;
   },
 };
+
+export type { TestCategory };
