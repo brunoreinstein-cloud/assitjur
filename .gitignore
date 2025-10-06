@@ -7,3 +7,5 @@ out/
 bun.lockb
 *.tsbuildinfo
 node_modules/
+.vercel/
+.vercel/output/
