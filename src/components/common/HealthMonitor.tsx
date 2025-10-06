@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,14 +13,26 @@ import {
   Zap,
 } from "lucide-react";
 import { TestUtils } from "@/lib/testing-utilities";
-import { observability } from "@/lib/observability";
 import { useDevDiagnostics } from "@/lib/dev-diagnostics";
+import { ObservabilityMetrics } from "@/types/observability";
+
+const formatDuration = (value: unknown): string => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return `${Math.round(value)} ms`;
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  return "N/A";
+};
 
 interface HealthStatus {
   overall: boolean;
   tests: unknown[];
   memory: { usage: number; warning: boolean };
-  metrics: Record<string, unknown>;
+  metrics: ObservabilityMetrics;
   lastCheck: Date;
 }
 
@@ -33,13 +45,9 @@ export function HealthMonitor() {
   const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { trackRender } = useDevDiagnostics("HealthMonitor");
+  const isDevelopment = import.meta.env.MODE === "development";
 
-  // Apenas renderizar em desenvolvimento
-  if (import.meta.env.MODE !== "development") {
-    return null;
-  }
-
-  const runHealthCheck = async () => {
+  const runHealthCheck = useCallback(async () => {
     setIsLoading(true);
     try {
       const result = await TestUtils.healthCheck();
@@ -52,9 +60,13 @@ export function HealthMonitor() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    if (!isDevelopment) {
+      return;
+    }
+
     trackRender();
     // Check inicial
     runHealthCheck();
@@ -62,7 +74,12 @@ export function HealthMonitor() {
     // Auto-refresh a cada 30 segundos
     const interval = setInterval(runHealthCheck, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isDevelopment, runHealthCheck, trackRender]);
+
+  // Apenas renderizar em desenvolvimento
+  if (!isDevelopment) {
+    return null;
+  }
 
   const getSeverityBadge = (severity: "ok" | "warning" | "error") => {
     const variants = {
@@ -221,6 +238,18 @@ export function HealthMonitor() {
                       {healthStatus.metrics.apiCalls}
                     </div>
                     <div>API Calls</div>
+                  </div>
+                  <div className="bg-muted p-2 rounded">
+                    <div className="font-medium">
+                      {healthStatus.metrics.userActions}
+                    </div>
+                    <div>Ações de usuário</div>
+                  </div>
+                  <div className="bg-muted p-2 rounded">
+                    <div className="font-medium">
+                      {formatDuration(healthStatus.metrics.averageApiDuration)}
+                    </div>
+                    <div>Duração média da API</div>
                   </div>
                 </div>
               </div>

@@ -6,6 +6,10 @@
 import { logger } from "@/lib/logger";
 import { ErrorHandler, createError } from "@/lib/error-handling";
 import { observability } from "@/lib/observability";
+import {
+  ObservabilityMetrics,
+  isObservabilityMetrics,
+} from "@/types/observability";
 
 // Tipos para testes automatizados
 interface TestCase {
@@ -15,7 +19,7 @@ interface TestCase {
   critical?: boolean;
 }
 
-interface TestResult {
+export interface TestResult {
   name: string;
   passed: boolean;
   error?: string;
@@ -147,23 +151,34 @@ export const DomainValidators = {
   },
 
   // Validação de dados de processo
-  validateProcessoData: (processo: any): boolean => {
-    return !!(
-      processo &&
-      typeof processo.cnj === "string" &&
-      typeof processo.reclamante_nome === "string" &&
-      typeof processo.reu_nome === "string" &&
-      DomainValidators.validateCNJFormat(processo.cnj)
+  validateProcessoData: (processo: unknown): boolean => {
+    if (!processo || typeof processo !== "object") {
+      return false;
+    }
+
+    const candidate = processo as Record<string, unknown>;
+
+    return (
+      typeof candidate.cnj === "string" &&
+      typeof candidate.reclamante_nome === "string" &&
+      typeof candidate.reu_nome === "string" &&
+      DomainValidators.validateCNJFormat(candidate.cnj)
     );
   },
 
   // Validação de resposta de API
-  validateApiResponse: (response: any, expectedFields: string[]): boolean => {
+  validateApiResponse: (
+    response: unknown,
+    expectedFields: string[],
+  ): boolean => {
     if (!response || typeof response !== "object") return false;
+
+    const data = response as Record<string, unknown>;
 
     return expectedFields.every(
       (field) =>
-        response.hasOwnProperty(field) && response[field] !== undefined,
+        Object.prototype.hasOwnProperty.call(data, field) &&
+        data[field] !== undefined,
     );
   },
 };
@@ -341,7 +356,25 @@ export const TestUtils = {
   healthCheck: async () => {
     const results = await regressionDetector.runAllTests();
     const memoryCheck = performanceMonitor.checkMemoryUsage();
-    const metrics = observability.getMetricsSummary();
+    const rawMetrics = observability.getMetricsSummary();
+    const metrics: ObservabilityMetrics = isObservabilityMetrics(rawMetrics)
+      ? rawMetrics
+      : {
+          totalMetrics: 0,
+          errors: 0,
+          apiCalls: 0,
+          userActions: 0,
+          averageApiDuration: 0,
+          topErrors: [],
+        };
+
+    if (!isObservabilityMetrics(rawMetrics)) {
+      logger.warn(
+        "Unexpected metrics summary format",
+        { rawMetrics },
+        "TestUtils",
+      );
+    }
 
     return {
       tests: results,
