@@ -31,7 +31,7 @@ export default function AppHome() {
       status: "Parcialmente Disponível",
       statusColor: "bg-success/20 text-success border-success/30",
       available: true,
-      route: "/mapa-testemunhas",
+      route: "/app/mapa-testemunhas",
     },
     {
       icon: BarChart3,
@@ -68,7 +68,7 @@ export default function AppHome() {
             <div className="flex flex-wrap gap-4">
               <Button
                 size="lg"
-                onClick={() => navigate("/mapa-testemunhas")}
+                onClick={() => navigate("/app/mapa-testemunhas")}
                 className="gap-2"
               >
                 <Users className="h-5 w-5" />

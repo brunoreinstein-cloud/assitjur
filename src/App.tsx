@@ -19,10 +19,12 @@ import { AuthProvider as SupabaseAuthProvider } from "@/providers/AuthProvider";
 import { MultiTenantProvider } from "@/contexts/MultiTenantContext";
 import { OrganizationErrorBoundary } from "@/components/core/OrganizationErrorBoundary";
 import { AuthErrorBoundary } from "@/components/core/AuthErrorBoundary";
-import AuthGuard from "@/components/AuthGuard";
-import { AppLayout } from "@/components/navigation/AppLayout";
+import { RouteGuard } from "@/components/routing/RouteGuard";
+import { DemoRoutes } from "@/routes/DemoRoutes";
 import { ErrorBoundary } from "@/components/core/ErrorBoundary";
 import { ProductionOptimizer } from "@/components/production/ProductionOptimizer";
+
+// ... keep existing code
 
 // Admin pages (lazy loaded)
 const Dashboard = lazy(() => import("@/pages/admin/Dashboard"));
@@ -79,7 +81,6 @@ const ResetPasswordPage = lazy(() => import("@/routes/reset-password"));
 const VerifyOtp = lazy(() => import("@/pages/VerifyOtp"));
 const PortalTitular = lazy(() => import("@/pages/PortalTitular"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
-const DemoMapaTestemunhas = lazy(() => import("@/pages/DemoMapaTestemunhas"));
 const TemplatePage = lazy(() => import("@/pages/TemplatePage"));
 const ReportDemo = lazy(() => import("@/pages/ReportDemo"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
@@ -104,7 +105,7 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* Public routes */}
+      {/* ===== PUBLIC ROUTES (No Authentication) ===== */}
       <Route path="/" element={<PublicHome />} />
       <Route path="/sobre" element={<About />} />
       <Route path="/beta" element={<Beta />} />
@@ -115,7 +116,6 @@ function AppRoutes() {
       <Route path="/verify-otp" element={<VerifyOtp />} />
       <Route path="/portal-titular" element={<PortalTitular />} />
       <Route path="/import/template" element={<TemplatePage />} />
-      <Route path="/demo/mapa-testemunhas" element={<DemoMapaTestemunhas />} />
       <Route path="/privacidade" element={<PrivacyPolicy />} />
       <Route path="/termos" element={<TermsOfUse />} />
       <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
@@ -123,91 +123,102 @@ function AppRoutes() {
       <Route path="/lgpd" element={<LGPD />} />
       <Route path="/500" element={<ServerError />} />
       <Route path="/status" element={<Status />} />
+      
+      {/* Demo Routes - Public */}
+      <Route path="/demo/*" element={<DemoRoutes />} />
 
-      {/* Protected routes with app layout */}
+      {/* ===== PROTECTED ROUTES (Under /app/*) ===== */}
       <Route
+        path="/app/*"
         element={
-          <AuthGuard>
-            <AppLayout>
-              <ErrorBoundary>
-                <Suspense fallback={<div className="p-4">Carregando...</div>}>
-                  <Outlet />
-                </Suspense>
-              </ErrorBoundary>
-            </AppLayout>
-          </AuthGuard>
+          <RouteGuard>
+            <ErrorBoundary>
+              <Suspense fallback={<div className="p-4">Carregando...</div>}>
+                <Outlet />
+              </Suspense>
+            </ErrorBoundary>
+          </RouteGuard>
         }
       >
-        <Route path="/dashboard" element={<AppHome />} />
-        <Route path="/mapa" element={<MapaPage />} />
-        <Route path="/mapa-testemunhas" element={<MapaPage />} />
-        <Route path="/dados" element={<Navigate to="/mapa" replace />} />
-        <Route path="/dados/mapa" element={<Navigate to="/mapa" replace />} />
-        {/* Redirect deprecated chat route to mapa-testemunhas */}
-        <Route
-          path="/chat"
-          element={<Navigate to="/mapa-testemunhas?view=chat" replace />}
-        />
-        <Route
-          path="/app/chat"
-          element={<Navigate to="/mapa-testemunhas?view=chat" replace />}
-        />
+        {/* Main Dashboard */}
+        <Route index element={<Navigate to="/app/dashboard" replace />} />
+        <Route path="dashboard" element={<AppHome />} />
+        
+        {/* Mapa de Testemunhas */}
+        <Route path="mapa-testemunhas" element={<MapaPage />} />
+        <Route path="mapa" element={<Navigate to="/app/mapa-testemunhas" replace />} />
+        <Route path="dados" element={<Navigate to="/app/mapa-testemunhas" replace />} />
+        <Route path="dados/mapa" element={<Navigate to="/app/mapa-testemunhas" replace />} />
+        
+        {/* Chat redirect */}
+        <Route path="chat" element={<Navigate to="/app/mapa-testemunhas?view=chat" replace />} />
 
-        {/* Super Admin routes */}
-        <Route path="/super-admin" element={<SuperAdminDashboard />} />
-        <Route
-          path="/super-admin/dashboard"
-          element={<SuperAdminDashboard />}
-        />
-        <Route path="/super-admin/users" element={<UserManagement />} />
+        {/* Super Admin Routes */}
+        <Route path="super-admin" element={<SuperAdminDashboard />} />
+        <Route path="super-admin/dashboard" element={<SuperAdminDashboard />} />
+        <Route path="super-admin/users" element={<UserManagement />} />
 
-        {/* Admin routes */}
-        <Route path="/admin" element={<Dashboard />} />
-        <Route path="/admin/dashboard" element={<Dashboard />} />
-        <Route path="/admin/analytics" element={<Analytics />} />
-        <Route path="/admin/metrics" element={<Metrics />} />
-        <Route
-          path="/admin/feature-flags/metrics"
-          element={<FeatureFlagMetrics />}
-        />
-        <Route path="/admin/ia" element={<OpenAI />} />
-        <Route path="/admin/ia/chaves" element={<OpenAIKeys />} />
-        <Route path="/admin/ia/modelos" element={<OpenAIModels />} />
-        <Route path="/admin/ia/prompt-studio" element={<PromptStudio />} />
-        <Route path="/admin/ia/testes" element={<OpenAIPlayground />} />
-        <Route path="/admin/base-import" element={<ImportBase />} />
-        <Route path="/admin/base-import/test" element={<ValidationTest />} />
-        <Route path="/admin/base" element={<BaseRedirect />} />
-        <Route path="/admin/base/*" element={<BaseLayout />}>
+        {/* Admin Routes */}
+        <Route path="admin" element={<Dashboard />} />
+        <Route path="admin/dashboard" element={<Dashboard />} />
+        <Route path="admin/analytics" element={<Analytics />} />
+        <Route path="admin/metrics" element={<Metrics />} />
+        <Route path="admin/feature-flags/metrics" element={<FeatureFlagMetrics />} />
+        
+        {/* IA Routes */}
+        <Route path="admin/ia" element={<OpenAI />} />
+        <Route path="admin/ia/chaves" element={<OpenAIKeys />} />
+        <Route path="admin/ia/modelos" element={<OpenAIModels />} />
+        <Route path="admin/ia/prompt-studio" element={<PromptStudio />} />
+        <Route path="admin/ia/testes" element={<OpenAIPlayground />} />
+        
+        {/* Base Import Routes */}
+        <Route path="admin/base-import" element={<ImportBase />} />
+        <Route path="admin/base-import/test" element={<ValidationTest />} />
+        <Route path="import" element={<Navigate to="/app/admin/base-import" replace />} />
+        
+        {/* Base Data Routes */}
+        <Route path="admin/base" element={<BaseRedirect />} />
+        <Route path="admin/base/*" element={<BaseLayout />}>
           <Route path="processos" element={<ProcessosTable />} />
           <Route path="testemunhas" element={<TestemunhasTable />} />
         </Route>
-        <Route path="/admin/versoes" element={<Versions />} />
-        <Route path="/admin/org" element={<Organization />} />
-        <Route path="/admin/organization" element={<Organization />} />
-        <Route path="/admin/compliance" element={<Compliance />} />
-        <Route path="/admin/marketing" element={<MarketingCompliance />} />
-        <Route path="/admin/retencao" element={<DataRetention />} />
-        <Route path="/admin/config" element={<SystemConfig />} />
+        
+        {/* Admin Management */}
+        <Route path="admin/versoes" element={<Versions />} />
+        <Route path="admin/org" element={<Organization />} />
+        <Route path="admin/organization" element={<Organization />} />
+        <Route path="admin/compliance" element={<Compliance />} />
+        <Route path="admin/marketing" element={<MarketingCompliance />} />
+        <Route path="admin/retencao" element={<DataRetention />} />
+        <Route path="admin/config" element={<SystemConfig />} />
+        
+        {/* Reports */}
         <Route
-          path="/import"
-          element={<Navigate to="/admin/base-import" replace />}
-        />
-        <Route
-          path="/relatorio"
+          path="relatorio"
           element={
             <FeatureFlagGuard flag="advanced-report">
               <ReportDemo />
             </FeatureFlagGuard>
           }
         />
-        <Route path="/account/2fa" element={<TwoFactorSetup />} />
-
-        {/* Profile and Settings routes */}
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        
+        {/* Account & Settings */}
+        <Route path="account/2fa" element={<TwoFactorSetup />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
 
+      {/* ===== LEGACY REDIRECTS (Backward Compatibility) ===== */}
+      <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
+      <Route path="/mapa-testemunhas" element={<Navigate to="/app/mapa-testemunhas" replace />} />
+      <Route path="/mapa" element={<Navigate to="/app/mapa-testemunhas" replace />} />
+      <Route path="/admin/*" element={<Navigate to={`/app/admin${location.pathname.replace('/admin', '')}`} replace />} />
+      <Route path="/profile" element={<Navigate to="/app/profile" replace />} />
+      <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
+      <Route path="/chat" element={<Navigate to="/app/mapa-testemunhas?view=chat" replace />} />
+
+      {/* 404 Not Found */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

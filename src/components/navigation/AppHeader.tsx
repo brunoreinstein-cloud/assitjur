@@ -24,22 +24,26 @@ import {
 } from "lucide-react";
 
 const routeConfig: RoutesMap = {
-  "/": { label: "Início", icon: Home },
-  "/chat": { label: "Chat Assistente", icon: MessageSquare },
-  "/dados": { label: "Dados", icon: Database },
-  "/dados/mapa": { label: "Mapa de Testemunhas", icon: Database },
-  "/admin": { label: "Administração", icon: BarChart3 },
-  "/admin/ia": { label: "Inteligência Artificial", icon: Bot },
-  "/admin/ia/chaves": { label: "Chaves API", icon: Settings },
-  "/admin/ia/modelos": { label: "Modelos", icon: Settings },
-  "/admin/ia/prompt-studio": { label: "Prompt Studio", icon: FileText },
-  "/admin/ia/testes": { label: "Playground", icon: Settings },
-  "/admin/base": { label: "Base de Dados", icon: Database },
-  "/admin/org": { label: "Organização", icon: Users },
-  "/admin/config": { label: "Configurações", icon: Settings },
-  "/admin/analytics": { label: "Analytics", icon: BarChart3 },
-  "/admin/logs": { label: "Logs", icon: FileText },
-  "/admin/versoes": { label: "Versões", icon: FileText },
+  "/app": { label: "Início", icon: Home },
+  "/app/dashboard": { label: "Dashboard", icon: Home },
+  "/app/mapa-testemunhas": { label: "Mapa de Testemunhas", icon: Users },
+  "/app/chat": { label: "Chat Assistente", icon: MessageSquare },
+  "/app/dados": { label: "Dados", icon: Database },
+  "/app/dados/mapa": { label: "Mapa de Testemunhas", icon: Database },
+  "/app/admin": { label: "Administração", icon: BarChart3 },
+  "/app/admin/ia": { label: "Inteligência Artificial", icon: Bot },
+  "/app/admin/ia/chaves": { label: "Chaves API", icon: Settings },
+  "/app/admin/ia/modelos": { label: "Modelos", icon: Settings },
+  "/app/admin/ia/prompt-studio": { label: "Prompt Studio", icon: FileText },
+  "/app/admin/ia/testes": { label: "Playground", icon: Settings },
+  "/app/admin/base": { label: "Base de Dados", icon: Database },
+  "/app/admin/org": { label: "Organização", icon: Users },
+  "/app/admin/config": { label: "Configurações", icon: Settings },
+  "/app/admin/analytics": { label: "Analytics", icon: BarChart3 },
+  "/app/admin/logs": { label: "Logs", icon: FileText },
+  "/app/admin/versoes": { label: "Versões", icon: FileText },
+  "/app/profile": { label: "Perfil", icon: Users },
+  "/app/settings": { label: "Configurações", icon: Settings },
 };
 
 export function AppHeader() {
@@ -50,10 +54,10 @@ export function AppHeader() {
     const pathSegments = location.pathname.split("/").filter(Boolean);
     const breadcrumbs: BreadcrumbInfo[] = [];
 
-    // Always start with home if not on home page
-    if (location.pathname !== "/") {
+    // Always start with home for /app/* routes
+    if (location.pathname.startsWith("/app")) {
       breadcrumbs.push({
-        path: "/",
+        path: "/app/dashboard",
         label: "Início",
         icon: Home,
       });
@@ -65,7 +69,7 @@ export function AppHeader() {
       currentPath += `/${segment}`;
       const config = routeConfig[currentPath];
 
-      if (config) {
+      if (config && currentPath !== "/app/dashboard") {
         breadcrumbs.push({
           path: currentPath,
           label: config.label,

@@ -246,14 +246,14 @@ export function AppSidebar() {
 
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem asChild className="cursor-pointer">
-                <NavLink to="/profile" className="flex items-center gap-2">
+                <NavLink to="/app/profile" className="flex items-center gap-2">
                   <User className="h-4 w-4" />
                   <span>Meu Perfil</span>
                 </NavLink>
               </DropdownMenuItem>
               {isAdmin && (
                 <DropdownMenuItem asChild className="cursor-pointer">
-                  <NavLink to="/settings" className="flex items-center gap-2">
+                  <NavLink to="/app/settings" className="flex items-center gap-2">
                     <UserCog className="h-4 w-4" />
                     <span>Configurações da Organização</span>
                   </NavLink>

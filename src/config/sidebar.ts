@@ -32,13 +32,13 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       {
         label: "Início",
-        to: "/dashboard",
+        to: "/app/dashboard",
         icon: Home,
         description: "Visão geral",
       },
       {
         label: "Mapa de Testemunhas",
-        to: "/mapa-testemunhas",
+        to: "/app/mapa-testemunhas",
         icon: Users,
         description: "Análise de vínculos e padrões com assistente integrado",
       },
@@ -49,14 +49,14 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       {
         label: "Painel",
-        to: "/admin",
+        to: "/app/admin",
         icon: BarChart3,
         description: "Dashboard executivo",
         permission: "canViewAnalytics",
       },
       {
         label: "Relatórios",
-        to: "/admin/analytics",
+        to: "/app/admin/analytics",
         icon: LineChart,
         description: "Análises detalhadas",
         permission: "canViewAnalytics",
@@ -68,21 +68,21 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       {
         label: "Base de Dados",
-        to: "/admin/base",
+        to: "/app/admin/base",
         icon: Database,
         description: "Gestão de dados centralizados",
         permission: "canManageData",
       },
       {
         label: "Importação",
-        to: "/admin/base-import",
+        to: "/app/admin/base-import",
         icon: Upload,
         description: "Upload e validação de planilhas",
         permission: "canImportData",
       },
       {
         label: "Versões",
-        to: "/admin/versoes",
+        to: "/app/admin/versoes",
         icon: History,
         description: "Histórico e rollback",
         permission: "canViewVersions",
@@ -95,14 +95,14 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       {
         label: "Organização",
-        to: "/admin/organization",
+        to: "/app/admin/organization",
         icon: Briefcase,
         description: "Configurações organizacionais",
         permission: "canManageOrg",
       },
       {
         label: "Logs",
-        to: "/admin/logs",
+        to: "/app/admin/logs",
         icon: ClipboardList,
         description: "Auditoria e monitoramento",
         permission: "canViewLogs",
@@ -110,7 +110,7 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       {
         label: "Configurações",
-        to: "/settings",
+        to: "/app/settings",
         icon: Settings,
         description: "Configurações da organização",
         permission: "canManageSettings",
