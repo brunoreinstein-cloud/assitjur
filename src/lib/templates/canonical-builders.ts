@@ -9,9 +9,6 @@ import {
   canonicalDicionarioFields,
   CANONICAL_HEADERS_PROCESSO,
   CANONICAL_HEADERS_TESTEMUNHA,
-  type CanonicalProcessoSample,
-  type CanonicalTestemunhaSample,
-  type DicionarioField,
 } from "@/lib/templates/canonical-samples";
 
 /**

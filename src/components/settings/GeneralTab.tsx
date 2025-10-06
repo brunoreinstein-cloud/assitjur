@@ -82,7 +82,7 @@ export function GeneralTab() {
     ? settings.name
         .split(" ")
         .slice(0, 2)
-        .map((w) => w[0])
+        .map((word: string) => word[0])
         .join("")
         .toUpperCase()
     : "ORG";
@@ -212,7 +212,7 @@ export function GeneralTab() {
             <Button
               type="submit"
               disabled={!isDirty || isSubmitting}
-              loading={isSubmitting}
+              isLoading={isSubmitting}
             >
               Salvar Alterações
             </Button>

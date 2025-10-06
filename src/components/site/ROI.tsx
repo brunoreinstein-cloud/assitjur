@@ -1,6 +1,4 @@
-import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Clock, DollarSign, BarChart3, TrendingUp } from "lucide-react";
 import { NeedsForm } from "@/components/site/NeedsForm";
 

@@ -109,7 +109,7 @@ export function PrivacyTab() {
         <Button
           variant="outline"
           onClick={handleDataExport}
-          loading={isExporting}
+          isLoading={isExporting}
           disabled={isExporting}
         >
           <Download className="mr-2 h-4 w-4" />

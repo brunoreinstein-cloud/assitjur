@@ -88,7 +88,6 @@ export class ScoringEngine {
   static calculateProcessoScore(
     cnj: string,
     analysis: AnalysisResult,
-    processoData?: any,
   ): ProcessoScore {
     const components: ScoreBreakdown["components"] = {};
     let totalScore = 0;
@@ -204,7 +203,6 @@ export class ScoringEngine {
   static calculateTestemunhaScore(
     nome: string,
     analysis: AnalysisResult,
-    testemunhaData?: any,
   ): TestemunhaScore {
     const components: ScoreBreakdown["components"] = {};
     let totalScore = 0;
@@ -620,7 +618,7 @@ export class ScoringEngine {
 
   private static getStrategicClassification(
     score: number,
-    components: ScoreBreakdown["components"],
+    _components: ScoreBreakdown["components"],
   ): string {
     if (score >= 85) return "CRÍTICO - Contradita Urgente";
     if (score >= 70) return "ALTO RISCO - Priorizar Contradita";
@@ -720,7 +718,7 @@ export class ScoringEngine {
   ): string[] {
     const factors: any[] = [];
 
-    Object.entries(components).forEach(([key, component]) => {
+    Object.entries(components).forEach(([, component]) => {
       if (component.score >= 30) {
         factors.push(component.description);
       }

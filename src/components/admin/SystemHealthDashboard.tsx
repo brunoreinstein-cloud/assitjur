@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -19,8 +19,6 @@ import {
   Database,
   Zap,
   Users,
-  FileText,
-  Settings,
   BarChart3,
 } from "lucide-react";
 import { observability } from "@/lib/observability";

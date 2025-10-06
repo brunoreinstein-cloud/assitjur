@@ -196,7 +196,7 @@ const LOADING_HINTS = [
 ];
 
 export const useMapaTestemunhasStore = create<MapaTestemunhasStore>(
-  (set, get) => ({
+  (set) => ({
     // Initial state
     processos: [],
     testemunhas: [],

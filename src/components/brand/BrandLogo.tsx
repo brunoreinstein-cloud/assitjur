@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import { memo } from "react";
 import { BRAND } from "@/branding/brand";
 import { cn } from "@/lib/utils";
 

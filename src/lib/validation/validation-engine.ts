@@ -900,7 +900,7 @@ export class ValidationEngine {
    */
   private static validateLGPDCompliance(
     sheets: ValidationSheet[],
-    data?: ProcessedValidationData,
+    _data?: ProcessedValidationData,
   ) {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
@@ -1053,7 +1053,7 @@ export class ValidationEngine {
 
   private static calculateHomonymFactors(
     variantes: string[],
-    data: ProcessedValidationData,
+    _data: ProcessedValidationData,
   ) {
     // Implementação simplificada - em produção seria mais complexa
     return {

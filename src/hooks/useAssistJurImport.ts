@@ -51,7 +51,7 @@ export function useAssistJurImport() {
     }
   };
 
-  const publishData = async (uploadId: string): Promise<boolean> => {
+  const publishData = async (): Promise<boolean> => {
     setIsPublishing(true);
 
     try {
@@ -70,7 +70,7 @@ export function useAssistJurImport() {
     }
   };
 
-  const downloadReport = async (uploadId: string): Promise<void> => {
+  const downloadReport = async (): Promise<void> => {
     try {
       // Simular download - implementação seria com busca nos logs
       toast.success("Função de download será implementada");
@@ -81,7 +81,7 @@ export function useAssistJurImport() {
     }
   };
 
-  const exportData = async (uploadId: string): Promise<void> => {
+  const exportData = async (): Promise<void> => {
     try {
       // Simular exportação - implementação seria com busca no staging
       toast.success("Função de exportação será implementada");

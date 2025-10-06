@@ -150,7 +150,7 @@ export function AppearanceTab() {
         <Button
           onClick={handleSave}
           disabled={!isDirty || isSubmitting}
-          loading={isSubmitting}
+          isLoading={isSubmitting}
         >
           Salvar Alterações
         </Button>

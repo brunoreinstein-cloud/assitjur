@@ -4,7 +4,6 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
-import { AuthErrorHandler } from "@/utils/authErrorHandler";
 
 export interface SessionInvalidationReason {
   type:

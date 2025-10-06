@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -18,9 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, AlertCircle, Users, Scale, TrendingUp } from "lucide-react";
+import { Eye, AlertCircle, Users, Scale } from "lucide-react";
 import { useImportStore } from "@/features/importer/store/useImportStore";
-import { maskCPF } from "@/utils/pii-mask";
 
 export function PreviewStep() {
   const { validationResult, setCurrentStep } = useImportStore();

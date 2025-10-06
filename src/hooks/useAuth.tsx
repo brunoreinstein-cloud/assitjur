@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ensureProfile } from "@/utils/ensureProfile";
 import { AuthErrorHandler } from "@/utils/authErrorHandler";
 import { useSessionMonitor } from "@/hooks/useSessionMonitor";
-import { getSessionContext, calculateRisk } from "@/security/sessionContext";
+import { getSessionContext } from "@/security/sessionContext";
 import { getEnv } from "@/lib/getEnv";
 import { logError, logWarn } from "@/lib/logger";
 
@@ -187,7 +187,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     // Set up auth state listener FIRST
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
 
@@ -312,7 +312,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     email: string,
     password: string,
     role: "OFFICE" | "ADMIN",
-    rememberMe = true,
+    _rememberMe = true,
     orgCode?: string,
   ) => {
     try {
@@ -360,7 +360,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         // Collect session context and previous timezone
         const ctx = getSessionContext();
-        const previousTz: string | null = null;
         // TODO: Re-enable when sessions table exists
         // try {
         //   const { data: last } = await supabase

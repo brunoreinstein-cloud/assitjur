@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -7,21 +7,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   CheckCircle,
   Upload,
   AlertCircle,
-  CheckCircle2,
   Zap,
   Database,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import type { ImportSession, ValidationResult } from "@/lib/importer/types";
-import { ErrorHandler, withErrorHandling } from "@/lib/error-handling";
 
 interface ConfirmStepProps {
   session: ImportSession;
@@ -30,7 +27,6 @@ interface ConfirmStepProps {
 }
 
 export function ConfirmStep({
-  session,
   validationResult,
   onComplete,
 }: ConfirmStepProps) {
@@ -84,10 +80,6 @@ export function ConfirmStep({
         onComplete();
       }, 2000);
     } catch (error: any) {
-      const handledError = ErrorHandler.handleAndNotify(
-        error,
-        "ConfirmStep.handleImport",
-      );
       // Error notification is handled by ErrorHandler.handleAndNotify
     } finally {
       clearInterval(progressInterval);

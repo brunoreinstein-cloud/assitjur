@@ -1,7 +1,6 @@
 import type { ValidationResult } from "@/lib/importer/types";
 import type { WorkSheet } from "xlsx";
 import {
-  getExcelAddress,
   isValidExcelAddress,
 } from "@/lib/excel/cell-addressing";
 
@@ -18,7 +17,6 @@ export interface CorrectedCell {
 export async function generateReports(
   validationResult: Omit<ValidationResult, "downloadUrls">,
   fileName: string,
-  originalData?: { [sheetName: string]: any[][] },
   corrections?: Map<string, CorrectedCell>,
 ): Promise<{ fixedXlsx: string; reportCsv: string; reportJson: string }> {
   // Gera CSV do relatório
@@ -171,7 +169,7 @@ async function generateCorrectedXlsx(
 function applyCorrectionFormatting(
   ws: WorkSheet,
   corrections: Map<string, CorrectedCell>,
-  sheetName: string,
+  _sheetName: string,
 ) {
   if (!ws["!cols"]) ws["!cols"] = [];
   if (!ws["!comments"]) ws["!comments"] = [];

@@ -1,32 +1,18 @@
-import React, { useState, useCallback } from "react";
+import React, { useCallback } from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import {
   Upload,
   CheckCircle2,
   Eye,
   CheckCircle,
-  AlertCircle,
   Download,
-  RefreshCw,
-  FileX,
-  Zap,
-  Info,
-  ChevronDown,
   HelpCircle,
 } from "lucide-react";
 import { UploadStep } from "@/features/importer/components/steps/UploadStep";
@@ -36,7 +22,7 @@ import { PublishStep } from "@/features/importer/components/steps/PublishStep";
 import { useImportStore } from "@/features/importer/store/useImportStore";
 import { BrandHeader } from "@/components/brand/BrandHeader";
 import { LGPDFooter } from "@/components/brand/LGPDFooter";
-import { strings, getString } from "@/i18n/pt-BR";
+import { getString } from "@/i18n/pt-BR";
 
 const STEPS = [
   { id: "upload", label: getString("import.steps.upload"), icon: Upload },
@@ -56,12 +42,9 @@ const STEPS = [
 export function BrandedImporterWizard() {
   const {
     currentStep,
-    setCurrentStep,
     session,
     file,
     validationResult,
-    isProcessing,
-    resetWizard,
     versionNumber,
   } = useImportStore();
 

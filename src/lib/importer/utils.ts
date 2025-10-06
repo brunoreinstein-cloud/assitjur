@@ -1,4 +1,3 @@
-import { z } from "zod";
 
 /**
  * Remove acentos e converte para slug (snake_case)

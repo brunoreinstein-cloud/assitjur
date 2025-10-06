@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Mail, Loader2, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useDebounce } from "@/hooks/useDebounce";
 import { getEnv } from "@/lib/getEnv";
 import { ErrorHandler } from "@/lib/error-handling";
 
@@ -37,7 +36,6 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
   });
 
   // Debounce email validation to prevent excessive API calls
-  const debouncedEmail = useDebounce(form.watch("email"), 500);
 
   const handleSendMagicLink = useCallback(
     async (data: MagicLinkFormData) => {
@@ -109,7 +107,7 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
 
         setEmailSent(true);
       } catch (error: any) {
-        const handledError = ErrorHandler.handleAndNotify(
+        ErrorHandler.handleAndNotify(
           error,
           "MagicLinkForm.handleSendMagicLink",
         );

@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Joyride, { Step, CallBackProps, STATUS, EVENTS } from "react-joyride";
-import { useLocation } from "react-router-dom";
 
 export type TourType = "mapa" | "dashboard" | "admin";
 
@@ -81,7 +80,6 @@ const tourSteps: Record<TourType, Step[]> = {
 
 export function FeatureTour({ type, run = false, onFinish }: FeatureTourProps) {
   const [tourRun, setTourRun] = useState(run);
-  const location = useLocation();
 
   useEffect(() => {
     setTourRun(run);

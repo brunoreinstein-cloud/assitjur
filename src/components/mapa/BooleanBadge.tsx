@@ -1,5 +1,4 @@
 import { Badge } from "@/components/ui/badge";
-import { formatBooleanBadge } from "@/lib/formatters";
 
 interface BooleanBadgeProps {
   value: boolean | null | undefined;

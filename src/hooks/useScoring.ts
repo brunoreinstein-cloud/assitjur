@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { ScoringEngine } from "@/lib/scoring/scoring-engine";
 import { usePatternAnalysis } from "@/hooks/usePatternAnalysis";
 import type {
@@ -8,7 +8,6 @@ import type {
   ScoringMetrics,
   ScoreHistory,
 } from "@/types/scoring";
-import type { AnalysisResult } from "@/types/mapa-testemunhas-analysis";
 
 /**
  * Hook for scoring operations
@@ -278,7 +277,7 @@ export function useScoreTracker(
  * Hook for score monitoring and alerts
  */
 export function useScoreMonitoring() {
-  const { processoScores, testemunhaScores, criticalCases, urgentCases } =
+  const { criticalCases, urgentCases } =
     useScoring();
   const [alerts, setAlerts] = useState<any[]>([]);
 

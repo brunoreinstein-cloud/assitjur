@@ -15,7 +15,6 @@ import {
   FileSpreadsheet,
   CheckCircle,
   AlertCircle,
-  X,
   Download,
 } from "lucide-react";
 import { useHomeStore } from "@/lib/store/home";

@@ -37,7 +37,6 @@ export interface DuploPapelDetectionResult {
  */
 export function detectDuploPapel(
   processos: any[],
-  testemunhas: any[],
 ): DuploPapelDetectionResult {
   const matches: DuploPapelResult[] = [];
 
@@ -275,7 +274,7 @@ function calculateDuploPapelConfidence(
   numReclamante: number,
   numTestemunha: number,
   advogadosComuns: number,
-  timelineEntries: number,
+  _timelineEntries: number,
 ): number {
   let score = 0;
 

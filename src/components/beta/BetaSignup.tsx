@@ -237,7 +237,7 @@ export function BetaSignup({
 
       // Try to call the edge function
       try {
-        const { data: result, error } = await supabase.functions.invoke(
+        const { error } = await supabase.functions.invoke(
           "beta-signup",
           {
             body: payload,

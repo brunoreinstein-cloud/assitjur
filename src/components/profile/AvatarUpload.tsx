@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { Upload, User, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 

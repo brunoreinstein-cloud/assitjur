@@ -50,7 +50,6 @@ export function validateCNJ(cnj: string): ValidationResult {
   }
 
   // Format CNJ for display
-  const formattedCNJ = formatCNJ(normalized);
 
   return {
     isValid: true,
@@ -90,14 +89,6 @@ function validateCNJCheckDigits(cnj: string): boolean {
   return checkDigit1.toString().padStart(2, "0") === digitosVerificadores;
 }
 
-/**
- * Format CNJ for display
- */
-function formatCNJ(cnj: string): string {
-  if (cnj.length !== 20) return cnj;
-
-  return `${cnj.substring(0, 7)}-${cnj.substring(7, 9)}.${cnj.substring(9, 13)}.${cnj.substring(13, 14)}.${cnj.substring(14, 16)}.${cnj.substring(16, 20)}`;
-}
 
 /**
  * Advanced CPF validation with check digit algorithm

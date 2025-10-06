@@ -6,7 +6,6 @@ import type {
 } from "@/lib/importer/types";
 import { normalizeSheetData } from "@/lib/importer/normalize";
 import {
-  findNormalizedColumnName,
   applyColumnMapping,
 } from "@/features/importer/etl/synonyms";
 import {
@@ -91,7 +90,7 @@ function mapFieldsIntelligently(
  */
 function correctRowData(
   row: any,
-  rowIndex: number,
+  _rowIndex: number,
   sheetType: "processo" | "testemunha",
 ): CorrectedRow {
   const corrections: FieldCorrection[] = [];

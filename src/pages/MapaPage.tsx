@@ -39,7 +39,6 @@ import {
   selectProcessos,
   selectTestemunhas,
   selectIsLoading,
-  selectIsPiiMasked,
   selectHasError,
   selectErrorMessage,
   selectLastUpdate,
@@ -64,7 +63,6 @@ import { PorProcesso, PorTestemunha } from "@/types/mapa-testemunhas";
 import { ChatBar } from "@/features/testemunhas/ChatBar";
 import { ResultBlocks } from "@/features/testemunhas/ResultBlocks";
 import { LoadingHints } from "@/features/testemunhas/LoadingHints";
-import { LoadMoreButton } from "@/components/mapa-testemunhas/LoadMoreButton";
 import { ConnectionStatus } from "@/components/mapa-testemunhas/ConnectionStatus";
 import { DataState, DataStatus } from "@/components/ui/data-state";
 import { MapaErrorBoundary } from "@/components/mapa-testemunhas/MapaErrorBoundary";
@@ -99,7 +97,6 @@ const MapaPage = () => {
   const processos = useMapaTestemunhasStore(selectProcessos);
   const testemunhas = useMapaTestemunhasStore(selectTestemunhas);
   const isLoading = useMapaTestemunhasStore(selectIsLoading);
-  const isPiiMasked = useMapaTestemunhasStore(selectIsPiiMasked);
   const hasError = useMapaTestemunhasStore(selectHasError);
   const errorMessage = useMapaTestemunhasStore(selectErrorMessage);
   const lastUpdate = useMapaTestemunhasStore(selectLastUpdate);

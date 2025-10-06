@@ -1,4 +1,3 @@
-import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Citation } from "@/lib/store/mapa-testemunhas";
 import { FileText, User, ExternalLink } from "lucide-react";

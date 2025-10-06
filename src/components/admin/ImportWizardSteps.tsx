@@ -82,7 +82,7 @@ const ImportWizardSteps: React.FC<ImportWizardStepsProps> = ({
     }
   };
 
-  const getStepBadge = (stepId: string, status: string) => {
+  const getStepBadge = (stepId: string, _status?: string) => {
     if (stepId === "validation" && validationResults) {
       if (validationResults.errors?.length > 0) {
         return (

@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Download, FileText, Table } from "lucide-react";
+import { FileText, Table } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { withErrorHandling } from "@/lib/error-handling";
 

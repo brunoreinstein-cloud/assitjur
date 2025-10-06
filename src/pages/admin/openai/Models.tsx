@@ -19,7 +19,6 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Zap, Settings, DollarSign, Clock, Brain } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";

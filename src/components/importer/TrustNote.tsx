@@ -1,4 +1,3 @@
-import React from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Shield, Lock, Eye, CheckCircle2 } from "lucide-react";
 

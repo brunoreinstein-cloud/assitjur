@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,20 +13,8 @@ import {
   Zap,
 } from "lucide-react";
 import { TestUtils } from "@/lib/testing-utilities";
-import type {
-  TestResult as HealthCheckTestResult,
-  HealthCheckResult,
-} from "@/lib/testing-utilities";
+import type { HealthCheckResult } from "@/lib/testing-utilities";
 import { useDevDiagnostics } from "@/lib/dev-diagnostics";
-
-interface TestResult extends HealthCheckTestResult {
-  id: HealthCheckTestResult["id"];
-  name: HealthCheckTestResult["name"];
-  category: HealthCheckTestResult["category"];
-  passed: HealthCheckTestResult["passed"];
-  duration: HealthCheckTestResult["duration"];
-  error?: HealthCheckTestResult["error"];
-}
 
 interface HealthStatus extends HealthCheckResult {
   lastCheck: Date;

@@ -1,4 +1,3 @@
-import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -9,7 +8,6 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
@@ -39,12 +37,12 @@ import { User, LogOut, UserCog } from "lucide-react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 
 export function AppSidebar() {
-  const { open, setOpen, openMobile, setOpenMobile, isMobile, state } =
+  const { open } =
     useSidebar();
   const location = useLocation();
   const { setOpen: setConsentOpen } = useConsent();
   const { user, signOut, isAdmin } = useAuth();
-  const { canAccess, getPermissionTooltip, hasAnyPermissionInGroup, userRole } =
+  const { canAccess, getPermissionTooltip, userRole } =
     usePermissions();
   const { toast } = useToast();
 

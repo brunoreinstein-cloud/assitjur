@@ -235,7 +235,7 @@ export class DevDiagnostics {
   validateComponentState(
     componentName: string,
     state: any,
-    expectedSchema?: any,
+    _expectedSchema?: any,
   ) {
     if (!this.isEnabled) return;
 

@@ -3,7 +3,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 
 export function SecurityStatusBanner() {
-  const { user, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
 
   // Only show to admin users
   if (!isAdmin) return null;

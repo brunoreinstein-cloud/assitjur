@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CheckCircle2, AlertTriangle, FileText, Wand2 } from "lucide-react";
+import { CheckCircle2, FileText, Wand2 } from "lucide-react";
 
 export default function ValidationTest() {
   return (

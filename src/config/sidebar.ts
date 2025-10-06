@@ -1,14 +1,12 @@
 import {
   Home,
   Users,
-  MessageSquare,
   BarChart3,
   LineChart,
   Database,
   Upload,
   History,
   Briefcase,
-  ShieldCheck,
   ClipboardList,
   Settings,
 } from "lucide-react";

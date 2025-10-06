@@ -37,12 +37,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
-import { Separator } from "@/components/ui/separator";
 import {
   FileText,
   Plus,
   Edit,
-  History,
   FlaskConical,
   GitBranch,
   Lock,
@@ -99,7 +97,7 @@ const PromptStudio = () => {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedPrompt, setSelectedPrompt] = useState<any>(null);
+  const [, setSelectedPrompt] = useState<any>(null);
   const [abWeights, setAbWeights] = useState({ v1: 80, v2: 20 });
   const [newPrompt, setNewPrompt] = useState({
     label: "",

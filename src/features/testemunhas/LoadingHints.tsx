@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useMapaTestemunhasStore } from "@/lib/store/mapa-testemunhas";
 import { Bot, Loader2 } from "lucide-react";

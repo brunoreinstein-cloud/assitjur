@@ -70,16 +70,28 @@ export class OrganizationService {
         throw error;
       }
 
-      return (data || []).map((item) => ({
-        id: item.organizations.id,
-        name: item.organizations.name,
-        code: item.organizations.code,
-        role: item.role as "ADMIN" | "ANALYST" | "VIEWER",
-        is_active: item.organizations.is_active,
-        domain: item.organizations.domain,
-        created_at: item.organizations.created_at,
-        updated_at: item.organizations.updated_at,
-      }));
+      return (data || []).flatMap((item) => {
+        const organization = Array.isArray(item.organizations)
+          ? item.organizations[0]
+          : item.organizations;
+
+        if (!organization) {
+          return [];
+        }
+
+        return [
+          {
+            id: organization.id,
+            name: organization.name,
+            code: organization.code,
+            role: item.role as "ADMIN" | "ANALYST" | "VIEWER",
+            is_active: organization.is_active,
+            domain: organization.domain ?? undefined,
+            created_at: organization.created_at,
+            updated_at: organization.updated_at,
+          },
+        ];
+      });
     } catch (error) {
       logError(
         "Failed to get user organizations",

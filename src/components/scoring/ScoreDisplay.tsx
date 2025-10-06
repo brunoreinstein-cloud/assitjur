@@ -1,4 +1,3 @@
-import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,16 +51,6 @@ export function ScoreDisplay({
     return <CheckCircle className="h-4 w-4 text-muted-foreground" />;
   };
 
-  const getRecommendationSeverity = () => {
-    if ("prioridade_contradita" in score) {
-      const priority = score.prioridade_contradita;
-      if (priority === "URGENTE") return "destructive";
-      if (priority === "ALTA") return "destructive";
-      if (priority === "MEDIA") return "warning";
-      return "secondary";
-    }
-    return "secondary";
-  };
 
   if (compact) {
     return (

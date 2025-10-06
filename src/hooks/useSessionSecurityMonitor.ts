@@ -34,7 +34,7 @@ export function useSessionSecurityMonitor(
     fingerprintingEnabled = true,
   } = options;
 
-  const { user, profile, session } = useAuth();
+  const { profile, session } = useAuth();
   const previousFingerprint = useRef<DeviceFingerprint | null>(null);
   const securityMonitor = useRef<SecurityEventMonitor | null>(null);
   const monitoringIntervalRef = useRef<NodeJS.Timeout | null>(null);

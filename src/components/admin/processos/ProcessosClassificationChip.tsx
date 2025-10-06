@@ -156,7 +156,7 @@ export function ProcessosClassificationChip({
       }
 
       // Toast com Undo
-      const toastId = toast({
+      toast({
         title: "Classificação atualizada",
         description: (
           <div className="flex items-center justify-between">
@@ -164,7 +164,7 @@ export function ProcessosClassificationChip({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleUndo(toastId)}
+              onClick={() => handleUndo()}
               className="ml-2 h-6 px-2 text-xs"
             >
               <Undo2 className="h-3 w-3 mr-1" />
@@ -188,7 +188,7 @@ export function ProcessosClassificationChip({
     }
   };
 
-  const handleUndo = (toastId: any) => {
+  const handleUndo = () => {
     // Implementar lógica de desfazer
     if (onClassificationUpdate) {
       onClassificationUpdate(

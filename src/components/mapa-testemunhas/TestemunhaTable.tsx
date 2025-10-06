@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -174,7 +174,7 @@ export function TestemunhaTable({
                 {columnVisibility.cnjs && (
                   <TableCell className={densityClasses.cell}>
                     <ArrayField
-                      items={testemunha.cnjs_como_testemunha}
+                      items={testemunha.cnjs_como_testemunha ?? null}
                       maxVisible={2}
                       isPiiMasked={isPiiMasked}
                     />

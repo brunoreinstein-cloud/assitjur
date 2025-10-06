@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowDown, Sparkles } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { NeedsForm } from "@/components/site/NeedsForm";
 import { track } from "@/lib/track";
 const heroAssistJurCustom = "/assets/hero-assistjur-custom.png";
@@ -18,7 +17,6 @@ interface ImprovedHeroProps {
 
 export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
   const [formVisible, setFormVisible] = useState(false);
-  const navigate = useNavigate();
 
   const scrollToForm = () => {
     track("cta_click", { id: "hero-testar-hub" });

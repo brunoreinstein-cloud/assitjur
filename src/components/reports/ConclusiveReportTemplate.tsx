@@ -1,13 +1,10 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import {
   FileText,
-  Download,
-  Printer,
   Calendar,
   Shield,
   TrendingUp,
@@ -18,7 +15,6 @@ import {
   Target,
   Zap,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import type { AnalysisResult } from "@/types/mapa-testemunhas-analysis";
 import type {
@@ -26,13 +22,9 @@ import type {
   TestemunhaScore,
   ScoringMetrics,
 } from "@/types/scoring";
-import { RiskBadge } from "@/components/RiskBadge";
-import { ScoreDisplay } from "@/components/scoring/ScoreDisplay";
 import { BrandHeader } from "@/components/brand/BrandHeader";
 import { LGPDFooter } from "@/components/brand/LGPDFooter";
 import { ExportActions } from "@/components/brand/ExportActions";
-import { ReportSection } from "@/components/templates/ReportSection";
-import { CNJCitation } from "@/components/templates/CNJCitation";
 
 export interface ConclusiveReportData {
   // Metadados do relatório
@@ -97,9 +89,6 @@ export const ConclusiveReportTemplate = React.forwardRef<
   ) => {
     const { toast } = useToast();
 
-    const handlePrint = () => {
-      window.print();
-    };
 
     const handleExport = (format: "pdf" | "csv" | "docx" | "json") => {
       if (onExport) {

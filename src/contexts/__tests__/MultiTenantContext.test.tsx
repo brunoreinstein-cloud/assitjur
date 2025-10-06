@@ -3,8 +3,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MultiTenantProvider, useMultiTenant } from "../MultiTenantContext";
 import { AuthProvider } from "@/hooks/useAuth";
-import { mockOrganizations, mockSingleOrg } from "@/tests/mocks/organizations";
-import { mockUsers, mockProfiles } from "@/tests/mocks/users";
+import { mockOrganizations } from "@/tests/mocks/organizations";
 import * as organizationService from "@/services/organizationService";
 import type { ReactNode } from "react";
 

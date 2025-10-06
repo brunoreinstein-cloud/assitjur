@@ -1,4 +1,3 @@
-import React from "react";
 import { BRAND } from "@/branding/brand";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 
