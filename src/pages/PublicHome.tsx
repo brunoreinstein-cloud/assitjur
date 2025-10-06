@@ -1,11 +1,8 @@
 import { useState, lazy, Suspense } from "react";
-import { PublicHeader } from "@/components/site/PublicHeader";
+import { PublicLayout } from "@/components/layouts/PublicLayout";
 import { ImprovedHero } from "@/components/site/ImprovedHero";
-import { Footer } from "@/components/site/Footer";
 import { BetaModal } from "@/components/sobre/BetaModal";
 import { Toaster } from "@/components/ui/toaster";
-import { BackToTopFAB } from "@/components/site/BackToTopFAB";
-import { SEO } from "@/seo/SEO";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const ValueProps = lazy(() =>
@@ -58,81 +55,66 @@ export default function PublicHome() {
   const closeBetaModal = () => setIsBetaModalOpen(false);
 
   return (
-    <div className="min-h-screen bg-background">
-      <SEO
-        title="AssistJur.IA - O primeiro hub de agentes de IA para gestão estratégica do contencioso"
-        description="Gestão do contencioso com inovação e olhar estratégico. Hub único de agentes de IA especializados testado em grandes carteiras."
-        path="/"
-        ogImage="/brand/og-assistjur.png"
-      />
+    <PublicLayout
+      title="AssistJur.IA - O primeiro hub de agentes de IA para gestão estratégica do contencioso"
+      description="Gestão do contencioso com inovação e olhar estratégico. Hub único de agentes de IA especializados testado em grandes carteiras."
+      onBetaClick={openBetaModal}
+    >
+      {/* 1. Hero Section */}
+      <ImprovedHero onSignup={handleBetaSignup} />
 
-      {/* Header Navigation */}
-      <PublicHeader onBetaClick={openBetaModal} />
+      {/* 2. Diferencial AssistJur.IA */}
+      <Suspense fallback={<SectionSkeleton />}>
+        <ValueProps />
+      </Suspense>
 
-      <main className="overflow-x-hidden">
-        {/* 1. Hero Section */}
-        <ImprovedHero onSignup={handleBetaSignup} />
-
-        {/* 2. Diferencial AssistJur.IA */}
+      {/* 3. Para Quem */}
+      <section id="publico">
         <Suspense fallback={<SectionSkeleton />}>
-          <ValueProps />
+          <Audience />
         </Suspense>
+      </section>
 
-        {/* 3. Para Quem */}
-        <section id="publico">
-          <Suspense fallback={<SectionSkeleton />}>
-            <Audience />
-          </Suspense>
-        </section>
-
-        {/* 4. Preview dos Agentes */}
-        <section id="agentes">
-          <Suspense fallback={<SectionSkeleton />}>
-            <AgentsPreview />
-          </Suspense>
-        </section>
-
-        {/* 5. ROI */}
-        <section id="roi">
-          <Suspense fallback={<SectionSkeleton />}>
-            <ROI onSignup={handleBetaSignup} />
-          </Suspense>
-        </section>
-
-        {/* 6. Segurança & Conformidade */}
-        <section id="seguranca">
-          <Suspense fallback={<SectionSkeleton />}>
-            <SecurityAccordion />
-          </Suspense>
-        </section>
-
-        {/* 7. Sobre o AssistJur.IA */}
-        <section id="sobre">
-          <Suspense fallback={<SectionSkeleton />}>
-            <AboutAssistJur />
-          </Suspense>
-        </section>
-
-        {/* 8. Sobre Bianca Reinstein */}
-        <section id="bianca">
-          <Suspense fallback={<SectionSkeleton />}>
-            <AboutBianca />
-          </Suspense>
-        </section>
-
-        {/* 9. Footer */}
+      {/* 4. Preview dos Agentes */}
+      <section id="agentes">
         <Suspense fallback={<SectionSkeleton />}>
-          <Footer />
+          <AgentsPreview />
         </Suspense>
-      </main>
+      </section>
+
+      {/* 5. ROI */}
+      <section id="roi">
+        <Suspense fallback={<SectionSkeleton />}>
+          <ROI onSignup={handleBetaSignup} />
+        </Suspense>
+      </section>
+
+      {/* 6. Segurança & Conformidade */}
+      <section id="seguranca">
+        <Suspense fallback={<SectionSkeleton />}>
+          <SecurityAccordion />
+        </Suspense>
+      </section>
+
+      {/* 7. Sobre o AssistJur.IA */}
+      <section id="sobre">
+        <Suspense fallback={<SectionSkeleton />}>
+          <AboutAssistJur />
+        </Suspense>
+      </section>
+
+      {/* 8. Sobre Bianca Reinstein */}
+      <section id="bianca">
+        <Suspense fallback={<SectionSkeleton />}>
+          <AboutBianca />
+        </Suspense>
+      </section>
 
       {/* Beta Modal */}
       <BetaModal isOpen={isBetaModalOpen} onClose={closeBetaModal} />
 
       {/* Toast notifications */}
       <Toaster />
-
-      <BackToTopFAB />
-    </div>
+    </PublicLayout>
   );
 }
