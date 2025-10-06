@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Run lint-staged before commit
-npx lint-staged
+# Type check before push
+npm run typecheck

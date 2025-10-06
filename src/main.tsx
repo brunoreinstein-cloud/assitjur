@@ -6,6 +6,39 @@ import { MaintenanceProvider } from "@/hooks/useMaintenance";
 import { getEnv } from "@/lib/getEnv";
 import { getConsent, onConsentChange } from "@/lib/consent";
 import { logger } from "@/lib/logger";
+import { getValidatedEnv } from "@/lib/env-validation";
+
+// ⚠️ CRITICAL: Validate environment variables before anything else
+// This will throw an error if required env vars are missing
+try {
+  getValidatedEnv();
+  logger.info("Environment variables validated successfully", {}, "MainApp");
+} catch (error) {
+  logger.error("Environment validation failed", { error }, "MainApp");
+  console.error(error);
+  
+  // Show user-friendly error in development
+  if (import.meta.env.DEV) {
+    document.body.innerHTML = `
+      <div style="font-family: system-ui; max-width: 600px; margin: 100px auto; padding: 20px;">
+        <h1 style="color: #ef4444;">⚠️ Configuração Incompleta</h1>
+        <p style="font-size: 18px; line-height: 1.6;">
+          Variáveis de ambiente obrigatórias não foram encontradas.
+        </p>
+        <pre style="background: #f3f4f6; padding: 15px; border-radius: 8px; overflow-x: auto;">
+${error instanceof Error ? error.message : 'Erro desconhecido'}
+        </pre>
+        <p style="margin-top: 20px;">
+          <strong>Como corrigir:</strong><br>
+          1. Copie o arquivo <code>.env.example</code> para <code>.env</code><br>
+          2. Preencha as variáveis com seus valores reais<br>
+          3. Reinicie o servidor de desenvolvimento
+        </p>
+      </div>
+    `;
+    throw error; // Stop execution
+  }
+}
 
 const { sentryDsn } = getEnv();
 

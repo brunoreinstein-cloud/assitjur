@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+dist/
+build/
+
+# Cache
+.turbo/
+.next/
+.cache/
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Generated files
+*.min.js
+*.min.css
+
+# Supabase
+supabase/migrations/
+
+# IDE
+.vscode/
+.idea/
+
+# Misc
+*.log
+.DS_Store
