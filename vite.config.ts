@@ -83,28 +83,25 @@ function suppressTS6310Plugin(): Plugin {
   };
 }
 
-// CRITICAL FIX: Isolated tsconfig WITHOUT project references
+// Isolated tsconfig for Vite - prevents TS6310 warnings
 const tsconfigVite = {
   compilerOptions: {
     target: "ES2020",
-    useDefineForClassFields: true,
-    lib: ["ES2020", "DOM", "DOM.Iterable"],
     module: "ESNext",
+    jsx: "react-jsx",
+    strict: false,
     skipLibCheck: true,
     moduleResolution: "bundler",
+    useDefineForClassFields: true,
+    lib: ["ES2020", "DOM", "DOM.Iterable"],
     allowImportingTsExtensions: true,
     resolveJsonModule: true,
     isolatedModules: true,
     noEmit: true,
-    jsx: "react-jsx",
-    strict: false,
     noUnusedLocals: false,
     noUnusedParameters: false,
     paths: {
       "@/*": ["./src/*"],
-      "@components/*": ["./src/components/*"],
-      "@hooks/*": ["./src/hooks/*"],
-      "@lib/*": ["./src/lib/*"],
     },
   },
   include: ["src/**/*"],
@@ -144,15 +141,9 @@ export default defineConfig(({ mode }) => {
     clearScreen: false,
     logLevel: "warn", // Only show warnings, suppress TS errors
     resolve: {
-      alias: [
-        { find: "@", replacement: path.resolve(__dirname, "src") },
-        {
-          find: "@components",
-          replacement: path.resolve(__dirname, "src/components"),
-        },
-        { find: "@hooks", replacement: path.resolve(__dirname, "src/hooks") },
-        { find: "@lib", replacement: path.resolve(__dirname, "src/lib") },
-      ],
+      alias: {
+        "@": path.resolve(__dirname, "src"),
+      },
     },
     // CRITICAL: Bypass TS6310 by using esbuild with isolated config
     esbuild: {
