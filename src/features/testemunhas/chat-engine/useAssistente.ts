@@ -16,6 +16,40 @@ import {
   normalizarClassificacao,
 } from "@/lib/data-quality";
 
+type ChatContextType = "processo" | "testemunha";
+
+interface ChatContextMeta {
+  status?: string;
+  statusInferido?: boolean;
+  classificacao?: string;
+  riscoNivel?: "baixo" | "medio" | "alto" | "critico";
+  confidence?: number;
+}
+
+interface ChatContextPayload {
+  type: ChatContextType;
+  data: Record<string, unknown>;
+  meta?: ChatContextMeta;
+}
+
+interface ChatLegalPayload {
+  message: string;
+  queryType: string;
+  promptName?: string;
+  context?: ChatContextPayload;
+}
+
+interface SupabaseFunctionError {
+  status?: number;
+  message?: string;
+}
+
+const isSupabaseFunctionError = (
+  error: unknown,
+): error is SupabaseFunctionError =>
+  typeof error === "object" && error !== null &&
+  ("status" in error || "message" in error);
+
 export function useAssistente() {
   const { toast } = useToast();
   const { error: notifyError } = useNotifications();
@@ -48,6 +82,8 @@ export function useAssistente() {
 
   const generateMockBlocks = useCallback(
     (kind: QueryKind, input: string): ResultBlock[] => {
+      const executiveConfidence = 0.85;
+
       const baseBlocks: ResultBlock[] = [
         {
           type: "executive",
@@ -63,8 +99,15 @@ export function useAssistente() {
             observacoes:
               "Processo com potencial risco de triangulação detectado.",
             riscoNivel: "alto" as const,
-            confianca: 0.85,
+            confianca: executiveConfidence,
             alerta: "Testemunhas conectadas em múltiplos processos",
+          },
+          meta: {
+            status: "Em andamento",
+            observacoes:
+              "Processo com potencial risco de triangulação detectado.",
+            riscoNivel: "alto",
+            confidence: executiveConfidence,
           },
           citations: [
             {
@@ -179,7 +222,7 @@ export function useAssistente() {
 
       try {
         // Smart context enrichment - automatically include selected item data
-        const payload: any = {
+        const payload: ChatLegalPayload = {
           message: input,
           queryType: getQueryType(kind),
         };
@@ -290,11 +333,12 @@ export function useAssistente() {
           body: payload,
         });
 
-        if (error) {
-          if (
-            (error as any).status === 402 ||
-            (error as any).message?.includes("Workspace out of credits")
-          ) {
+          if (error) {
+            if (
+              isSupabaseFunctionError(error) &&
+              (error.status === 402 ||
+                error.message?.includes("Workspace out of credits"))
+            ) {
             const functionUrl = `https://${getProjectRef()}.functions.supabase.co/chat-legal`;
             console.warn(`Lovable API ${error.status} at ${functionUrl}`);
             notifyError(
@@ -448,7 +492,7 @@ export function useAssistente() {
         }
 
         // CORREÇÃO: Enriquecer os blocos com o contexto e meta originais antes de setar
-        const enrichedBlocks = blocks.map((block: any) => ({
+        const enrichedBlocks = blocks.map((block) => ({
           ...block,
           context: payload.context, // Adicionar contexto original do payload
           meta: payload.context?.meta, // Adicionar meta enriquecido
