@@ -60,7 +60,7 @@ function spaFallbackPlugin(): Plugin {
       if (indexHtml && indexHtml.type === "asset") {
         this.emitFile({
           type: "asset",
-          fileName: "404.html",
+          fileName: "200.html",
           source: indexHtml.source,
         });
       }
