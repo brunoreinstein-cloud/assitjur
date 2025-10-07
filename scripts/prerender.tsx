@@ -23,6 +23,7 @@ import { renderToString, renderToStaticMarkup } from "react-dom/server";
 import { StaticRouter } from "react-router-dom/server";
 import PublicHome from "../src/pages/PublicHome";
 import { Head } from "../src/lib/head";
+import { ConsentProvider } from "../src/hooks/useConsent";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,9 +34,11 @@ const routes = [
     path: "/",
     render: () =>
       renderToString(
-        <StaticRouter location="/">
-          <PublicHome />
-        </StaticRouter>,
+        <ConsentProvider>
+          <StaticRouter location="/">
+            <PublicHome />
+          </StaticRouter>
+        </ConsentProvider>,
       ),
     head: {
       title: "AssistJur.IA - Assistente de Testemunhas",

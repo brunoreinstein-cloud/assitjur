@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { getConsent, setConsent } from "@/lib/consent";
 
@@ -43,7 +45,30 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useConsent(): ConsentContextValue {
+  // SSR-safe: check if we're in SSR/prerender environment
+  if (typeof window === "undefined" || process.env.PRERENDER === "1") {
+    return {
+      preferences: null,
+      open: false,
+      setOpen: () => {}, // No-op during SSR
+      save: () => {},    // No-op during SSR
+    };
+  }
+
   const ctx = useContext(ConsentContext);
-  if (!ctx) throw new Error("useConsent must be used within ConsentProvider");
+  
+  // Return safe defaults if no provider (during build/SSR/prerender)
+  if (!ctx) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("useConsent: No ConsentProvider found, returning defaults");
+    }
+    return {
+      preferences: null,
+      open: false,
+      setOpen: () => {},
+      save: () => {},
+    };
+  }
+  
   return ctx;
 }
