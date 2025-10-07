@@ -4,7 +4,6 @@ import { DEFAULT_TRANSITION } from "@/config/motion";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ConsentProvider } from "@/hooks/useConsent";
 import ConsentDialog from "@/components/privacy/ConsentDialog";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -247,38 +246,36 @@ const App = () => (
                 <Toaster />
                 <Sonner />
                 <SessionExpiredModal />
-                <ConsentProvider>
-                  <ConsentDialog />
-                  <BrowserRouter
-                    future={{
-                      v7_startTransition: true,
-                      v7_relativeSplatPath: true,
-                    }}
-                  >
-                    <SupabaseAuthProvider>
-                      <AuthErrorBoundary>
-                        <MultiTenantProvider>
-                          <OrganizationErrorBoundary>
-                            <div className="min-h-screen flex flex-col">
-                              <MaintenanceBanner />
-                              <StatusBanner />
-                              <main id="conteudo" className="flex-1">
-                                <Suspense
-                                  fallback={
-                                    <div className="p-4">Carregando...</div>
-                                  }
-                                >
-                                  <AppRoutes />
-                                </Suspense>
-                              </main>
-                              <HelpWidget />
-                            </div>
-                          </OrganizationErrorBoundary>
-                        </MultiTenantProvider>
-                      </AuthErrorBoundary>
-                    </SupabaseAuthProvider>
-                  </BrowserRouter>
-                </ConsentProvider>
+                <ConsentDialog />
+                <BrowserRouter
+                  future={{
+                    v7_startTransition: true,
+                    v7_relativeSplatPath: true,
+                  }}
+                >
+                  <SupabaseAuthProvider>
+                    <AuthErrorBoundary>
+                      <MultiTenantProvider>
+                        <OrganizationErrorBoundary>
+                          <div className="min-h-screen flex flex-col">
+                            <MaintenanceBanner />
+                            <StatusBanner />
+                            <main id="conteudo" className="flex-1">
+                              <Suspense
+                                fallback={
+                                  <div className="p-4">Carregando...</div>
+                                }
+                              >
+                                <AppRoutes />
+                              </Suspense>
+                            </main>
+                            <HelpWidget />
+                          </div>
+                        </OrganizationErrorBoundary>
+                      </MultiTenantProvider>
+                    </AuthErrorBoundary>
+                  </SupabaseAuthProvider>
+                </BrowserRouter>
               </TooltipProvider>
             </FeatureFlagProvider>
           </AuthContextProvider>

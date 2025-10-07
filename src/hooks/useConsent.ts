@@ -53,11 +53,12 @@ const FALLBACK_VALUE: ConsentContextValue = {
 };
 
 export function useConsent(): ConsentContextValue {
-  const ctx = useContext(ConsentContext);
-
+  // ✅ SSR/Prerender safety: return fallback when window is undefined
   if (typeof window === "undefined" || import.meta.env.PRERENDER === "1") {
     return FALLBACK_VALUE;
   }
+
+  const ctx = useContext(ConsentContext);
 
   if (!ctx) {
     if (import.meta.env.DEV) {
