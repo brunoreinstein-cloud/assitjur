@@ -440,7 +440,7 @@ export function ValidationStep({
                         <p className="text-sm">
                           <strong>{issue.column}:</strong> {issue.rule}
                         </p>
-                        {issue.value && (
+                        {issue.value !== null && issue.value !== undefined && (
                           <p className="text-xs text-muted-foreground">
                             Valor: {String(issue.value).substring(0, 100)}
                           </p>

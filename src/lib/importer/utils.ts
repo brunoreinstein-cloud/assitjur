@@ -40,7 +40,7 @@ export function sanitizeText(text: string): string {
 /**
  * Verifica se valor está vazio
  */
-export function isEmpty(value: any): boolean {
+export function isEmpty(value: unknown): boolean {
   return value === null || value === undefined || String(value).trim() === "";
 }
 
@@ -48,14 +48,14 @@ export function isEmpty(value: any): boolean {
  * Parser de lista robusto (aceitar ['a','b'], a;b, a, b)
  * Exatamente conforme especificado pelo usuário
  */
-export function parseList(value: any): string[] {
+export function parseList(value: unknown): string[] {
   const s = String(value ?? "").trim();
   if (!s || s === "[]") return [];
 
   if (s.startsWith("[") && s.endsWith("]")) {
     try {
       return JSON.parse(s.replace(/'/g, '"'))
-        .map((x: any) => String(x).trim())
+        .map((x: unknown) => String(x).trim())
         .filter(Boolean);
     } catch {
       // fallback para formato não-JSON

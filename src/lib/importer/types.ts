@@ -40,7 +40,7 @@ export interface DetectedSheet {
   model: SheetModel;
   rows: number;
   headers: string[];
-  sampleData: Record<string, any>[];
+  sampleData: Record<string, unknown>[];
   hasListColumn?: boolean; // Para CNJs_Como_Testemunha
 }
 
@@ -62,7 +62,7 @@ export interface ValidationIssue {
   severity: ValidationSeverity;
   rule: string;
   message?: string; // Make optional temporarily
-  value: any;
+  value: unknown;
   autofilled?: boolean;
   originalColumn?: string; // Nome original da coluna no arquivo
 }
@@ -87,7 +87,7 @@ export interface ValidationResult {
     reportCsv: string;
     reportJson: string;
   };
-  corrections?: Map<string, any>;
+  corrections?: Map<string, unknown>;
 }
 
 // Configurações da organização

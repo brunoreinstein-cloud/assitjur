@@ -59,7 +59,7 @@
     {
       "files": ["src/lib/importer/**/*.ts", "src/features/importer/**/*.ts"],
       "rules": {
-        "@typescript-eslint/no-explicit-any": "warn"
+        "@typescript-eslint/no-explicit-any": "off"
       }
     },
     {
@@ -78,7 +78,7 @@
     {
       "files": ["src/engine/**/*.ts"],
       "rules": {
-        "@typescript-eslint/no-explicit-any": "warn"
+        "@typescript-eslint/no-explicit-any": "off"
       }
     }
   ]

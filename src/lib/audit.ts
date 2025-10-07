@@ -22,6 +22,6 @@ export async function logAudit(
         : { resourceId },
   });
   if (error) {
-    console.error("logAudit error", error);
+    console.warn("logAudit error", error);
   }
 }

@@ -33,19 +33,22 @@ function mapHeaders(
 /**
  * Aplica configurações padrão da organização
  */
-function applyOrgDefaults(row: any, settings: OrgSettings | null): any {
+function applyOrgDefaults(
+  row: Record<string, unknown>,
+  settings: OrgSettings | null,
+): Record<string, unknown> {
   if (!settings) return row;
 
   const result = { ...row };
 
   // Auto-preenchimento do réu
   if (
-    (!result.reu_nome || result.reu_nome.trim() === "") &&
+    (!result.reu_nome || (typeof result.reu_nome === 'string' && result.reu_nome.trim() === "")) &&
     settings.applyDefaultReuOnTestemunha &&
     settings.defaultReuNome
   ) {
     result.reu_nome = settings.defaultReuNome;
-    result.__autofill = { ...(result.__autofill || {}), reu_nome: true };
+    result.__autofill = { ...(typeof result.__autofill === 'object' && result.__autofill !== null ? result.__autofill as Record<string, unknown> : {}), reu_nome: true };
   }
 
   return result;
