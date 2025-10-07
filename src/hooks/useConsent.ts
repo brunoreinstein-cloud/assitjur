@@ -54,12 +54,12 @@ const FALLBACK_VALUE: ConsentContextValue = {
 export function useConsent(): ConsentContextValue {
   const ctx = useContext(ConsentContext);
 
-  if (typeof window === "undefined" || process.env.PRERENDER === "1") {
+  if (typeof window === "undefined" || import.meta.env.PRERENDER === "1") {
     return FALLBACK_VALUE;
   }
 
   if (!ctx) {
-    if (process.env.NODE_ENV === "development") {
+    if (import.meta.env.DEV) {
       console.warn("useConsent: No ConsentProvider found, returning defaults");
     }
 
