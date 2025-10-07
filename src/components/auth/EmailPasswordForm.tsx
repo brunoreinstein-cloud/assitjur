@@ -123,7 +123,7 @@ export const EmailPasswordForm = ({
       });
 
       // Redirect will be handled by auth state change
-    } catch (error: any) {
+    } catch (error: unknown) {
       const handledError = ErrorHandler.handleAndNotify(
         error,
         "EmailPasswordForm.handleSignIn",
@@ -160,8 +160,8 @@ export const EmailPasswordForm = ({
       });
 
       onModeChange("signin");
-    } catch (error: any) {
-      const msg = error?.message || ERROR_MESSAGES.NOT_FOUND;
+    } catch (error: unknown) {
+      const msg = (error as Error)?.message || ERROR_MESSAGES.NOT_FOUND;
       setFormError(msg);
       toast.error("Erro no cadastro", { description: msg });
     } finally {

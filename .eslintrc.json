@@ -68,6 +68,18 @@
         "@typescript-eslint/no-require-imports": "off",
         "@typescript-eslint/no-explicit-any": "off"
       }
+    },
+    {
+      "files": ["*.config.ts", "*.config.js", "vite.config.ts", "tailwind.config.ts"],
+      "rules": {
+        "@typescript-eslint/no-require-imports": "off"
+      }
+    },
+    {
+      "files": ["src/engine/**/*.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "warn"
+      }
     }
   ]
 }

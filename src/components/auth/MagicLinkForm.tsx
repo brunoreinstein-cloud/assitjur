@@ -106,7 +106,7 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
         });
 
         setEmailSent(true);
-      } catch (error: any) {
+      } catch (error: unknown) {
         ErrorHandler.handleAndNotify(
           error,
           "MagicLinkForm.handleSendMagicLink",

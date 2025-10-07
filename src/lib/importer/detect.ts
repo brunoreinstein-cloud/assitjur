@@ -148,7 +148,7 @@ function processCsvFile(file: File): Promise<DetectedSheet[]> {
             const model = detectSheetModel(filteredHeaders);
 
             const sampleData = dataRows.slice(0, 5).map((row) => {
-              const obj: Record<string, any> = {};
+              const obj: Record<string, unknown> = {};
               filteredHeaders.forEach((header) => {
                 obj[header] = row[headers.indexOf(header)];
               });

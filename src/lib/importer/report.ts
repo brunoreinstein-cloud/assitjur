@@ -6,8 +6,8 @@ import {
 
 export interface CorrectedCell {
   address: string;
-  original: any;
-  corrected: any;
+  original: unknown;
+  corrected: unknown;
   reason: string;
 }
 

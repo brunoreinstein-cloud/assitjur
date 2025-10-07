@@ -2,12 +2,12 @@
 
 export function maskCPF(cpf: string): string {
   if (!cpf) return cpf;
-  return cpf.replace(/(\d{3}).\d{3}.\d{3}-(\d{2})/, "$1.***.***-$2");
+  return cpf.replace(/(\d{3})\.\d{3}\.\d{3}-(\d{2})/, "$1.***.***-$2");
 }
 
 export function maskCNPJ(cnpj: string): string {
   if (!cnpj) return cnpj;
-  return cnpj.replace(/(\d{2}).\d{3}.\d{3}\/\d{4}-(\d{2})/, "$1.***.***/**-$2");
+  return cnpj.replace(/(\d{2})\.\d{3}\.\d{3}\/\d{4}-(\d{2})/, "$1.***.***/**-$2");
 }
 
 export function maskEmail(email: string): string {
@@ -33,12 +33,12 @@ export function maskPII(text: string): string {
   let masked = text;
 
   // CPF pattern: XXX.XXX.XXX-XX
-  masked = masked.replace(/\d{3}.\d{3}.\d{3}-\d{2}/g, (match) =>
+  masked = masked.replace(/\d{3}\.\d{3}\.\d{3}-\d{2}/g, (match) =>
     maskCPF(match),
   );
 
   // CNPJ pattern: XX.XXX.XXX/XXXX-XX
-  masked = masked.replace(/\d{2}.\d{3}.\d{3}\/\d{4}-\d{2}/g, (match) =>
+  masked = masked.replace(/\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}/g, (match) =>
     maskCNPJ(match),
   );
 

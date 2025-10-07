@@ -12,21 +12,22 @@ import {
   correctCNJ,
   cleanCNJ,
 } from "@/lib/validation/unified-cnj";
+import type { CorrectedCell } from "@/lib/importer/report";
 
 // Using unified CNJ validation - remove local utilities
 
 export interface FieldCorrection {
   field: string;
-  originalValue: any;
-  correctedValue: any;
+  originalValue: unknown;
+  correctedValue: unknown;
   correctionType: "auto_complete" | "format" | "infer" | "default";
   confidence: number;
   reason?: string;
 }
 
 export interface CorrectedRow {
-  originalData: any;
-  correctedData: any;
+  originalData: Record<string, unknown>;
+  correctedData: Record<string, unknown>;
   corrections: FieldCorrection[];
   isValid: boolean;
 }
@@ -34,7 +35,7 @@ export interface CorrectedRow {
 // Extended result type for intelligent validation
 export interface IntelligentValidationResult
   extends Omit<ValidationResult, "corrections"> {
-  corrections?: Map<string, any>; // Keep original field for compatibility
+  corrections?: Map<string, CorrectedCell>; // Keep original field for compatibility
   intelligentCorrections?: CorrectedRow[]; // Add new field for intelligent corrections
 }
 
@@ -89,7 +90,7 @@ function mapFieldsIntelligently(
  * Intelligent data correction
  */
 function correctRowData(
-  row: any,
+  row: Record<string, unknown>,
   _rowIndex: number,
   sheetType: "processo" | "testemunha",
 ): CorrectedRow {
@@ -166,7 +167,7 @@ function correctRowData(
     // Default réu inference
     if (!correctedData.reu_nome && correctedData.reclamante_nome) {
       // Look for common patterns that might indicate the defendant
-      const reclamante = correctedData.reclamante_nome.toLowerCase();
+      const reclamante = String(correctedData.reclamante_nome || "").toLowerCase();
       if (reclamante.includes("vs") || reclamante.includes("x ")) {
         const parts = reclamante.split(/\s+(vs?\.?|x)\s+/i);
         if (parts.length >= 2) {
@@ -468,7 +469,9 @@ export async function intelligentValidateAndCorrect(
     0,
   );
 
-  console.log(`🔍 Enhanced Validation Summary:
+  // Validation summary (development only)
+  if (!import.meta.env.PROD) {
+    console.log(`🔍 Enhanced Validation Summary:
     📊 File Processing:
     - Original rows loaded: ${totalOriginal}
     - Successfully processed: ${totalProcessed}  
@@ -482,6 +485,7 @@ export async function intelligentValidateAndCorrect(
     📈 Data Breakdown:
     - Processos: ${normalizedData.processos?.length || 0}
     - Testemunhas: ${normalizedData.testemunhas?.length || 0}`);
+  }
 
   const result: IntelligentValidationResult = {
     summary: {

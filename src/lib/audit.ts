@@ -5,7 +5,7 @@ export async function logAudit(
   action: string,
   resource: string,
   resourceId: string | null,
-  metadata: Record<string, any> = {},
+  metadata: Record<string, unknown> = {},
 ) {
   const masked = applyPIIMask(metadata, true);
   const { data } = await supabase.auth.getUser();

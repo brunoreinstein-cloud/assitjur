@@ -474,7 +474,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       return { error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       await logAuthAttempt(email, "login", "failure", {
         role,
         error: error.message,
@@ -552,7 +552,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         await logAuthAttempt(email, "signup", "success", {});
       }
       return { error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       await logAuthAttempt(email, "signup", "failure", {
         error: error.message,
       });
@@ -582,7 +582,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         redirectTo: `${siteUrl}/reset-password`,
       });
       return { error };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return { error };
     }
   };
