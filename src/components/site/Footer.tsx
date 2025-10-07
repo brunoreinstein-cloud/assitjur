@@ -2,17 +2,19 @@
 
 import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
-import { useConsent } from "@/hooks/useConsent";
-import { useNavigate } from "react-router-dom";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Mail, Shield } from "lucide-react";
 
 function Footer() {
-  // ✅ SSR safety: consent is client-only
+  // ✅ SSR safety: Return null BEFORE any hooks execution
   if (typeof window === "undefined") {
     return null;
   }
 
+  // ✅ Lazy import hooks ONLY on client-side
+  const { useConsent } = require("@/hooks/useConsent");
+  const { useNavigate } = require("react-router-dom");
+  
   const navigate = useNavigate();
   const { setOpen } = useConsent();
 
