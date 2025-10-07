@@ -1,3 +1,6 @@
+// 🔥 CRITICAL: Disable all Node.js caching to prevent stale code execution
+process.env.NODE_OPTIONS = "--no-compilation-cache";
+
 // garante o flag mesmo se alguém rodar localmente sem script do npm
 process.env.PRERENDER = process.env.PRERENDER ?? "1";
 
