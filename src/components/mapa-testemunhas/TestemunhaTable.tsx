@@ -145,7 +145,7 @@ export function TestemunhaTable({
                     )}
                     title={testemunha.nome_testemunha}
                   >
-                    {applyPIIMask(testemunha.nome_testemunha, isPiiMasked)}
+                    {String(applyPIIMask(testemunha.nome_testemunha, isPiiMasked))}
                   </TableCell>
                 )}
                 {columnVisibility.qtdDepo && (

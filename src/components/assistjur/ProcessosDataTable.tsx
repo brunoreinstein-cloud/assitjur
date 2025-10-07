@@ -354,13 +354,13 @@ export function ProcessosDataTable() {
                   return (
                     <TableRow key={p.cnj} className="hover:bg-muted/20">
                       <TableCell className="font-mono text-xs max-w-[120px] truncate">
-                        {applyPIIMask(p.cnj, isPiiMasked)}
+                        {String(applyPIIMask(p.cnj, isPiiMasked))}
                       </TableCell>
                       <TableCell className="font-medium max-w-[150px] truncate">
-                        {applyPIIMask(p.reclamante, isPiiMasked)}
+                        {String(applyPIIMask(p.reclamante, isPiiMasked))}
                       </TableCell>
                       <TableCell className="max-w-[150px] truncate">
-                        {applyPIIMask(p.reclamada, isPiiMasked)}
+                        {String(applyPIIMask(p.reclamada, isPiiMasked))}
                       </TableCell>
                       <TableCell className="max-w-[200px]">
                         <ArrayField

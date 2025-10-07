@@ -16,7 +16,10 @@ export async function logAudit(
     result: "SUCCESS",
     table_name: "system",
     resource: resource,
-    metadata: { ...masked, resourceId },
+    metadata:
+      masked && typeof masked === "object" && !Array.isArray(masked)
+        ? { ...(masked as Record<string, unknown>), resourceId }
+        : { resourceId },
   });
   if (error) {
     console.error("logAudit error", error);

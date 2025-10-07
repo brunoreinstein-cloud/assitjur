@@ -149,7 +149,7 @@ async function loadRawData(
         header: true,
         skipEmptyLines: true,
         complete: (results) => {
-          resolve(results.data);
+          resolve(results.data as Record<string, unknown>[]);
         },
         error: reject,
       });

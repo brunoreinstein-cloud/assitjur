@@ -296,7 +296,7 @@ export default function TestemunhasTable() {
                     />
                   </TableCell>
                   <TableCell className="font-medium max-w-[200px] truncate">
-                    {applyPIIMask(testemunha.nome_testemunha, isPiiMasked)}
+                    {String(applyPIIMask(testemunha.nome_testemunha, isPiiMasked))}
                   </TableCell>
                   <TableCell className="text-center">
                     <Badge variant="secondary" className="text-xs">

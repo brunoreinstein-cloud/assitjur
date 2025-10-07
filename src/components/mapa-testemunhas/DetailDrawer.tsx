@@ -25,7 +25,7 @@ export function DetailDrawer() {
   const { toast } = useToast();
 
   const copyToClipboard = async (text: string, label: string) => {
-    const maskedText = applyPIIMask(text, isPiiMasked);
+    const maskedText = String(applyPIIMask(text, isPiiMasked));
     try {
       await navigator.clipboard.writeText(maskedText);
       toast({
@@ -101,7 +101,7 @@ export function DetailDrawer() {
         )}
       </div>
       <p className="font-mono text-sm break-all">
-        {value ? applyPIIMask(value.toString(), isPiiMasked) : "—"}
+        {value ? String(applyPIIMask(value.toString(), isPiiMasked)) : "—"}
       </p>
     </div>
   );

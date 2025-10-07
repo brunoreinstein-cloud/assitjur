@@ -154,7 +154,7 @@ export function ProcessoTable({ data }: ProcessoTableProps) {
                       densityClasses.text,
                     )}
                   >
-                    {applyPIIMask(processo.cnj, isPiiMasked)}
+                    {String(applyPIIMask(processo.cnj, isPiiMasked))}
                   </TableCell>
                 )}
                 {columnVisibility.uf && (
@@ -173,7 +173,7 @@ export function ProcessoTable({ data }: ProcessoTableProps) {
                     )}
                     title={processo.comarca || ""}
                   >
-                    {applyPIIMask(processo.comarca, isPiiMasked) || "—"}
+                    {String(applyPIIMask(processo.comarca, isPiiMasked) || "—")}
                   </TableCell>
                 )}
                 {columnVisibility.fase && (
@@ -204,8 +204,9 @@ export function ProcessoTable({ data }: ProcessoTableProps) {
                     )}
                     title={processo.reclamante_limpo || ""}
                   >
-                    {applyPIIMask(processo.reclamante_limpo, isPiiMasked) ||
-                      "—"}
+                    {String(
+                      applyPIIMask(processo.reclamante_limpo, isPiiMasked) || "—"
+                    )}
                   </TableCell>
                 )}
                 {columnVisibility.qtdDepos && (

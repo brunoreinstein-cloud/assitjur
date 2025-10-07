@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +28,11 @@ import { ReviewUpdateButton } from "@/components/admin/ReviewUpdateButton";
 import { ValidationTestButton } from "@/components/importer/ValidationTestButton";
 import { logger } from "@/lib/logger";
 import { ErrorHandler } from "@/lib/error-handling";
+import type { ValidationResult } from "@/lib/importer/types";
+import type { FieldCorrection } from "@/types/core";
+import type { CorrectedCell } from "@/lib/importer/report";
+import type { CorrectedRow } from "@/lib/importer/intelligent-corrector";
+import type { RawRow } from "@/types/core";
 
 export function ValidationStep() {
   const {
@@ -148,7 +153,108 @@ export function ValidationStep() {
   }, [validationResult, corrections]);
 
 
-  const handleApplyCorrections = useCallback(async (correctedData: RawRow[]) => {
+  const handleApplyCorrections = useCallback(
+    async (correctedData: RawRow[]) => {
+      const correctionsApplied = corrections.filter(
+        (c) => c.corrections.length > 0,
+      ).length;
+
+      try {
+        // Import generateReports function
+        const { generateReports } = await import("@/lib/importer/report");
+
+        // Separate corrected data by type using unified CNJ validation
+        const processos = correctedData.filter((d) => {
+          const cnjValidation = validateCNJ(d.cnj as string, "correction");
+          const hasEssentialFields = d.reclamante_nome || d.reu_nome;
+          return cnjValidation.isValid || hasEssentialFields;
+        });
+
+        const testemunhas = correctedData.filter((d) => {
+          const cnjValidation = validateCNJ(d.cnj as string, "correction");
+          const hasTestemunhaData = d.nome_testemunha;
+          return cnjValidation.isValid || hasTestemunhaData;
+        });
+
+        // Build corrections map using unified Excel addressing
+        const correctionsMap = new Map<string, CorrectedCell>();
+
+        corrections.forEach((row, rowIndex) => {
+          row.corrections.forEach((correction: FieldCorrection) => {
+            // Find field index in the data structure for correct column mapping
+            const sampleData = correctedData[0] || {};
+            const fieldNames = Object.keys(sampleData);
+            const fieldIndex = fieldNames.indexOf(correction.field);
+
+            if (fieldIndex >= 0) {
+              // Use unified Excel addressing system
+              const address = getExcelAddress(rowIndex + 1, fieldIndex); // +1 for header row
+
+              correctionsMap.set(address, {
+                address,
+                original: correction.originalValue,
+                corrected: correction.correctedValue,
+                reason: `${correction.correctionType}: ${correction.reason || "Correção automática"}`,
+              });
+            }
+          });
+        });
+
+        // Generate updated result with ALL corrected data preserved
+        const updatedResult: ValidationResult = {
+          ...validationResult!,
+          normalizedData: {
+            // Preserve both processos and testemunhas data
+            processos: processos.length > 0 ? (processos as any) : undefined,
+            testemunhas:
+              testemunhas.length > 0 ? (testemunhas as any) : undefined,
+          },
+          summary: {
+            ...validationResult!.summary,
+            valid: processos.length + testemunhas.length,
+            errors: Math.max(
+              0,
+              validationResult!.summary.errors - correctionsApplied,
+            ),
+          },
+        };
+
+        // Generate reports and download URLs with proper corrections map
+        const downloadUrls = await generateReports(
+          updatedResult,
+          file?.name || "arquivo_corrigido",
+          correctionsMap, // Pass real corrections map for visual formatting
+        );
+
+        // Update result with download URLs
+        updatedResult.downloadUrls = downloadUrls;
+
+        setValidationResult(updatedResult);
+        setShowCorrections(false);
+
+        const totalCorrectedRows = processos.length + testemunhas.length;
+
+        toast({
+          title: "Correções aplicadas com sucesso",
+          description: `${correctionsApplied} correções aplicadas. ${totalCorrectedRows} registros válidos prontos para importação. Downloads disponíveis.`,
+        });
+      } catch (error) {
+        const handledError = ErrorHandler.handleAndNotify(
+          error,
+          "ValidationStep.handleApplyCorrections",
+        );
+        logger.error(
+          "Erro ao aplicar correções",
+          {
+            error: handledError.message,
+            correctionsCount: corrections.length,
+          },
+          "ValidationStep",
+        );
+      }
+    },
+    [corrections, file, setValidationResult, validationResult],
+  );
     const correctionsApplied = corrections.filter(
       (c) => c.corrections.length > 0,
     ).length;
@@ -174,7 +280,7 @@ export function ValidationStep() {
       const correctionsMap = new Map<string, CorrectedCell>();
 
       corrections.forEach((row, rowIndex) => {
-        row.corrections.forEach((correction) => {
+        row.corrections.forEach((correction: FieldCorrection) => {
           // Find field index in the data structure for correct column mapping
           const sampleData = correctedData[0] || {};
           const fieldNames = Object.keys(sampleData);
@@ -353,7 +459,7 @@ export function ValidationStep() {
       {/* Intelligent Corrections */}
       {showCorrections && hasCorrections && (
         <CorrectionInterface
-          corrections={corrections}
+          corrections={corrections as any}
           onApplyCorrections={handleApplyCorrections}
           onReject={handleRejectCorrections}
         />

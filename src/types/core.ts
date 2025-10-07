@@ -20,12 +20,7 @@ export type Dict<T = unknown> = Record<string, T>;
 export type RawRow = Dict<string | number | boolean | null>;
 
 export interface NormalizedRow {
-  [key: string]: string | number | boolean | null;
-  __meta?: {
-    source?: string;
-    rowIndex?: number;
-    autofilled?: string[];
-  };
+  [key: string]: string | number | boolean | null | undefined;
 }
 
 // ============= API Response Types =============
@@ -72,6 +67,7 @@ export interface ProcessingResult<T = unknown> {
 }
 
 // ============= Correction Types =============
+// Note: CorrectedRow is defined in intelligent-corrector.ts for ETL use
 export interface FieldCorrection {
   field: string;
   originalValue: unknown;
@@ -79,13 +75,6 @@ export interface FieldCorrection {
   correctionType: string;
   reason?: string;
   confidence?: number;
-}
-
-export interface CorrectedRow {
-  rowIndex: number;
-  sheetName: string;
-  corrections: FieldCorrection[];
-  data: NormalizedRow;
 }
 
 // ============= Type Guards =============
