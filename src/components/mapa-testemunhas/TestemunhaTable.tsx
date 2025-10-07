@@ -61,14 +61,6 @@ export function TestemunhaTable({
     [setSelectedTestemunha, setIsDetailDrawerOpen],
   );
 
-  if (status !== "success") {
-    return <DataState status={status} onRetry={onRetry} />;
-  }
-
-  if (!data.length) {
-    return <DataState status="empty" onRetry={onRetry} />;
-  }
-
   const requestDelete = useCallback((t: PorTestemunha) => {
     setToDelete(t);
     setIsConfirmOpen(true);
@@ -86,6 +78,14 @@ export function TestemunhaTable({
     setIsConfirmOpen(false);
     setToDelete(null);
   }, [toDelete, remove, removeTestemunha, restoreTestemunha]);
+
+  if (status !== "success") {
+    return <DataState status={status} onRetry={onRetry} />;
+  }
+
+  if (!data.length) {
+    return <DataState status="empty" onRetry={onRetry} />;
+  }
 
   return (
     <>
