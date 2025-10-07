@@ -475,9 +475,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       return { error: null };
     } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       await logAuthAttempt(email, "login", "failure", {
         role,
-        error: error.message,
+        error: errorMessage,
       });
       return { error };
     } finally {
@@ -553,8 +554,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
       return { error: null };
     } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       await logAuthAttempt(email, "signup", "failure", {
-        error: error.message,
+        error: errorMessage,
       });
       return { error };
     } finally {

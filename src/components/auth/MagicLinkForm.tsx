@@ -112,7 +112,7 @@ export const MagicLinkForm = ({ onBack }: MagicLinkFormProps) => {
           "MagicLinkForm.handleSendMagicLink",
         );
 
-        if (error?.status === 429) {
+        if (error && typeof error === 'object' && 'status' in error && error.status === 429) {
           toast.error("Muitas tentativas", {
             description: "Tente novamente mais tarde.",
           });
