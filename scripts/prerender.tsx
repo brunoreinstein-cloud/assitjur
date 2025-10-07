@@ -37,11 +37,9 @@ const routes = [
     path: "/",
     render: () =>
       renderToString(
-        <ConsentProvider>
-          <StaticRouter location="/">
-            <PublicHome />
-          </StaticRouter>
-        </ConsentProvider>,
+        <StaticRouter location="/">
+          <PublicHome />
+        </StaticRouter>,
       ),
     head: {
       title: "AssistJur.IA - Assistente de Testemunhas",
