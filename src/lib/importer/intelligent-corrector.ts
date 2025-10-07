@@ -15,15 +15,16 @@ import {
 
 // Using unified CNJ validation - remove local utilities
 
-interface FieldCorrection {
+export interface FieldCorrection {
   field: string;
   originalValue: any;
   correctedValue: any;
   correctionType: "auto_complete" | "format" | "infer" | "default";
   confidence: number;
+  reason?: string;
 }
 
-interface CorrectedRow {
+export interface CorrectedRow {
   originalData: any;
   correctedData: any;
   corrections: FieldCorrection[];
