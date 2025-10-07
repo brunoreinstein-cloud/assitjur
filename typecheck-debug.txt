@@ -1,0 +1,42 @@
+src/components/mapa-testemunhas/ImportModal.tsx(48,32): error TS2307: Cannot find module 'xlsx' or its corresponding type declarations.
+src/components/mapa-testemunhas/ImportModal.tsx(545,31): error TS2307: Cannot find module 'xlsx' or its corresponding type declarations.
+src/components/mapa-testemunhas/ImportModal.tsx(575,25): error TS2347: Untyped function calls may not accept type arguments.
+src/components/mapa-testemunhas/ImportModal.tsx(578,26): error TS7006: Parameter 'row' implicitly has an 'any' type.
+src/components/mapa-testemunhas/ImportModal.tsx(604,25): error TS2347: Untyped function calls may not accept type arguments.
+src/components/mapa-testemunhas/ImportModal.tsx(607,26): error TS7006: Parameter 'row' implicitly has an 'any' type.
+src/features/importer/etl/detect.ts(124,29): error TS2307: Cannot find module 'xlsx' or its corresponding type declarations.
+src/features/importer/etl/detect.ts(136,38): error TS7006: Parameter 'sheetName' implicitly has an 'any' type.
+src/lib/importer/detect.ts(47,29): error TS2307: Cannot find module 'xlsx' or its corresponding type declarations.
+src/lib/importer/normalize.ts(157,29): error TS2307: Cannot find module 'xlsx' or its corresponding type declarations.
+src/lib/importer/normalize.ts(176,38): error TS7006: Parameter 'row' implicitly has an 'any' type.
+src/lib/importer/report.ts(2,32): error TS2307: Cannot find module 'xlsx' or its corresponding type declarations.
+src/lib/importer/report.ts(70,29): error TS2307: Cannot find module 'xlsx' or its corresponding type declarations.
+src/lib/templates/buildXlsx.ts(9,29): error TS2307: Cannot find module 'xlsx' or its corresponding type declarations.
+src/lib/templates/canonical-builders.ts(19,29): error TS2307: Cannot find module 'xlsx' or its corresponding type declarations.
+Files:                        2029
+Lines of Library:            49896
+Lines of Definitions:       239146
+Lines of TypeScript:         85205
+Lines of JavaScript:             0
+Lines of JSON:                   0
+Lines of Other:                  0
+Identifiers:                393429
+Symbols:                    565390
+Types:                      152115
+Instantiations:             924086
+Memory used:               642534K
+Assignability cache size:   116287
+Identity cache size:          8410
+Subtype cache size:           3696
+Strict subtype cache size:    1498
+I/O Read time:               0.26s
+Parse time:                  2.24s
+ResolveModule time:          0.30s
+ResolveTypeReference time:   0.01s
+ResolveLibrary time:         0.01s
+Program time:                3.17s
+Bind time:                   1.08s
+Check time:                 17.09s
+printTime time:              0.00s
+Emit time:                   0.00s
+Total time:                 21.34s
