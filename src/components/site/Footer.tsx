@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Mail, Shield } from "lucide-react";
 
-export function Footer() {
+function Footer() {
   // ✅ SSR safety: consent is client-only
   if (typeof window === "undefined") {
     return null;
@@ -126,3 +126,5 @@ export function Footer() {
     </footer>
   );
 }
+
+export default Footer;

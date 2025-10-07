@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Footer } from "./Footer";
+import Footer from "./Footer";
 
 /**
  * ClientOnlyFooter - Wrapper que garante que o Footer só renderiza no cliente
@@ -10,6 +10,11 @@ import { Footer } from "./Footer";
  * durante o server-side rendering.
  */
 export function ClientOnlyFooter() {
+  // ✅ Guard SSR/prerender ANTES de qualquer hook
+  if (typeof window === "undefined") {
+    return null;
+  }
+
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {

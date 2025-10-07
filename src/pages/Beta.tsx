@@ -4,7 +4,7 @@ import { BetaHero } from "@/components/beta/BetaHero";
 import { BetaBenefits } from "@/components/beta/BetaBenefits";
 import { BetaSignup } from "@/components/beta/BetaSignup";
 import { BetaFAQ } from "@/components/beta/BetaFAQ";
-import { Footer } from "@/components/site/Footer";
+import { ClientOnlyFooter } from "@/components/site/ClientOnlyFooter";
 
 export default function Beta() {
   // SEO Meta Tags
@@ -67,7 +67,7 @@ export default function Beta() {
       <BetaFAQ />
 
       {/* Footer */}
-      <Footer />
+      <ClientOnlyFooter />
     </div>
   );
 }

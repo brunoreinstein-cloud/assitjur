@@ -5,7 +5,7 @@ import { BiancaSection } from "@/components/sobre/BiancaSection";
 import { TrustBlock } from "@/components/sobre/TrustBlock";
 import { SecuritySection } from "@/components/sobre/SecuritySection";
 import { FinalCTA } from "@/components/sobre/FinalCTA";
-import { Footer } from "@/components/site/Footer";
+import { ClientOnlyFooter } from "@/components/site/ClientOnlyFooter";
 
 export default function About() {
   return (
@@ -20,7 +20,7 @@ export default function About() {
         <FinalCTA />
       </main>
       <div id="contato">
-        <Footer />
+        <ClientOnlyFooter />
       </div>
     </div>
   );
