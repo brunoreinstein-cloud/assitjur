@@ -7,6 +7,11 @@ import { getEnv } from "@/lib/getEnv";
 
 export function FooterLegal() {
   const { setOpen } = useConsent();
+  const handleOpenConsent = () => {
+    if (typeof setOpen === "function") {
+      setOpen(true);
+    }
+  };
   const [buildError, setBuildError] = useState(false);
   const linkClasses =
     "text-sm text-foreground hover:text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
@@ -25,7 +30,7 @@ export function FooterLegal() {
     <footer className="bg-muted text-foreground py-4 border-t border-muted-foreground/20">
       <div className="container mx-auto px-6">
         <nav className="flex flex-wrap justify-center gap-6">
-          <button onClick={() => setOpen(true)} className={linkClasses}>
+          <button onClick={handleOpenConsent} className={linkClasses}>
             Privacidade / Gerenciar cookies
           </button>
           <Link to="/privacidade" className={linkClasses}>

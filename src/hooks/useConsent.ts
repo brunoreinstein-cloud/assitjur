@@ -44,31 +44,27 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+const FALLBACK_VALUE: ConsentContextValue = {
+  preferences: null,
+  open: false,
+  setOpen: () => {},
+  save: () => {},
+};
+
 export function useConsent(): ConsentContextValue {
-  // SSR-safe: check if we're in SSR/prerender environment
+  const ctx = useContext(ConsentContext);
+
   if (typeof window === "undefined" || process.env.PRERENDER === "1") {
-    return {
-      preferences: null,
-      open: false,
-      setOpen: () => {}, // No-op during SSR
-      save: () => {},    // No-op during SSR
-    };
+    return FALLBACK_VALUE;
   }
 
-  const ctx = useContext(ConsentContext);
-  
-  // Return safe defaults if no provider (during build/SSR/prerender)
   if (!ctx) {
     if (process.env.NODE_ENV === "development") {
       console.warn("useConsent: No ConsentProvider found, returning defaults");
     }
-    return {
-      preferences: null,
-      open: false,
-      setOpen: () => {},
-      save: () => {},
-    };
+
+    return FALLBACK_VALUE;
   }
-  
+
   return ctx;
 }

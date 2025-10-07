@@ -11,6 +11,12 @@ export function Footer() {
   const navigate = useNavigate();
   const { setOpen } = useConsent();
 
+  const handleOpenConsent = () => {
+    if (typeof setOpen === "function") {
+      setOpen(true);
+    }
+  };
+
   return (
     <footer className="bg-hero-gradient text-aj-text-high py-16">
       <div className="container mx-auto px-6">
@@ -34,7 +40,7 @@ export function Footer() {
             aria-label="Links institucionais"
           >
             <button
-              onClick={() => setOpen(true)}
+              onClick={handleOpenConsent}
               className="text-sm text-aj-text-high/80 hover:text-aj-text-high transition-colors underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aj-color-gold focus-visible:ring-offset-2"
             >
               Privacidade / Gerenciar cookies
