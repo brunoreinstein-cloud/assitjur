@@ -7,20 +7,20 @@ echo ""
 
 # Fase 1: Remover todos os caches
 echo "📁 Removendo caches..."
-rm -rf node_modules/.vite && echo "  ✅ node_modules/.vite"
-rm -rf node_modules/.cache && echo "  ✅ node_modules/.cache"
-rm -rf node_modules/.pnpm && echo "  ✅ node_modules/.pnpm"
-rm -rf dist && echo "  ✅ dist/"
-rm -rf .vite && echo "  ✅ .vite/"
-rm -rf .tsbuildinfo && echo "  ✅ .tsbuildinfo"
+rm -rf node_modules/.vite && echo "  ✅ node_modules/.vite" || echo "  ℹ️  node_modules/.vite não encontrado"
+rm -rf node_modules/.cache && echo "  ✅ node_modules/.cache" || echo "  ℹ️  node_modules/.cache não encontrado"
+rm -rf node_modules/.pnpm && echo "  ✅ node_modules/.pnpm" || echo "  ℹ️  node_modules/.pnpm não encontrado"
+rm -rf dist && echo "  ✅ dist/" || echo "  ℹ️  dist/ não encontrado"
+rm -rf .vite && echo "  ✅ .vite/" || echo "  ℹ️  .vite/ não encontrado"
+rm -rf .tsbuildinfo && echo "  ✅ .tsbuildinfo" || echo "  ℹ️  .tsbuildinfo não encontrado"
 
 echo ""
 echo "📦 Reinstalando dependências com --force..."
-pnpm install --force
+npm install --force
 
 echo ""
 echo "🔨 Executando build limpo..."
-pnpm run build
+npm run build
 
 echo ""
 echo "🔍 Validando bundle (verificando erros antigos)..."
