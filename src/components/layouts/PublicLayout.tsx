@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { PublicHeader } from "@/components/site/PublicHeader";
-import { Footer } from "@/components/site/Footer";
+import { ClientOnlyFooter } from "@/components/site/ClientOnlyFooter";
 import { BackToTopFAB } from "@/components/site/BackToTopFAB";
 import { SEO } from "@/seo/SEO";
 
@@ -39,7 +39,7 @@ export function PublicLayout({
         {children}
       </main>
       
-      <Footer />
+      <ClientOnlyFooter />
       
       <BackToTopFAB />
     </div>
