@@ -75,21 +75,32 @@ const distDir = path.resolve(__dirname, "..", "dist");
 const template = fs.readFileSync(path.join(distDir, "index.html"), "utf-8");
 
 for (const route of routes) {
-  const appHtml = route.render();
-  const headHtml = renderToStaticMarkup(
-    <Head {...route.head} path={route.path} />,
-  );
+  try {
+    console.log(`[PRERENDER] Processing route: ${route.path}`);
+    
+    const appHtml = route.render();
+    const headHtml = renderToStaticMarkup(
+      <Head {...route.head} path={route.path} />,
+    );
 
-  let html = template.replace(
-    '<div id="root"></div>',
-    `<div id="root">${appHtml}</div>`,
-  );
-  html = html.replace("</head>", `${headHtml}</head>`);
+    let html = template.replace(
+      '<div id="root"></div>',
+      `<div id="root">${appHtml}</div>`,
+    );
+    html = html.replace("</head>", `${headHtml}</head>`);
 
-  const outDir = path.join(
-    distDir,
-    route.path === "/" ? "" : route.path.substring(1),
-  );
-  fs.mkdirSync(outDir, { recursive: true });
-  fs.writeFileSync(path.join(outDir, "index.html"), html, "utf-8");
+    const outDir = path.join(
+      distDir,
+      route.path === "/" ? "" : route.path.substring(1),
+    );
+    fs.mkdirSync(outDir, { recursive: true });
+    fs.writeFileSync(path.join(outDir, "index.html"), html, "utf-8");
+    
+    console.log(`[PRERENDER] ✅ Success: ${route.path}`);
+  } catch (err) {
+    console.error(`[PRERENDER ERROR] Route: ${route.path}`);
+    console.error(`Message: ${(err as Error)?.message}`);
+    console.error(`Stack: ${(err as Error)?.stack}`);
+    process.exit(1);
+  }
 }

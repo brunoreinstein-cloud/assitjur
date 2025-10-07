@@ -8,8 +8,8 @@ import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Mail, Shield } from "lucide-react";
 
 export function Footer() {
-  // ⛑️ SSR safety: consent is client-only
-  if (typeof window === "undefined" || import.meta.env.SSR) {
+  // ✅ SSR safety: consent is client-only
+  if (typeof window === "undefined") {
     return null;
   }
 

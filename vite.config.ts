@@ -168,7 +168,6 @@ export default defineConfig(({ mode }) => {
     define: {
       global: "globalThis",
       "process.env": {},
-      "import.meta.env.PRERENDER": JSON.stringify(process.env.PRERENDER || false),
     },
     build: {
       target: "ES2022",

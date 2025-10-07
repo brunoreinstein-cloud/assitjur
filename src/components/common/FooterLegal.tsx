@@ -6,8 +6,8 @@ import { useConsent } from "@/hooks/useConsent";
 import { getEnv } from "@/lib/getEnv";
 
 export function FooterLegal() {
-  // ⛑️ SSR safety: consent is client-only
-  if (typeof window === "undefined" || import.meta.env.SSR) {
+  // ✅ SSR safety: consent is client-only
+  if (typeof window === "undefined") {
     return null;
   }
 
