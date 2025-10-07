@@ -1,1 +1,0 @@
-// Legacy service worker intentionally removed.
