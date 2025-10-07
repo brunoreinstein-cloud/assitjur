@@ -78,7 +78,7 @@ export function UploadStep() {
             });
           }, 150); // Slower interval
 
-          console.log("Starting file structure detection for:", file.name);
+          // File structure detection started
 
           // Detect file structure with retry logic
           let sheets: DetectedSheet[] = [];
@@ -95,9 +95,7 @@ export function UploadStep() {
                 throw err;
               }
 
-              console.log(
-                `Retry ${retryCount}/${maxRetries} for file detection`,
-              );
+              // Retry attempt logged
               // Exponential backoff
               await new Promise((resolve) =>
                 setTimeout(resolve, 1000 * retryCount),
@@ -109,16 +107,12 @@ export function UploadStep() {
           setUploadProgress(100);
           setDetectedSheets(sheets);
 
-          console.log(
-            "Detected sheets:",
-            sheets.map((s) => ({ name: s.name, model: s.model })),
-          );
+          // Sheets detected successfully
 
           // Check if manual mapping is needed
           const hasAmbiguous = sheets.some((s) => s.model === "ambiguous");
 
           if (hasAmbiguous) {
-            console.log("Ambiguous sheets detected, showing mapping dialog");
             setShowMapping(true);
           } else {
             handleContinue(sheets, file);
@@ -126,7 +120,6 @@ export function UploadStep() {
         } catch (err) {
           const errorMessage =
             err instanceof Error ? err.message : "Erro ao processar arquivo";
-          console.error("File processing error:", errorMessage);
 
           setError(errorMessage);
           toast({

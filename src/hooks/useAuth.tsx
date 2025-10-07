@@ -212,8 +212,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             }
             setProfile(profileData as UserProfile);
             setLoading(false);
-          } catch (error) {
-            console.error("Profile error during auth state change:", error);
+            } catch (error) {
             if (AuthErrorHandler.isAuthError(error)) {
               await AuthErrorHandler.handleAuthError(error, {
                 showNotification: false, // Avoid notification spam on initial load
@@ -273,7 +272,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               setProfile(profileData as UserProfile);
               setLoading(false);
             } catch (error) {
-              console.error("Profile error during session init:", error);
               if (AuthErrorHandler.isAuthError(error)) {
                 await AuthErrorHandler.handleAuthError(error, {
                   showNotification: false,
