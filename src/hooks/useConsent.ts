@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, createElement } from "react";
+import type { ReactNode } from "react";
 import { getConsent, setConsent } from "@/lib/consent";
 
 type ConsentPrefs = { analytics: boolean; ads: boolean };
@@ -16,7 +17,7 @@ const ConsentContext = createContext<ConsentContextValue | undefined>(
   undefined,
 );
 
-export function ConsentProvider({ children }: { children: React.ReactNode }) {
+export function ConsentProvider({ children }: { children: ReactNode }) {
   const [preferences, setPreferences] = useState<ConsentPrefs | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -37,10 +38,10 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
     setPreferences(prefs);
   };
 
-  return React.createElement(
+  return createElement(
     ConsentContext.Provider,
     { value: { preferences, open, setOpen, save } },
-    children,
+    children
   );
 }
 

@@ -57,14 +57,14 @@ function applyOrgDefaults(row: any, settings: OrgSettings | null): any {
  */
 function normalizeProcessoData(
   sheet: DetectedSheet,
-  rawData: any[],
+  rawData: Record<string, unknown>[],
   orgSettings: OrgSettings | null,
 ): ImporterProcessoRow[] {
   const headerMap = mapHeaders(sheet.headers, "processo");
 
   return rawData
     .map((row) => {
-      const mapped: any = {};
+      const mapped: Record<string, unknown> = {};
 
       // Map all available fields
       Object.entries(headerMap).forEach(([canonical, original]) => {
@@ -83,14 +83,14 @@ function normalizeProcessoData(
       const processo: ImporterProcessoRow = {
         cnj: processedCNJ,
         cnj_digits: cleanCNJ(processedCNJ),
-        reclamante_nome: mapped.reclamante_nome || "",
-        reu_nome: mapped.reu_nome || "",
-        comarca: mapped.comarca || "",
-        tribunal: mapped.tribunal || "",
-        vara: mapped.vara || "",
-        fase: mapped.fase || "",
-        status: mapped.status || "",
-        observacoes: mapped.observacoes || "",
+        reclamante_nome: String(mapped.reclamante_nome || ""),
+        reu_nome: String(mapped.reu_nome || ""),
+        comarca: String(mapped.comarca || ""),
+        tribunal: String(mapped.tribunal || ""),
+        vara: String(mapped.vara || ""),
+        fase: String(mapped.fase || ""),
+        status: String(mapped.status || ""),
+        observacoes: String(mapped.observacoes || ""),
       };
 
       return processo;
@@ -110,13 +110,13 @@ function normalizeProcessoData(
  */
 function normalizeTestemunhaData(
   sheet: DetectedSheet,
-  rawData: any[],
+  rawData: Record<string, unknown>[],
   orgSettings: OrgSettings | null,
 ): ImporterTestemunhaRow[] {
   const headerMap = mapHeaders(sheet.headers, "testemunha");
 
   return rawData.map((row) => {
-    const mapped: any = {};
+    const mapped: Record<string, unknown> = {};
 
     // Map available fields
     Object.entries(headerMap).forEach(([canonical, original]) => {
@@ -127,12 +127,11 @@ function normalizeTestemunhaData(
     applyOrgDefaults(mapped, orgSettings);
 
     return {
-      cnj: mapped.cnj || "",
-      cnj_digits: cleanCNJ(mapped.cnj || ""),
-      nome_testemunha: mapped.nome_testemunha || "",
-      reclamante_nome: mapped.reclamante_nome || "",
-      reu_nome: mapped.reu_nome || "",
-      observacoes: mapped.observacoes || "",
+      cnj: String(mapped.cnj || ""),
+      cnj_digits: cleanCNJ(String(mapped.cnj || "")),
+      nome_testemunha: String(mapped.nome_testemunha || ""),
+      reclamante_nome: String(mapped.reclamante_nome || ""),
+      reu_nome: String(mapped.reu_nome || ""),
     };
   });
 }
@@ -140,7 +139,10 @@ function normalizeTestemunhaData(
 /**
  * Loads raw data from file for a specific sheet
  */
-async function loadRawData(file: File, sheet: DetectedSheet): Promise<any[]> {
+async function loadRawData(
+  file: File,
+  sheet: DetectedSheet,
+): Promise<Record<string, unknown>[]> {
   if (file.name.endsWith(".csv")) {
     return new Promise((resolve, reject) => {
       Papa.parse(file, {
@@ -171,12 +173,12 @@ async function loadRawData(file: File, sheet: DetectedSheet): Promise<any[]> {
 
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
         const headers = jsonData[0] as string[];
-        const rows = jsonData.slice(1);
+        const rows = jsonData.slice(1) as unknown[][];
 
         const objectData = rows.map((row) => {
-          const obj: any = {};
+          const obj: Record<string, unknown> = {};
           headers.forEach((header, index) => {
-            obj[header] = (row as any)[index];
+            obj[header] = (row as unknown[])[index];
           });
           return obj;
         });

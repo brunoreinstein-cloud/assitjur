@@ -123,6 +123,8 @@ export default defineConfig(({ mode }) => {
   // Handle analyzer plugin dynamically but synchronously
   if (process.env.ANALYZE) {
     try {
+      // Dynamic import converted to require for synchronous loading
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { visualizer } = require("rollup-plugin-visualizer");
       plugins.push(visualizer({ open: true }) as Plugin);
     } catch {

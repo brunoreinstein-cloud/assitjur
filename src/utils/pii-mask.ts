@@ -2,15 +2,12 @@
 
 export function maskCPF(cpf: string): string {
   if (!cpf) return cpf;
-  return cpf.replace(/(\d{3})\.\d{3}\.\d{3}-(\d{2})/, "$1.***.***-$2");
+  return cpf.replace(/(\d{3}).\d{3}.\d{3}-(\d{2})/, "$1.***.***-$2");
 }
 
 export function maskCNPJ(cnpj: string): string {
   if (!cnpj) return cnpj;
-  return cnpj.replace(
-    /(\d{2})\.\d{3}\.\d{3}\/\d{4}-(\d{2})/,
-    "$1.***.***/**-$2",
-  );
+  return cnpj.replace(/(\d{2}).\d{3}.\d{3}\/\d{4}-(\d{2})/, "$1.***.***/**-$2");
 }
 
 export function maskEmail(email: string): string {
@@ -36,12 +33,12 @@ export function maskPII(text: string): string {
   let masked = text;
 
   // CPF pattern: XXX.XXX.XXX-XX
-  masked = masked.replace(/\d{3}\.\d{3}\.\d{3}-\d{2}/g, (match) =>
+  masked = masked.replace(/\d{3}.\d{3}.\d{3}-\d{2}/g, (match) =>
     maskCPF(match),
   );
 
   // CNPJ pattern: XX.XXX.XXX/XXXX-XX
-  masked = masked.replace(/\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}/g, (match) =>
+  masked = masked.replace(/\d{2}.\d{3}.\d{3}\/\d{4}-\d{2}/g, (match) =>
     maskCNPJ(match),
   );
 
@@ -57,7 +54,7 @@ export function maskPII(text: string): string {
   );
 
   // OAB pattern (simplified)
-  masked = masked.replace(/OAB[-\/]?\s?\d{3,6}/gi, (match) => {
+  masked = masked.replace(/OAB[-/]?\s?\d{3,6}/gi, (match) => {
     const numbers = match.match(/\d{3,6}/)?.[0] || "";
     return match.replace(numbers, maskOAB(numbers));
   });
@@ -65,7 +62,7 @@ export function maskPII(text: string): string {
   return masked;
 }
 
-export function applyPIIMask(data: any, shouldMask: boolean): any {
+export function applyPIIMask(data: unknown, shouldMask: boolean): unknown {
   if (!shouldMask || !data) return data;
 
   if (typeof data === "string") {
@@ -77,7 +74,7 @@ export function applyPIIMask(data: any, shouldMask: boolean): any {
   }
 
   if (typeof data === "object") {
-    const masked: any = {};
+    const masked: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       masked[key] = applyPIIMask(value, shouldMask);
     }

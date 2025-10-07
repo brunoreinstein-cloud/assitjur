@@ -69,7 +69,7 @@ export function UploadStep() {
         try {
           // Simulate upload progress
           const progressInterval = setInterval(() => {
-            setUploadProgress((prev: number) => {
+            setUploadProgress((prev) => {
               if (prev >= 90) {
                 clearInterval(progressInterval);
                 return 90;
@@ -81,7 +81,7 @@ export function UploadStep() {
           console.log("Starting file structure detection for:", file.name);
 
           // Detect file structure with retry logic
-          let sheets: any[] = [];
+          let sheets: DetectedSheet[] = [];
           let retryCount = 0;
           const maxRetries = 3;
 

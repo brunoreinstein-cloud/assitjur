@@ -48,7 +48,7 @@ export const DebugMode = {
   /**
    * Log condicional baseado no modo debug
    */
-  log(message: string, ...args: any[]): void {
+  log(message: string, ...args: unknown[]): void {
     if (this.isEnabled()) {
       console.log(`[DEBUG] ${message}`, ...args);
     }
@@ -57,7 +57,7 @@ export const DebugMode = {
   /**
    * Warn condicional baseado no modo debug
    */
-  warn(message: string, ...args: any[]): void {
+  warn(message: string, ...args: unknown[]): void {
     if (this.isEnabled()) {
       console.warn(`[DEBUG] ${message}`, ...args);
     }
@@ -66,7 +66,7 @@ export const DebugMode = {
   /**
    * Error sempre é exibido, mas com marcação especial em debug mode
    */
-  error(message: string, ...args: any[]): void {
+  error(message: string, ...args: unknown[]): void {
     if (this.isEnabled()) {
       console.error(`[DEBUG] ${message}`, ...args);
     } else {

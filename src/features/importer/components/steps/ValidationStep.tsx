@@ -42,32 +42,9 @@ export function ValidationStep() {
   } = useImportStore();
 
   const [showCorrections, setShowCorrections] = useState(false);
-  const [corrections, setCorrections] = useState<any[]>([]);
+  const [corrections, setCorrections] = useState<CorrectedRow[]>([]);
 
-  useEffect(() => {
-    if (session && file && !validationResult) {
-      performValidation();
-    }
-  }, [session, file, validationResult]);
-
-  // Simple validation stats calculation
-  useEffect(() => {
-    if (validationResult) {
-      const stats = {
-        originalRows: validationResult.summary.analyzed,
-        processedRows: validationResult.summary.valid,
-        filteredRows:
-          validationResult.summary.analyzed - validationResult.summary.valid,
-        validRows: validationResult.summary.valid,
-        correctedRows: corrections.length,
-        errorRows: validationResult.summary.errors,
-        warningRows: validationResult.summary.warnings,
-      };
-      logger.info("Detailed Validation Stats", stats, "ValidationStep");
-    }
-  }, [validationResult, corrections]);
-
-  const performValidation = async () => {
+  const performValidation = useCallback(async () => {
     if (!session || !file) return;
 
     setIsProcessing(true);
@@ -98,7 +75,7 @@ export function ValidationStep() {
       }
 
       // Convert to ValidationResult format for store compatibility
-      const validationWithUrls: any = {
+      const validationWithUrls: ValidationResult = {
         summary: result.summary,
         issues: result.issues,
         normalizedData: result.normalizedData,
@@ -145,9 +122,33 @@ export function ValidationStep() {
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [session, file, setIsProcessing, setValidationResult, setError]);
 
-  const handleApplyCorrections = async (correctedData: any[]) => {
+  useEffect(() => {
+    if (session && file && !validationResult) {
+      performValidation();
+    }
+  }, [session, file, validationResult, performValidation]);
+
+  // Simple validation stats calculation
+  useEffect(() => {
+    if (validationResult) {
+      const stats = {
+        originalRows: validationResult.summary.analyzed,
+        processedRows: validationResult.summary.valid,
+        filteredRows:
+          validationResult.summary.analyzed - validationResult.summary.valid,
+        validRows: validationResult.summary.valid,
+        correctedRows: corrections.length,
+        errorRows: validationResult.summary.errors,
+        warningRows: validationResult.summary.warnings,
+      };
+      logger.info("Detailed Validation Stats", stats, "ValidationStep");
+    }
+  }, [validationResult, corrections]);
+
+
+  const handleApplyCorrections = useCallback(async (correctedData: RawRow[]) => {
     const correctionsApplied = corrections.filter(
       (c) => c.corrections.length > 0,
     ).length;
@@ -170,10 +171,10 @@ export function ValidationStep() {
       });
 
       // Build corrections map using unified Excel addressing
-      const correctionsMap = new Map<string, any>();
+      const correctionsMap = new Map<string, CorrectedCell>();
 
       corrections.forEach((row, rowIndex) => {
-        row.corrections.forEach((correction: any) => {
+        row.corrections.forEach((correction) => {
           // Find field index in the data structure for correct column mapping
           const sampleData = correctedData[0] || {};
           const fieldNames = Object.keys(sampleData);
@@ -194,7 +195,7 @@ export function ValidationStep() {
       });
 
       // Generate updated result with ALL corrected data preserved
-      const updatedResult: any = {
+      const updatedResult: ValidationResult = {
         ...validationResult!,
         normalizedData: {
           // Preserve both processos and testemunhas data
@@ -244,7 +245,7 @@ export function ValidationStep() {
         "ValidationStep",
       );
     }
-  };
+  }, [corrections, file, setValidationResult, validationResult]);
 
   const handleRejectCorrections = () => {
     setShowCorrections(false);

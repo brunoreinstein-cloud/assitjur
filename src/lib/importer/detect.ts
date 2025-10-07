@@ -59,15 +59,15 @@ async function processXlsxFile(file: File): Promise<DetectedSheet[]> {
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet, {
             header: 1,
-          }) as any[][];
+          }) as unknown[][];
 
           if (jsonData.length === 0) continue;
 
-          const headers = jsonData[0] || [];
+          const headers = ((jsonData[0] as unknown[]) || []).filter((h): h is string => typeof h === "string");
           const dataRows = jsonData.slice(1);
 
           // Filtra colunas que começam com CNJ_ (conforme regra)
-          const filteredHeaders = headers.filter((h: string) => {
+          const filteredHeaders = headers.filter((h) => {
             const normalized = toSlugCase(h);
             return !normalized.startsWith("cnj_") || normalized === "cnj";
           });
@@ -76,16 +76,19 @@ async function processXlsxFile(file: File): Promise<DetectedSheet[]> {
 
           // Amostra dos dados (primeiras 5 linhas)
           const sampleData = dataRows.slice(0, 5).map((row) => {
-            const obj: Record<string, any> = {};
-            filteredHeaders.forEach((header: string) => {
-              obj[header] = row[headers.indexOf(header)];
+            const obj: Record<string, unknown> = {};
+            const rowArray = row as unknown[];
+            filteredHeaders.forEach((header) => {
+              if (typeof header === "string") {
+                obj[header] = rowArray[headers.indexOf(header)];
+              }
             });
             return obj;
           });
 
           // Verifica se tem coluna de lista EXATA (cnjs_como_testemunha)
-          const hasListColumn = filteredHeaders.some(
-            (h: string) => toSlugCase(h) === "cnjs_como_testemunha",
+          const hasListColumn = filteredHeaders.some((h) =>
+            typeof h === "string" ? toSlugCase(h) === "cnjs_como_testemunha" : false,
           );
 
           sheets.push({
