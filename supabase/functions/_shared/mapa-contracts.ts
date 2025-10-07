@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "npm:zod@3.23.8";
 
 const isDate = (s: string) => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
