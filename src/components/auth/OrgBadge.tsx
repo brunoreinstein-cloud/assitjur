@@ -34,7 +34,11 @@ export const OrgBadge = ({ onManageOrgs }: OrgBadgeProps) => {
   };
 
   const handleManageOrgs = () => {
-    onManageOrgs?.() || navigate("/admin/org");
+    if (onManageOrgs) {
+      onManageOrgs();
+    } else {
+      navigate("/admin/org");
+    }
     setIsOpen(false);
   };
 
