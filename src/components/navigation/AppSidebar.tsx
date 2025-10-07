@@ -43,6 +43,11 @@ export function AppSidebar() {
     useSidebar();
   const location = useLocation();
   const { setOpen: setConsentOpen } = useConsent();
+  const handleOpenConsent = () => {
+    if (typeof setConsentOpen === "function") {
+      setConsentOpen(true);
+    }
+  };
   const { user, signOut, isAdmin } = useAuth();
   const { canAccess, getPermissionTooltip, userRole } =
     usePermissions();
@@ -215,7 +220,7 @@ export function AppSidebar() {
             <CommandPalette />
           </div>
           <button
-            onClick={() => setConsentOpen(true)}
+            onClick={handleOpenConsent}
             className="text-xs underline text-sidebar-foreground"
           >
             Privacidade / Gerenciar cookies

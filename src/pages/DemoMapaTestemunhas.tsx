@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
+import { Link } from "react-router-dom";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import {
   Table,
   TableHeader,
@@ -35,19 +33,8 @@ export default function DemoMapaTestemunhas() {
   const next = () => setStep((s) => Math.min(s + 1, 4));
 
   const resetTour = () => setStep(0);
-  const handleOpenChange = (currentStep: number) => (open: boolean) => {
-    // Permite fechar popovers, mas só fecha se estiver no passo atual
-    if (!open && step === currentStep) {
-      setStep(-1);
-    }
-  };
-
   const riskColor = (risco: Witness["risco"]) =>
-    risco === "Alto"
-      ? "text-red-600"
-      : risco === "Médio"
-        ? "text-yellow-600"
-        : "text-green-600";
+    risco === "Alto" ? "text-red-600" : risco === "Médio" ? "text-yellow-600" : "text-green-600";
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -64,18 +51,14 @@ export default function DemoMapaTestemunhas() {
           <div
             key={stepIndex}
             className={`h-2 w-8 rounded-full transition-colors ${
-              stepIndex === step
-                ? "bg-primary"
-                : stepIndex < step
-                  ? "bg-primary/60"
-                  : "bg-muted"
+              stepIndex === step ? "bg-primary" : stepIndex < step ? "bg-primary/60" : "bg-muted"
             }`}
           />
         ))}
       </div>
 
       <div className="flex gap-4">
-        <Popover open={step === 0} onOpenChange={handleOpenChange(0)}>
+        <Popover open={step === 0}>
           <PopoverTrigger asChild>
             <Button>Novo Mapa</Button>
           </PopoverTrigger>
@@ -87,7 +70,7 @@ export default function DemoMapaTestemunhas() {
           </PopoverContent>
         </Popover>
 
-        <Popover open={step === 1} onOpenChange={handleOpenChange(1)}>
+        <Popover open={step === 1}>
           <PopoverTrigger asChild>
             <Button variant="outline">Importar do CNJ (mock)</Button>
           </PopoverTrigger>
@@ -100,7 +83,7 @@ export default function DemoMapaTestemunhas() {
         </Popover>
       </div>
 
-      <Popover open={step === 2} onOpenChange={handleOpenChange(2)}>
+      <Popover open={step === 2}>
         <PopoverTrigger asChild>
           <div>
             <Table>
@@ -119,9 +102,7 @@ export default function DemoMapaTestemunhas() {
                     <TableCell>{witness.nome}</TableCell>
                     <TableCell>{witness.vinculo}</TableCell>
                     <TableCell>
-                      <span className={riskColor(witness.risco)}>
-                        {witness.risco}
-                      </span>
+                      <span className={riskColor(witness.risco)}>{witness.risco}</span>
                     </TableCell>
                     <TableCell>{witness.prova}</TableCell>
                     <TableCell>
@@ -143,7 +124,7 @@ export default function DemoMapaTestemunhas() {
         </PopoverContent>
       </Popover>
 
-      <Popover open={step === 3} onOpenChange={handleOpenChange(3)}>
+      <Popover open={step === 3}>
         <PopoverTrigger asChild>
           <div className="h-40 border rounded flex items-center justify-center text-muted-foreground">
             Mini grafo (placeholder)
@@ -157,21 +138,16 @@ export default function DemoMapaTestemunhas() {
         </PopoverContent>
       </Popover>
 
-      <Popover open={step === 4} onOpenChange={handleOpenChange(4)}>
+      <Popover open={step === 4}>
         <PopoverTrigger asChild>
           <Button>Gerar PDF (mock)</Button>
         </PopoverTrigger>
         <PopoverContent>
           <p>Gere um PDF demonstrativo.</p>
-          <Button size="sm" className="mt-2" asChild>
-            <a href="/beta">Entrar na Beta</a>
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="mt-2"
-            onClick={resetTour}
-          >
+          <Link to="/beta" className={cn(buttonVariants({ size: "sm" }), "mt-2")}>
+            Entrar na Beta
+          </Link>
+          <Button size="sm" variant="outline" className="mt-2" onClick={resetTour}>
             Reiniciar
           </Button>
         </PopoverContent>

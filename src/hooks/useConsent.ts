@@ -12,9 +12,7 @@ interface ConsentContextValue {
   save: (prefs: ConsentPrefs) => void;
 }
 
-const ConsentContext = createContext<ConsentContextValue | undefined>(
-  undefined,
-);
+const ConsentContext = createContext<ConsentContextValue | undefined>(undefined);
 
 export function ConsentProvider({ children }: { children: React.ReactNode }) {
   const [preferences, setPreferences] = useState<ConsentPrefs | null>(null);
@@ -27,7 +25,7 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
         analytics: stored.measure ?? false,
         ads: stored.marketing ?? false,
       });
-    } else {
+    } else if (!isServer && !isPrerender && !isTestEnv) {
       setOpen(true);
     }
   }, []);
@@ -44,31 +42,31 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+const FALLBACK_VALUE: ConsentContextValue = Object.freeze({
+  preferences: null,
+  open: false,
+  setOpen: () => {},
+  save: () => {},
+});
+
+const isServer = typeof window === "undefined";
+const isPrerender = typeof process !== "undefined" && process.env?.PRERENDER === "1";
+const isTestEnv = typeof process !== "undefined" && process.env?.NODE_ENV === "test";
+
 export function useConsent(): ConsentContextValue {
-  // SSR-safe: check if we're in SSR/prerender environment
-  if (typeof window === "undefined" || process.env.PRERENDER === "1") {
-    return {
-      preferences: null,
-      open: false,
-      setOpen: () => {}, // No-op during SSR
-      save: () => {},    // No-op during SSR
-    };
+  const ctx = useContext(ConsentContext);
+
+  if (isServer || isPrerender) {
+    return FALLBACK_VALUE;
   }
 
-  const ctx = useContext(ConsentContext);
-  
-  // Return safe defaults if no provider (during build/SSR/prerender)
   if (!ctx) {
-    if (process.env.NODE_ENV === "development") {
+    if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
       console.warn("useConsent: No ConsentProvider found, returning defaults");
     }
-    return {
-      preferences: null,
-      open: false,
-      setOpen: () => {},
-      save: () => {},
-    };
+
+    return FALLBACK_VALUE;
   }
-  
+
   return ctx;
 }
