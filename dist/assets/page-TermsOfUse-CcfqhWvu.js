@@ -1,0 +1,54 @@
+import{j as e}from"./vendor-BifU-Y_Y.js";import"./page-About-BHlfFeQG.js";const s=`<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Termos de Uso - AssistJur.IA</title>
+  </head>
+  <body
+    style="
+      font-family:
+        -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto,
+        sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    "
+  >
+    <div style="background: white; padding: 2rem; border-radius: 8px">
+      <h1>Termos de Uso - AssistJur.IA</h1>
+      <p><strong>Última atualização:</strong> 18 de setembro de 2025</p>
+
+      <h2>1. Aceitação dos Termos</h2>
+      <p>
+        Ao acessar e usar o AssistJur.IA, você concorda com estes Termos de Uso.
+      </p>
+
+      <h2>2. Uso da Plataforma</h2>
+      <p>
+        O AssistJur.IA é destinado para análise de processos trabalhistas e
+        identificação de padrões em testemunhas.
+      </p>
+
+      <h2>3. Responsabilidades do Usuário</h2>
+      <p>
+        O usuário é responsável pela veracidade e legalidade dos dados inseridos
+        na plataforma.
+      </p>
+
+      <h2>4. Limitações de Responsabilidade</h2>
+      <p>
+        O AssistJur.IA fornece análises baseadas em IA, que devem ser
+        complementadas com análise jurídica profissional.
+      </p>
+
+      <h2>5. Contato</h2>
+      <p>
+        Para dúvidas sobre estes termos, entre em contato através do site
+        oficial.
+      </p>
+    </div>
+  </body>
+</html>
+`;function t(){return e.jsxDEV("div",{dangerouslySetInnerHTML:{__html:s}},void 0,!1,{fileName:"/workspaces/assitjur/src/pages/TermsOfUse.tsx",lineNumber:4,columnNumber:10},this)}export{t as default};
