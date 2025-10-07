@@ -11,7 +11,10 @@ import { Badge } from "@/components/ui/badge";
 
 interface ImportWizardStepsProps {
   currentStep: "upload" | "validation" | "preview" | "publish";
-  validationResults?: any;
+  validationResults?: { 
+    errors?: unknown[];
+    validRows?: number;
+  };
   isProcessing?: boolean;
 }
 
@@ -59,7 +62,7 @@ const ImportWizardSteps: React.FC<ImportWizardStepsProps> = ({
       return "completed";
     } else if (stepIndex === currentIndex) {
       // Verifica se há bloqueadores na validação
-      if (stepId === "validation" && validationResults?.errors?.length > 0) {
+      if (stepId === "validation" && (validationResults?.errors?.length ?? 0) > 0) {
         return "error";
       }
       return "current";
@@ -68,7 +71,10 @@ const ImportWizardSteps: React.FC<ImportWizardStepsProps> = ({
     }
   };
 
-  const getStepIcon = (step: any, status: string) => {
+  const getStepIcon = (
+    step: { id: string; title: string; icon: React.ComponentType<{ className?: string }> },
+    status: string
+  ) => {
     const IconComponent = step.icon;
 
     if (status === "processing") {
@@ -84,13 +90,14 @@ const ImportWizardSteps: React.FC<ImportWizardStepsProps> = ({
 
   const getStepBadge = (stepId: string, _status?: string) => {
     if (stepId === "validation" && validationResults) {
-      if (validationResults.errors?.length > 0) {
+      const errorsLength = validationResults.errors?.length ?? 0;
+      if (errorsLength > 0) {
         return (
           <Badge variant="destructive" className="ml-2 text-xs">
-            {validationResults.errors.length} erros
+            {errorsLength} erros
           </Badge>
         );
-      } else if (validationResults.validRows > 0) {
+      } else if ((validationResults.validRows ?? 0) > 0) {
         return (
           <Badge variant="secondary" className="ml-2 text-xs">
             {validationResults.validRows} válidos

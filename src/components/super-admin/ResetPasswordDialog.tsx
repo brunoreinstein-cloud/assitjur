@@ -69,11 +69,12 @@ export function ResetPasswordDialog({
       onSuccess();
       onOpenChange(false);
       setReason("");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error resetting password:", error);
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
       toast({
         title: "Erro ao resetar senha",
-        description: error.message || "Ocorreu um erro ao enviar o email",
+        description: errorMessage || "Ocorreu um erro ao enviar o email",
         variant: "destructive",
       });
     } finally {

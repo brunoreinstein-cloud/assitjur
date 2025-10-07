@@ -58,13 +58,14 @@ export const OAuthButtons = ({ disabled, next }: OAuthButtonsProps) => {
         description: `Conectando com ${provider === "google" ? "Google" : provider}`,
         duration: 2000,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`${provider} OAuth error:`, error);
 
       // Handle network errors with retry
+      const errorMessage = error instanceof Error ? error.message : "";
       if (
-        error.message?.includes("network") ||
-        error.message?.includes("fetch")
+        errorMessage?.includes("network") ||
+        errorMessage?.includes("fetch")
       ) {
         const currentRetries = retryCount[provider] || 0;
         if (currentRetries < 2) {
@@ -90,8 +91,8 @@ export const OAuthButtons = ({ disabled, next }: OAuthButtonsProps) => {
 
       // Handle provider configuration errors
       if (
-        error.message?.includes("Provider") ||
-        error.message?.includes("client_id")
+        errorMessage?.includes("Provider") ||
+        errorMessage?.includes("client_id")
       ) {
         toast.error("Configuração OAuth", {
           description:

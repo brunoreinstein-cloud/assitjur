@@ -7,6 +7,7 @@ import type {
   NormalizedOutputOptions,
   OutputBundle,
   PluginContext,
+  RollupLog,
 } from "rollup";
 import path from "path";
 
@@ -76,8 +77,9 @@ function suppressTS6310Plugin(): Plugin {
       // Override Vite's type checking
       const originalBuild = config.build;
       if (originalBuild) {
-        // Disable TypeScript project references validation
-        (originalBuild as any).typescript = { check: false };
+      // Disable TypeScript project references validation
+      // Using 'as unknown' first to bypass strict type checking for internal Vite config
+      (originalBuild as unknown as Record<string, unknown>).typescript = { check: false };
       }
     },
   };
@@ -120,10 +122,11 @@ export default defineConfig(({ mode }) => {
     mode !== "development" && compressPlugin(),
   ];
 
-  // Handle analyzer plugin dynamically but synchronously
+  // Handle analyzer plugin conditionally
+  // Note: Using require() here is acceptable for optional dev-only plugin loading
+  // ESLint override configured in .eslintrc.json for *.config.* files
   if (process.env.ANALYZE) {
     try {
-      // Dynamic import converted to require for synchronous loading
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { visualizer } = require("rollup-plugin-visualizer");
       plugins.push(visualizer({ open: true }) as Plugin);
@@ -149,8 +152,8 @@ export default defineConfig(({ mode }) => {
     },
     // CRITICAL: Bypass TS6310 by using esbuild with isolated config
     esbuild: {
-      jsx: "automatic",
-      target: "es2020",
+      jsx: "automatic" as const,
+      target: "es2020" as const,
       tsconfigRaw: JSON.stringify(tsconfigVite),
       logOverride: {
         "this-is-undefined-in-esm": "silent",
@@ -196,7 +199,7 @@ export default defineConfig(({ mode }) => {
           },
         },
         // Suppress warnings about circular dependencies
-        onwarn(warning, warn) {
+        onwarn(warning: RollupLog, warn: (warning: RollupLog) => void) {
           if (warning.code === "CIRCULAR_DEPENDENCY") return;
           warn(warning);
         },

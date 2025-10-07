@@ -119,7 +119,7 @@ const ResetConfirm = () => {
       } catch {}
       await supabase.auth.signOut();
       navigate("/login");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Password update error:", error);
       toast.error("Erro ao atualizar senha", {
         description: "Não foi possível atualizar a senha. Tente novamente.",

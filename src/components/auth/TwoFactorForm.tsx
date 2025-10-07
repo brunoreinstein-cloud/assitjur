@@ -71,7 +71,7 @@ export const TwoFactorForm = ({
           form.reset();
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("2FA verification error:", error);
       toast.error("Erro na verificação", {
         description: "Não foi possível verificar o código. Tente novamente.",

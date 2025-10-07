@@ -79,7 +79,7 @@ export function ConfirmStep({
       setTimeout(() => {
         onComplete();
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Error notification is handled by ErrorHandler.handleAndNotify
     } finally {
       clearInterval(progressInterval);

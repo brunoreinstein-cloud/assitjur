@@ -170,16 +170,16 @@ export function PublishStep() {
       // Signal that import is complete to refresh other views
       localStorage.setItem("import_completed", Date.now().toString());
       window.dispatchEvent(new Event("storage"));
-    } catch (error: any) {
+    } catch (error: unknown) {
       // More specific error messages
-      let errorMessage = error.message || "Falha ao publicar dados";
+      let errorMessage = error instanceof Error ? error.message : "Falha ao publicar dados";
       let errorTitle = "Erro na publicação";
 
-      if (error.message?.includes("timeout")) {
+      if (error instanceof Error && errorMessage?.includes("timeout")) {
         errorTitle = "Timeout na operação";
         errorMessage =
           "A operação demorou muito para completar. Tente novamente com um arquivo menor ou verifique sua conexão.";
-      } else if (error.message?.includes("504")) {
+      } else if (error instanceof Error && errorMessage?.includes("504")) {
         errorTitle = "Servidor sobrecarregado";
         errorMessage =
           "O servidor está processando muitos dados. Aguarde um momento e tente novamente.";

@@ -15,7 +15,7 @@ interface TestResult {
   test: string;
   status: "success" | "error" | "warning";
   message: string;
-  details?: any;
+  details?: unknown;
 }
 
 export const EdgeFunctionTester = () => {
@@ -253,7 +253,7 @@ export const EdgeFunctionTester = () => {
                   <p className="text-sm text-muted-foreground">
                     {result.message}
                   </p>
-                  {result.details && (
+                  {result.details !== undefined && result.details !== null && (
                     <details className="mt-2">
                       <summary className="text-xs cursor-pointer">
                         View Details

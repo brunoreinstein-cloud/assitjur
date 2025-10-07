@@ -44,10 +44,11 @@ export function OrgList() {
 
       if (error) throw error;
       setOrgs(data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
       toast({
         title: "Erro ao carregar organizações",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

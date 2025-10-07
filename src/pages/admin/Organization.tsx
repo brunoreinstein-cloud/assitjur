@@ -256,10 +256,11 @@ const Organization = () => {
       setInviteEmail("");
       setInviteRole("VIEWER");
       setInviteDataAccess("NONE");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Não foi possível enviar o convite";
       toast({
         title: "Erro",
-        description: error.message || "Não foi possível enviar o convite",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -292,10 +293,11 @@ const Organization = () => {
 
       // Refresh users list
       await fetchUsers();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Não foi possível executar a ação";
       toast({
         title: "Erro",
-        description: error.message || "Não foi possível executar a ação",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -332,10 +334,11 @@ const Organization = () => {
 
       // Refresh users list
       await fetchUsers();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Não foi possível alterar o papel";
       toast({
         title: "Erro",
-        description: error.message || "Não foi possível alterar o papel",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

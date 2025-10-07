@@ -16,7 +16,7 @@ interface ValidationError {
   row: number;
   column: string;
   message: string;
-  value?: any;
+  value?: unknown;
   type: "error" | "warning";
 }
 

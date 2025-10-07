@@ -25,8 +25,8 @@ interface FeatureFlag {
 interface AuditEntry {
   id: string;
   action: string;
-  old_value: any;
-  new_value: any;
+  old_value: unknown;
+  new_value: unknown;
   timestamp: string;
 }
 
@@ -109,7 +109,7 @@ export const FeatureFlagAdmin: React.FC = () => {
     fetchAudit(flag.id!);
   };
 
-  const handleField = (field: keyof FeatureFlag, value: any) => {
+  const handleField = (field: keyof FeatureFlag, value: unknown) => {
     setCurrent((c) => ({ ...c, [field]: value }));
   };
 
@@ -140,8 +140,8 @@ export const FeatureFlagAdmin: React.FC = () => {
         rollout_percentage: 100,
         environment: "development",
       });
-    } catch (e: any) {
-      if (e?.status === 401 || e?.status === 403) {
+    } catch (e: unknown) {
+      if (e && typeof e === 'object' && ('status' in e) && (e.status === 401 || e.status === 403)) {
         toast({
           title: "Erro",
           description: "Acesso negado",
@@ -169,8 +169,8 @@ export const FeatureFlagAdmin: React.FC = () => {
         description: "Flag clonada com sucesso",
       });
       fetchFlags();
-    } catch (e: any) {
-      if (e?.status === 401 || e?.status === 403) {
+    } catch (e: unknown) {
+      if (e && typeof e === 'object' && ('status' in e) && (e.status === 401 || e.status === 403)) {
         toast({
           title: "Erro",
           description: "Acesso negado",

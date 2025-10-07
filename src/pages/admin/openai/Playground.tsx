@@ -50,10 +50,11 @@ const OpenAIPlayground = () => {
         title: "Teste executado",
         description: `Resposta gerada em ${data.metrics?.duration_ms}ms`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
       toast({
         title: "Erro no teste",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

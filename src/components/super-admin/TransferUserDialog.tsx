@@ -105,11 +105,12 @@ export function TransferUserDialog({
       onOpenChange(false);
       setNewOrgId("");
       setReason("");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error transferring user:", error);
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
       toast({
         title: "Erro ao transferir usuário",
-        description: error.message || "Ocorreu um erro durante a transferência",
+        description: errorMessage || "Ocorreu um erro durante a transferência",
         variant: "destructive",
       });
     } finally {

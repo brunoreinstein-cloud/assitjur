@@ -52,16 +52,16 @@ import { useBeforeUnload } from "@/hooks/useBeforeUnload";
 import { withErrorHandling } from "@/lib/error-handling";
 
 // Utils
-const onlyDigits = (s: any) => String(s ?? "").replace(/\D/g, "");
+const onlyDigits = (s: unknown) => String(s ?? "").replace(/\D/g, "");
 const isCNJ20 = (s: string) => onlyDigits(s).length === 20;
 
-const parseList = (v: any): string[] => {
+const parseList = (v: unknown): string[] => {
   const s = String(v ?? "").trim();
   if (!s || s === "[]") return [];
   if (s.startsWith("[") && s.endsWith("]")) {
     try {
       return JSON.parse(s.replace(/'/g, '"'))
-        .map((x: any) => String(x).trim())
+        .map((x: unknown) => String(x).trim())
         .filter(Boolean);
     } catch {}
   }
@@ -75,12 +75,12 @@ const parseList = (v: any): string[] => {
 const REQUIRED_TESTEMUNHA = ["Nome_Testemunha", "CNJs_Como_Testemunha"];
 const REQUIRED_PROCESSO = ["CNJ", "Reclamante_Limpo", "Reu_Nome"];
 
-const getHeaderRow = (sheet: WorkSheet, xlsx: any): string[] => {
+const getHeaderRow = (sheet: WorkSheet, xlsx: typeof import('xlsx')): string[] => {
   const rows = xlsx.utils.sheet_to_json(sheet, {
     header: 1,
     blankrows: false,
-  }) as any[];
-  return (rows[0] || []).map((h: any) => String(h || "").trim());
+  }) as unknown[][];
+  return (rows[0] || []).map((h: unknown) => String(h || "").trim());
 };
 
 const hasHeaders = (headers: string[], required: string[]) => {
@@ -94,8 +94,23 @@ type RowError = {
   row: number;
   column: string;
   message: string;
-  value?: any;
+  value?: unknown;
   type: "error" | "warning";
+};
+
+type ProcessoRow = {
+  cnj: string;
+  cnj_digits: string;
+  reclamante_limpo: string;
+  reu_nome: string;
+  comarca?: string;
+  fase?: string;
+  status?: string;
+};
+
+type TestemunhaRow = {
+  nome_testemunha: string;
+  cnjs_como_testemunha: string[];
 };
 
 type ValidationResults = {
@@ -103,8 +118,8 @@ type ValidationResults = {
   validRows: number;
   errors: RowError[];
   warnings: RowError[];
-  processos: any[];
-  testemunhas: any[];
+  processos: ProcessoRow[];
+  testemunhas: TestemunhaRow[];
 };
 
 // Wizard Steps Component
@@ -169,7 +184,10 @@ const WizardSteps: React.FC<WizardStepsProps> = ({
     }
   };
 
-  const getStepIcon = (step: any, status: string) => {
+  const getStepIcon = (
+    step: { id: string; title: string; icon: React.ComponentType<{ className?: string }> },
+    status: string
+  ) => {
     const IconComponent = step.icon;
 
     if (status === "processing") {
@@ -443,7 +461,7 @@ export function ImportModal() {
   };
 
   // Validações
-  const validateTestemunhaRows = (rows: any[]): RowError[] => {
+  const validateTestemunhaRows = (rows: TestemunhaRow[]): RowError[] => {
     const errors: RowError[] = [];
     rows.forEach((r, i) => {
       if (!r.nome_testemunha || String(r.nome_testemunha).trim() === "") {
@@ -477,7 +495,7 @@ export function ImportModal() {
     return errors;
   };
 
-  const validateProcessoRows = (rows: any[]): RowError[] => {
+  const validateProcessoRows = (rows: ProcessoRow[]): RowError[] => {
     const errors: RowError[] = [];
     rows.forEach((r, i) => {
       if (!r.cnj || !isCNJ20(r.cnj)) {
@@ -537,8 +555,8 @@ export function ImportModal() {
   const processExcelFile = async (
     file: File,
   ): Promise<{
-    porProcesso: any[];
-    porTestemunha: any[];
+    porProcesso: ProcessoRow[];
+    porTestemunha: TestemunhaRow[];
     errors: RowError[];
     warnings?: RowError[];
   }> => {
@@ -559,8 +577,8 @@ export function ImportModal() {
             );
           }
 
-          const outProc: any[] = [];
-          const outTest: any[] = [];
+          const outProc: ProcessoRow[] = [];
+          const outTest: TestemunhaRow[] = [];
           let allErrors: RowError[] = [];
 
           // ----- Por Processo -----
@@ -572,19 +590,19 @@ export function ImportModal() {
                 `Modo Processo: faltam colunas: ${missing.join(", ")}`,
               );
 
-            const raw = XLSX.utils.sheet_to_json<any>(sheetProc, {
+            const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheetProc, {
               defval: "",
             });
             raw.forEach((row) => {
               const cnj = String(row["CNJ"] ?? "").trim();
-              const mapped = {
+              const mapped: ProcessoRow = {
                 cnj,
                 cnj_digits: onlyDigits(cnj),
-                reclamante_limpo: row["Reclamante_Limpo"],
-                reu_nome: row["Reu_Nome"],
-                comarca: row["Comarca"] ?? "",
-                fase: row["Fase"] ?? "",
-                status: row["Status"] ?? "",
+                reclamante_limpo: String(row["Reclamante_Limpo"] ?? ""),
+                reu_nome: String(row["Reu_Nome"] ?? ""),
+                comarca: String(row["Comarca"] ?? ""),
+                fase: String(row["Fase"] ?? ""),
+                status: String(row["Status"] ?? ""),
               };
               outProc.push(mapped);
             });
@@ -601,13 +619,13 @@ export function ImportModal() {
                 `Modo Testemunha: faltam colunas: ${missing.join(", ")}`,
               );
 
-            const raw = XLSX.utils.sheet_to_json<any>(sheetTest, {
+            const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheetTest, {
               defval: "",
             });
             raw.forEach((row) => {
               const list = parseList(row["CNJs_Como_Testemunha"]);
-              const mapped = {
-                nome_testemunha: row["Nome_Testemunha"],
+              const mapped: TestemunhaRow = {
+                nome_testemunha: String(row["Nome_Testemunha"] ?? ""),
                 cnjs_como_testemunha: list,
               };
               outTest.push(mapped);
@@ -664,7 +682,7 @@ export function ImportModal() {
       );
 
       // monta payload
-      const payload: any = {};
+      const payload: Record<string, unknown> = {};
       if (validationResults.processos.length)
         payload.processos = validationResults.processos;
       if (testemunhasExplodidas.length)
@@ -686,13 +704,14 @@ export function ImportModal() {
         title: "Importação concluída!",
         description: `${data?.upserts ?? 0} registros processados com sucesso.`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Import error:", error);
       setStatus(navigator.onLine ? "error" : "offline");
       setCnjFailed(true);
+      const errorMessage = error instanceof Error ? error.message : "Ocorreu um erro durante a importação.";
       toast({
         title: "Erro na importação",
-        description: error.message || "Ocorreu um erro durante a importação.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

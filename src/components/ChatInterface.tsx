@@ -196,7 +196,7 @@ export function ChatInterface({ onUploadClick, hasData }: ChatInterfaceProps) {
   interface QueryType {
     id: string;
     label: string;
-    icon: any;
+    icon: React.ComponentType<{ className?: string }>;
     description: string;
     color: string;
   }

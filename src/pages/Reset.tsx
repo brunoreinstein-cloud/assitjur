@@ -77,7 +77,7 @@ const Reset = () => {
 
       setSentEmail(data.email);
       setEmailSent(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Password reset error:", error);
 
       // Don't reveal if email exists - generic message
