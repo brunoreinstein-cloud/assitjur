@@ -6,6 +6,11 @@ import { useConsent } from "@/hooks/useConsent";
 import { getEnv } from "@/lib/getEnv";
 
 export function FooterLegal() {
+  // ⛑️ SSR safety: consent is client-only
+  if (typeof window === "undefined" || import.meta.env.SSR) {
+    return null;
+  }
+
   const { setOpen } = useConsent();
   const handleOpenConsent = () => {
     if (typeof setOpen === "function") {

@@ -13,6 +13,11 @@ import { Switch } from "@/components/ui/switch";
 import { useConsent } from "@/hooks/useConsent";
 
 export function ConsentDialog() {
+  // ⛑️ SSR safety: consent is client-only
+  if (typeof window === "undefined" || import.meta.env.SSR) {
+    return null;
+  }
+
   const { open, setOpen, preferences, save } = useConsent();
   const [analytics, setAnalytics] = useState(false);
   const [ads, setAds] = useState(false);
