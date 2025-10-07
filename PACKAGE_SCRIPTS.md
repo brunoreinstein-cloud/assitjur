@@ -10,13 +10,17 @@ Como o `package.json` é read-only no Lovable, aqui estão os scripts que devem 
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,md}\"",
-    "typecheck": "tsc --noEmit",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "project:check": "tsx -r tsconfig-paths/register tools/project-check.ts",
     "validate:env": "node scripts/validate-env.js",
     "validate": "npm run lint && npm run typecheck && npm run validate:env",
     "ci": "npm run validate && npm run build",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "clean": "rm -rf node_modules/.cache node_modules/.vite .tsbuildinfo dist",
+    "prerender": "cross-env PRERENDER=1 tsx --tsconfig tsconfig.node.json scripts/prerender.tsx",
+    "prerender:clean": "pnpm run clean && pnpm run build && pnpm run prerender"
   }
 }
 ```
