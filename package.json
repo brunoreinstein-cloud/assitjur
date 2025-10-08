@@ -117,7 +117,7 @@
     "@types/node": "^22.16.5",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
-    "@types/xlsx": "^0.0.36",
+    "@types/xlsx": "^0.0.35",
     "@vitejs/plugin-react-swc": "^4.0.1",
     "@vitest/coverage-v8": "^3.2.4",
     "autoprefixer": "^10.4.21",
