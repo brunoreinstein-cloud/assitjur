@@ -1,3 +1,4 @@
+// CACHE_BUST: 2025-01-08T12:00:00Z - Force module recompilation
 "use client";
 
 import { Link } from "react-router-dom";
