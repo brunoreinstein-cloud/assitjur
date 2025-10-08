@@ -39,7 +39,7 @@ const AboutBianca = lazy(() =>
 
 const SectionSkeleton = () => <Skeleton className="h-64 w-full" />;
 
-export default function PublicHome() {
+export default function PublicHome({ skipFooter = false }: { skipFooter?: boolean }) {
   const [isBetaModalOpen, setIsBetaModalOpen] = useState(false);
 
   const handleBetaSignup = (data: {
@@ -59,6 +59,7 @@ export default function PublicHome() {
       title="AssistJur.IA - O primeiro hub de agentes de IA para gestão estratégica do contencioso"
       description="Gestão do contencioso com inovação e olhar estratégico. Hub único de agentes de IA especializados testado em grandes carteiras."
       onBetaClick={openBetaModal}
+      skipFooter={skipFooter}
     >
       {/* 1. Hero Section */}
       <ImprovedHero onSignup={handleBetaSignup} />

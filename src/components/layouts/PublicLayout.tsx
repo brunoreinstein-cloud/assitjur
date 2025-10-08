@@ -10,6 +10,7 @@ interface PublicLayoutProps {
   description?: string;
   ogImage?: string;
   onBetaClick?: () => void;
+  skipFooter?: boolean;
 }
 
 /**
@@ -28,6 +29,7 @@ export function PublicLayout({
   description = "Gestão do contencioso com inovação e olhar estratégico. Hub único de agentes de IA especializados testado em grandes carteiras.",
   ogImage = "/brand/og-assistjur.png",
   onBetaClick,
+  skipFooter = false,
 }: PublicLayoutProps) {
   // ✅ SSR safety: Footer só renderiza no cliente
   const isSSR = typeof window === "undefined";
@@ -42,7 +44,7 @@ export function PublicLayout({
         {children}
       </main>
       
-      {!isSSR && <ClientOnlyFooter />}
+      {!skipFooter && !isSSR && <ClientOnlyFooter />}
       
       <BackToTopFAB />
     </div>
