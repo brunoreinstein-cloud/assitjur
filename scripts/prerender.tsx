@@ -38,9 +38,7 @@ const routes = [
     render: () =>
       renderToString(
         <StaticRouter location="/">
-          <ConsentProvider>
-            <PublicHome skipFooter={true} />
-          </ConsentProvider>
+          <PublicHome skipFooter={true} />
         </StaticRouter>,
       ),
     head: {

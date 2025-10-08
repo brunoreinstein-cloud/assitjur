@@ -16,8 +16,8 @@ function Footer() {
 
 function FooterClient() {
   // ✅ Lazy load useConsent apenas quando necessário (evento do usuário)
-  const handleOpenConsent = () => {
-    const { useConsent } = require("@/hooks/useConsent");
+  const handleOpenConsent = async () => {
+    const { useConsent } = await import("@/hooks/useConsent");
     const { setOpen } = useConsent();
     if (typeof setOpen === "function") {
       setOpen(true);
