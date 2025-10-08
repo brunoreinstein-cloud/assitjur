@@ -38,7 +38,9 @@ const routes = [
     render: () =>
       renderToString(
         <StaticRouter location="/">
-          <PublicHome />
+          <ConsentProvider>
+            <PublicHome />
+          </ConsentProvider>
         </StaticRouter>,
       ),
     head: {

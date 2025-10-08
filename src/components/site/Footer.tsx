@@ -13,9 +13,6 @@ function Footer() {
 
   // ✅ Lazy import hooks ONLY on client-side
   const { useConsent } = require("@/hooks/useConsent");
-  const { useNavigate } = require("react-router-dom");
-  
-  const navigate = useNavigate();
   const { setOpen } = useConsent();
 
   const handleOpenConsent = () => {
@@ -70,18 +67,18 @@ function Footer() {
             >
               LGPD
             </Link>
-            <button
-              onClick={() => navigate("/sobre")}
+            <Link
+              to="/sobre"
               className="text-sm text-aj-text-high/80 hover:text-aj-text-high transition-colors underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aj-color-gold focus-visible:ring-offset-2"
             >
               Sobre o AssistJur.IA
-            </button>
-            <button
-              onClick={() => navigate("/sobre#seguranca")}
+            </Link>
+            <Link
+              to="/sobre#seguranca"
               className="text-sm text-aj-text-high/80 hover:text-aj-text-high transition-colors underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aj-color-gold focus-visible:ring-offset-2"
             >
               Segurança & Conformidade
-            </button>
+            </Link>
           </nav>
 
           <Separator className="bg-aj-text-high/20 mb-10" />
