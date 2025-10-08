@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Footer from "./Footer";
+import { useEffect, useState, lazy, Suspense } from "react";
+
+// ✅ Lazy import - módulo só é carregado no cliente
+const Footer = lazy(() => import("./Footer"));
 
 /**
  * ClientOnlyFooter - Wrapper que garante que o Footer só renderiza no cliente
@@ -26,6 +28,10 @@ export function ClientOnlyFooter() {
     return null;
   }
 
-  // Após hidratar, renderiza o Footer real
-  return <Footer />;
+  // ✅ Suspense para lazy loading - Footer só carrega após hidratação
+  return (
+    <Suspense fallback={null}>
+      <Footer />
+    </Suspense>
+  );
 }
