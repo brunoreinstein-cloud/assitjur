@@ -18,10 +18,16 @@ const ConsentContext = createContext<ConsentContextValue | undefined>(
 );
 
 export function ConsentProvider({ children }: { children: ReactNode }) {
+  // ✅ SSR safety: Detect server-side rendering
+  const isSSR = typeof window === "undefined";
+
   const [preferences, setPreferences] = useState<ConsentPrefs | null>(null);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    // ✅ Guard: Only run on client-side
+    if (isSSR) return;
+
     const stored = getConsent();
     if (stored.measure !== undefined || stored.marketing !== undefined) {
       setPreferences({
@@ -31,9 +37,12 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
     } else {
       setOpen(true);
     }
-  }, []);
+  }, [isSSR]);
 
   const save = (prefs: ConsentPrefs) => {
+    // ✅ Guard: Only save on client-side
+    if (isSSR) return;
+
     setConsent({ measure: prefs.analytics, marketing: prefs.ads });
     setPreferences(prefs);
   };

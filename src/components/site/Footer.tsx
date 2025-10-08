@@ -11,7 +11,11 @@ function Footer() {
     return null;
   }
 
-  // ✅ Lazy import hooks ONLY on client-side
+  return <FooterClient />;
+}
+
+function FooterClient() {
+  // ✅ All hooks isolated in client-only component
   const { useConsent } = require("@/hooks/useConsent");
   const { setOpen } = useConsent();
 
