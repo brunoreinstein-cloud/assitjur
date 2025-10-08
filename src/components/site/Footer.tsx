@@ -15,11 +15,10 @@ function Footer() {
 }
 
 function FooterClient() {
-  // ✅ All hooks isolated in client-only component
-  const { useConsent } = require("@/hooks/useConsent");
-  const { setOpen } = useConsent();
-
+  // ✅ Lazy load useConsent apenas quando necessário (evento do usuário)
   const handleOpenConsent = () => {
+    const { useConsent } = require("@/hooks/useConsent");
+    const { setOpen } = useConsent();
     if (typeof setOpen === "function") {
       setOpen(true);
     }

@@ -29,6 +29,9 @@ export function PublicLayout({
   ogImage = "/brand/og-assistjur.png",
   onBetaClick,
 }: PublicLayoutProps) {
+  // ✅ SSR safety: Footer só renderiza no cliente
+  const isSSR = typeof window === "undefined";
+
   return (
     <div className="min-h-screen bg-background">
       <SEO title={title} description={description} ogImage={ogImage} />
@@ -39,7 +42,7 @@ export function PublicLayout({
         {children}
       </main>
       
-      <ClientOnlyFooter />
+      {!isSSR && <ClientOnlyFooter />}
       
       <BackToTopFAB />
     </div>

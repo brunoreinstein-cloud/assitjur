@@ -73,7 +73,7 @@ export function useConsent(): ConsentContextValue {
     if (import.meta.env.DEV) {
       console.warn("useConsent: No ConsentProvider found, returning defaults");
     }
-
+    // ✅ Não lança erro - retorna fallback seguro
     return FALLBACK_VALUE;
   }
 
