@@ -7,7 +7,7 @@
   "rewrites": [
     {
       "source": "/((?!assets|favicon\\.ico|robots\\.txt|sitemap\\.xml).*)",
-      "destination": "/200.html"
+      "destination": "/index.html"
     }
   ],
   "cleanUrls": true,
