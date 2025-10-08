@@ -1,5 +1,5 @@
-// 🔥 CRITICAL: Disable all Node.js caching to prevent stale code execution
-process.env.NODE_OPTIONS = "--no-compilation-cache";
+// 🔥 CRITICAL: Cache busting MUST be FIRST - before ANY imports
+// This prevents tsx from loading old cached versions of src/ modules
 
 // garante o flag mesmo se alguém rodar localmente sem script do npm
 process.env.PRERENDER = process.env.PRERENDER ?? "1";
@@ -8,6 +8,14 @@ process.env.PRERENDER = process.env.PRERENDER ?? "1";
 Object.keys(require.cache).forEach((key) => {
   delete require.cache[key];
 });
+
+// 🔍 VALIDATION: Ensure NO src/ modules are cached after cleanup
+const cachedSrcModules = Object.keys(require.cache).filter(k => k.includes('/src/'));
+if (cachedSrcModules.length > 0) {
+  console.error('⚠️ WARNING: Found cached src/ modules after cleanup:');
+  cachedSrcModules.forEach(m => console.error(`  - ${m}`));
+  throw new Error('Cache cleanup failed - src/ modules still in cache');
+}
 
 // Ensure required envs exist during prerender stage without hitting real backends
 process.env.VITE_SUPABASE_URL =
@@ -27,10 +35,6 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import React from "react";
-import { renderToString, renderToStaticMarkup } from "react-dom/server";
-import { StaticRouter } from "react-router-dom/server";
-import PublicHome from "../src/pages/PublicHome";
-import { Head } from "../src/lib/head";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -78,6 +82,14 @@ const routes = [
 
 const distDir = path.resolve(__dirname, "..", "dist");
 const template = fs.readFileSync(path.join(distDir, "index.html"), "utf-8");
+
+// 🔥 DYNAMIC IMPORTS - Load React modules AFTER cache cleanup
+const { renderToString, renderToStaticMarkup } = await import("react-dom/server");
+const { StaticRouter } = await import("react-router-dom/server");
+const { default: PublicHome } = await import("../src/pages/PublicHome.js");
+const { Head } = await import("../src/lib/head.js");
+
+console.log('✅ All modules loaded fresh (post cache-cleanup)');
 
 for (const route of routes) {
   try {

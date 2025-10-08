@@ -62,18 +62,26 @@ const FALLBACK_VALUE: ConsentContextValue = {
 };
 
 export function useConsent(): ConsentContextValue {
-  // ✅ SSR/Prerender safety: return fallback when window is undefined
+  // ✅ CRITICAL: NEVER throw during SSR/prerender
+  // This hook may be called by components during server-side rendering
+  
+  // Guard 1: Server-side rendering
   if (typeof window === "undefined") {
+    return FALLBACK_VALUE;
+  }
+
+  // Guard 2: Prerender mode (set by scripts/prerender.tsx)
+  if (process.env.PRERENDER === "1") {
     return FALLBACK_VALUE;
   }
 
   const ctx = useContext(ConsentContext);
 
+  // Guard 3: No provider found - return fallback instead of throwing
   if (!ctx) {
     if (import.meta.env.DEV) {
-      console.warn("useConsent: No ConsentProvider found, returning defaults");
+      console.warn("useConsent: No ConsentProvider found, returning fallback");
     }
-    // ✅ Não lança erro - retorna fallback seguro
     return FALLBACK_VALUE;
   }
 

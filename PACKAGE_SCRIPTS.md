@@ -19,7 +19,7 @@ Como o `package.json` é read-only no Lovable, aqui estão os scripts que devem 
     "ci": "npm run validate && npm run build",
     "prepare": "husky install",
     "clean": "rm -rf node_modules/.cache node_modules/.vite .tsbuildinfo dist",
-    "prerender": "cross-env PRERENDER=1 tsx --tsconfig tsconfig.node.json scripts/prerender.tsx",
+    "prerender": "cross-env PRERENDER=1 node --loader tsx --no-compilation-cache scripts/prerender.tsx",
     "prerender:clean": "pnpm run clean && pnpm run build && pnpm run prerender"
   }
 }
