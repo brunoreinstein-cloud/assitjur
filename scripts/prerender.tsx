@@ -4,6 +4,11 @@ process.env.NODE_OPTIONS = "--no-compilation-cache";
 // garante o flag mesmo se alguém rodar localmente sem script do npm
 process.env.PRERENDER = process.env.PRERENDER ?? "1";
 
+// 🔥 AGGRESSIVE CACHE BUSTING - Force Node.js to invalidate ALL module caches
+Object.keys(require.cache).forEach((key) => {
+  delete require.cache[key];
+});
+
 // Ensure required envs exist during prerender stage without hitting real backends
 process.env.VITE_SUPABASE_URL =
   process.env.VITE_SUPABASE_URL ||
@@ -26,7 +31,6 @@ import { renderToString, renderToStaticMarkup } from "react-dom/server";
 import { StaticRouter } from "react-router-dom/server";
 import PublicHome from "../src/pages/PublicHome";
 import { Head } from "../src/lib/head";
-import { ConsentProvider } from "../src/hooks/useConsent";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
