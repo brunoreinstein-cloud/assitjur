@@ -19,7 +19,7 @@
     "prepare": "husky install",
     "clean": "rm -rf node_modules/.cache node_modules/.vite .tsbuildinfo dist",
     "prerender": "cross-env PRERENDER=1 node --loader tsx --no-compilation-cache scripts/prerender.tsx",
-    "prerender:clean": "pnpm run clean && pnpm run build && pnpm run prerender,
+    "prerender:clean": "pnpm run clean && pnpm run build && pnpm run prerender",
     "audit": "tsx audit/index.ts",
     "lh": "tsx audit/lighthouse.ts",
     "lhci": "lhci autorun",
