@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste AssistJur</title>
+</head>
+<body>
+    <h1>Teste - Se você vê isso, o servidor está funcionando</h1>
+    <div id="root">
+        <p>Se você vê esta mensagem, o React não está carregando.</p>
+    </div>
+    
+    <script>
+        console.log('Script de teste carregado');
+        console.log('window.location:', window.location.href);
+        
+        // Teste se o arquivo principal existe
+        fetch('/assets/index-CkaI9kqY.js')
+            .then(response => {
+                console.log('Arquivo JS principal:', response.status);
+                if (response.ok) {
+                    console.log('✅ Arquivo JS principal carregado com sucesso');
+                } else {
+                    console.log('❌ Erro ao carregar arquivo JS principal:', response.status);
+                }
+            })
+            .catch(error => {
+                console.log('❌ Erro de rede:', error);
+            });
+    </script>
+</body>
+</html>
