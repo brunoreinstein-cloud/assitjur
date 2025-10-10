@@ -4,10 +4,11 @@
   "outputDirectory": "dist",
   "installCommand": "pnpm install",
   "framework": "vite",
-  "rewrites": [
+  "redirects": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/((?!assets|favicon\\.ico|robots\\.txt|sitemap\\.xml|manifest\\.json|sw\\.js|.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|br|gz)).*)",
+      "destination": "/index.html",
+      "statusCode": 200
     }
   ],
   "cleanUrls": true,
