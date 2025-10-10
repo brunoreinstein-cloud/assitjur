@@ -1,4 +1,0 @@
-CNJ,reclamante_nome,reu_nome,UF,Comarca,Reclamantes,Advogados_Ativo,Testemunhas_Ativo,Testemunhas_Passivo,Todas_Testemunhas
-1234567890123456789,João Silva,Empresa ABC Ltda,SP,São Paulo,"João Silva","Dr. Pedro Advogado","Testemunha 1;Testemunha 2","Testemunha 3","Testemunha 1;Testemunha 2;Testemunha 3"
-12345678901234567891,Maria Santos,Empresa XYZ SA,RJ,Rio de Janeiro,"Maria Santos","Dra. Ana Advogada","Testemunha A","Testemunha B;Testemunha C","Testemunha A;Testemunha B;Testemunha C"
-12345678901234567892,José Costa,Empresa DEF Ltda,MG,Belo Horizonte,"José Costa","Dr. Carlos Advogado","Testemunha X;Testemunha Y","Testemunha Z","Testemunha X;Testemunha Y;Testemunha Z"
