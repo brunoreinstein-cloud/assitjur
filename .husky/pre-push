@@ -1,2 +1,2 @@
 # Type check before push
-npm run typecheck
+pnpm run typecheck
