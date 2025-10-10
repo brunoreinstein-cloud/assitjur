@@ -1,4 +1,0 @@
-User-agent: *
-Disallow: /
-
-# Ambiente de testes – não indexar

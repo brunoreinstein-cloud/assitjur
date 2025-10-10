@@ -7,21 +7,25 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { isClient, getLocalStorage, getDocument } from "@/lib/ssr-utils";
 
 export function ThemeToggle() {
   const [theme, setTheme] = React.useState<"light" | "dark">("light");
 
   React.useEffect(() => {
+    if (!isClient) return;
+    
     // Check for saved theme or system preference
-    const savedTheme = typeof window !== "undefined" ? localStorage.getItem("theme") as "light" | "dark" | null : null;
-    const systemTheme = typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)")
-      .matches
+    const localStorage = getLocalStorage();
+    const document = getDocument();
+    const savedTheme = localStorage?.getItem("theme") as "light" | "dark" | null;
+    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
       : "light";
     const initialTheme = savedTheme || systemTheme;
 
     setTheme(initialTheme);
-    if (typeof document !== "undefined") {
+    if (document) {
       document.documentElement.classList.toggle("dark", initialTheme === "dark");
     }
   }, []);
@@ -29,11 +33,17 @@ export function ThemeToggle() {
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("theme", newTheme);
-    }
-    if (typeof document !== "undefined") {
-      document.documentElement.classList.toggle("dark", newTheme === "dark");
+    
+    if (isClient) {
+      const localStorage = getLocalStorage();
+      const document = getDocument();
+      
+      if (localStorage) {
+        localStorage.setItem("theme", newTheme);
+      }
+      if (document) {
+        document.documentElement.classList.toggle("dark", newTheme === "dark");
+      }
     }
   };
 

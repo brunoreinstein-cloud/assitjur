@@ -221,7 +221,7 @@ function AppRoutes() {
       <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
       <Route path="/mapa-testemunhas" element={<Navigate to="/app/mapa-testemunhas" replace />} />
       <Route path="/mapa" element={<Navigate to="/app/mapa-testemunhas" replace />} />
-      <Route path="/admin/*" element={<Navigate to={`/app/admin${location.pathname.replace('/admin', '')}`} replace />} />
+      <Route path="/admin/*" element={<Navigate to="/app/admin" replace />} />
       <Route path="/profile" element={<Navigate to="/app/profile" replace />} />
       <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
       <Route path="/chat" element={<Navigate to="/app/mapa-testemunhas?view=chat" replace />} />

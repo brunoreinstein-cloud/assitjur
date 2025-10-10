@@ -1,4 +1,5 @@
 import * as React from "react";
+import { isClient } from "@/lib/ssr-utils";
 
 const MOBILE_BREAKPOINT = 768;
 
@@ -8,7 +9,7 @@ export function useIsMobile() {
   );
 
   React.useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!isClient) return;
     
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
     const onChange = () => {
