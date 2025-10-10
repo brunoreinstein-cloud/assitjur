@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, createElement } from "react";
 import type { ReactNode } from "react";
 import { getConsent, setConsent } from "@/lib/consent";
+import { trackConsentChange, trackConsentBannerShown } from "@/lib/consent-metrics";
 
 type ConsentPrefs = { analytics: boolean; ads: boolean };
 
@@ -36,12 +37,23 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
       });
     } else {
       setOpen(true);
+      // ✅ Track banner shown
+      trackConsentBannerShown();
     }
   }, [isSSR]);
 
   const save = (prefs: ConsentPrefs) => {
     // ✅ Guard: Only save on client-side
     if (isSSR) return;
+
+    // ✅ Track consent changes
+    const currentConsent = getConsent();
+    if (currentConsent.measure !== prefs.analytics) {
+      trackConsentChange('analytics', currentConsent.measure ?? false, prefs.analytics);
+    }
+    if (currentConsent.marketing !== prefs.ads) {
+      trackConsentChange('marketing', currentConsent.marketing ?? false, prefs.ads);
+    }
 
     setConsent({ measure: prefs.analytics, marketing: prefs.ads });
     setPreferences(prefs);
