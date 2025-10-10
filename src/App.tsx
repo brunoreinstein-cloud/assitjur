@@ -22,6 +22,7 @@ import { AuthErrorBoundary } from "@/components/core/AuthErrorBoundary";
 import { RouteGuard } from "@/components/routing/RouteGuard";
 import { DemoRoutes } from "@/routes/DemoRoutes";
 import { ErrorBoundary } from "@/components/core/ErrorBoundary";
+import { LoginErrorBoundary } from "@/components/auth/LoginErrorBoundary";
 import { ProductionOptimizer } from "@/components/production/ProductionOptimizer";
 
 // ... keep existing code
@@ -110,7 +111,11 @@ function AppRoutes() {
       <Route path="/" element={<PublicHome />} />
       <Route path="/sobre" element={<About />} />
       <Route path="/beta" element={<Beta />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/login" element={
+        <LoginErrorBoundary>
+          <Login />
+        </LoginErrorBoundary>
+      } />
       <Route path="/reset" element={<Reset />} />
       <Route path="/reset/confirm" element={<ResetConfirm />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />

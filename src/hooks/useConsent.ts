@@ -14,9 +14,7 @@ interface ConsentContextValue {
   save: (prefs: ConsentPrefs) => void;
 }
 
-export const ConsentContext = createContext<ConsentContextValue | undefined>(
-  undefined,
-);
+export const ConsentContext = createContext<ConsentContextValue | undefined>(undefined);
 
 export function ConsentProvider({ children }: { children: ReactNode }) {
   // ✅ SSR safety: Detect server-side rendering
@@ -29,16 +27,25 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
     // ✅ Guard: Only run on client-side
     if (isSSR) return;
 
-    const stored = getConsent();
-    if (stored.measure !== undefined || stored.marketing !== undefined) {
+    try {
+      const stored = getConsent();
+      if (stored.measure !== undefined || stored.marketing !== undefined) {
+        setPreferences({
+          analytics: stored.measure ?? false,
+          ads: stored.marketing ?? false,
+        });
+      } else {
+        setOpen(true);
+        // ✅ Track banner shown
+        trackConsentBannerShown();
+      }
+    } catch (error) {
+      console.error('Error loading consent preferences:', error);
+      // Set default preferences if loading fails
       setPreferences({
-        analytics: stored.measure ?? false,
-        ads: stored.marketing ?? false,
+        analytics: false,
+        ads: false,
       });
-    } else {
-      setOpen(true);
-      // ✅ Track banner shown
-      trackConsentBannerShown();
     }
   }, [isSSR]);
 
@@ -46,17 +53,23 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
     // ✅ Guard: Only save on client-side
     if (isSSR) return;
 
-    // ✅ Track consent changes
-    const currentConsent = getConsent();
-    if (currentConsent.measure !== prefs.analytics) {
-      trackConsentChange('analytics', currentConsent.measure ?? false, prefs.analytics);
-    }
-    if (currentConsent.marketing !== prefs.ads) {
-      trackConsentChange('marketing', currentConsent.marketing ?? false, prefs.ads);
-    }
+    try {
+      // ✅ Track consent changes
+      const currentConsent = getConsent();
+      if (currentConsent.measure !== prefs.analytics) {
+        trackConsentChange('analytics', currentConsent.measure ?? false, prefs.analytics);
+      }
+      if (currentConsent.marketing !== prefs.ads) {
+        trackConsentChange('marketing', currentConsent.marketing ?? false, prefs.ads);
+      }
 
-    setConsent({ measure: prefs.analytics, marketing: prefs.ads });
-    setPreferences(prefs);
+      setConsent({ measure: prefs.analytics, marketing: prefs.ads });
+      setPreferences(prefs);
+    } catch (error) {
+      console.error('Error saving consent preferences:', error);
+      // Still update local state even if storage fails
+      setPreferences(prefs);
+    }
   };
 
   return createElement(
