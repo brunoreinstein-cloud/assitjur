@@ -23,6 +23,7 @@ import { AuthErrorBoundary } from "@/components/core/AuthErrorBoundary";
 import { RouteGuard } from "@/components/routing/RouteGuard";
 import { DemoRoutes } from "@/routes/DemoRoutes";
 import { ErrorBoundary } from "@/components/core/ErrorBoundary";
+import { ErrorBoundary as SystemErrorBoundary } from "@/components/system/ErrorBoundary";
 import { LoginErrorBoundary } from "@/components/auth/LoginErrorBoundary";
 import { ProductionOptimizer } from "@/components/production/ProductionOptimizer";
 
@@ -246,50 +247,52 @@ const queryClient = new QueryClient({
 const Router = import.meta.env.VITE_USE_HASH_ROUTER === 'true' ? HashRouter : BrowserRouter;
 
 const App = () => (
-  <ErrorBoundary>
-    <ProductionOptimizer />
-    <MotionConfig reducedMotion="user" transition={DEFAULT_TRANSITION}>
-      <QueryClientProvider client={queryClient}>
-        <ServiceHealthProvider>
-          <AuthContextProvider>
-            <FeatureFlagProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <SessionExpiredModal />
-                <ConsentDialog />
-                <Router
-                  future={{
-                    v7_startTransition: true,
-                    v7_relativeSplatPath: true,
-                  }}
-                >
-                  <SupabaseAuthProvider>
-                    <AuthErrorBoundary>
-                      <MultiTenantProvider>
-                        <OrganizationErrorBoundary>
-                          <div className="min-h-screen flex flex-col">
-                            <MaintenanceBanner />
-                            <StatusBanner />
-                            <main id="conteudo" className="flex-1">
-                              <Suspense fallback={<PageSkeleton />}>
-                                <AppRoutes />
-                              </Suspense>
-                            </main>
-                            <HelpWidget />
-                          </div>
-                        </OrganizationErrorBoundary>
-                      </MultiTenantProvider>
-                    </AuthErrorBoundary>
-                  </SupabaseAuthProvider>
-                </Router>
-              </TooltipProvider>
-            </FeatureFlagProvider>
-          </AuthContextProvider>
-        </ServiceHealthProvider>
-      </QueryClientProvider>
-    </MotionConfig>
-  </ErrorBoundary>
+  <SystemErrorBoundary>
+    <ErrorBoundary>
+      <ProductionOptimizer />
+      <MotionConfig reducedMotion="user" transition={DEFAULT_TRANSITION}>
+        <QueryClientProvider client={queryClient}>
+          <ServiceHealthProvider>
+            <AuthContextProvider>
+              <FeatureFlagProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <SessionExpiredModal />
+                  <ConsentDialog />
+                  <Router
+                    future={{
+                      v7_startTransition: true,
+                      v7_relativeSplatPath: true,
+                    }}
+                  >
+                    <SupabaseAuthProvider>
+                      <AuthErrorBoundary>
+                        <MultiTenantProvider>
+                          <OrganizationErrorBoundary>
+                            <div className="min-h-screen flex flex-col">
+                              <MaintenanceBanner />
+                              <StatusBanner />
+                              <main id="conteudo" className="flex-1">
+                                <Suspense fallback={<PageSkeleton />}>
+                                  <AppRoutes />
+                                </Suspense>
+                              </main>
+                              <HelpWidget />
+                            </div>
+                          </OrganizationErrorBoundary>
+                        </MultiTenantProvider>
+                      </AuthErrorBoundary>
+                    </SupabaseAuthProvider>
+                  </Router>
+                </TooltipProvider>
+              </FeatureFlagProvider>
+            </AuthContextProvider>
+          </ServiceHealthProvider>
+        </QueryClientProvider>
+      </MotionConfig>
+    </ErrorBoundary>
+  </SystemErrorBoundary>
 );
 
 export default App;

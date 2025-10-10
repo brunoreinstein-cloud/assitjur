@@ -141,6 +141,11 @@ export default defineConfig(({ mode }) => {
       host: "::",
       port: 8080,
     },
+    preview: {
+      port: 4173,
+      strictPort: true,
+      host: "::",
+    },
     plugins: plugins.filter(Boolean),
     // Completely suppress TypeScript error reporting
     clearScreen: false,

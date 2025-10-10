@@ -52,5 +52,20 @@ export function validateEnv(): Env {
  * IMPORTANTE: Chame esta função no início do main.tsx
  */
 export function getValidatedEnv(): Env {
-  return validateEnv();
+  try {
+    return validateEnv();
+  } catch (error) {
+    // Em desenvolvimento, mostrar erro mas não quebrar
+    if (import.meta.env.DEV) {
+      console.warn('⚠️ Variáveis de ambiente não configuradas:', error);
+      return {
+        VITE_SUPABASE_URL: 'https://dummy.supabase.local',
+        VITE_SUPABASE_ANON_KEY: 'dummy-key',
+        VITE_SENTRY_DSN: undefined,
+        VITE_POSTHOG_KEY: undefined,
+        VITE_POSTHOG_HOST: undefined,
+      };
+    }
+    throw error;
+  }
 }
