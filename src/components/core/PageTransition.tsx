@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getMatchMedia } from "@/lib/ssr-safe-utils";
+import { isClient } from "@/lib/ssr-utils";
 
 interface PageTransitionProps {
   children: React.ReactNode;
@@ -30,11 +30,10 @@ const pageVariants = {
 };
 
 export function PageTransition({ children }: PageTransitionProps) {
-
   // Respect user's motion preferences
-  const prefersReducedMotion = getMatchMedia(
-    "(prefers-reduced-motion: reduce)",
-  )?.matches ?? false;
+  const prefersReducedMotion = isClient 
+    ? window.matchMedia("(prefers-reduced-motion: reduce)").matches 
+    : false;
 
   if (prefersReducedMotion) {
     return <>{children}</>;

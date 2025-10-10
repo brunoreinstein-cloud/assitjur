@@ -4,7 +4,7 @@
  */
 
 import { useNavigate as useNavigateOriginal } from "react-router-dom";
-import { isClient } from "@/lib/ssr-safe-utils";
+import { isClient } from "@/lib/ssr-utils";
 
 /**
  * Hook de navegação SSR-safe
