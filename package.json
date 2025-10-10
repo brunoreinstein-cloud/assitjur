@@ -14,7 +14,7 @@
     "validate": "npm run lint && npm run typecheck && npm run validate:env",
     "ci": "npm run validate && npm run build",
     "build:dev": "vite build --mode development",
-    "build": "npm run validate:env && tsc -b && vite build",
+    "build": "npm run validate:env && tsc -b && vite build && node scripts/copy-spa-fallback.js",
     "prepare": "husky",
     "clean": "rm -rf node_modules/.cache node_modules/.vite .tsbuildinfo dist",
     "prerender": "cross-env PRERENDER=1 node --loader tsx --no-compilation-cache scripts/prerender.tsx",

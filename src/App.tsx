@@ -9,6 +9,7 @@ import { PageSkeleton } from "@/components/core/PageSkeleton";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   BrowserRouter,
+  HashRouter,
   Routes,
   Route,
   Navigate,
@@ -241,6 +242,9 @@ const queryClient = new QueryClient({
   },
 });
 
+// ✅ Router selection based on environment
+const Router = import.meta.env.VITE_USE_HASH_ROUTER === 'true' ? HashRouter : BrowserRouter;
+
 const App = () => (
   <ErrorBoundary>
     <ProductionOptimizer />
@@ -254,7 +258,7 @@ const App = () => (
                 <Sonner />
                 <SessionExpiredModal />
                 <ConsentDialog />
-                <BrowserRouter
+                <Router
                   future={{
                     v7_startTransition: true,
                     v7_relativeSplatPath: true,
@@ -278,7 +282,7 @@ const App = () => (
                       </MultiTenantProvider>
                     </AuthErrorBoundary>
                   </SupabaseAuthProvider>
-                </BrowserRouter>
+                </Router>
               </TooltipProvider>
             </FeatureFlagProvider>
           </AuthContextProvider>
