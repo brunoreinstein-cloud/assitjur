@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" fill="none">
+  <!-- Neural network icon -->
+  <g transform="translate(20, 30)">
+    <!-- Central purple circle -->
+    <circle cx="30" cy="30" r="12" fill="#8b5cf6"/>
+    
+    <!-- Connection lines -->
+    <line x1="30" y1="18" x2="30" y2="5" stroke="#d1d5db" stroke-width="2"/>
+    <line x1="42" y1="30" x2="55" y2="30" stroke="#d1d5db" stroke-width="2"/>
+    <line x1="30" y1="42" x2="30" y2="55" stroke="#d1d5db" stroke-width="2"/>
+    <line x1="18" y1="30" x2="5" y2="30" stroke="#d1d5db" stroke-width="2"/>
+    
+    <line x1="38.5" y1="21.5" x2="48" y2="12" stroke="#d1d5db" stroke-width="2"/>
+    <line x1="38.5" y1="38.5" x2="48" y2="48" stroke="#d1d5db" stroke-width="2"/>
+    <line x1="21.5" y1="38.5" x2="12" y2="48" stroke="#d1d5db" stroke-width="2"/>
+    <line x1="21.5" y1="21.5" x2="12" y2="12" stroke="#d1d5db" stroke-width="2"/>
+    
+    <!-- Connection nodes -->
+    <circle cx="30" cy="5" r="4" fill="#d4af37"/>
+    <circle cx="55" cy="30" r="4" fill="#d4af37"/>
+    <circle cx="30" cy="55" r="4" fill="#d4af37"/>
+    <circle cx="5" cy="30" r="4" fill="#d4af37"/>
+    
+    <circle cx="48" cy="12" r="4" fill="#d1d5db"/>
+    <circle cx="48" cy="48" r="4" fill="#d1d5db"/>
+    <circle cx="12" cy="48" r="4" fill="#d1d5db"/>
+    <circle cx="12" cy="12" r="4" fill="#d1d5db"/>
+  </g>
+  
+  <!-- Text -->
+  <g transform="translate(90, 35)">
+    <!-- AssistJur in gold -->
+    <text x="0" y="35" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#d4af37">
+      AssistJur
+    </text>
+    
+    <!-- .IA in purple -->
+    <text x="175" y="35" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#8b5cf6">
+      .IA
+    </text>
+  </g>
+</svg>
