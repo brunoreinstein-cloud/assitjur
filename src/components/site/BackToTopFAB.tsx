@@ -11,12 +11,16 @@ export function BackToTopFAB({ className }: BackToTopFABProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    
     const onScroll = () => setVisible(window.scrollY > 600);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const scrollToTop = () => {
+    if (typeof window === "undefined" || typeof document === "undefined") return;
+    
     const heading = document.getElementById("main-heading");
     window.scrollTo({ top: 0, behavior: "smooth" });
     if (heading) {

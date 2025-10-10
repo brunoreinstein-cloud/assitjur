@@ -13,6 +13,8 @@ export const Header = () => {
   const [isSticky, setIsSticky] = useState(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    
     const handleScroll = () => {
       setIsSticky(window.scrollY > 0);
     };

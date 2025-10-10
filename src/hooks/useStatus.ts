@@ -10,9 +10,13 @@ interface StatusState<T = unknown> {
 
 export function useStatus<T>(state: StatusState<T>): Status {
   const { loading, error, data } = state;
-  const [offline, setOffline] = useState(!navigator.onLine);
+  const [offline, setOffline] = useState(
+    typeof navigator !== "undefined" ? !navigator.onLine : false
+  );
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    
     const handleOnline = () => setOffline(false);
     const handleOffline = () => setOffline(true);
     window.addEventListener("online", handleOnline);

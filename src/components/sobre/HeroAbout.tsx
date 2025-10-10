@@ -4,6 +4,8 @@ import { ArrowDown, Award, Users, TrendingUp, Calendar } from "lucide-react";
 
 export function HeroAbout() {
   const scrollToSection = (id: string) => {
+    if (typeof document === "undefined") return;
+    
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });

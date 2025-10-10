@@ -313,14 +313,14 @@ export const useMapaTestemunhasStore = create<MapaTestemunhasStore>(
             columnVisibility: state.columnVisibility,
           },
         };
-        if (typeof window !== "undefined") {
+        if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
           localStorage.setItem(`mapaViews_${userId}`, JSON.stringify(views));
           localStorage.setItem(`mapaActiveView_${userId}`, name);
         }
         return { savedViews: views, activeView: name };
       }),
     loadViews: (userId) => {
-      if (typeof window === "undefined") return;
+      if (typeof window === "undefined" || typeof localStorage === "undefined") return;
       const raw = localStorage.getItem(`mapaViews_${userId}`);
       const views = raw ? JSON.parse(raw) : {};
       const active = localStorage.getItem(`mapaActiveView_${userId}`);
@@ -337,7 +337,7 @@ export const useMapaTestemunhasStore = create<MapaTestemunhasStore>(
       set((state) => {
         const view = state.savedViews[name];
         if (!view) return {} as any;
-        if (typeof window !== "undefined") {
+        if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
           localStorage.setItem(`mapaActiveView_${userId}`, name);
         }
         return {

@@ -11,14 +11,14 @@ export const DebugMode = {
    */
   isEnabled(): boolean {
     if (typeof window === "undefined") return false;
-    return localStorage.getItem(DEBUG_MODE_KEY) === "true";
+    return typeof localStorage !== "undefined" && localStorage.getItem(DEBUG_MODE_KEY) === "true";
   },
 
   /**
    * Ativa o modo debug
    */
   enable(): void {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || typeof localStorage === "undefined") return;
     localStorage.setItem(DEBUG_MODE_KEY, "true");
     console.log("🐛 Debug mode ATIVADO");
   },
@@ -27,7 +27,7 @@ export const DebugMode = {
    * Desativa o modo debug
    */
   disable(): void {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || typeof localStorage === "undefined") return;
     localStorage.setItem(DEBUG_MODE_KEY, "false");
     console.log("🐛 Debug mode DESATIVADO");
   },

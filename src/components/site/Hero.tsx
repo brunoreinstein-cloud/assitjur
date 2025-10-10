@@ -20,6 +20,8 @@ export function Hero({ onSignup }: HeroProps) {
     track("cta_click", { id: "hero-testar-hub" });
     setShowForm(true);
     setTimeout(() => {
+      if (typeof document === "undefined") return;
+      
       const formElement = document.getElementById("needs-form");
       if (formElement) {
         formElement.scrollIntoView({ behavior: "smooth", block: "start" });

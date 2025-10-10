@@ -46,6 +46,8 @@ export function getConsent(): Consent {
   }
 
   try {
+    if (typeof window === "undefined") return { essential: true };
+    
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return { essential: true };
 
@@ -93,7 +95,9 @@ export function setConsent(prefs: Omit<Consent, "essential">): void {
       ts: new Date().toISOString(),
     };
 
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    }
 
     // ✅ Notify listeners
     const consent: Consent = { essential: true, ...payload };
@@ -199,7 +203,9 @@ export function clearConsent(): void {
   if (typeof window === "undefined") return;
 
   try {
-    window.localStorage.removeItem(STORAGE_KEY);
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(STORAGE_KEY);
+    }
     
     // ✅ Notify listeners with default consent
     const defaultConsent: Consent = { essential: true };

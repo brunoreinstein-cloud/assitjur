@@ -27,6 +27,21 @@ export interface SessionRisk {
  * Generate device fingerprint for session security
  */
 export function generateDeviceFingerprint(): DeviceFingerprint {
+  if (typeof window === "undefined" || typeof navigator === "undefined") {
+    return {
+      userAgent: "SSR",
+      language: "pt-BR",
+      platform: "SSR",
+      screenResolution: "1920x1080",
+      timezone: "America/Sao_Paulo",
+      colorDepth: 24,
+      hardwareConcurrency: 4,
+      cookieEnabled: false,
+      doNotTrack: true,
+      fingerprint: "ssr-fallback",
+    };
+  }
+  
   const nav = navigator;
   const screen = window.screen;
 

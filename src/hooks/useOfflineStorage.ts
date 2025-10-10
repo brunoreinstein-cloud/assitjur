@@ -83,7 +83,9 @@ export const offlineStorage = new OfflineStorage();
 
 // Hook for online/offline status
 export function useOnlineStatus() {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== "undefined" ? navigator.onLine : true
+  );
   const { warning, success } = useNotifications();
 
   useEffect(() => {

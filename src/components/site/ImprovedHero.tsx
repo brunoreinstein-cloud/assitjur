@@ -22,6 +22,8 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
     track("cta_click", { id: "hero-testar-hub" });
     setFormVisible(true);
     setTimeout(() => {
+      if (typeof document === "undefined") return;
+      
       const formElement = document.getElementById("needs-form");
       if (formElement) {
         formElement.scrollIntoView({ behavior: "smooth", block: "center" });

@@ -9,6 +9,8 @@ import { ClientOnlyFooter } from "@/components/site/ClientOnlyFooter";
 export default function Beta() {
   // SEO Meta Tags
   useEffect(() => {
+    if (typeof document === "undefined") return;
+    
     document.title =
       "Lista Beta AssistJur.IA - Acesso Antecipado ao Hub de IA Jurídica";
 

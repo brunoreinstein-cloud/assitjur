@@ -13,22 +13,28 @@ export function ThemeToggle() {
 
   React.useEffect(() => {
     // Check for saved theme or system preference
-    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
-    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+    const savedTheme = typeof window !== "undefined" ? localStorage.getItem("theme") as "light" | "dark" | null : null;
+    const systemTheme = typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)")
       .matches
       ? "dark"
       : "light";
     const initialTheme = savedTheme || systemTheme;
 
     setTheme(initialTheme);
-    document.documentElement.classList.toggle("dark", initialTheme === "dark");
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle("dark", initialTheme === "dark");
+    }
   }, []);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    document.documentElement.classList.toggle("dark", newTheme === "dark");
+    if (typeof window !== "undefined") {
+      localStorage.setItem("theme", newTheme);
+    }
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle("dark", newTheme === "dark");
+    }
   };
 
   return (
