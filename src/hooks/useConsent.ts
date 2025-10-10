@@ -99,7 +99,7 @@ export function useConsent(): ConsentContextValue {
   }
 
   // Guard 2: Prerender mode (set by scripts/prerender.tsx)
-  if (process.env.PRERENDER === "1") {
+  if (typeof process !== "undefined" && process.env?.PRERENDER === "1") {
     return FALLBACK_VALUE;
   }
 

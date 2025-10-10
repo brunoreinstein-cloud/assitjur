@@ -22,7 +22,7 @@ export function useConsentSafe() {
   }
 
   // ✅ Guard 2: Prerender mode
-  if (process.env.PRERENDER === "1") {
+  if (typeof process !== "undefined" && process.env?.PRERENDER === "1") {
     return {
       preferences: null,
       open: false,

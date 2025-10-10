@@ -17,7 +17,7 @@ export const isServer = typeof window === "undefined";
 /**
  * Check if code is running in prerender mode
  */
-export const isPrerender = process.env.PRERENDER === "1";
+export const isPrerender = typeof process !== "undefined" && process.env?.PRERENDER === "1";
 
 /**
  * Check if code should run only on client-side

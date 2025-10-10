@@ -113,7 +113,7 @@ export class MapaErrorBoundary extends Component<Props, State> {
               </div>
 
               {/* Detalhes técnicos (debug) */}
-              {process.env.NODE_ENV === "development" && errorInfo && (
+              {typeof process !== "undefined" && process.env?.NODE_ENV === "development" && errorInfo && (
                 <details className="space-y-2">
                   <summary className="cursor-pointer font-semibold text-sm text-muted-foreground hover:text-foreground">
                     Detalhes Técnicos (Dev)
