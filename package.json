@@ -35,8 +35,8 @@
     "branch:release": "node tools/branch.js release",
     "branch:hotfix": "node tools/branch.js hotfix",
     "dev": "vite",
-    "preview": "vite preview --strictPort",
-    "start": "vite preview --strictPort"
+    "preview": "vite preview",
+    "start": "vite preview"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",

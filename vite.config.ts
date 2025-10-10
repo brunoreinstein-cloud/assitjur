@@ -143,7 +143,7 @@ export default defineConfig(({ mode }) => {
     },
     preview: {
       port: 4173,
-      strictPort: true,
+      strictPort: false,
       host: "::",
     },
     plugins: plugins.filter(Boolean),
