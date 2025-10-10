@@ -436,7 +436,7 @@ describe('Consent System', () => {
       localStorageMock.getItem.mockReturnValue(null);
 
       const TestComponent = () => {
-        const { preferences, open, setOpen, save } = useConsent();
+        const { preferences, open, save } = useConsent();
         return (
           <div>
             <span data-testid="preferences">

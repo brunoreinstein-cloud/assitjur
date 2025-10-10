@@ -7,7 +7,6 @@ import { ConsentProvider } from "@/hooks/useConsent";
 import { getEnv } from "@/lib/getEnv";
 import { getConsent, onConsentChange } from "@/lib/consent";
 import { initializeConsentAwareIntegrations } from "@/lib/consent-gates";
-import { trackConsentChange, trackConsentBannerShown } from "@/lib/consent-metrics";
 import { logger } from "@/lib/logger";
 import { getValidatedEnv } from "@/lib/env-validation";
 

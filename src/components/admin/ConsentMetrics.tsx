@@ -15,8 +15,7 @@ import {
   getConsentMetrics, 
   getConsentAnalytics, 
   exportConsentData,
-  type ConsentMetrics,
-  type ConsentEvent 
+  type ConsentMetrics
 } from '@/lib/consent-metrics';
 import { Download, RefreshCw, Shield, Users, TrendingUp, AlertTriangle } from 'lucide-react';
 

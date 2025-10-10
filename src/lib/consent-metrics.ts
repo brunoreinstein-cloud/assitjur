@@ -6,7 +6,7 @@
  */
 
 import { getConsent, getConsentAge, isConsentValid } from './consent';
-import { hasConsent, getConsentSummary } from './consent-gates';
+import { hasConsent } from './consent-gates';
 
 export interface ConsentMetrics {
   // User consent status
@@ -58,7 +58,6 @@ export function getConsentMetrics(): ConsentMetrics {
   }
 
   const consent = getConsent();
-  const summary = getConsentSummary();
   
   return {
     hasAnalyticsConsent: hasConsent('analytics'),
