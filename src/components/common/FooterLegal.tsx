@@ -2,22 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useConsent } from "@/hooks/useConsent";
+import { useConsentSafe } from "@/hooks/useConsentSafe";
 import { getEnv } from "@/lib/getEnv";
 
 export function FooterLegal() {
-  // ✅ SSR safety: consent is client-only
+  const { setOpen } = useConsentSafe();
+  const [buildError, setBuildError] = useState(false);
+  
+  // ✅ SSR safety: Return null during server-side rendering
   if (typeof window === "undefined") {
     return null;
   }
-
-  const { setOpen } = useConsent();
+  
   const handleOpenConsent = () => {
     if (typeof setOpen === "function") {
       setOpen(true);
     }
   };
-  const [buildError, setBuildError] = useState(false);
   const linkClasses =
     "text-sm text-foreground hover:text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
   const { previewTimestamp } = getEnv();

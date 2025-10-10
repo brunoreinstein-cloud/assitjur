@@ -13,7 +13,7 @@ interface ConsentContextValue {
   save: (prefs: ConsentPrefs) => void;
 }
 
-const ConsentContext = createContext<ConsentContextValue | undefined>(
+export const ConsentContext = createContext<ConsentContextValue | undefined>(
   undefined,
 );
 

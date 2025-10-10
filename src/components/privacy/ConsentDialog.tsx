@@ -10,17 +10,17 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { useConsent } from "@/hooks/useConsent";
+import { useConsentSafe } from "@/hooks/useConsentSafe";
 
 export function ConsentDialog() {
-  // ✅ SSR safety: consent is client-only
+  const { open, setOpen, preferences, save } = useConsentSafe();
+  const [analytics, setAnalytics] = useState(false);
+  const [ads, setAds] = useState(false);
+  
+  // ✅ SSR safety: Return null during server-side rendering
   if (typeof window === "undefined") {
     return null;
   }
-
-  const { open, setOpen, preferences, save } = useConsent();
-  const [analytics, setAnalytics] = useState(false);
-  const [ads, setAds] = useState(false);
 
   useEffect(() => {
     if (preferences) {

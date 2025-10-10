@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ConsentDialog from "@/components/privacy/ConsentDialog";
+import { PageSkeleton } from "@/components/core/PageSkeleton";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   BrowserRouter,
@@ -69,6 +70,7 @@ import { useMaintenance } from "@/hooks/useMaintenance";
 import { FeatureFlagProvider } from "@/hooks/useFeatureFlag";
 import { HelpWidget } from "@/components/help/HelpWidget";
 
+// Páginas com lazy loading e skeletons específicos
 const MapaPage = lazy(() => import("@/pages/MapaPage"));
 const PublicHome = lazy(() => import("@/pages/PublicHome"));
 const About = lazy(() => import("@/pages/About"));
@@ -132,7 +134,7 @@ function AppRoutes() {
         element={
           <RouteGuard>
             <ErrorBoundary>
-              <Suspense fallback={<div className="p-4">Carregando...</div>}>
+              <Suspense fallback={<PageSkeleton />}>
                 <Outlet />
               </Suspense>
             </ErrorBoundary>
@@ -261,11 +263,7 @@ const App = () => (
                             <MaintenanceBanner />
                             <StatusBanner />
                             <main id="conteudo" className="flex-1">
-                              <Suspense
-                                fallback={
-                                  <div className="p-4">Carregando...</div>
-                                }
-                              >
+                              <Suspense fallback={<PageSkeleton />}>
                                 <AppRoutes />
                               </Suspense>
                             </main>

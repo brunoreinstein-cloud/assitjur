@@ -12,19 +12,17 @@ const Footer = lazy(() => import("./Footer"));
  * durante o server-side rendering.
  */
 export function ClientOnlyFooter() {
-  // ✅ Guard SSR/prerender ANTES de qualquer hook
-  if (typeof window === "undefined") {
-    return null;
-  }
-
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    // ✅ Only run on client-side
+    if (typeof window !== "undefined") {
+      setIsMounted(true);
+    }
   }, []);
 
-  // Durante SSR/prerender, não renderiza nada
-  if (!isMounted) {
+  // ✅ Guard SSR/prerender - return null during server-side rendering
+  if (typeof window === "undefined" || !isMounted) {
     return null;
   }
 
