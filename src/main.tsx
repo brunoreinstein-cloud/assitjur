@@ -42,14 +42,26 @@ try {
   logger.error("Environment validation failed", { error }, "MainApp");
   console.error(error);
   
-  // ✅ SSR-safe error display
-  if (import.meta.env.DEV && typeof window !== "undefined") {
+  // Show error page in all environments
+  if (typeof window !== "undefined") {
     showErrorPage(error instanceof Error ? error : new Error('Erro desconhecido'));
-    throw error; // Stop execution
+  }
+  
+  // Only throw in development to prevent silent failures
+  if (import.meta.env.DEV) {
+    throw error;
   }
 }
 
-const { sentryDsn } = getEnv();
+// Verify environment is valid before proceeding
+let sentryDsn: string | undefined;
+try {
+  const env = getEnv();
+  sentryDsn = env.sentryDsn;
+} catch (error) {
+  console.error("Failed to get environment configuration:", error);
+  sentryDsn = undefined;
+}
 
 // ✅ SSR-safe Sentry initialization with consent gate
 function initializeSentry() {
@@ -158,28 +170,42 @@ function unloadAnalytics() {
 
 // ✅ SSR-safe initialization
 if (typeof window !== "undefined") {
-  // Only load analytics in production with consent
-  const consent = getConsent();
-  if (consent.measure && !import.meta.env.DEV) {
-    loadAnalytics();
-  }
-
-  onConsentChange((c) => {
-    if (c.measure && !import.meta.env.DEV) {
+  try {
+    // Only load analytics in production with consent
+    const consent = getConsent();
+    if (consent.measure && !import.meta.env.DEV) {
       loadAnalytics();
-    } else {
-      unloadAnalytics();
     }
-  });
 
-  // ✅ SSR-safe root rendering
-  createRoot(document.getElementById("root")!).render(
-    <StrictMode>
-      <ConsentProvider>
-        <MaintenanceProvider>
-          <App />
-        </MaintenanceProvider>
-      </ConsentProvider>
-    </StrictMode>,
-  );
+    onConsentChange((c) => {
+      if (c.measure && !import.meta.env.DEV) {
+        loadAnalytics();
+      } else {
+        unloadAnalytics();
+      }
+    });
+
+    // Render application
+    createRoot(document.getElementById("root")!).render(
+      <StrictMode>
+        <ConsentProvider>
+          <MaintenanceProvider>
+            <App />
+          </MaintenanceProvider>
+        </ConsentProvider>
+      </StrictMode>,
+    );
+  } catch (error) {
+    console.error("Failed to initialize application:", error);
+    // Show basic error message
+    document.body.innerHTML = `
+      <div style="font-family: system-ui; max-width: 600px; margin: 100px auto; padding: 20px;">
+        <h1 style="color: #ef4444;">Erro ao Carregar Aplicação</h1>
+        <p>Ocorreu um erro ao inicializar a aplicação. Por favor, tente novamente mais tarde.</p>
+        <pre style="background: #f3f4f6; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 12px;">
+${error instanceof Error ? error.message : 'Erro desconhecido'}
+        </pre>
+      </div>
+    `;
+  }
 }
