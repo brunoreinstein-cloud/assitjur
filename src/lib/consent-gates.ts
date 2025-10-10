@@ -221,7 +221,7 @@ export function setupConsentChangeHandlers() {
     // Handle Intercom
     const Intercom = (window as any).Intercom;
     if (Intercom) {
-      if (consent.analytics) {
+      if (consent.measure) {
         Intercom('show');
       } else {
         Intercom('hide');

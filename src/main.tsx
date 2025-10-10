@@ -69,7 +69,7 @@ function initializeSentry() {
         dsn: sentryDsn, 
         tracesSampleRate: 1.0,
         // ✅ Additional privacy settings
-        beforeSend(event) {
+        beforeSend(event: any) {
           // Remove PII from error events
           if (event.user) {
             delete event.user.email;
