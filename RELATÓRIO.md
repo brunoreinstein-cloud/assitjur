@@ -70,11 +70,11 @@ export class ErrorBoundary extends React.Component<Props, State> {
 // vite.config.ts
 preview: {
   port: 4173,
-  strictPort: true,
+  strictPort: false,  // Permite usar porta alternativa se 4173 estiver ocupada
   host: "::",
 }
 ```
-**Rationale**: Configuração específica para servidor de preview
+**Rationale**: Configuração específica para servidor de preview com flexibilidade de porta
 
 ### **PR D - Fallback para Variáveis de Ambiente**
 ```typescript
@@ -111,12 +111,14 @@ npm run build
 npm run preview
 ```
 **Resultado**: ✅ Servidor de preview iniciado na porta 4173
+**Correção**: Ajustado `strictPort: false` para evitar conflitos de porta
 
 ### **3. Teste de Desenvolvimento**
 ```bash
 npm run dev
 ```
 **Resultado**: ✅ Servidor de desenvolvimento iniciado na porta 8080
+**Status**: Ambos os servidores funcionando simultaneamente
 
 ### **4. Verificação no Navegador**
 - **URL**: `http://localhost:4173` (preview) ou `http://localhost:8080` (dev)
