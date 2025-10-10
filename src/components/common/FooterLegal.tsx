@@ -6,13 +6,17 @@ import { useConsentSafe } from "@/hooks/useConsentSafe";
 import { getEnv } from "@/lib/getEnv";
 
 export function FooterLegal() {
-  const { setOpen } = useConsentSafe();
-  const [buildError, setBuildError] = useState(false);
-  
   // ✅ SSR safety: Return null during server-side rendering
   if (typeof window === "undefined") {
     return null;
   }
+
+  return <FooterLegalClient />;
+}
+
+function FooterLegalClient() {
+  const { setOpen } = useConsentSafe();
+  const [buildError, setBuildError] = useState(false);
   
   const handleOpenConsent = () => {
     if (typeof setOpen === "function") {

@@ -8,6 +8,9 @@ import { ConsentContext } from "@/hooks/useConsent";
  * Evita erros de SSR ao usar useConsent em componentes que podem ser renderizados no servidor
  */
 export function useConsentSafe() {
+  // ✅ CRITICAL: Call useContext unconditionally to follow rules of hooks
+  const ctx = useContext(ConsentContext);
+  
   // ✅ Guard 1: Server-side rendering
   if (typeof window === "undefined") {
     return {
@@ -27,8 +30,6 @@ export function useConsentSafe() {
       save: () => {},
     };
   }
-
-  const ctx = useContext(ConsentContext);
 
   // ✅ Guard 3: No provider found - return fallback instead of throwing
   if (!ctx) {

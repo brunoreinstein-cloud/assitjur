@@ -62,6 +62,9 @@ const FALLBACK_VALUE: ConsentContextValue = {
 };
 
 export function useConsent(): ConsentContextValue {
+  // ✅ CRITICAL: Call useContext unconditionally to follow rules of hooks
+  const ctx = useContext(ConsentContext);
+  
   // ✅ CRITICAL: NEVER throw during SSR/prerender
   // This hook may be called by components during server-side rendering
   
@@ -74,8 +77,6 @@ export function useConsent(): ConsentContextValue {
   if (process.env.PRERENDER === "1") {
     return FALLBACK_VALUE;
   }
-
-  const ctx = useContext(ConsentContext);
 
   // Guard 3: No provider found - return fallback instead of throwing
   if (!ctx) {

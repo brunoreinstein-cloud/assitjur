@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Mail, Shield } from "lucide-react";
+import { useConsentSafe } from "@/hooks/useConsentSafe";
 
 function Footer() {
   // ✅ SSR safety: Return null BEFORE any hooks execution
@@ -16,10 +17,10 @@ function Footer() {
 }
 
 function FooterClient() {
-  // ✅ Lazy load useConsent apenas quando necessário (evento do usuário)
-  const handleOpenConsent = async () => {
-    const { useConsent } = await import("@/hooks/useConsent");
-    const { setOpen } = useConsent();
+  // ✅ Use useConsentSafe at component level to follow rules of hooks
+  const { setOpen } = useConsentSafe();
+  
+  const handleOpenConsent = () => {
     if (typeof setOpen === "function") {
       setOpen(true);
     }

@@ -13,14 +13,18 @@ import { Switch } from "@/components/ui/switch";
 import { useConsentSafe } from "@/hooks/useConsentSafe";
 
 export function ConsentDialog() {
-  const { open, setOpen, preferences, save } = useConsentSafe();
-  const [analytics, setAnalytics] = useState(false);
-  const [ads, setAds] = useState(false);
-  
   // ✅ SSR safety: Return null during server-side rendering
   if (typeof window === "undefined") {
     return null;
   }
+
+  return <ConsentDialogClient />;
+}
+
+function ConsentDialogClient() {
+  const { open, setOpen, preferences, save } = useConsentSafe();
+  const [analytics, setAnalytics] = useState(false);
+  const [ads, setAds] = useState(false);
 
   useEffect(() => {
     if (preferences) {
