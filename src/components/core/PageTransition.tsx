@@ -31,7 +31,7 @@ const pageVariants = {
 
 export function PageTransition({ children }: PageTransitionProps) {
   // Respect user's motion preferences
-  const prefersReducedMotion = isClient 
+  const prefersReducedMotion = isClient && typeof window !== "undefined"
     ? window.matchMedia("(prefers-reduced-motion: reduce)").matches 
     : false;
 

@@ -19,7 +19,7 @@ export function ThemeToggle() {
     const localStorage = getLocalStorage();
     const document = getDocument();
     const savedTheme = localStorage?.getItem("theme") as "light" | "dark" | null;
-    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+    const systemTheme = typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
       : "light";
     const initialTheme = savedTheme || systemTheme;

@@ -74,7 +74,9 @@ export class MapaErrorBoundary extends Component<Props, State> {
 
   private handleGoHome = () => {
     logger.info("🏠 [MapaErrorBoundary] Navegando para home");
-    window.location.href = "/";
+    if (typeof window !== "undefined") {
+      window.location.href = "/";
+    }
   };
 
   public render() {
