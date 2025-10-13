@@ -51,9 +51,9 @@ const OpenAIOverview = () => {
       if (error) throw error;
 
       const totalCost =
-        data?.reduce((sum, log) => sum + (log.cost_cents || 0), 0) || 0;
+        data?.reduce((sum: any, log: any) => sum + (log.cost_cents || 0), 0) || 0;
       const avgLatency = data?.length
-        ? data.reduce((sum, log) => sum + (log.duration_ms || 0), 0) /
+        ? data.reduce((sum: any, log: any) => sum + (log.duration_ms || 0), 0) /
           data.length
         : 0;
 

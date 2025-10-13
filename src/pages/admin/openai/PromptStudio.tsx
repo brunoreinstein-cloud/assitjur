@@ -229,11 +229,11 @@ const PromptStudio = () => {
   });
 
   const activePrompt = prompts?.find(
-    (p) => p.id === settings?.prompt_active_id,
+    (p: any) => p.id === settings?.prompt_active_id,
   );
   const promptsByType =
     prompts?.reduce(
-      (acc, prompt) => {
+      (acc: any, prompt: any) => {
         if (!acc[prompt.template_type]) acc[prompt.template_type] = [];
         acc[prompt.template_type].push(prompt);
         return acc;

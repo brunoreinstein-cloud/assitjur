@@ -415,7 +415,7 @@ const OpenAIKeys = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {keys.map((key) => (
+                {keys.map((key: any) => (
                   <TableRow key={key.id}>
                     <TableCell className="font-medium">{key.alias}</TableCell>
                     <TableCell className="font-mono">

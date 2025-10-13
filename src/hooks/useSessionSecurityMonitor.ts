@@ -82,7 +82,7 @@ export function useSessionSecurityMonitor(
 
       const recentFailedAttempts =
         recentLogs?.filter(
-          (log) =>
+          (log: any) =>
             log.action.includes("FAILED") || log.action.includes("DENIED"),
         ).length || 0;
 
@@ -189,7 +189,7 @@ export function useSessionSecurityMonitor(
     // Listen for authentication state changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
       if (event === "SIGNED_IN" && session?.user) {
         // New login detected - perform immediate security check
         setTimeout(performSecurityCheck, 1000);

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event: any) => {
       if (event === "PASSWORD_RECOVERY") {
         navigate("/reset-password");
       }

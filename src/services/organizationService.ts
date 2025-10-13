@@ -70,7 +70,7 @@ export class OrganizationService {
         throw error;
       }
 
-      return (data || []).flatMap((item) => {
+      return (data || []).flatMap((item: any) => {
         const organization = Array.isArray(item.organizations)
           ? item.organizations[0]
           : item.organizations;

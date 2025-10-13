@@ -18,7 +18,7 @@ export default function ResetPasswordPage() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
+    } = supabase.auth.onAuthStateChange((event: any) => {
       if (event === "PASSWORD_RECOVERY") {
         setReady(true);
       } else {
@@ -26,7 +26,7 @@ export default function ResetPasswordPage() {
       }
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }: any) => {
       if (!session) {
         setErrorMsg("Link inválido ou expirado. Solicite novamente.");
       }

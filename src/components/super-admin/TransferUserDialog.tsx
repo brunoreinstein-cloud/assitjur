@@ -157,7 +157,7 @@ export function TransferUserDialog({
                 <SelectValue placeholder="Selecione a organização destino" />
               </SelectTrigger>
               <SelectContent>
-                {organizations?.map((org) => (
+                {organizations?.map((org: any) => (
                   <SelectItem key={org.id} value={org.id}>
                     {org.name} ({org.code})
                   </SelectItem>

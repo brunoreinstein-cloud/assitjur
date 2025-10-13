@@ -51,7 +51,7 @@ const Versions = () => {
       if (error) throw error;
 
       setVersions(data || []);
-      setActiveVersion(data?.find((v) => v.status === "published") || null);
+      setActiveVersion(data?.find((v: any) => v.status === "published") || null);
     } catch (error) {
       console.error("Error fetching versions:", error);
       toast({

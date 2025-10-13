@@ -194,7 +194,7 @@ export class SecurityEventMonitor {
 
       // Pattern 1: Too many failed attempts
       const failedAttempts = recentLogs.filter(
-        (log) => log.action.includes("FAILED") || log.action.includes("DENIED"),
+        (log: any) => log.action.includes("FAILED") || log.action.includes("DENIED"),
       ).length;
 
       if (failedAttempts > 10) {
@@ -208,10 +208,10 @@ export class SecurityEventMonitor {
       }
 
       // Pattern 2: Rapid successive actions
-      const actionTimes = recentLogs.map((log) =>
+      const actionTimes = recentLogs.map((log: any) =>
         new Date(log.created_at).getTime(),
       );
-      const rapidActions = actionTimes.filter((time, index) => {
+      const rapidActions = actionTimes.filter((time: any, index: any) => {
         if (index === 0) return false;
         return time - actionTimes[index - 1] < 1000; // Less than 1 second apart
       }).length;
@@ -229,7 +229,7 @@ export class SecurityEventMonitor {
       // Pattern 3: Multiple device access
       const uniqueDevices = new Set(
         recentLogs
-          .map((log) => log.metadata?.device_fingerprint)
+          .map((log: any) => log.metadata?.device_fingerprint)
           .filter(Boolean),
       ).size;
 

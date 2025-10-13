@@ -97,7 +97,7 @@ export function ChatInterface({ onUploadClick, hasData }: ChatInterfaceProps) {
             .order("created_at", { ascending: true });
 
           if (messageHistory) {
-            const formattedMessages: Message[] = messageHistory.map((msg) => ({
+            const formattedMessages: Message[] = messageHistory.map((msg: any) => ({
               id: msg.id,
               type: msg.role as "user" | "assistant",
               content: msg.content,

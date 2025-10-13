@@ -20,11 +20,12 @@ export const ProductionOptimizer = () => {
 
         // Remove React DevTools em produção
         if (typeof window !== "undefined") {
-          (
-            window as unknown as { [key: string]: unknown }
-          ).__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
-            ...((window as unknown as { [key: string]: unknown })
-              .__REACT_DEVTOOLS_GLOBAL_HOOK__ || {}),
+          const windowWithDevTools = window as unknown as { [key: string]: unknown };
+          const existingHook = windowWithDevTools.__REACT_DEVTOOLS_GLOBAL_HOOK__;
+          const hookObject = existingHook && typeof existingHook === 'object' ? existingHook : {};
+          
+          windowWithDevTools.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
+            ...hookObject,
             onCommitFiberRoot: () => {},
             onCommitFiberUnmount: () => {},
             isDisabled: true,
