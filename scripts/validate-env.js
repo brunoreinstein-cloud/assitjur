@@ -83,8 +83,21 @@ function validateEnv() {
     console.error('❌ Variáveis obrigatórias faltando:');
     missing.forEach(v => console.error(`   ${v}`));
     console.error();
+    
+    // Em produção (Vercel), apenas avisa mas não falha o build
+    if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+      console.warn('⚠️  AVISO: Variáveis de ambiente não configuradas na Vercel.');
+      console.warn('📝 Configure as variáveis no dashboard da Vercel:');
+      console.warn('   1. Acesse: https://vercel.com/dashboard');
+      console.warn('   2. Selecione seu projeto');
+      console.warn('   3. Vá em Settings > Environment Variables');
+      console.warn('   4. Adicione as variáveis obrigatórias\n');
+      console.warn('🚀 Continuando o build... (pode falhar em runtime)\n');
+      return; // Não falha o build em produção
+    }
+    
     console.error('📝 Crie um arquivo .env na raiz do projeto com as variáveis necessárias.');
-    console.error('📖 Consulte .env.example para referência.\n');
+    console.error('📖 Consulte env.example para referência.\n');
     process.exit(1);
   }
   
