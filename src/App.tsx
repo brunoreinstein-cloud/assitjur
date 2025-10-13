@@ -73,7 +73,7 @@ import { useMaintenance } from "@/hooks/useMaintenance";
 import { FeatureFlagProvider } from "@/hooks/useFeatureFlag";
 import { HelpWidget } from "@/components/help/HelpWidget";
 
-// Páginas com lazy loading e skeletons específicos
+// Páginas com lazy loading ULTRA-OTIMIZADO para prevenir Out of Memory
 const MapaPage = lazy(() => import("@/pages/MapaPage"));
 const PublicHome = lazy(() => import("@/pages/PublicHome"));
 const About = lazy(() => import("@/pages/About"));

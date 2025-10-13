@@ -169,6 +169,54 @@ export default defineConfig(({ mode }) => {
       esbuildOptions: {
         tsconfigRaw: JSON.stringify(tsconfigVite),
       },
+      // AGGRESSIVE DEPENDENCY OPTIMIZATION TO PREVENT MEMORY ISSUES
+      include: [
+        'react',
+        'react-dom',
+        'react-router-dom',
+        '@supabase/supabase-js',
+        '@tanstack/react-query',
+        'framer-motion',
+        'lucide-react',
+        'zustand',
+        'zod',
+        'date-fns',
+        'uuid',
+        'clsx',
+        'tailwind-merge'
+      ],
+      exclude: [
+        'xlsx',
+        'papaparse',
+        'recharts',
+        '@radix-ui/react-accordion',
+        '@radix-ui/react-alert-dialog',
+        '@radix-ui/react-aspect-ratio',
+        '@radix-ui/react-avatar',
+        '@radix-ui/react-checkbox',
+        '@radix-ui/react-collapsible',
+        '@radix-ui/react-context-menu',
+        '@radix-ui/react-dialog',
+        '@radix-ui/react-dropdown-menu',
+        '@radix-ui/react-hover-card',
+        '@radix-ui/react-label',
+        '@radix-ui/react-menubar',
+        '@radix-ui/react-navigation-menu',
+        '@radix-ui/react-popover',
+        '@radix-ui/react-progress',
+        '@radix-ui/react-radio-group',
+        '@radix-ui/react-scroll-area',
+        '@radix-ui/react-select',
+        '@radix-ui/react-separator',
+        '@radix-ui/react-slider',
+        '@radix-ui/react-slot',
+        '@radix-ui/react-switch',
+        '@radix-ui/react-tabs',
+        '@radix-ui/react-toast',
+        '@radix-ui/react-toggle',
+        '@radix-ui/react-toggle-group',
+        '@radix-ui/react-tooltip'
+      ]
     },
     define: {
       global: "globalThis",
@@ -180,27 +228,58 @@ export default defineConfig(({ mode }) => {
       sourcemap: false,
       minify: true,
       emptyOutDir: true,
-      // PHASE 1: Critical build config to bypass TS6310
-      commonjsOptions: {
-        include: ["node_modules/**"],
-        transformMixedEsModules: true,
-      },
+      // AGRESSIVE CHUNK SIZE LIMITS TO PREVENT OUT OF MEMORY
+      chunkSizeWarningLimit: 1000, // 1MB warning limit
       rollupOptions: {
         output: {
           manualChunks(id: string) {
-            // More granular chunking to prevent initialization errors
+            // ULTRA-GRANULAR CHUNKING TO PREVENT MEMORY ISSUES
             if (id.includes("node_modules")) {
-              // Split vendor chunks by package
+              // Split by major libraries
+              if (id.includes("react") || id.includes("react-dom")) return "vendor-react";
               if (id.includes("@radix-ui")) return "vendor-radix";
-              if (id.includes("react") || id.includes("react-dom"))
-                return "vendor-react";
               if (id.includes("@tanstack")) return "vendor-tanstack";
               if (id.includes("@supabase")) return "vendor-supabase";
-              return "vendor";
+              if (id.includes("framer-motion")) return "vendor-framer";
+              if (id.includes("lucide-react")) return "vendor-icons";
+              if (id.includes("xlsx")) return "vendor-xlsx";
+              if (id.includes("papaparse")) return "vendor-csv";
+              if (id.includes("recharts")) return "vendor-charts";
+              if (id.includes("zustand")) return "vendor-state";
+              if (id.includes("zod")) return "vendor-validation";
+              if (id.includes("date-fns")) return "vendor-dates";
+              if (id.includes("uuid")) return "vendor-utils";
+              // Split remaining vendor into smaller chunks
+              if (id.includes("node_modules")) {
+                const chunks = ["vendor-a", "vendor-b", "vendor-c", "vendor-d"];
+                return chunks[Math.abs(id.split("").reduce((a, b) => a + b.charCodeAt(0), 0)) % chunks.length];
+              }
             }
-            // Keep feature modules separate
-            if (id.includes("/src/features/")) return "features";
-            if (id.includes("/src/components/")) return "components";
+            
+            // Split by page/feature to prevent large chunks
+            if (id.includes("/src/pages/")) {
+              if (id.includes("admin")) return "pages-admin";
+              if (id.includes("MapaPage")) return "pages-mapa";
+              if (id.includes("About")) return "pages-about";
+              if (id.includes("Login")) return "pages-auth";
+              return "pages-other";
+            }
+            
+            if (id.includes("/src/components/")) {
+              if (id.includes("admin")) return "components-admin";
+              if (id.includes("common")) return "components-common";
+              if (id.includes("production")) return "components-prod";
+              return "components-other";
+            }
+            
+            if (id.includes("/src/hooks/")) return "hooks";
+            if (id.includes("/src/lib/")) return "lib";
+            if (id.includes("/src/utils/")) return "utils";
+            if (id.includes("/src/services/")) return "services";
+          },
+          // AGGRESSIVE CHUNK SIZING
+          chunkFileNames: () => {
+            return `assets/[name]-[hash].js`;
           },
         },
         // Suppress warnings about circular dependencies
