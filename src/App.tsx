@@ -1,12 +1,10 @@
 import { Suspense, lazy } from "react";
 import { MotionConfig } from "framer-motion";
 import { DEFAULT_TRANSITION } from "@/config/motion";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+// Removed heavy UI providers from App root (agora dentro de PrivateProviders)
 import ConsentDialog from "@/components/privacy/ConsentDialog";
 import { PageSkeleton } from "@/components/core/PageSkeleton";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// Removed QueryClient import – gerenciado dentro de PrivateProviders
 import {
   BrowserRouter,
   HashRouter,
@@ -15,11 +13,7 @@ import {
   Navigate,
   Outlet,
 } from "react-router-dom";
-import { AuthProvider as AuthContextProvider } from "@/hooks/useAuth";
-import { AuthProvider as SupabaseAuthProvider } from "@/providers/AuthProvider";
-import { MultiTenantProvider } from "@/contexts/MultiTenantContext";
-import { OrganizationErrorBoundary } from "@/components/core/OrganizationErrorBoundary";
-import { AuthErrorBoundary } from "@/components/core/AuthErrorBoundary";
+// Providers e boundaries agora estão encapsulados em PrivateProviders
 import { RouteGuard } from "@/components/routing/RouteGuard";
 import { DemoRoutes } from "@/routes/DemoRoutes";
 import { ErrorBoundary } from "@/components/core/ErrorBoundary";
@@ -64,14 +58,12 @@ const TestemunhasTable = lazy(
 // Profile and Settings pages
 const Profile = lazy(() => import("@/pages/Profile"));
 const SettingsPage = lazy(() => import("@/pages/settings/SettingsPage"));
-import { ServiceHealthProvider } from "@/hooks/useServiceHealth";
-import { StatusBanner } from "@/components/common/StatusBanner";
-import SessionExpiredModal from "@/components/auth/SessionExpiredModal";
 import FeatureFlagGuard from "@/components/FeatureFlagGuard";
-import { MaintenanceBanner } from "@/components/common/MaintenanceBanner";
 import { useMaintenance } from "@/hooks/useMaintenance";
-import { FeatureFlagProvider } from "@/hooks/useFeatureFlag";
-import { HelpWidget } from "@/components/help/HelpWidget";
+import PublicHomeMinimal from "@/pages/PublicHomeMinimal";
+import { PublicProviders } from "@/app/providers/PublicProviders";
+import { PrivateProviders } from "@/app/providers/PrivateProviders";
+import { useLocation } from "react-router-dom";
 
 // Páginas com lazy loading ULTRA-OTIMIZADO para prevenir Out of Memory
 const MapaPage = lazy(() => import("@/pages/MapaPage"));
@@ -233,66 +225,44 @@ function AppRoutes() {
 }
 
 // React Query client configuration
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 3,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+// Mantemos a instância caso outras partes usem, mas não é utilizada neste arquivo
+// queryClient não é mais usado diretamente neste arquivo
 
 // ✅ Router selection based on environment
 const Router = import.meta.env.VITE_USE_HASH_ROUTER === 'true' ? HashRouter : BrowserRouter;
 
-const App = () => (
-  <SystemErrorBoundary>
-    <ErrorBoundary>
-      <ProductionOptimizer />
-      <MotionConfig reducedMotion="user" transition={DEFAULT_TRANSITION}>
-        <QueryClientProvider client={queryClient}>
-          <ServiceHealthProvider>
-            <AuthContextProvider>
-              <FeatureFlagProvider>
-                <TooltipProvider>
-                  <Toaster />
-                  <Sonner />
-                  <SessionExpiredModal />
-                  <ConsentDialog />
-                  <Router
-                    future={{
-                      v7_startTransition: true,
-                      v7_relativeSplatPath: true,
-                    }}
-                  >
-                    <SupabaseAuthProvider>
-                      <AuthErrorBoundary>
-                        <MultiTenantProvider>
-                          <OrganizationErrorBoundary>
-                            <div className="min-h-screen flex flex-col">
-                              <MaintenanceBanner />
-                              <StatusBanner />
-                              <main id="conteudo" className="flex-1">
-                                <Suspense fallback={<PageSkeleton />}>
-                                  <AppRoutes />
-                                </Suspense>
-                              </main>
-                              <HelpWidget />
-                            </div>
-                          </OrganizationErrorBoundary>
-                        </MultiTenantProvider>
-                      </AuthErrorBoundary>
-                    </SupabaseAuthProvider>
-                  </Router>
-                </TooltipProvider>
-              </FeatureFlagProvider>
-            </AuthContextProvider>
-          </ServiceHealthProvider>
-        </QueryClientProvider>
-      </MotionConfig>
-    </ErrorBoundary>
-  </SystemErrorBoundary>
-);
+const App = () => {
+  const location = useLocation();
+  const isPublicHome = location.pathname === "/";
+
+  return (
+    <SystemErrorBoundary>
+      <ErrorBoundary>
+        <ProductionOptimizer />
+        <MotionConfig reducedMotion="user" transition={DEFAULT_TRANSITION}>
+          <Router
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true,
+            }}
+          >
+            {isPublicHome ? (
+              <PublicProviders>
+                <PublicHomeMinimal />
+              </PublicProviders>
+            ) : (
+              <PrivateProviders>
+                <ConsentDialog />
+                <Suspense fallback={<PageSkeleton />}>
+                  <AppRoutes />
+                </Suspense>
+              </PrivateProviders>
+            )}
+          </Router>
+        </MotionConfig>
+      </ErrorBoundary>
+    </SystemErrorBoundary>
+  );
+};
 
 export default App;
