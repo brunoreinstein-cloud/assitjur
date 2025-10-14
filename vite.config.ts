@@ -121,7 +121,7 @@ export default defineConfig(({ mode }) => {
     }),
     mode === "development" && componentTagger(),
     mode !== "development" && spaFallbackPlugin(),
-    // mode !== "development" && compressPlugin(), // Temporariamente desabilitado para debug
+    mode !== "development" && compressPlugin(),
   ];
 
   // Handle analyzer plugin conditionally
