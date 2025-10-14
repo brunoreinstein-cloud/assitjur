@@ -1,0 +1,1 @@
+import{j as a}from"./vendor-BLhJxNng.js";import"./page-About-AENA6wUy.js";function e(){return a.jsxs("main",{className:"container mx-auto px-6 py-8",children:[a.jsx("h1",{className:"text-2xl font-bold mb-4",children:"LGPD"}),a.jsx("p",{children:"Esta é a página sobre a LGPD."})]})}export{e as default};

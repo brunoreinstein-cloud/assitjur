@@ -1,4 +1,16 @@
+import { useEffect } from "react";
+
 export default function PublicHomeMinimal() {
+  useEffect(() => {
+    const t0 = typeof performance !== "undefined" ? performance.now() : null;
+    const heap = (performance as any)?.memory?.usedJSHeapSize ?? null;
+    // Log leve de boot/heap para validação em produção
+    // eslint-disable-next-line no-console
+    console.log("[Boot] PublicHomeMinimal", {
+      t0,
+      heapBytes: heap,
+    });
+  }, []);
   return (
     <main className="min-h-screen flex flex-col">
       <header className="border-b">
