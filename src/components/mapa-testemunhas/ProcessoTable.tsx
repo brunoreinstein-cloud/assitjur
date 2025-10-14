@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -45,17 +45,20 @@ export function ProcessoTable({ data }: ProcessoTableProps) {
 
   const densityClasses = tokens.density[density];
 
-  const handleViewDetail = (processo: PorProcesso) => {
-    setSelectedProcesso(processo);
-    setIsDetailDrawerOpen(true);
-  };
+  const handleViewDetail = useCallback(
+    (processo: PorProcesso) => {
+      setSelectedProcesso(processo);
+      setIsDetailDrawerOpen(true);
+    },
+    [setSelectedProcesso, setIsDetailDrawerOpen],
+  );
 
-  const requestDelete = (processo: PorProcesso) => {
+  const requestDelete = useCallback((processo: PorProcesso) => {
     setToDelete(processo);
     setIsConfirmOpen(true);
-  };
+  }, []);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     if (toDelete) {
       remove({
         key: toDelete.cnj,
@@ -66,7 +69,7 @@ export function ProcessoTable({ data }: ProcessoTableProps) {
     }
     setIsConfirmOpen(false);
     setToDelete(null);
-  };
+  }, [toDelete, remove, removeProcesso, restoreProcesso]);
 
   const getStatusColor = (status: string | null) => {
     switch (status?.toLowerCase()) {
