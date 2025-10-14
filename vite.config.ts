@@ -111,6 +111,7 @@ const tsconfigVite = {
 };
 
 // https://vitejs.dev/config/
+// Fase A: habilitar sourcemap em staging para diagnóstico
 export default defineConfig(({ mode }) => {
   const plugins = [
     suppressTS6310Plugin(), // Must be first
@@ -225,7 +226,8 @@ export default defineConfig(({ mode }) => {
     build: {
       target: "ES2022",
       outDir: "dist",
-      sourcemap: false,
+      // Em staging (VITE_ENV=staging), geramos sourcemap para depuração de erros
+      sourcemap: process.env.VITE_ENV === "staging",
       minify: true,
       emptyOutDir: true,
       // AGRESSIVE CHUNK SIZE LIMITS TO PREVENT OUT OF MEMORY

@@ -1,4 +1,6 @@
 import { StrictMode } from "react";
+// Fase A: registrar logger global de erros (executa uma única vez no bundle)
+import "@/app/global-error-log";
 import { createRoot } from "react-dom/client";
 import App from "@/App";
 import "./styles/assistjur-brand.css";
