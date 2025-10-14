@@ -12,6 +12,7 @@ import {
   Route,
   Navigate,
   Outlet,
+  useLocation,
 } from "react-router-dom";
 // Providers e boundaries agora estão encapsulados em PrivateProviders
 import { RouteGuard } from "@/components/routing/RouteGuard";
@@ -63,7 +64,7 @@ import { useMaintenance } from "@/hooks/useMaintenance";
 import PublicHomeMinimal from "@/pages/PublicHomeMinimal";
 import { PublicProviders } from "@/app/providers/PublicProviders";
 import { PrivateProviders } from "@/app/providers/PrivateProviders";
-import { useLocation } from "react-router-dom";
+// useLocation moved to AppContent component inside Router
 
 // Páginas com lazy loading ULTRA-OTIMIZADO para prevenir Out of Memory
 const MapaPage = lazy(() => import("@/pages/MapaPage"));
@@ -231,10 +232,30 @@ function AppRoutes() {
 // ✅ Router selection based on environment
 const Router = import.meta.env.VITE_USE_HASH_ROUTER === 'true' ? HashRouter : BrowserRouter;
 
-const App = () => {
+// Component that uses useLocation must be inside Router
+const AppContent = () => {
   const location = useLocation();
   const isPublicHome = location.pathname === "/";
 
+  return (
+    <>
+      {isPublicHome ? (
+        <PublicProviders>
+          <PublicHomeMinimal />
+        </PublicProviders>
+      ) : (
+        <PrivateProviders>
+          <ConsentDialog />
+          <Suspense fallback={<PageSkeleton />}>
+            <AppRoutes />
+          </Suspense>
+        </PrivateProviders>
+      )}
+    </>
+  );
+};
+
+const App = () => {
   return (
     <SystemErrorBoundary>
       <ErrorBoundary>
@@ -246,18 +267,7 @@ const App = () => {
               v7_relativeSplatPath: true,
             }}
           >
-            {isPublicHome ? (
-              <PublicProviders>
-                <PublicHomeMinimal />
-              </PublicProviders>
-            ) : (
-              <PrivateProviders>
-                <ConsentDialog />
-                <Suspense fallback={<PageSkeleton />}>
-                  <AppRoutes />
-                </Suspense>
-              </PrivateProviders>
-            )}
+            <AppContent />
           </Router>
         </MotionConfig>
       </ErrorBoundary>
