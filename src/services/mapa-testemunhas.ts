@@ -158,7 +158,7 @@ export async function fetchTestemunhas(params: {
     const body = {
       paginacao: {
         page: params.page || 1,
-        limit: params.limit || 20,
+        limit: params.limit || 50, // reduz default para 50
       },
       filtros,
     } satisfies TestemunhasRequest;
@@ -369,7 +369,7 @@ export async function fetchProcessos(params: {
     const body = {
       paginacao: {
         page: params.page || 1,
-        limit: params.limit || 20,
+        limit: params.limit || 50, // reduz default para 50
       },
       filtros,
     } satisfies ProcessosRequest;

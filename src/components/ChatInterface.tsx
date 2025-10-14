@@ -71,6 +71,8 @@ export function ChatInterface({ onUploadClick, hasData }: ChatInterfaceProps) {
     }
   }, [user, profile]);
 
+  const [messageCursor, setMessageCursor] = useState<string | null>(null);
+
   const loadRecentConversation = async () => {
     await withErrorHandling(
       async () => {
@@ -106,6 +108,11 @@ export function ChatInterface({ onUploadClick, hasData }: ChatInterfaceProps) {
               timestamp: new Date(msg.created_at),
             }));
             setMessages(formattedMessages);
+            if (formattedMessages.length > 0) {
+              setMessageCursor(
+                formattedMessages[0].timestamp.toISOString() // mais antigo
+              );
+            }
           }
         }
       },
@@ -113,6 +120,37 @@ export function ChatInterface({ onUploadClick, hasData }: ChatInterfaceProps) {
       false,
     );
   };
+
+  const loadOlderMessages = async () => {
+    if (!currentConversationId || !messageCursor) return;
+
+    const { data: older } = await supabase
+      .from("messages")
+      .select("id, role, content, created_at")
+      .eq("conversation_id", currentConversationId)
+      .lt("created_at", messageCursor)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (!older?.length) return;
+
+    const formatted: Message[] = older
+      .map((msg: any) => ({
+        id: msg.id,
+        type: msg.role as "user" | "assistant",
+        content: msg.content,
+        timestamp: new Date(msg.created_at),
+      }))
+      .reverse();
+
+    setMessages(prev => [...formatted, ...prev]);
+    setMessageCursor(formatted[0].timestamp.toISOString());
+  };
+
+  // Expose button to load older messages (simple placement at top of list)
+  // This can be moved to the chat UI where messages are rendered
+  // Example usage placeholder to satisfy TS until wired in UI
+  void loadOlderMessages;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

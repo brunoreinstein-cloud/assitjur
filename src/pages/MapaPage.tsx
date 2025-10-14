@@ -857,7 +857,21 @@ const MapaPage = () => {
               {processoStatus !== "success" ? (
                 <DataState status={processoStatus} onRetry={loadData} />
               ) : (
-                <ProcessoTable data={processos} />
+                <>
+                  <ProcessoTable data={processos} />
+                  <div className="flex justify-center mt-4">
+                    <Button
+                      variant="outline"
+                      disabled={!useMapaTestemunhasStore.getState().hasMoreProcessos || isLoading}
+                      onClick={() => {
+                        useMapaTestemunhasStore.getState().loadMoreProcessos();
+                        loadData();
+                      }}
+                    >
+                      {isLoading ? "Carregando..." : useMapaTestemunhasStore.getState().hasMoreProcessos ? "Carregar mais" : "Fim"}
+                    </Button>
+                  </div>
+                </>
               )}
             </TabsContent>
 
@@ -890,11 +904,25 @@ const MapaPage = () => {
               {testemunhaStatus !== "success" ? (
                 <DataState status={testemunhaStatus} onRetry={loadData} />
               ) : (
-                <TestemunhaTable
-                  data={testemunhas}
-                  status={testemunhaStatus}
-                  onRetry={loadData}
-                />
+                <>
+                  <TestemunhaTable
+                    data={testemunhas}
+                    status={testemunhaStatus}
+                    onRetry={loadData}
+                  />
+                  <div className="flex justify-center mt-4">
+                    <Button
+                      variant="outline"
+                      disabled={!useMapaTestemunhasStore.getState().hasMoreTestemunhas || isLoading}
+                      onClick={() => {
+                        useMapaTestemunhasStore.getState().loadMoreTestemunhas();
+                        loadData();
+                      }}
+                    >
+                      {isLoading ? "Carregando..." : useMapaTestemunhasStore.getState().hasMoreTestemunhas ? "Carregar mais" : "Fim"}
+                    </Button>
+                  </div>
+                </>
               )}
             </TabsContent>
           </Tabs>
