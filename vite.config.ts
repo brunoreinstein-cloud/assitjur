@@ -23,7 +23,7 @@ function compressPlugin(): Plugin {
       bundle: OutputBundle,
     ) {
       for (const fileName of Object.keys(bundle)) {
-        if (!/\.(js|css|html|svg|json)$/i.test(fileName)) continue;
+        if (!/\.(js|css|html|svg|json|map)$/i.test(fileName)) continue;
         const asset = bundle[fileName];
         const source =
           asset.type === "asset"
@@ -69,21 +69,22 @@ function spaFallbackPlugin(): Plugin {
 }
 
 // Suppress TS6310 error completely
-function suppressTS6310Plugin(): Plugin {
-  return {
-    name: "suppress-ts6310",
-    enforce: "pre",
-    configResolved(config) {
-      // Override Vite's type checking
-      const originalBuild = config.build;
-      if (originalBuild) {
-      // Disable TypeScript project references validation
-      // Using 'as unknown' first to bypass strict type checking for internal Vite config
-      (originalBuild as unknown as Record<string, unknown>).typescript = { check: false };
-      }
-    },
-  };
-}
+// Temporariamente desabilitado para debug de sourcemaps
+// function suppressTS6310Plugin(): Plugin {
+//   return {
+//     name: "suppress-ts6310",
+//     enforce: "pre",
+//     configResolved(config) {
+//       // Override Vite's type checking
+//       const originalBuild = config.build;
+//       if (originalBuild) {
+//       // Disable TypeScript project references validation
+//       // Using 'as unknown' first to bypass strict type checking for internal Vite config
+//       (originalBuild as unknown as Record<string, unknown>).typescript = { check: false };
+//       }
+//     },
+//   };
+// }
 
 // Isolated tsconfig for Vite - prevents TS6310 warnings
 const tsconfigVite = {
@@ -114,13 +115,13 @@ const tsconfigVite = {
 // Fase A: habilitar sourcemap em staging para diagnóstico
 export default defineConfig(({ mode }) => {
   const plugins = [
-    suppressTS6310Plugin(), // Must be first
+    // suppressTS6310Plugin(), // Temporariamente desabilitado para debug
     react({
       tsDecorators: true,
     }),
     mode === "development" && componentTagger(),
     mode !== "development" && spaFallbackPlugin(),
-    mode !== "development" && compressPlugin(),
+    // mode !== "development" && compressPlugin(), // Temporariamente desabilitado para debug
   ];
 
   // Handle analyzer plugin conditionally
@@ -157,15 +158,16 @@ export default defineConfig(({ mode }) => {
       },
     },
     // CRITICAL: Bypass TS6310 by using esbuild with isolated config
-    esbuild: {
-      jsx: "automatic" as const,
-      target: "es2020" as const,
-      tsconfigRaw: JSON.stringify(tsconfigVite),
-      logOverride: {
-        "this-is-undefined-in-esm": "silent",
-        "tsconfig-resolve-error": "silent",
-      },
-    },
+    // Temporariamente desabilitado para debug de sourcemaps
+    // esbuild: {
+    //   jsx: "automatic" as const,
+    //   target: "es2020" as const,
+    //   tsconfigRaw: JSON.stringify(tsconfigVite),
+    //   logOverride: {
+    //     "this-is-undefined-in-esm": "silent",
+    //     "tsconfig-resolve-error": "silent",
+    //   },
+    // },
     optimizeDeps: {
       esbuildOptions: {
         tsconfigRaw: JSON.stringify(tsconfigVite),
@@ -227,7 +229,7 @@ export default defineConfig(({ mode }) => {
       target: "ES2022",
       outDir: "dist",
       // Em staging (VITE_ENV=staging), geramos sourcemap para depuração de erros
-      sourcemap: process.env.VITE_ENV === "staging",
+      sourcemap: true, // Temporariamente forçado para debug
       minify: true,
       emptyOutDir: true,
       // AGRESSIVE CHUNK SIZE LIMITS TO PREVENT OUT OF MEMORY
