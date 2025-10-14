@@ -34,7 +34,7 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-hero-gradient text-aj-text-high"
+      className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-gradient-hero text-white"
     >
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-glow" />
@@ -45,8 +45,8 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
           {/* Left Column - Content */}
           <div className="space-y-8 animate-fade-in">
             {/* Brand Badge */}
-            <div className="badge-gold inline-flex items-center space-x-4 shadow-md">
-              <Sparkles className="h-5 w-5 text-aj-bg-deep" />
+            <div className="inline-flex items-center space-x-4 shadow-md bg-accent text-accent-foreground rounded-full px-6 py-3">
+              <Sparkles className="h-5 w-5" />
               <span className="text-base font-semibold">
                 O Hub de IA Estratégica para Contencioso
               </span>
@@ -57,26 +57,26 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
               <h1
                 id="main-heading"
                 tabIndex={-1}
-                className="text-4xl md:text-5xl lg:text-6xl font-bold text-aj-text-high leading-tight"
+                className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight"
               >
                 AssistJur.IA —{" "}
                 <span className="relative">
-                  <span className="text-aj-gold">
+                  <span className="text-accent">
                     Inteligência Artificial Estratégica
                   </span>
                 </span>{" "}
                 para Gestão do{" "}
-                <span className="text-aj-gold font-black">Contencioso</span>
+                <span className="text-accent font-black">Contencioso</span>
               </h1>
 
               <div className="space-y-4">
-                <p className="text-xl text-aj-text-high/80 leading-relaxed max-w-2xl">
+                <p className="text-xl text-white/90 leading-relaxed max-w-2xl">
                   Transforme sua carteira judicial com inteligência artificial
                   especializada. Governança, eficiência e estratégia em uma
                   única plataforma. Criado por Bianca Reinstein, especialista
                   com mais de 20 anos em gestão de passivos judiciais complexos.
                 </p>
-                <p className="text-lg text-aj-gold font-medium">
+                <p className="text-lg text-accent font-medium">
                   ✨ Acessível para advogados autônomos, pequenas, médias e
                   grandes empresas e escritórios de advocacia — de fácil e
                   rápida implantação.
@@ -89,7 +89,7 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
               <Button
                 size="lg"
                 onClick={scrollToForm}
-                className="btn-primary text-lg px-8 py-6 group"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6 rounded-xl shadow-lg group"
               >
                 🚀 Testar o Hub
                 <ArrowDown className="ml-2 h-5 w-5 group-hover:translate-y-1 transition-transform" />
@@ -103,7 +103,7 @@ export function ImprovedHero({ onSignup }: ImprovedHeroProps) {
                     .getElementById("diferenciais")
                     ?.scrollIntoView({ behavior: "smooth" })
                 }
-                className="text-lg px-8 py-6 transition-all duration-300 border-aj-gold text-aj-gold"
+                className="text-lg px-8 py-6 transition-all duration-300 border-accent text-accent hover:bg-accent/10"
               >
                 🔎 Conhecer Diferenciais
               </Button>

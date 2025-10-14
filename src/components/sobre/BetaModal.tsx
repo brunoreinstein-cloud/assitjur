@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,6 +53,9 @@ export function BetaModal({ isOpen = false, onClose }: BetaModalProps) {
           <DialogTitle className="text-2xl font-bold text-center">
             Entrar na Lista Beta
           </DialogTitle>
+          <DialogDescription className="text-center text-muted-foreground">
+            Seja um dos primeiros a ter acesso ao AssistJur.IA
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">

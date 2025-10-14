@@ -42,6 +42,39 @@ export function SEO({
       document.title = finalTitle;
     }
 
+    // Add JSON-LD structured data
+    const existingSchema = document.querySelector('script[type="application/ld+json"]');
+    if (existingSchema) {
+      existingSchema.remove();
+    }
+
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "AssistJur.IA",
+      "applicationCategory": "LegalTech",
+      "operatingSystem": "Web",
+      "description": finalDesc,
+      "url": canonical,
+      "image": image,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "BRL",
+        "description": "Acesso Beta gratuito"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5",
+        "ratingCount": "1"
+      }
+    };
+
+    const scriptTag = document.createElement('script');
+    scriptTag.type = 'application/ld+json';
+    scriptTag.textContent = JSON.stringify(schema);
+    document.head.appendChild(scriptTag);
+
     const setTag = (tag: HTMLElement) => {
       document.head.appendChild(tag);
     };

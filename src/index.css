@@ -29,6 +29,12 @@ All colors MUST be HSL. Professional navy/blue theme for trust and authority.
     /* AssistJur.IA Brand Colors */
     --background: 0 0% 100%;
     --foreground: 0 0% 17%; /* Cinza Chumbo #2C2C2C */
+    
+    /* AssistJur.IA Custom Brand Tokens */
+    --aj-bg-deep: 274 88% 8%; /* #14022A - Background profundo */
+    --aj-bg-plum: 285 76% 12%; /* #270238 - Background ameixa */
+    --aj-gold: 45 66% 62%; /* #E3B15A - Dourado */
+    --aj-text-high: 300 100% 99%; /* #FFFEFF - Texto alto contraste */
 
     --card: 0 0% 100%;
     --card-foreground: 0 0% 17%;
@@ -96,6 +102,13 @@ All colors MUST be HSL. Professional navy/blue theme for trust and authority.
       circle at 50% 0%,
       hsl(var(--primary-glow) / 0.1),
       transparent 70%
+    );
+    
+    /* AssistJur.IA Hero Gradient */
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(var(--aj-bg-deep)),
+      hsl(var(--aj-bg-plum))
     );
 
     /* Shadows for Depth */
