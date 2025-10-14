@@ -38,11 +38,23 @@ export const ProductionOptimizer = () => {
         delete (window as unknown as { [key: string]: unknown })
           .__REDUX_DEVTOOLS_EXTENSION__;
 
-        logger.info(
-          "Production optimizations initialized",
-          {},
-          "ProductionOptimizer",
-        );
+        // Telemetria leve de heap/FPS
+        if (typeof performance !== "undefined") {
+          const heap = (performance as any).memory?.usedJSHeapSize;
+          const fpsStart = performance.now();
+          requestAnimationFrame(() => {
+            const fpsEnd = performance.now();
+            const frameMs = fpsEnd - fpsStart;
+            logger.info(
+              "Perf snapshot",
+              {
+                heapBytes: heap,
+                approxFps: frameMs > 0 ? Math.round(1000 / frameMs) : null,
+              },
+              "ProductionOptimizer",
+            );
+          });
+        }
       } catch (error) {
         // Usa console.error diretamente para erros críticos
         console.error("Failed to initialize production optimizations:", error);

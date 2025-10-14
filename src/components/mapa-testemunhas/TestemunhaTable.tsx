@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -53,6 +53,29 @@ export function TestemunhaTable({
 
   const densityClasses = tokens.density[density];
 
+  // Virtualização simples baseada em altura fixa aproximada
+  const ROW_HEIGHT = 56;
+  const VISIBLE_COUNT = 40;
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [startIndex, setStartIndex] = useState(0);
+
+  useEffect(() => {
+    setStartIndex(0);
+  }, [data.length]);
+
+  const endIndex = Math.min(startIndex + VISIBLE_COUNT, data.length);
+  const visibleData = useMemo(
+    () => data.slice(startIndex, endIndex),
+    [data, startIndex, endIndex],
+  );
+
+  const onScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const nextStart = Math.floor(el.scrollTop / ROW_HEIGHT);
+    if (nextStart !== startIndex) setStartIndex(nextStart);
+  }, [startIndex]);
+
   const handleViewDetail = useCallback(
     (testemunha: PorTestemunha) => {
       setSelectedTestemunha(testemunha);
@@ -89,7 +112,11 @@ export function TestemunhaTable({
 
   return (
     <>
-      <div className="border border-border/50 rounded-2xl overflow-hidden">
+      <div
+        ref={scrollRef}
+        onScroll={onScroll}
+        className="border border-border/50 rounded-2xl overflow-auto max-h-[70vh]"
+      >
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30">
@@ -131,7 +158,13 @@ export function TestemunhaTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((testemunha) => (
+            {startIndex > 0 && (
+              <TableRow>
+                <TableCell colSpan={12} style={{ height: startIndex * ROW_HEIGHT, padding: 0 }} />
+              </TableRow>
+            )}
+
+            {visibleData.map((testemunha) => (
               <TableRow
                 key={testemunha.nome_testemunha}
                 className={cn("group hover:bg-muted/20", densityClasses.row)}
@@ -243,6 +276,15 @@ export function TestemunhaTable({
                 )}
               </TableRow>
             ))}
+
+            {endIndex < data.length && (
+              <TableRow>
+                <TableCell
+                  colSpan={12}
+                  style={{ height: (data.length - endIndex) * ROW_HEIGHT, padding: 0 }}
+                />
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

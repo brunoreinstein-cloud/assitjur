@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -44,6 +44,29 @@ export function ProcessoTable({ data }: ProcessoTableProps) {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const densityClasses = tokens.density[density];
+
+  // Virtualização simples baseada em altura fixa aproximada
+  const ROW_HEIGHT = 56; // px (ajuste conforme tokens)
+  const VISIBLE_COUNT = 40; // janelas visíveis
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [startIndex, setStartIndex] = useState(0);
+
+  useEffect(() => {
+    setStartIndex(0);
+  }, [data.length]);
+
+  const endIndex = Math.min(startIndex + VISIBLE_COUNT, data.length);
+  const visibleData = useMemo(
+    () => data.slice(startIndex, endIndex),
+    [data, startIndex, endIndex],
+  );
+
+  const onScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const nextStart = Math.floor(el.scrollTop / ROW_HEIGHT);
+    if (nextStart !== startIndex) setStartIndex(nextStart);
+  }, [startIndex]);
 
   const handleViewDetail = useCallback(
     (processo: PorProcesso) => {
@@ -103,7 +126,11 @@ export function ProcessoTable({ data }: ProcessoTableProps) {
 
   return (
     <>
-      <div className="border border-border/50 rounded-2xl overflow-hidden">
+      <div
+        ref={scrollRef}
+        onScroll={onScroll}
+        className="border border-border/50 rounded-2xl overflow-auto max-h-[70vh]"
+      >
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30">
@@ -144,7 +171,14 @@ export function ProcessoTable({ data }: ProcessoTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((processo) => (
+            {/* Espaço superior */}
+            {startIndex > 0 && (
+              <TableRow>
+                <TableCell colSpan={12} style={{ height: startIndex * ROW_HEIGHT, padding: 0 }} />
+              </TableRow>
+            )}
+
+            {visibleData.map((processo) => (
               <TableRow
                 key={processo.cnj}
                 className={cn("hover:bg-muted/20", densityClasses.row)}
@@ -278,6 +312,16 @@ export function ProcessoTable({ data }: ProcessoTableProps) {
                 )}
               </TableRow>
             ))}
+
+            {/* Espaço inferior */}
+            {endIndex < data.length && (
+              <TableRow>
+                <TableCell
+                  colSpan={12}
+                  style={{ height: (data.length - endIndex) * ROW_HEIGHT, padding: 0 }}
+                />
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

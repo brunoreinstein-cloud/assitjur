@@ -147,6 +147,9 @@ export function ChatInterface({ onUploadClick, hasData }: ChatInterfaceProps) {
     setMessageCursor(formatted[0].timestamp.toISOString());
   };
 
+  // Botão simples de carregar mais (pode ser movido para a UI da lista)
+  // Placeholder de UI removido do escopo para evitar aviso TS até integração no layout
+
   // Expose button to load older messages (simple placement at top of list)
   // This can be moved to the chat UI where messages are rendered
   // Example usage placeholder to satisfy TS until wired in UI
