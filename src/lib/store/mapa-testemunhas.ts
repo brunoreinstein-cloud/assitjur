@@ -257,19 +257,61 @@ export const useMapaTestemunhasStore = create<MapaTestemunhasStore>(
     ],
 
     // Actions
-    setActiveTab: (tab) => set({ activeTab: tab }),
-    setProcessos: (processos) => set({ processos }),
-    setTestemunhas: (testemunhas) => set({ testemunhas }),
-    setSelectedProcesso: (processo) => set({ selectedProcesso: processo }),
-    setSelectedTestemunha: (testemunha) =>
-      set({ selectedTestemunha: testemunha }),
-    setIsDetailDrawerOpen: (open) => set({ isDetailDrawerOpen: open }),
-    setIsImportModalOpen: (open) => set({ isImportModalOpen: open }),
-    setIsLoading: (loading) => set({ isLoading: loading }),
-    setIsPiiMasked: (masked) => set({ isPiiMasked: masked }),
-    setError: (error, message = "") =>
-      set({ hasError: error, errorMessage: message }),
-    setLastUpdate: (date) => set({ lastUpdate: date }),
+    setActiveTab: (tab) => set((state) => {
+      // ✅ GUARDA: Só atualiza se a tab realmente mudou
+      if (state.activeTab === tab) return state;
+      return { activeTab: tab };
+    }),
+    setProcessos: (processos) => set((state) => {
+      // ✅ GUARDA: Só atualiza se os dados realmente mudaram
+      if (JSON.stringify(state.processos) === JSON.stringify(processos)) return state;
+      return { processos };
+    }),
+    setTestemunhas: (testemunhas) => set((state) => {
+      // ✅ GUARDA: Só atualiza se os dados realmente mudaram
+      if (JSON.stringify(state.testemunhas) === JSON.stringify(testemunhas)) return state;
+      return { testemunhas };
+    }),
+    setSelectedProcesso: (processo) => set((state) => {
+      // ✅ GUARDA: Só atualiza se o processo realmente mudou
+      if (state.selectedProcesso?.cnj === processo?.cnj) return state;
+      return { selectedProcesso: processo };
+    }),
+    setSelectedTestemunha: (testemunha) => set((state) => {
+      // ✅ GUARDA: Só atualiza se a testemunha realmente mudou
+      if (state.selectedTestemunha?.nome_testemunha === testemunha?.nome_testemunha) return state;
+      return { selectedTestemunha: testemunha };
+    }),
+    setIsDetailDrawerOpen: (open) => set((state) => {
+      // ✅ GUARDA: Só atualiza se o estado realmente mudou
+      if (state.isDetailDrawerOpen === open) return state;
+      return { isDetailDrawerOpen: open };
+    }),
+    setIsImportModalOpen: (open) => set((state) => {
+      // ✅ GUARDA: Só atualiza se o estado realmente mudou
+      if (state.isImportModalOpen === open) return state;
+      return { isImportModalOpen: open };
+    }),
+    setIsLoading: (loading) => set((state) => {
+      // ✅ GUARDA: Só atualiza se o estado realmente mudou
+      if (state.isLoading === loading) return state;
+      return { isLoading: loading };
+    }),
+    setIsPiiMasked: (masked) => set((state) => {
+      // ✅ GUARDA: Só atualiza se o estado realmente mudou
+      if (state.isPiiMasked === masked) return state;
+      return { isPiiMasked: masked };
+    }),
+    setError: (error, message = "") => set((state) => {
+      // ✅ GUARDA: Só atualiza se o erro realmente mudou
+      if (state.hasError === error && state.errorMessage === message) return state;
+      return { hasError: error, errorMessage: message };
+    }),
+    setLastUpdate: (date) => set((state) => {
+      // ✅ GUARDA: Só atualiza se a data realmente mudou
+      if (state.lastUpdate?.getTime() === date?.getTime()) return state;
+      return { lastUpdate: date };
+    }),
     setProcessoFilters: (filters) =>
       set((state) => {
         const merged = { ...state.processoFilters, ...filters };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNotifications } from "@/stores/useNotificationStore";
 import { logWarn } from "@/lib/logger";
 
@@ -137,6 +137,12 @@ export function useCachedData<T>(
   const isOnline = useOnlineStatus();
   const { error: notifyError } = useNotifications();
 
+  // ✅ FIX: Memoizar fetcher para evitar loops
+  const memoizedFetcher = useCallback(fetcher, []);
+  
+  // ✅ FIX: Memoizar notifyError para evitar loops
+  const memoizedNotifyError = useCallback(notifyError, []);
+
   useEffect(() => {
     if (!enabled) return;
 
@@ -144,39 +150,52 @@ export function useCachedData<T>(
       // Try to get from cache first
       const cached = offlineStorage.get<T>(key);
       if (cached) {
-        setData(cached);
+        // ✅ GUARDA: Só atualiza se o valor realmente mudou
+        setData(prevData => {
+          if (JSON.stringify(prevData) === JSON.stringify(cached)) return prevData;
+          return cached;
+        });
       }
 
       // If online, try to fetch fresh data
       if (isOnline) {
         try {
-          setLoading(true);
-          setError(null);
+          setLoading(prevLoading => prevLoading ? prevLoading : true);
+          setError(prevError => prevError ? null : prevError);
 
-          const freshData = await fetcher();
+          const freshData = await memoizedFetcher();
 
-          setData(freshData);
+          // ✅ GUARDA: Só atualiza se o valor realmente mudou
+          setData(prevData => {
+            if (JSON.stringify(prevData) === JSON.stringify(freshData)) return prevData;
+            return freshData;
+          });
           offlineStorage.set(key, freshData, cacheTime);
         } catch (err) {
           const errorMessage =
             err instanceof Error ? err.message : "Erro desconhecido";
-          setError(errorMessage);
+          
+          // ✅ GUARDA: Só atualiza se o erro mudou
+          setError(prevError => {
+            if (prevError === errorMessage) return prevError;
+            return errorMessage;
+          });
 
           // If no cached data, notify user
           if (!cached) {
-            notifyError(
+            memoizedNotifyError(
               "Erro ao carregar dados",
               "Verifique sua conexão e tente novamente.",
             );
           }
         } finally {
-          setLoading(false);
+          setLoading(prevLoading => prevLoading ? false : prevLoading);
         }
       }
     };
 
     loadData();
-  }, [key, enabled, isOnline, fetcher, cacheTime, fallbackData, notifyError]);
+  }, [key, enabled, isOnline, memoizedFetcher, cacheTime, fallbackData, memoizedNotifyError]); // ✅ FIX: Usar versões memoizadas
 
   const refresh = () => {
     if (isOnline && enabled) {

@@ -160,7 +160,7 @@ export function useSessionSecurityMonitor(
     } catch (error) {
       console.error("Security check failed:", error);
     }
-  }, [enabled, session?.user, profile, fingerprintingEnabled, riskThreshold]);
+  }, [enabled, session?.user?.id, profile?.id, fingerprintingEnabled, riskThreshold]); // ✅ FIX: Só depende dos IDs, não dos objetos inteiros
 
   // Start periodic security monitoring
   useEffect(() => {
@@ -180,7 +180,7 @@ export function useSessionSecurityMonitor(
         clearInterval(monitoringIntervalRef.current);
       }
     };
-  }, [enabled, session?.user, monitoringInterval, performSecurityCheck]);
+  }, [enabled, session?.user?.id, monitoringInterval]); // ✅ FIX: Remove performSecurityCheck das dependências para evitar loops
 
   // Monitor for security-relevant events
   useEffect(() => {
@@ -205,7 +205,7 @@ export function useSessionSecurityMonitor(
     return () => {
       subscription.unsubscribe();
     };
-  }, [enabled, session?.user, performSecurityCheck]);
+  }, [enabled, session?.user?.id]); // ✅ FIX: Remove performSecurityCheck das dependências para evitar loops
 
   return {
     performSecurityCheck,

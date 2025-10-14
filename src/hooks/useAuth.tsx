@@ -188,14 +188,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event: any, session: any) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+      // ✅ GUARDA: Só atualiza se o valor realmente mudou
+      setSession(prevSession => {
+        if (prevSession?.access_token === session?.access_token) return prevSession;
+        return session;
+      });
+      
+      setUser(prevUser => {
+        const newUser = session?.user ?? null;
+        if (prevUser?.id === newUser?.id) return prevUser;
+        return newUser;
+      });
 
       if (session?.user) {
+        // ✅ GUARDA: Evita múltiplas chamadas para o mesmo usuário
+        const currentUserId = session.user.id;
+        if (profile?.id === currentUserId) {
+          setLoading(false);
+          return;
+        }
+
         // Defer profile fetching to avoid recursion
         setTimeout(async () => {
           try {
-            let profileData = await fetchProfile(session.user.id);
+            let profileData = await fetchProfile(currentUserId);
             if (!profileData) {
               // Use the safe database function to create profile
               profileData = (await ensureProfile(session.user)) as any;
@@ -205,13 +221,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                   {},
                   "Authentication",
                 );
-                setProfile(null);
-                setLoading(false);
+                // ✅ GUARDA: Só atualiza se necessário
+                setProfile(prevProfile => prevProfile === null ? null : null);
+                setLoading(prevLoading => prevLoading ? false : prevLoading);
                 return;
               }
             }
-            setProfile(profileData as UserProfile);
-            setLoading(false);
+            // ✅ GUARDA: Só atualiza se o profile realmente mudou
+            setProfile(prevProfile => {
+              if (prevProfile?.id === profileData.id && 
+                  prevProfile?.organization_id === profileData.organization_id) {
+                return prevProfile;
+              }
+              return profileData as UserProfile;
+            });
+            setLoading(prevLoading => prevLoading ? false : prevLoading);
             } catch (error) {
             if (AuthErrorHandler.isAuthError(error)) {
               await AuthErrorHandler.handleAuthError(error, {
@@ -220,13 +244,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             } else {
               logError("Profile fetch error", { error }, "useAuth");
             }
-            setProfile(null);
-            setLoading(false);
+            // ✅ GUARDA: Só atualiza se necessário
+            setProfile(prevProfile => prevProfile === null ? null : null);
+            setLoading(prevLoading => prevLoading ? false : prevLoading);
           }
         }, 0);
       } else {
-        setProfile(null);
-        setLoading(false);
+        // ✅ GUARDA: Só atualiza se necessário
+        setProfile(prevProfile => prevProfile === null ? null : null);
+        setLoading(prevLoading => prevLoading ? false : prevLoading);
       }
     });
 

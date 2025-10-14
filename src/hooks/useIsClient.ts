@@ -25,7 +25,11 @@ export function useSSRSafe<T>(clientValue: T, serverValue: T): T {
 
   useEffect(() => {
     if (isClientSide) {
-      setValue(clientValue);
+      // ✅ GUARDA: Só atualiza se o valor realmente mudou
+      setValue(prevValue => {
+        if (JSON.stringify(prevValue) === JSON.stringify(clientValue)) return prevValue;
+        return clientValue;
+      });
     }
   }, [isClientSide, clientValue]);
 

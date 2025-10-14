@@ -38,9 +38,13 @@ export function useOfflineDetection() {
         const wasAvailable = apiAvailable;
         const nowAvailable = response.ok;
 
-        setApiAvailable(nowAvailable);
+        // ✅ GUARDA: Só atualiza se o status realmente mudou
+        setApiAvailable(prevAvailable => {
+          if (prevAvailable === nowAvailable) return prevAvailable;
+          return nowAvailable;
+        });
 
-        // Show notification on status change
+        // ✅ GUARDA: Só mostra toast se o status mudou
         if (!wasAvailable && nowAvailable) {
           toast({
             title: "🟢 APIs Restauradas",
@@ -55,8 +59,14 @@ export function useOfflineDetection() {
           });
         }
       } catch (error) {
+        // ✅ GUARDA: Só atualiza se estava disponível antes
+        setApiAvailable(prevAvailable => {
+          if (prevAvailable === false) return prevAvailable; // Já estava indisponível
+          return false;
+        });
+        
+        // ✅ GUARDA: Só mostra toast se mudou de disponível para indisponível
         if (apiAvailable) {
-          setApiAvailable(false);
           toast({
             title: "⚠️ APIs Indisponíveis",
             description: "Usando dados locais como fallback",
