@@ -198,9 +198,16 @@ export class OrganizationService {
       }
 
       // Get counts using RPC functions for better security
+      // Use count-only where possível para reduzir payload
       const [processosResult, pessoasResult, usersResult] = await Promise.all([
-        supabase.rpc("get_processos_with_access_control", { org_uuid: orgId }),
-        supabase.rpc("get_pessoas_with_access_control", { org_uuid: orgId }),
+        supabase
+          .from("processos")
+          .select("id", { count: "exact", head: true })
+          .eq("org_id", orgId),
+        supabase
+          .from("pessoas")
+          .select("id", { count: "exact", head: true })
+          .eq("org_id", orgId),
         supabase
           .from("members")
           .select("id", { count: "exact" })
@@ -209,8 +216,8 @@ export class OrganizationService {
       ]);
 
       return {
-        totalProcessos: processosResult.data?.length || 0,
-        totalPessoas: pessoasResult.data?.length || 0,
+        totalProcessos: processosResult.count || 0,
+        totalPessoas: pessoasResult.count || 0,
         activeUsers: usersResult.count || 0,
       };
     } catch (error) {

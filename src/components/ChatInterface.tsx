@@ -92,9 +92,11 @@ export function ChatInterface({ onUploadClick, hasData }: ChatInterfaceProps) {
           // Load messages from conversation
           const { data: messageHistory } = await supabase
             .from("messages")
-            .select("*")
+            // Fetch only fields used in UI and limit initial payload
+            .select("id, role, content, created_at")
             .eq("conversation_id", conversation.id)
-            .order("created_at", { ascending: true });
+            .order("created_at", { ascending: true })
+            .limit(100);
 
           if (messageHistory) {
             const formattedMessages: Message[] = messageHistory.map((msg: any) => ({
