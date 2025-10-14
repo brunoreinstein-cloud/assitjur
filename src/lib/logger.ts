@@ -1,7 +1,10 @@
 /**
  * Sistema de logging centralizado para AssistJur.IA
  * Substitui console.error/console.warn diretos por um sistema estruturado
+ * Integrado com debug-mode para controle granular de logs
  */
+
+import { DebugMode } from "./debug-mode";
 
 type LogLevel = "info" | "warn" | "error" | "debug";
 
@@ -16,12 +19,35 @@ interface LogEntry {
 class Logger {
   private isDevelopment = !import.meta.env.PROD;
 
+  /**
+   * Verifica se deve fazer log baseado no nível e ambiente
+   */
+  private shouldLog(level: LogLevel): boolean {
+    // Errors sempre são logados
+    if (level === "error") return true;
+
+    // Em produção, apenas errors e warns críticos
+    if (!this.isDevelopment) {
+      return level === "warn";
+    }
+
+    // Em desenvolvimento, respeita debug mode para debug/info
+    if (level === "debug" || level === "info") {
+      return DebugMode.isEnabled();
+    }
+
+    // Warns sempre em dev
+    return true;
+  }
+
   private log(
     level: LogLevel,
     message: string,
     context?: Record<string, any>,
     service?: string,
   ) {
+    if (!this.shouldLog(level)) return;
+
     const entry: LogEntry = {
       level,
       message,
@@ -30,7 +56,7 @@ class Logger {
       service,
     };
 
-    // Em desenvolvimento, usa console padrão
+    // Em desenvolvimento, usa console padrão formatado
     if (this.isDevelopment) {
       const contextStr = context ? ` ${JSON.stringify(context, null, 2)}` : "";
       const serviceStr = service ? `[${service}] ` : "";
@@ -50,9 +76,10 @@ class Logger {
           break;
       }
     } else {
-      // Em produção, pode integrar com serviço externo (Sentry, etc.)
-      // Por agora, apenas log estruturado no console
-      console.log(JSON.stringify(entry));
+      // Em produção, apenas log estruturado para serviços externos
+      if (level === "error" || level === "warn") {
+        console.log(JSON.stringify(entry));
+      }
     }
   }
 

@@ -15,6 +15,7 @@ import {
 import { TestUtils } from "@/lib/testing-utilities";
 import type { HealthCheckResult } from "@/lib/testing-utilities";
 import { useDevDiagnostics } from "@/lib/dev-diagnostics";
+import { logger } from "@/lib/logger";
 
 interface HealthStatus extends HealthCheckResult {
   lastCheck: Date;
@@ -249,13 +250,13 @@ export function HealthMonitor() {
                   size="sm"
                   onClick={() => {
                     // Abrir console com comandos disponíveis
-                    console.log("🔧 Dev Diagnostics Commands:", {
+                    logger.info("Dev Diagnostics Commands disponíveis", {
                       healthCheck: "__DEV_DIAGNOSTICS__.runHealthCheck()",
                       regressionTests:
                         "__DEV_DIAGNOSTICS__.runRegressionTests()",
                       metrics: "__DEV_DIAGNOSTICS__.getMetrics()",
                       bundleAnalysis: "__DEV_DIAGNOSTICS__.analyzeBundle()",
-                    });
+                    }, "HealthMonitor");
                   }}
                   className="w-full"
                 >

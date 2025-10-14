@@ -16,6 +16,7 @@ import {
   invalidateUserSessions,
 } from "@/utils/security/sessionInvalidation";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 export interface SessionSecurityOptions {
   enabled?: boolean;
@@ -137,8 +138,10 @@ export function useSessionSecurityMonitor(
           });
         } else if (riskAssessment.recommendation === "challenge") {
           // In a real app, this would trigger step-up authentication
-          console.warn(
-            "Step-up authentication recommended for high-risk session",
+          logger.warn(
+            "Step-up authentication recomendada",
+            { riskScore: riskAssessment.score },
+            "SessionSecurity"
           );
         }
       }
@@ -154,7 +157,7 @@ export function useSessionSecurityMonitor(
           );
         if (isSuspicious) {
           // Suspicious activity already triggers its own security events
-          console.warn("Suspicious activity pattern detected");
+          logger.warn("Padrão de atividade suspeita detectado", {}, "SessionSecurity");
         }
       }
     } catch (error) {

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { RiskBadge } from "@/components/RiskBadge";
 import { KeyValue } from "@/features/testemunhas/KeyValue";
+import { logger } from "@/lib/logger";
 import {
   Sparkles,
   Copy,
@@ -55,7 +56,7 @@ export function ExecutiveSummaryCard({
   citacoes,
 }: ExecutiveSummaryCardProps) {
   // Debug log para validar props recebidas
-  console.log("📊 [ExecutiveSummaryCard] Props recebidas:", {
+  logger.debug("Props recebidas", {
     cnj,
     status,
     observacoes,
@@ -67,7 +68,7 @@ export function ExecutiveSummaryCard({
     isDefaultData:
       status === "Não informado" &&
       observacoes === "Sem observações registradas",
-  });
+  }, "ExecutiveSummaryCard");
 
   const { toast } = useToast();
   const [showAllCitations, setShowAllCitations] = useState(false);
