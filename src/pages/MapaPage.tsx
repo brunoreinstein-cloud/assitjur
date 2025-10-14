@@ -137,6 +137,12 @@ const MapaPage = () => {
   const setSelectedTestemunha = useMapaTestemunhasStore(
     (s) => s.setSelectedTestemunha,
   );
+  const setHasMoreProcessos = useMapaTestemunhasStore(
+    (s) => s.setHasMoreProcessos,
+  );
+  const setHasMoreTestemunhas = useMapaTestemunhasStore(
+    (s) => s.setHasMoreTestemunhas,
+  );
 
   // Stable state
   const [totalProcessos, setTotalProcessos] = useState(0);
@@ -338,15 +344,24 @@ const MapaPage = () => {
       const currentTestemunhaFilters =
         useMapaTestemunhasStore.getState().testemunhaFilters;
 
+      // Capturar paginação atual do store (não como deps do hook)
+      const {
+        processosPage: currentProcPage,
+        testemunhasPage: currentTestPage,
+        pageSize: currentPageSize,
+        processos: existingProcessos,
+        testemunhas: existingTestemunhas,
+      } = useMapaTestemunhasStore.getState();
+
       const [processosResult, testemunhasResult] = await Promise.all([
         fetchProcessos({
-          page: 1,
-          limit: 100,
+          page: currentProcPage || 1,
+          limit: currentPageSize || 50,
           filters: currentProcessoFilters,
         }),
         fetchTestemunhas({
-          page: 1,
-          limit: 100,
+          page: currentTestPage || 1,
+          limit: currentPageSize || 50,
           filters: currentTestemunhaFilters,
         }),
       ]);
@@ -366,8 +381,22 @@ const MapaPage = () => {
         ? testemunhasResult.data
         : [];
 
-      setProcessos(processosData);
-      setTestemunhas(testemunhasData);
+      // Se página > 1, fazemos append incremental com dedupe
+      if (useMapaTestemunhasStore.getState().processosPage > 1) {
+        const merged = [...existingProcessos, ...processosData];
+        const dedup = Array.from(new Map(merged.map(p => [p.cnj, p])).values());
+        setProcessos(dedup);
+      } else {
+        setProcessos(processosData);
+      }
+
+      if (useMapaTestemunhasStore.getState().testemunhasPage > 1) {
+        const mergedT = [...existingTestemunhas, ...testemunhasData];
+        const dedupT = Array.from(new Map(mergedT.map(t => [t.nome_testemunha, t])).values());
+        setTestemunhas(dedupT);
+      } else {
+        setTestemunhas(testemunhasData);
+      }
 
       // Usar total da API ou length dos dados como fallback
       const totalP = isFinite(processosResult.total)
@@ -379,6 +408,8 @@ const MapaPage = () => {
 
       setTotalProcessos(totalP);
       setTotalTestemunhas(totalT);
+      setHasMoreProcessos(totalP > (useMapaTestemunhasStore.getState().processosPage * (useMapaTestemunhasStore.getState().pageSize)));
+      setHasMoreTestemunhas(totalT > (useMapaTestemunhasStore.getState().testemunhasPage * (useMapaTestemunhasStore.getState().pageSize)));
 
       const errorMsg = processosResult.error || testemunhasResult.error;
       if (errorMsg) {
