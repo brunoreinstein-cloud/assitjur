@@ -128,7 +128,15 @@ BEGIN
     ) AS data,
     v_total_count AS total_count
   FROM (
-    SELECT *
+    SELECT
+      cnj,
+      reclamante_limpo,
+      reu_nome,
+      testemunhas_ativo_limpo,
+      testemunhas_passivo_limpo,
+      classificacao_final,
+      insight_estrategico,
+      created_at
     FROM assistjur.por_processo_staging
     WHERE org_id = p_org_id
       AND (v_search = '' OR v_search IS NULL OR (
